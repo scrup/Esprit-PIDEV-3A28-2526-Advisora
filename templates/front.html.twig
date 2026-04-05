@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Advisora | Conseil financier intelligent</title>
+  <!-- Google Fonts + Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- External CSS -->
+  <link rel="stylesheet" href="/css/front.css">
+</head>
+<body>
+
+<!-- TUNISIAN DINAR (TND) CURRENCY TICKER -->
+<div class="top-currency-bar">
+  <div class="currency-ticker" id="forexTicker">
+    <span><i class="fas fa-coins"></i> <span class="ticker-label">🇹🇳 TND/USD:</span> <span id="tndusd">0.3215</span> <span id="tndusdChange" class="positive">▲ +0.18%</span></span>
+    <span><i class="fas fa-euro-sign"></i> <span class="ticker-label">TND/EUR:</span> <span id="tndeur">0.2950</span> <span id="tndeurChange" class="positive">▲ +0.07%</span></span>
+    <span><i class="fas fa-pound-sign"></i> <span class="ticker-label">TND/GBP:</span> <span id="tndgbp">0.2532</span> <span id="tndgbpChange" class="negative">▼ -0.11%</span></span>
+    <span><i class="fas fa-chart-line"></i> <span class="ticker-label">TND/JPY:</span> <span id="tndjpy">48.62</span> <span id="tndjpyChange" class="positive">▲ +0.23%</span></span>
+    <span><i class="fas fa-franc-sign"></i> <span class="ticker-label">TND/CHF:</span> <span id="tndchf">0.2845</span> <span id="tndchfChange" class="negative">▼ -0.05%</span></span>
+    <span><i class="fas fa-dollar-sign"></i> <span class="ticker-label">TND/CAD:</span> <span id="tndcad">0.4370</span> <span id="tndcadChange" class="positive">▲ +0.09%</span></span>
+    <span><i class="fas fa-chart-simple"></i> <span class="ticker-label">TND/CNY:</span> <span id="tndcny">2.3210</span> <span id="tndcnyChange" class="negative">▼ -0.03%</span></span>
+  </div>
+  <div class="ticker-subtitle">
+    <i class="fas fa-chart-line"></i> Dinar Tunisien (TND) · Taux de change en direct
+  </div>
+</div>
+
+<header id="header">
+  <div class="logo">
+    <i class="fas fa-chart-line"></i> Advisora
+  </div>
+  <nav>
+    <a href="#">Solutions</a>
+    <a href="#">Stratégies d'investissement</a>
+    <a href="#">À propos</a>
+    <a href="#">Perspectives</a>
+    <a href="#">Contact</a>
+  </nav>
+  <div>
+    <button class="btn btn-outline" id="loginBtn"><i class="far fa-user"></i> Connexion</button>
+    <button class="btn btn-primary" id="getStartedBtn">Commencer →</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-text">
+    <span class="badge"><i class="fas fa-rocket"></i> Conseil alimenté par l'IA</span>
+    <h1>Décisions basées sur les données pour les entreprises modernes</h1>
+    <p>Transformez votre avenir financier avec des analyses en temps réel, des stratégies personnalisées et des conseils d'experts. Rejoignez plus de 3 000 entreprises qui évoluent plus intelligemment.</p>
+    <button class="btn btn-primary" id="heroCta">Explorer les solutions <i class="fas fa-arrow-right"></i></button>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-number">2,4 Mds €</span><span>Actifs conseillés</span></div>
+      <div class="stat"><span class="stat-number">98%</span><span>Fidélisation client</span></div>
+      <div class="stat"><span class="stat-number">15+</span><span>Prix industriels</span></div>
+    </div>
+  </div>
+  <div class="hero-image">
+    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format" alt="tableau de bord analytique élégant">
+    <div class="floating-card">
+      <i class="fas fa-chart-simple" style="color:#C37D5D"></i> <span>+32% d'augmentation du ROI</span>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <h2 class="section-title">Solutions intelligentes pour la <span style="color:#C37D5D;">croissance</span></h2>
+  <p class="section-sub">De la modélisation prédictive à la gestion des risques — nous vous aidons à réussir.</p>
+  <div class="feature-grid">
+    <div class="card">
+      <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+      <h3>Analyses intelligentes</h3>
+      <p>Tableaux de bord interactifs avec suivi des KPI en temps réel et signaux de marché.</p>
+      <span class="card-link">En savoir plus →</span>
+    </div>
+    <div class="card">
+      <div class="card-icon"><i class="fas fa-brain"></i></div>
+      <h3>Moteur de stratégie IA</h3>
+      <p>Stratégies d'investissement sur mesure utilisant l'apprentissage automatique.</p>
+      <span class="card-link">En savoir plus →</span>
+    </div>
+    <div class="card">
+      <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+      <h3>Risque & conformité</h3>
+      <p>Évaluation proactive des risques + outils de conformité réglementaire automatisés.</p>
+      <span class="card-link">En savoir plus →</span>
+    </div>
+    <div class="card">
+      <div class="card-icon"><i class="fas fa-charging-station"></i></div>
+      <h3>Accélération de patrimoine</h3>
+      <p>Optimisation de portefeuille pour haute valeur nette avec modèles fiscaux efficaces.</p>
+      <span class="card-link">En savoir plus →</span>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <h2 class="section-title">Approuvé par les leaders financiers</h2>
+  <p class="section-sub">Des résultats concrets de partenaires visionnaires.</p>
+  <div class="testimonial-grid">
+    <div class="testi-card">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p>“Advisora a transformé notre allocation d'actifs. Les alertes en temps réel et les insights IA nous ont donné un avantage.”</p>
+      <div class="client">
+        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="client">
+        <div><strong>Elena Marchetti</strong><br>CFO, FinCore</div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p>“Des outils stratégiques exceptionnels. Notre ROI a augmenté de 27% en 6 mois grâce à leur tableau de bord.”</p>
+      <div class="client">
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="client">
+        <div><strong>James O'Connor</strong><br>Directeur stratégie</div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+      <p>“Moderne, élégant et incroyablement perspicace. L'analytique prédictive nous a évité des pertes majeures.”</p>
+      <div class="client">
+        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="client">
+        <div><strong>Priya Kapoor</strong><br>Directrice d'investissement</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-banner">
+  <div class="cta-text">
+    <h2>Prêt à élever votre jeu de conseil ?</h2>
+    <p>Rejoignez des centaines d'entreprises intelligentes exploitant l'IA pour une croissance exponentielle.</p>
+  </div>
+  <button class="btn btn-primary" id="ctaBannerBtn">Planifier une démo →</button>
+</div>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h3><i class="fas fa-chart-line" style="color:#C37D5D"></i> Advisora</h3>
+      <p>Écosystème financier intelligent<br>© 2025 Tous droits réservés</p>
+      <div class="social-icons">
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Plateforme</h4>
+      <p>Analytique<br>Stratégies<br>Accès API<br>Tarifs</p>
+    </div>
+    <div class="footer-col">
+      <h4>Ressources</h4>
+      <p>Blog<br>Études de cas<br>Webinaires<br>Documentation</p>
+    </div>
+    <div class="footer-col newsletter">
+      <h4>Lettre d'information</h4>
+      <input type="email" id="newsEmail" placeholder="Votre email professionnel">
+      <button class="btn btn-primary" id="newsSignupBtn" style="padding: 0.5rem 1rem; margin-top: 10px;">S'abonner <i class="fas fa-paper-plane"></i></button>
+      <p style="font-size: 0.7rem; margin-top: 10px;">Recevez des informations hebdomadaires, sans spam.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function showToastMessage(msg) {
+    alert(msg + ' ✨');
+  }
+
+  const btnsPrimary = document.querySelectorAll('.btn-primary');
+  btnsPrimary.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if(btn.id === 'newsSignupBtn') {
+        const emailInput = document.getElementById('newsEmail');
+        if(emailInput.value && emailInput.value.includes('@')) {
+          showToastMessage(`📬 Merci ! ${emailInput.value} est maintenant abonné.`);
+          emailInput.value = '';
+        } else {
+          showToastMessage('📧 Veuillez entrer une adresse email valide.');
+        }
+      } else if(btn.id === 'heroCta') {
+        showToastMessage('🚀 Explorez notre démo interactive — planifiez une visite guidée dès aujourd\'hui.');
+      } else if(btn.id === 'ctaBannerBtn') {
+        showToastMessage('🎯 Demande de démo reçue ! Notre équipe vous contactera sous 24h.');
+      } else if(btn.id === 'getStartedBtn') {
+        showToastMessage('🎉 Bienvenue ! Créez votre compte de conseil gratuit.');
+      } else {
+        showToastMessage('Fonctionnalité à venir — version améliorée en route.');
+      }
+    });
+  });
+
+  const loginBtn = document.getElementById('loginBtn');
+  if(loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      showToastMessage('🔐 Accès sécurisé — connectez-vous avec SSO ou email.');
+    });
+  }
+
+  const cardLinks = document.querySelectorAll('.card-link');
+  cardLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      showToastMessage('📈 Plongez plus profond : livres blancs et études de cas disponibles.');
+    });
+  });
+
+  // TND Currency ticker simulation
+  function updateTNDTicker() {
+    let tndusd = parseFloat(document.getElementById('tndusd').innerText);
+    let tndeur = parseFloat(document.getElementById('tndeur').innerText);
+    let tndgbp = parseFloat(document.getElementById('tndgbp').innerText);
+    let tndjpy = parseFloat(document.getElementById('tndjpy').innerText);
+    let tndchf = parseFloat(document.getElementById('tndchf').innerText);
+    let tndcad = parseFloat(document.getElementById('tndcad').innerText);
+    let tndcny = parseFloat(document.getElementById('tndcny').innerText);
+
+    const randomMove = () => (Math.random() - 0.5) * 0.0015;
+    const randomMoveJpy = () => (Math.random() - 0.5) * 0.25;
+    const randomMoveCny = () => (Math.random() - 0.5) * 0.008;
+
+    let newTNDUSD = +(tndusd + randomMove()).toFixed(4);
+    let newTNDEUR = +(tndeur + randomMove()).toFixed(4);
+    let newTNDGBP = +(tndgbp + randomMove()).toFixed(4);
+    let newTNDJPY = +(tndjpy + randomMoveJpy()).toFixed(2);
+    let newTNDCHF = +(tndchf + randomMove()).toFixed(4);
+    let newTNDCAD = +(tndcad + randomMove()).toFixed(4);
+    let newTNDCNY = +(tndcny + randomMoveCny()).toFixed(4);
+
+    let changeUSD = ((newTNDUSD - tndusd) / tndusd * 100).toFixed(2);
+    let changeEUR = ((newTNDEUR - tndeur) / tndeur * 100).toFixed(2);
+    let changeGBP = ((newTNDGBP - tndgbp) / tndgbp * 100).toFixed(2);
+    let changeJPY = ((newTNDJPY - tndjpy) / tndjpy * 100).toFixed(2);
+    let changeCHF = ((newTNDCHF - tndchf) / tndchf * 100).toFixed(2);
+    let changeCAD = ((newTNDCAD - tndcad) / tndcad * 100).toFixed(2);
+    let changeCNY = ((newTNDCNY - tndcny) / tndcny * 100).toFixed(2);
+
+    function setChange(elementId, changeVal) {
+      let span = document.getElementById(elementId);
+      if(span) {
+        let num = parseFloat(changeVal);
+        let isPositive = num >= 0;
+        span.innerText = (isPositive ? `▲ +${Math.abs(num)}%` : `▼ -${Math.abs(num)}%`);
+        span.className = isPositive ? 'positive' : 'negative';
+      }
+    }
+
+    document.getElementById('tndusd').innerText = newTNDUSD;
+    document.getElementById('tndeur').innerText = newTNDEUR;
+    document.getElementById('tndgbp').innerText = newTNDGBP;
+    document.getElementById('tndjpy').innerText = newTNDJPY;
+    document.getElementById('tndchf').innerText = newTNDCHF;
+    document.getElementById('tndcad').innerText = newTNDCAD;
+    document.getElementById('tndcny').innerText = newTNDCNY;
+
+    setChange('tndusdChange', changeUSD);
+    setChange('tndeurChange', changeEUR);
+    setChange('tndgbpChange', changeGBP);
+    setChange('tndjpyChange', changeJPY);
+    setChange('tndchfChange', changeCHF);
+    setChange('tndcadChange', changeCAD);
+    setChange('tndcnyChange', changeCNY);
+  }
+
+  function randomizeTNDInitial() {
+    let ids = ['tndusd', 'tndeur', 'tndgbp', 'tndjpy', 'tndchf', 'tndcad', 'tndcny'];
+    ids.forEach(id => {
+      let el = document.getElementById(id);
+      if(el) {
+        let base = parseFloat(el.innerText);
+        let variance = base * (Math.random() - 0.5) * 0.003;
+        let newVal = (base + variance).toFixed(id === 'tndjpy' ? 2 : 4);
+        el.innerText = newVal;
+      }
+    });
+    updateTNDTicker();
+  }
+
+  randomizeTNDInitial();
+  let tickerInterval = setInterval(updateTNDTicker, 4500);
+  window.addEventListener('beforeunload', () => {
+    if(tickerInterval) clearInterval(tickerInterval);
+  });
+
+  document.querySelectorAll('nav a').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      showToastMessage(`📌 Navigation vers ${this.innerText} — explorez nos modules.`);
+    });
+  });
+</script>
+</body>
+</html>
