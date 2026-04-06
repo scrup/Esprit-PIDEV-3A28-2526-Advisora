@@ -1,0 +1,66 @@
+{# Currency ticker #}
+<div class="top-currency-bar">
+    <div class="currency-ticker" id="forexTicker">
+        <span><i class="fas fa-coins"></i> <span class="ticker-label">🇹🇳 TND/USD:</span> <span id="tndusd">0.3215</span> <span id="tndusdChange" class="positive">▲ +0.18%</span></span>
+        <span><i class="fas fa-euro-sign"></i> <span class="ticker-label">TND/EUR:</span> <span id="tndeur">0.2950</span> <span id="tndeurChange" class="positive">▲ +0.07%</span></span>
+        <span><i class="fas fa-pound-sign"></i> <span class="ticker-label">TND/GBP:</span> <span id="tndgbp">0.2532</span> <span id="tndgbpChange" class="negative">▼ -0.11%</span></span>
+        <span><i class="fas fa-chart-line"></i> <span class="ticker-label">TND/JPY:</span> <span id="tndjpy">48.62</span> <span id="tndjpyChange" class="positive">▲ +0.23%</span></span>
+        <span><i class="fas fa-franc-sign"></i> <span class="ticker-label">TND/CHF:</span> <span id="tndchf">0.2845</span> <span id="tndchfChange" class="negative">▼ -0.05%</span></span>
+        <span><i class="fas fa-dollar-sign"></i> <span class="ticker-label">TND/CAD:</span> <span id="tndcad">0.4370</span> <span id="tndcadChange" class="positive">▲ +0.09%</span></span>
+        <span><i class="fas fa-chart-simple"></i> <span class="ticker-label">TND/CNY:</span> <span id="tndcny">2.3210</span> <span id="tndcnyChange" class="negative">▼ -0.03%</span></span>
+    </div>
+    <div class="ticker-subtitle">
+        <i class="fas fa-chart-line"></i> Dinar Tunisien (TND) · Taux de change en direct
+    </div>
+</div>
+
+<header id="header">
+    <div class="logo">
+        <img src="{{ asset('assets/logo.png') }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
+        Advisora
+    </div>
+    <nav>
+        <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">Accueil</a>
+        <a href="{{ path('app_shop') }}" class="nav-link {% if app.request.get('_route') == 'app_shop' %}active{% endif %}">Boutique</a>
+        <a href="#about" class="nav-link">À propos</a>
+        <a href="#solutions" class="nav-link">Solutions</a>
+        <a href="#whyus" class="nav-link">Pourquoi nous choisir ?</a>
+        <a href="#reviews" class="nav-link">Témoignages</a>
+    </nav>
+    <div class="header-actions">
+        <button class="btn btn-outline" id="loginBtn"><i class="far fa-user"></i> Connexion</button>
+        <button class="btn btn-primary" id="getStartedBtn">Commencer →</button>
+        <button class="cart-btn" id="cartBtn">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count" id="cartCount">0</span>
+        </button>
+    </div>
+</header>
+
+<!-- CART SIDEBAR - MOVED OUTSIDE HEADER -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+        <h3><i class="fas fa-shopping-cart"></i> Mon panier</h3>
+        <button class="close-cart" id="closeCartBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-items" id="cartItems">
+        <div class="empty-cart">
+            <i class="fas fa-shopping-bag"></i>
+            <p>Votre panier est vide</p>
+        </div>
+    </div>
+    <div class="cart-footer">
+        <div class="cart-total">
+            <span>Total</span>
+            <span class="total-amount" id="cartTotal">0.00 €</span>
+        </div>
+        <button class="btn btn-primary checkout-btn" id="checkoutBtn">Procéder au paiement →</button>
+    </div>
+</div>
+
+<main>
+    {% block body %}{% endblock %}
+</main>
+
+
