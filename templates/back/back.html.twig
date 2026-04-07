@@ -12,8 +12,8 @@
     <div class="dashboard-container">
         <div class="dashboard-header">
             <div class="welcome-section">
-                <h1>Bonjour, {{ app.user ? app.user.getPrenomUser() : 'Equipe' }}</h1>
-                <p>Voici la situation actuelle des projets et des decisions du module de gestion.</p>
+                <h1>Bonjour, {{ app.user ? app.user.getPrenomUser() : 'Équipe' }}</h1>
+                <p>Voici la situation actuelle des projets et des décisions du module de gestion.</p>
             </div>
             <div class="date-badge">
                 <i class="fas fa-calendar-alt"></i>
@@ -35,23 +35,23 @@
                 <div class="stat-info">
                     <h3>Projets en attente</h3>
                     <div class="stat-value">{{ pending_projects }}</div>
-                    <span class="stat-trend">A traiter par le back office</span>
+                    <span class="stat-trend">À traiter par le back office</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                 <div class="stat-info">
-                    <h3>Projets acceptes</h3>
+                    <h3>Projets acceptés</h3>
                     <div class="stat-value">{{ accepted_projects }}</div>
-                    <span class="stat-trend">Valides par decision recente</span>
+                    <span class="stat-trend">Validés par décision récente</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-gavel"></i></div>
                 <div class="stat-info">
-                    <h3>Decisions</h3>
+                    <h3>Décisions</h3>
                     <div class="stat-value">{{ total_decisions }}</div>
-                    <span class="stat-trend">{{ refused_projects }} projets refuses</span>
+                    <span class="stat-trend">{{ refused_projects }} projets refusés</span>
                 </div>
             </div>
         </div>
@@ -68,7 +68,7 @@
                             <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: project.id}) }}">
                                 <div>
                                     <strong>{{ project.title }}</strong>
-                                    <p>{{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigne' }}</p>
+                                    <p>{{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</p>
                                 </div>
                                 <div class="dashboard-list-meta">
                                     <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
@@ -86,7 +86,7 @@
                         <h3><i class="fas fa-sliders-h"></i> Actions rapides</h3>
                     </div>
                     <div class="quick-actions quick-actions-start">
-                        <a href="{{ path('back_project_index') }}" class="action-btn"><i class="fas fa-folder-open"></i> Gerer les projets</a>
+                        <a href="{{ path('back_project_index') }}" class="action-btn"><i class="fas fa-folder-open"></i> Gérer les projets</a>
                         <a href="{{ path('project_index') }}" class="action-btn"><i class="fas fa-eye"></i> Voir le front</a>
                     </div>
                 </div>
@@ -95,23 +95,23 @@
             <div>
                 <div class="card-panel">
                     <div class="panel-header">
-                        <h3><i class="fas fa-history"></i> Dernieres decisions</h3>
-                        <a href="{{ path('back_project_index') }}" class="view-link">Acceder aux projets</a>
+                        <h3><i class="fas fa-history"></i> Dernières décisions</h3>
+                        <a href="{{ path('back_project_index') }}" class="view-link">Accéder aux projets</a>
                     </div>
                     <div class="dashboard-list">
                         {% for decision in latest_decisions %}
                             <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: decision.project.id}) }}">
                                 <div>
                                     <strong>{{ decision.project.title }}</strong>
-                                    <p>{{ decision.descriptionD ?: 'Sans justification detaillee.' }}</p>
+                                    <p>{{ decision.descriptionD ?: 'Sans justification détaillée.' }}</p>
                                 </div>
                                 <div class="dashboard-list-meta">
-                                    <span class="pm-status pm-status-{{ decision.project.status|lower }}">{{ decision.statutD ?: 'Decision' }}</span>
+                                    <span class="pm-status pm-status-{{ decision.project.status|lower }}">{{ decision.getDecisionTitleLabel() ?: 'Décision' }}</span>
                                     <span>{{ decision.dateDecision ? decision.dateDecision|date('d/m/Y') : '' }}</span>
                                 </div>
                             </a>
                         {% else %}
-                            <p class="dashboard-empty">Aucune decision enregistree.</p>
+                            <p class="dashboard-empty">Aucune décision enregistrée.</p>
                         {% endfor %}
                     </div>
                 </div>

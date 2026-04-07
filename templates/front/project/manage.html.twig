@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Advisora | Gerer mon projet{% endblock %}
+{% block title %}Advisora | Gérer mon projet{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block body %}
-    {% set latest_decision = project.decisions|first %}
     <section class="pm-admin-shell">
         <div class="pm-admin-header">
             <div>
@@ -17,12 +16,12 @@
                 <p>
                     {{ project.description ?: 'Aucune description disponible.' }}
                     {% if not can_edit_project and is_project_accepted %}
-                        Ce projet est accepte : vous ne pouvez plus le modifier.
+                        Ce projet est accepté : vous ne pouvez plus le modifier.
                     {% endif %}
                 </p>
             </div>
             <div class="pm-card-actions">
-                <a class="pm-btn pm-btn-secondary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_show', {id: project.id}) }}">Voir le détail</a>
                 {% if can_edit_project %}
                     <a class="pm-btn pm-btn-primary" href="{{ path('project_edit', {id: project.id}) }}">Modifier mon projet</a>
                 {% endif %}
@@ -33,11 +32,11 @@
             <article class="pm-card">
                 <h2>Informations du projet</h2>
                 <div class="pm-meta-list pm-meta-list-vertical">
-                    <span><strong>Statut:</strong> {{ project.getStatusLabel() }}</span>
-                    <span><strong>Type:</strong> {{ project.legacyType ?: 'Non precise' }}</span>
-                    <span><strong>Budget:</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                    <span><strong>Date de creation:</strong> {{ project.startDate|date('d/m/Y') }}</span>
-                    <span><strong>Fin:</strong> {{ project.endDate|date('d/m/Y') }}</span>
+                    <span><strong>Statut :</strong> {{ project.getStatusLabel() }}</span>
+                    <span><strong>Type :</strong> {{ project.legacyType ?: 'Non précisé' }}</span>
+                    <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
+                    <span><strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
+                    <span><strong>Dernière mise à jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Non disponible' }}</span>
                 </div>
                 {% if can_delete_project %}
                     <form method="post" action="{{ path('project_delete', {id: project.id}) }}" onsubmit="return confirm('Supprimer ce projet ?');">
@@ -50,13 +49,13 @@
             <article class="pm-card">
                 {% if latest_decision %}
                     <div class="pm-current-decision">
-                        <span class="pm-badge">Decision actuelle</span>
+                        <span class="pm-badge">Décision actuelle</span>
                         <strong>{{ latest_decision.getDecisionTitleLabel() }}</strong>
                         <span>{{ latest_decision.decisionDate|date('d/m/Y') }}</span>
                         <p>{{ latest_decision.description ?: 'Aucune justification.' }}</p>
                     </div>
                 {% else %}
-                    <p class="pm-empty-text">Aucune validation associee a ce projet.</p>
+                    <p class="pm-empty-text">Aucune validation associée à ce projet.</p>
                 {% endif %}
 
                 <details class="pm-history-toggle">
@@ -70,7 +69,7 @@
                             <div class="pm-decision-item">
                                 <div class="pm-section-head">
                                     <div>
-                                        <strong>Statut: {{ decision.getDecisionTitleLabel() }}</strong>
+                                        <strong>Statut : {{ decision.getDecisionTitleLabel() }}</strong>
                                         <span>{{ decision.decisionDate|date('d/m/Y') }}</span>
                                     </div>
                                 </div>

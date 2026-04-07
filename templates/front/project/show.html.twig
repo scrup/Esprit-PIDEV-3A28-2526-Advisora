@@ -8,29 +8,31 @@
 {% endblock %}
 
 {% block body %}
-    {% set latest_decision = project.decisions|first %}
     <section class="pm-detail-shell">
         <div class="pm-detail-main">
-            <a class="pm-back-link" href="{{ path('project_index') }}">← Retour a la liste des projets</a>
+            <a class="pm-back-link" href="{{ path('project_index') }}">← Retour à la liste des projets</a>
             <div class="pm-card pm-card-large">
                 <div class="pm-card-head">
-                    <span class="pm-status pm-status-{{ project.status }}">{{ project.getStatusLabel() }}</span>
+                    <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
                     <span class="pm-meta">Projet #{{ project.id }}</span>
                 </div>
                 <h1>{{ project.title }}</h1>
                 <p>{{ project.description ?: 'Aucune description disponible.' }}</p>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-layer-group"></i> Type: {{ project.legacyType ?: 'Non precise' }}</span>
-                    <span><i class="fas fa-wallet"></i> Budget: {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non précisé' }}</span>
+                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
                 </div>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-calendar-plus"></i> Date de creation: {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
-                    <span><i class="fas fa-sitemap"></i> Decisions: {{ project.decisions|length }}</span>
+                    <span><i class="fas fa-calendar-plus"></i> Date de création : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
+                    <span><i class="fas fa-calendar-check"></i> Dernière mise à jour : {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Non disponible' }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-sitemap"></i> Décisions : {{ project.decisions|length }}</span>
                 </div>
                 {% if can_manage_project or can_manage_decisions %}
                     <div class="pm-card-actions">
                         <a class="pm-btn pm-btn-primary" href="{{ use_back_manage ? path('project_back_manage', {id: project.id}) : path('project_manage', {id: project.id}) }}">
-                            {{ use_back_manage ? 'Traiter ce projet' : 'Gerer ce projet' }}
+                            {{ use_back_manage ? 'Traiter ce projet' : 'Gérer ce projet' }}
                         </a>
                     </div>
                 {% endif %}
@@ -41,18 +43,18 @@
             <div class="pm-card">
                 {% if latest_decision %}
                     <div class="pm-current-decision">
-                        <span class="pm-badge">Decision actuelle</span>
+                        <span class="pm-badge">Décision actuelle</span>
                         <strong>{{ latest_decision.getDecisionTitleLabel() }}</strong>
                         <span>{{ latest_decision.decisionDate|date('d/m/Y') }}</span>
                         <p>{{ latest_decision.description ?: 'Sans description.' }}</p>
                     </div>
                 {% else %}
-                    <p class="pm-empty-text">Aucune decision strategique n'a encore ete enregistree.</p>
+                    <p class="pm-empty-text">Aucune décision stratégique n'a encore été enregistrée.</p>
                 {% endif %}
 
                 <details class="pm-history-toggle">
                     <summary class="pm-history-summary">
-                        <span>Afficher l'historique des decisions</span>
+                        <span>Afficher l'historique des décisions</span>
                         <span class="pm-history-count">{{ project.decisions|length }}</span>
                     </summary>
                     <div class="pm-decision-list">

@@ -169,6 +169,9 @@ class ProjectRepository extends ServiceEntityRepository
                 ->setParameter('user', $user);
         }
 
+        $qb->orderBy('d.dateDecision', 'DESC')
+            ->addOrderBy('d.idD', 'DESC');
+
         return $qb->getQuery()->getOneOrNullResult();
     }
 

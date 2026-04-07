@@ -21,7 +21,7 @@ final class DecisionController extends AbstractController
     {
         $user = $this->getCurrentUser();
         if (!$this->canManageDecisions($user)) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas creer de decision.');
+            throw $this->createAccessDeniedException('Vous ne pouvez pas créer de décision.');
         }
 
         $project = $projectRepository->findOneVisibleWithDecisions($projectId, $user, true);
@@ -33,9 +33,10 @@ final class DecisionController extends AbstractController
         $decision->setProject($project);
         $decision->setUser($user ?? $project->getUser());
         $decision->setDecisionDate(new \DateTime('today'));
+        $decision->setDecisionTitle(Decision::STATUS_PENDING);
 
         $form = $this->createForm(DecisionType::class, $decision, [
-            'submit_label' => 'Ajouter la decision',
+            'submit_label' => 'Ajouter la décision',
             'project' => $project,
         ]);
         $form->handleRequest($request);
@@ -46,13 +47,8 @@ final class DecisionController extends AbstractController
             $this->ensureProjectDefaults($project);
             $entityManager->flush();
 
-            $this->addFlash('success', 'La decision a ete ajoutee avec succes.');
+            $this->addFlash('success', 'La décision a été ajoutée avec succès.');
             $this->addFlash('info', 'Statut courant du projet : ' . $project->getStatusLabel());
-            // reload from DB to verify persistence
-            $reloaded = $entityManager->getRepository(Project::class)->find($project->getId());
-            if ($reloaded instanceof Project) {
-                $this->addFlash('debug', 'Statut persiste en DB : ' . $reloaded->getStatusLabel());
-            }
 
             return $this->redirectToRoute('project_back_manage', ['id' => $project->getId()]);
         }
@@ -61,9 +57,9 @@ final class DecisionController extends AbstractController
             'decision' => $decision,
             'project' => $project,
             'form' => $form->createView(),
-            'page_title' => 'Ajouter une decision',
-            'form_badge' => 'Nouvelle decision',
-            'form_message' => 'Cette decision sera ajoutee a l historique du projet et mettra a jour son statut courant.',
+            'page_title' => 'Ajouter une décision',
+            'form_badge' => 'Nouvelle décision',
+            'form_message' => 'Cette décision sera ajoutée à l historique du projet et mettra à jour son statut courant.',
         ]);
     }
 
@@ -72,12 +68,12 @@ final class DecisionController extends AbstractController
     {
         $user = $this->getCurrentUser();
         if (!$this->canManageDecisions($user)) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette decision.');
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette décision.');
         }
 
         $sourceDecision = $decisionRepository->find($id);
         if (!$sourceDecision instanceof Decision) {
-            throw $this->createNotFoundException('Decision introuvable.');
+            throw $this->createNotFoundException('Décision introuvable.');
         }
 
         $decision = (new Decision())
@@ -99,13 +95,8 @@ final class DecisionController extends AbstractController
             $this->ensureProjectDefaults($decision->getProject());
             $entityManager->flush();
 
-                $this->addFlash('success', 'Une nouvelle version de la decision a ete ajoutee avec succes.');
-                $this->addFlash('info', 'Statut courant du projet : ' . $decision->getProject()->getStatusLabel());
-                // reload from DB to verify persistence
-                $reloaded = $entityManager->getRepository(Project::class)->find($decision->getProject()->getId());
-                if ($reloaded instanceof Project) {
-                    $this->addFlash('debug', 'Statut persiste en DB : ' . $reloaded->getStatusLabel());
-                }
+            $this->addFlash('success', 'Une nouvelle version de la décision a été ajoutée avec succès.');
+            $this->addFlash('info', 'Statut courant du projet : ' . $decision->getProject()?->getStatusLabel());
 
             return $this->redirectToRoute('project_back_manage', ['id' => $sourceDecision->getProject()?->getId()]);
         }
@@ -114,9 +105,9 @@ final class DecisionController extends AbstractController
             'decision' => $decision,
             'project' => $sourceDecision->getProject(),
             'form' => $form->createView(),
-            'page_title' => 'Nouvelle version de decision',
-            'form_badge' => 'Historique conserve',
-            'form_message' => 'La decision existante reste visible dans l historique. Cette action ajoute une nouvelle version qui devient la decision courante du projet.',
+            'page_title' => 'Nouvelle version de décision',
+            'form_badge' => 'Historique conservé',
+            'form_message' => 'La décision existante reste visible dans l historique. Cette action ajoute une nouvelle version qui devient la décision courante du projet.',
             'source_decision' => $sourceDecision,
         ]);
     }
@@ -126,12 +117,12 @@ final class DecisionController extends AbstractController
     {
         $user = $this->getCurrentUser();
         if (!$this->canManageDecisions($user)) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette decision.');
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette décision.');
         }
 
         $decision = $decisionRepository->find($id);
         if (!$decision instanceof Decision) {
-            throw $this->createNotFoundException('Decision introuvable.');
+            throw $this->createNotFoundException('Décision introuvable.');
         }
 
         $projectId = $decision->getProject()?->getId();
@@ -141,7 +132,7 @@ final class DecisionController extends AbstractController
             $entityManager->remove($decision);
             $entityManager->flush();
             $this->recalculateProjectStatus($project, $entityManager);
-            $this->addFlash('success', 'La decision a ete supprimee avec succes.');
+            $this->addFlash('success', 'La décision a été supprimée avec succès.');
         }
 
         return $this->redirectToRoute('project_back_manage', ['id' => $projectId]);
@@ -153,11 +144,9 @@ final class DecisionController extends AbstractController
             return;
         }
 
-        $value = strtolower((string) $decision->getDecisionTitle());
-
-        $project->setStatus(match ($value) {
-            'accepted', 'accepté', 'accepte', 'accepter', 'accept', 'active' => Project::STATUS_ACCEPTED,
-            'rejected', 'refused', 'refuse', 'refuser', 'reject' => Project::STATUS_REFUSED,
+        $project->setStatus(match ($decision->getDecisionTitle()) {
+            Decision::STATUS_ACTIVE => Project::STATUS_ACCEPTED,
+            Decision::STATUS_REFUSED => Project::STATUS_REFUSED,
             default => Project::STATUS_PENDING,
         });
     }
@@ -170,10 +159,6 @@ final class DecisionController extends AbstractController
 
         if ($project->getStartDate() === null) {
             $project->setStartDate(new \DateTime('today'));
-        }
-
-        if ($project->getEndDate() === null) {
-            $project->setEndDate(clone $project->getStartDate());
         }
 
         if ($project->getAvancementProj() === null) {
@@ -195,8 +180,8 @@ final class DecisionController extends AbstractController
             ->createQueryBuilder('d')
             ->andWhere('d.project = :project')
             ->setParameter('project', $project)
-            ->orderBy('d.decisionDate', 'DESC')
-            ->addOrderBy('d.id', 'DESC')
+            ->orderBy('d.dateDecision', 'DESC')
+            ->addOrderBy('d.idD', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();

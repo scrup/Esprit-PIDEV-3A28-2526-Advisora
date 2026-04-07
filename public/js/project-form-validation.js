@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter((field) => field.name && field.type !== 'hidden' && field.type !== 'submit' && !field.disabled);
 
         fields.forEach((field) => {
-            const handler = () => validateField(field, form);
+            const handler = () => validateField(field);
             field.addEventListener('input', handler);
             field.addEventListener('change', handler);
             field.addEventListener('blur', handler);
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let isValid = true;
 
             fields.forEach((field) => {
-                if (!validateField(field, form)) {
+                if (!validateField(field)) {
                     isValid = false;
                 }
             });
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function validateField(field, form) {
+function validateField(field) {
     const messages = [];
     const value = (field.value || '').trim();
     const label = field.dataset.validationLabel || field.getAttribute('aria-label') || 'Ce champ';
@@ -40,29 +40,18 @@ function validateField(field, form) {
         if (field.type === 'number') {
             const numericValue = Number(field.value);
             if (Number.isNaN(numericValue)) {
-                messages.push(`${label} doit etre un nombre valide.`);
+                messages.push(`${label} doit être un nombre valide.`);
             }
 
             const min = field.getAttribute('min');
             if (min !== null && numericValue < Number(min)) {
-                messages.push(`${label} doit etre strictement superieur a 0.`);
+                messages.push(`${label} doit être strictement supérieur à 0.`);
             }
         }
 
         const maxLength = field.getAttribute('maxlength');
         if (maxLength && value.length > Number(maxLength)) {
-            messages.push(`${label} ne doit pas depasser ${maxLength} caracteres.`);
-        }
-    }
-
-    if (field.dataset.role === 'project-end-date') {
-        const startField = form.querySelector('[data-role="project-start-date"]');
-        if (startField && startField.value && field.value) {
-            const startDate = new Date(startField.value);
-            const endDate = new Date(field.value);
-            if (endDate < startDate) {
-                messages.push('La date de fin doit etre posterieure ou egale a la date de creation.');
-            }
+            messages.push(`${label} ne doit pas dépasser ${maxLength} caractères.`);
         }
     }
 

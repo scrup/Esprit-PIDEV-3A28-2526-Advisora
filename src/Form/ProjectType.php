@@ -4,8 +4,6 @@ namespace App\Form;
 
 use App\Entity\Project;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -14,6 +12,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\GreaterThan;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ProjectType extends AbstractType
 {
@@ -55,7 +55,7 @@ class ProjectType extends AbstractType
                     'step' => '0.01',
                     'data-validation-label' => 'Budget',
                 ],
-                'help' => 'Si vous saisissez un budget, il doit etre strictement superieur a 0.',
+                'help' => 'Si vous saisissez un budget, il doit être strictement supérieur à 0.',
                 'constraints' => [
                     new NotBlank(['message' => 'Le budget est requis.']),
                     new GreaterThan(['value' => 0, 'message' => 'Le budget doit être strictement supérieur à 0.']),
@@ -66,7 +66,7 @@ class ProjectType extends AbstractType
                 'required' => true,
                 'attr' => [
                     'rows' => 5,
-                    'placeholder' => 'Decrivez l objectif du projet, son contexte et ses priorites.',
+                    'placeholder' => 'Décrivez l objectif du projet, son contexte et ses priorités.',
                     'maxlength' => 2000,
                     'data-validation-label' => 'Description',
                 ],
@@ -75,28 +75,14 @@ class ProjectType extends AbstractType
                 ],
             ])
             ->add('startDate', DateType::class, [
-                'label' => 'Date de creation',
+                'label' => 'Date de création',
                 'required' => false,
                 'widget' => 'single_text',
                 'disabled' => true,
                 'attr' => [
-                    'data-role' => 'project-start-date',
-                    'data-validation-label' => 'Date de creation',
+                    'data-validation-label' => 'Date de création',
                 ],
-                'help' => 'Date systeme affichee automatiquement et non modifiable.',
-            ])
-            ->add('endDate', DateType::class, [
-                'label' => 'Date de lancement',
-                'required' => true,
-                'widget' => 'single_text',
-                'attr' => [
-                    'data-role' => 'project-end-date',
-                    'data-validation-label' => 'Date de lancement',
-                ],
-                'help' => 'Date de démarrage du projet.',
-                'constraints' => [
-                    new NotBlank(['message' => 'La date de lancement est requise.']),
-                ],
+                'help' => 'Date technique de création du projet, renseignée automatiquement.',
             ]);
 
         if ($options['include_status']) {
@@ -108,7 +94,7 @@ class ProjectType extends AbstractType
                 'attr' => [
                     'data-validation-label' => 'Statut',
                 ],
-                'help' => 'Etat actuel du projet dans la plateforme.',
+                'help' => 'État actuel du projet dans la plateforme.',
                 'constraints' => [
                     new NotBlank(['message' => 'Le statut du projet est requis.']),
                 ],

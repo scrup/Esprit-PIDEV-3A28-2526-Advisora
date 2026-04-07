@@ -27,12 +27,17 @@
             <div>
                 <span class="pm-badge">{{ page_badge|default('Back office') }}</span>
                 <h1>{{ page_title }}</h1>
-                <p>{{ page_message|default('Le proprietaire du projet est associe automatiquement a l utilisateur connecte.') }}</p>
+                <p>{{ page_message|default('Le propriétaire du projet est associé automatiquement à l utilisateur connecté.') }}</p>
             </div>
             <a class="pm-btn pm-btn-secondary" href="{{ project.id ? path(back_route|default('project_back_manage'), {id: project.id}) : path('project_index') }}">Retour</a>
         </div>
 
         <div class="pm-form-card">
+            <div class="pm-info-banner">
+                <strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignée à l enregistrement.' }}
+                <br>
+                <strong>Dernière mise à jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
+            </div>
             {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'project'}}) }}
                 {{ form_errors(form) }}
                 <div class="pm-form-grid">
@@ -43,7 +48,6 @@
                         {{ forms.field(form.status) }}
                     {% endif %}
                     {{ forms.field(form.startDate) }}
-                    {{ forms.field(form.endDate) }}
                 </div>
                 {{ forms.field(form.description) }}
                 <div class="pm-form-actions">

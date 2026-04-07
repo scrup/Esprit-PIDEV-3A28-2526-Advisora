@@ -27,11 +27,11 @@
             <div>
                 <span class="pm-badge">{{ form_badge|default('Validation du projet') }}</span>
                 <h1>{{ page_title }}</h1>
-                <p>{{ form_message|default('Projet cible: ' ~ project.title ~ '. Ce formulaire sert a accepter, refuser ou laisser le projet en attente.') }}</p>
+                <p>{{ form_message|default('Projet cible : ' ~ project.title ~ '. Ce formulaire sert à accepter, refuser ou laisser le projet en attente.') }}</p>
                 <div class="pm-decision-meta">
-                    <span><strong>ID du projet:</strong> #{{ project.id }}</span>
-                    <span><strong>Titre du projet:</strong> {{ project.title }}</span>
-                    <span><strong>Client:</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigne' }}</span>
+                    <span><strong>ID du projet :</strong> #{{ project.id }}</span>
+                    <span><strong>Titre du projet :</strong> {{ project.title }}</span>
+                    <span><strong>Client :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</span>
                 </div>
             </div>
             <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">Retour au projet</a>
@@ -40,8 +40,8 @@
         <div class="pm-form-card">
             {% if source_decision is defined and source_decision %}
                 <div class="pm-info-banner">
-                    <strong>Decision source:</strong> {{ source_decision.getDecisionTitleLabel() }} du {{ source_decision.decisionDate|date('d/m/Y') }}.
-                    L'historique reste conserve, cette action ajoute une nouvelle version.
+                    <strong>Décision source :</strong> {{ source_decision.getDecisionTitleLabel() }} du {{ source_decision.decisionDate|date('d/m/Y') }}.
+                    L'historique reste conservé, cette action ajoute une nouvelle version.
                 </div>
             {% endif %}
             {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'decision'}}) }}

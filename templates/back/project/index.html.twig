@@ -39,7 +39,7 @@
                 </div>
                 <div class="pm-filter-actions">
                     <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
-                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">Reinitialiser</a>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">Réinitialiser</a>
                 </div>
             </form>
         </div>
@@ -54,11 +54,11 @@
                     <h2>{{ project.title }}</h2>
                     <p>{{ project.description ?: 'Aucune description disponible.' }}</p>
                     <div class="pm-meta-list pm-meta-list-vertical">
-                        <span><strong>Type:</strong> {{ project.legacyType ?: 'Non precise' }}</span>
-                        <span><strong>Budget:</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                        <span><strong>Date de creation:</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
-                        <span><strong>Porteur:</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigne' }}</span>
-                        <span><strong>Historique des decisions:</strong> {{ project.decisions|length }}</span>
+                        <span><strong>Type :</strong> {{ project.legacyType ?: 'Non précisé' }}</span>
+                        <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
+                        <span><strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
+                        <span><strong>Porteur :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</span>
+                        <span><strong>Historique des décisions :</strong> {{ project.decisions|length }}</span>
                     </div>
                     <div class="pm-card-actions">
                         <a class="pm-btn pm-btn-primary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
@@ -76,7 +76,7 @@
             {% else %}
                 <div class="pm-empty">
                     <h2>Aucun projet ne correspond aux filtres</h2>
-                    <p>Essayez de modifier la recherche ou de reinitialiser les filtres.</p>
+                    <p>Essayez de modifier la recherche ou de réinitialiser les filtres.</p>
                 </div>
             {% endfor %}
         </section>

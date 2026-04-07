@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Decision;
 use App\Entity\Project;
 use App\Entity\User;
 use App\Form\ProjectType;
@@ -65,7 +66,7 @@ final class ProjectController extends AbstractController
     }
 
     #[Route('/projects/{id}', name: 'project_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(int $id, ProjectRepository $projectRepository): Response
+    public function show(int $id, ProjectRepository $projectRepository, DecisionRepository $decisionRepository): Response
     {
         $user = $this->getCurrentUser();
         $project = $projectRepository->findOneVisibleWithDecisions(
@@ -80,6 +81,7 @@ final class ProjectController extends AbstractController
 
         return $this->render('front/project/show.html.twig', [
             'project' => $project,
+            'latest_decision' => $decisionRepository->findLatestForProject($project),
             'can_manage_project' => $this->canManageProject($project, $user),
             'can_manage_decisions' => $this->canManageDecisions($user),
             'use_back_manage' => $this->isBackOfficeProjectUser($user),
@@ -91,19 +93,20 @@ final class ProjectController extends AbstractController
     {
         $user = $this->getCurrentUser();
         if (!$user instanceof User) {
-            throw $this->createAccessDeniedException('Vous devez etre connecte pour creer un projet.');
+            throw $this->createAccessDeniedException('Vous devez être connecté pour créer un projet.');
         }
         if (!$this->canManageProjects($user)) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas creer de projet.');
+            throw $this->createAccessDeniedException('Vous ne pouvez pas créer de projet.');
         }
 
         $project = new Project();
         $project->setUser($user);
         $project->setStatus(Project::STATUS_PENDING);
-        // default creation date to today so the form always displays it
+
         if ($project->getStartDate() === null) {
             $project->setStartDate(new \DateTime('today'));
         }
+
         $form = $this->createForm(ProjectType::class, $project, [
             'submit_label' => 'Ajouter le projet',
             'include_status' => $user->getRoleUser() === 'admin',
@@ -112,15 +115,10 @@ final class ProjectController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->normalizeProjectForPersistence($project, $user);
-
-            if ($user->getRoleUser() === 'client') {
-                $project->setStatus(Project::STATUS_PENDING);
-            }
-
             $entityManager->persist($project);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le projet a ete cree avec succes.');
+            $this->addFlash('success', 'Le projet a été créé avec succès.');
 
             return $this->redirectToRoute($this->isBackOfficeProjectUser($user) ? 'project_back_manage' : 'project_manage', ['id' => $project->getId()]);
         }
@@ -131,14 +129,14 @@ final class ProjectController extends AbstractController
             'page_title' => 'Ajouter un projet',
             'page_badge' => $this->isBackOfficeProjectUser($user) ? 'Back office' : 'Nouveau projet',
             'page_message' => $this->isBackOfficeProjectUser($user)
-                ? 'Le proprietaire du projet est associe automatiquement a l utilisateur connecte.'
-                : 'Renseignez les informations de votre projet. Il sera cree avec le statut En attente.',
+                ? 'Le propriétaire du projet est associé automatiquement à l utilisateur connecté.'
+                : 'Renseignez les informations de votre projet. Toute modification client remettra le dossier en attente de validation.',
             'back_route' => 'project_index',
         ]);
     }
 
     #[Route('/projects/{id}/manage', name: 'project_manage', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function manage(int $id, ProjectRepository $projectRepository): Response
+    public function manage(int $id, ProjectRepository $projectRepository, DecisionRepository $decisionRepository): Response
     {
         $user = $this->getCurrentUser();
         $project = $projectRepository->findOneVisibleWithDecisions(
@@ -148,15 +146,16 @@ final class ProjectController extends AbstractController
         );
 
         if (!$project instanceof Project) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas acceder a la gestion de ce projet.');
+            throw $this->createAccessDeniedException('Vous ne pouvez pas accéder à la gestion de ce projet.');
         }
 
         if (!$this->canManageProject($project, $user)) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas acceder a la gestion de ce projet.');
+            throw $this->createAccessDeniedException('Vous ne pouvez pas accéder à la gestion de ce projet.');
         }
 
         return $this->render('front/project/manage.html.twig', [
             'project' => $project,
+            'latest_decision' => $decisionRepository->findLatestForProject($project),
             'can_manage_project' => $this->canManageProject($project, $user),
             'can_edit_project' => $this->canEditProject($project, $user),
             'can_delete_project' => $this->canDeleteProject($project, $user),
@@ -175,11 +174,11 @@ final class ProjectController extends AbstractController
         );
 
         if (!$project instanceof Project) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas acceder a la gestion de ce projet.');
+            throw $this->createAccessDeniedException('Vous ne pouvez pas accéder à la gestion de ce projet.');
         }
 
         if (!$this->canAccessProjectManagement($project, $user)) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas acceder a la gestion de ce projet.');
+            throw $this->createAccessDeniedException('Vous ne pouvez pas accéder à la gestion de ce projet.');
         }
 
         return $this->render('back/project/manage.html.twig', [
@@ -212,22 +211,19 @@ final class ProjectController extends AbstractController
         }
 
         $form = $this->createForm(ProjectType::class, $project, [
-            'submit_label' => 'Mettre a jour le projet',
+            'submit_label' => 'Mettre à jour le projet',
             'include_status' => $user?->getRoleUser() === 'admin',
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->normalizeProjectForPersistence($project, $user);
-
-            if ($user?->getRoleUser() === 'client') {
-                // The client cannot alter the workflow state directly.
-                $project->setStatus($project->getStatus());
-            }
-
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le projet a ete modifie avec succes.');
+            $this->addFlash('success', 'Le projet a été modifié avec succès.');
+            if ($user?->getRoleUser() === 'client') {
+                $this->addFlash('info', 'Votre modification a remis le projet en attente de validation.');
+            }
 
             return $this->redirectToRoute($this->isBackOfficeProjectUser($user) ? 'project_back_manage' : 'project_manage', ['id' => $project->getId()]);
         }
@@ -238,8 +234,8 @@ final class ProjectController extends AbstractController
             'page_title' => 'Modifier un projet',
             'page_badge' => $this->isBackOfficeProjectUser($user) ? 'Back office' : 'Mon projet',
             'page_message' => $this->isBackOfficeProjectUser($user)
-                ? 'Mettez a jour les informations du projet et son contexte metier.'
-                : 'Mettez a jour votre projet. Son statut reste gere par la decision du gerant ou de l admin.',
+                ? 'Mettez à jour les informations du projet et son contexte métier.'
+                : 'Mettez à jour votre projet. Toute modification client remet le statut en attente de validation.',
             'back_route' => $this->isBackOfficeProjectUser($user) ? 'project_back_manage' : 'project_manage',
         ]);
     }
@@ -262,11 +258,23 @@ final class ProjectController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer ce projet.');
         }
 
-        if ($this->isCsrfTokenValid('delete_project_'.$project->getId(), (string) $request->request->get('_token'))) {
-            $entityManager->remove($project);
-            $entityManager->flush();
-            $this->addFlash('success', 'Le projet a ete supprime avec succes.');
+        if (!$this->isCsrfTokenValid('delete_project_'.$project->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Le jeton de sécurité de suppression est invalide.');
+
+            return $this->redirectToRoute($this->getProjectManagementRoute($user), ['id' => $project->getId()]);
         }
+
+        if ($this->hasBlockingProjectDependencies($project)) {
+            $this->addFlash('error', 'Ce projet ne peut pas être supprimé tant qu il possède des investissements, stratégies ou tâches associées.');
+
+            return $this->redirectToRoute($this->getProjectManagementRoute($user), ['id' => $project->getId()]);
+        }
+
+        $this->removeProjectTechnicalDependencies($project, $entityManager);
+        $entityManager->remove($project);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Le projet a été supprimé avec succès.');
 
         return $this->redirectToRoute($this->isBackOfficeProjectUser($user) ? 'back_project_index' : 'project_index');
     }
@@ -353,10 +361,6 @@ final class ProjectController extends AbstractController
             $project->setStartDate(new \DateTime('today'));
         }
 
-        if ($project->getEndDate() === null) {
-            $project->setEndDate(clone $project->getStartDate());
-        }
-
         if ($project->getTitle() === null || trim((string) $project->getTitle()) === '') {
             $project->setTitle('Projet sans titre');
         }
@@ -384,5 +388,28 @@ final class ProjectController extends AbstractController
         if ($user?->getRoleUser() === 'client') {
             $project->setStatus(Project::STATUS_PENDING);
         }
+    }
+
+    private function hasBlockingProjectDependencies(Project $project): bool
+    {
+        return !$project->getInvestments()->isEmpty()
+            || !$project->getStrategies()->isEmpty()
+            || !$project->getTasks()->isEmpty();
+    }
+
+    private function removeProjectTechnicalDependencies(Project $project, EntityManagerInterface $entityManager): void
+    {
+        foreach ($project->getDecisions()->toArray() as $decision) {
+            if ($decision instanceof Decision) {
+                $entityManager->remove($decision);
+            }
+        }
+
+        $project->getResources()->clear();
+    }
+
+    private function getProjectManagementRoute(?User $user): string
+    {
+        return $this->isBackOfficeProjectUser($user) ? 'project_back_manage' : 'project_manage';
     }
 }

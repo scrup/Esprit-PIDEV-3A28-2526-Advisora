@@ -11,12 +11,12 @@
     <section class="pm-hero">
         <div>
             <span class="pm-badge">Project Management</span>
-            <h1>Suivez les projets strategiques d'Advisora</h1>
+            <h1>Suivez les projets stratégiques d'Advisora</h1>
             <p>
                 {% if app.user and not can_see_all_projects %}
-                    Consultez uniquement vos projets et les decisions prises sur vos initiatives.
+                    Consultez uniquement vos projets et les décisions prises sur vos initiatives.
                 {% else %}
-                    Consultez l'etat des projets et les decisions prises pour chaque initiative.
+                    Consultez l'état des projets et les décisions prises pour chaque initiative.
                 {% endif %}
             </p>
         </div>
@@ -24,7 +24,7 @@
             {% if app.user and can_manage_projects %}
                 <a class="pm-btn pm-btn-primary" href="{{ path('project_new') }}">Ajouter un projet</a>
             {% elseif not app.user %}
-                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gerer</a>
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gérer</a>
             {% endif %}
         </div>
     </section>
@@ -79,23 +79,23 @@
         {% for project in projects %}
             <article class="pm-card">
                 <div class="pm-card-head">
-                    <span class="pm-status pm-status-{{ project.status }}">{{ project.getStatusLabel() }}</span>
+                    <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
                     <span class="pm-meta">Projet #{{ project.id }}</span>
                 </div>
                 <h2>{{ project.title }}</h2>
                 <p>{{ project.description ?: 'Aucune description pour ce projet.' }}</p>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-layer-group"></i> Type: {{ project.legacyType ?: 'Non precise' }}</span>
-                    <span><i class="fas fa-wallet"></i> Budget: {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                    <span><i class="fas fa-calendar-plus"></i> Creation: {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
+                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non précisé' }}</span>
+                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
+                    <span><i class="fas fa-calendar-plus"></i> Création : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
                 </div>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} decision(s)</span>
+                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} décision(s)</span>
                 </div>
                 <div class="pm-card-actions">
-                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
+                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le détail</a>
                     {% if app.user and project.user and project.user.idUser == app.user.idUser %}
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gerer</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gérer</a>
                     {% elseif app.user and can_see_all_projects %}
                         <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
                     {% endif %}
@@ -104,7 +104,7 @@
         {% else %}
             <div class="pm-empty">
                 <h2>Aucun projet pour le moment</h2>
-                <p>Commencez par creer un premier projet strategique depuis l espace projets.</p>
+                <p>Commencez par créer un premier projet stratégique depuis l espace projets.</p>
             </div>
         {% endfor %}
     </section>
