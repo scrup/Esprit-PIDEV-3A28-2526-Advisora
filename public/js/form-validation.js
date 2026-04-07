@@ -52,6 +52,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     document.querySelectorAll('form').forEach(function (form) {
+        // Skip login form and any form explicitly opted-out via data-skip-validation
+        if (form.classList.contains('pm-login-form') || form.hasAttribute('data-skip-validation')) {
+            return;
+        }
+
         const fields = Array.from(form.querySelectorAll('input, textarea, select'))
             .filter(f => f.type !== 'hidden' && !f.disabled);
 

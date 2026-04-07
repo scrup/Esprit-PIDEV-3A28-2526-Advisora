@@ -29,6 +29,52 @@
         </div>
     </section>
 
+    <section class="pm-hero">
+        <form method="get" action="{{ path('project_index') }}" class="pm-form-card">
+            <div class="pm-filter-grid">
+                <div class="pm-field">
+                    <label for="filter_q">Recherche</label>
+                    <input id="filter_q" type="search" name="q" placeholder="Titre, description, type, statut ou ID..." value="{{ filters.q|default('') }}">
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_status">Statut</label>
+                    <select id="filter_status" name="status">
+                        <option value="">Tous</option>
+                        {% for status_value, status_label in status_choices %}
+                            <option value="{{ status_value }}" {% if filters.status is defined and filters.status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_type">Type</label>
+                    <select id="filter_type" name="type">
+                        <option value="">Tous</option>
+                        {% for project_type in type_choices %}
+                            <option value="{{ project_type }}" {% if filters.type is defined and filters.type == project_type %}selected{% endif %}>{{ project_type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_min_price">Budget min</label>
+                    <input id="filter_min_price" type="number" step="0.01" name="min_price" placeholder="Min" value="{{ filters.min_price|default('') }}">
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_max_price">Budget max</label>
+                    <input id="filter_max_price" type="number" step="0.01" name="max_price" placeholder="Max" value="{{ filters.max_price|default('') }}">
+                </div>
+            </div>
+
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Réinitialiser</a>
+            </div>
+        </form>
+    </section>
+
     <section class="pm-grid">
         {% for project in projects %}
             <article class="pm-card">

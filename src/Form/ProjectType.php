@@ -117,6 +117,9 @@ class ProjectType extends AbstractType
 
         $builder->add('save', SubmitType::class, [
             'label' => $options['submit_label'],
+            'attr' => [
+                'class' => 'pm-btn pm-btn-primary',
+            ],
         ]);
     }
 

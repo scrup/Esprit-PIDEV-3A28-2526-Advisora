@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="0911bbff-44c6-4bbf-8f35-83a464472489" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/config/bundles.php" beforeDir="false" afterPath="$PROJECT_DIR$/config/bundles.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/packages/doctrine.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/packages/doctrine.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/reference.php" beforeDir="false" afterPath="$PROJECT_DIR$/config/reference.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/css/front.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/front.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/form-validation.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/form-validation.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Controller/ProjectController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/ProjectController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Booking.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Booking.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Cataloguefournisseur.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Cataloguefournisseur.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Event.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Event.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Investment.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Investment.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Project.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Project.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Resource.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Resource.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/ResourceMarketDelivery.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/ResourceMarketDelivery.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/ResourceMarketListing.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/ResourceMarketListing.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/ResourceMarketOrder.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/ResourceMarketOrder.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/ResourceWalletAccount.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/ResourceWalletAccount.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/ResourceWalletTopup.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/ResourceWalletTopup.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/ResourceWalletTxn.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/ResourceWalletTxn.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Strategie.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Strategie.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/Transaction.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/Transaction.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Entity/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Entity/User.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Form/DecisionType.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Form/DecisionType.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Form/ProjectType.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Form/ProjectType.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Kernel.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Kernel.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Repository/DecisionRepository.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Repository/DecisionRepository.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Repository/ProjectRepository.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Repository/ProjectRepository.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/back/back.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/back/back.html.twig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/front.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/front.html.twig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/front/header.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/front/header.html.twig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/front/project/index.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/front/project/index.html.twig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/security/login.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/security/login.html.twig" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 8
+}]]></component>
+  <component name="ProjectId" id="3C2etsitA1vl6utdiZHcPXy6uQp" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "gestion__projets",
+    "junie.onboarding.icon.badge.shown": "true",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.30387.90" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.30387.90" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="0911bbff-44c6-4bbf-8f35-83a464472489" name="Changes" comment="" />
+      <created>1775588310631</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1775588310631</updated>
+      <workItem from="1775588312822" duration="19000" />
+    </task>
+    <servers />
+  </component>
+</project>

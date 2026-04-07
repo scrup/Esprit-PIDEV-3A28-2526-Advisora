@@ -11,11 +11,22 @@ use App\Repository\ProjectRepository;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\Table(name: 'projects')]
+#[ORM\HasLifecycleCallbacks]
 class Project
 {
+    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_ACCEPTED = 'ACCEPTED';
+    public const STATUS_REFUSED = 'REFUSED';
+
+    public const STATUSES = [
+        self::STATUS_PENDING => 'En attente',
+        self::STATUS_ACCEPTED => 'Accepté',
+        self::STATUS_REFUSED => 'Refusé',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idProj', type: 'integer')]
     private ?int $idProj = null;
 
     public function getIdProj(): ?int
@@ -57,7 +68,7 @@ class Project
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $budgetProj = null;
 
     public function getBudgetProj(): ?float
@@ -113,6 +124,30 @@ class Project
         return $this;
     }
 
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        $now = new \DateTime();
+        if ($this->createdAtProj === null) {
+            $this->createdAtProj = $now;
+        }
+        if ($this->updatedAtProj === null) {
+            $this->updatedAtProj = clone $now;
+        }
+        if ($this->avancementProj === null) {
+            $this->avancementProj = 0.0;
+        }
+        if ($this->stateProj === null || $this->stateProj === '') {
+            $this->stateProj = self::STATUS_PENDING;
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updatedAtProj = new \DateTime();
+    }
+
     #[ORM\Column(type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $updatedAtProj = null;
 
@@ -127,7 +162,7 @@ class Project
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $avancementProj = null;
 
     public function getAvancementProj(): ?float
@@ -298,6 +333,102 @@ class Project
             $this->resources = new ArrayCollection();
         }
         return $this->resources;
+    }
+
+    // Compatibility getters used by templates and controllers
+    public function getId(): ?int
+    {
+        return $this->idProj;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->titleProj;
+    }
+
+    public function setTitle(string $title): self
+    {
+        $this->titleProj = $title;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->descriptionProj;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->descriptionProj = $description;
+        return $this;
+    }
+
+    public function getLegacyBudget(): ?float
+    {
+        return $this->budgetProj;
+    }
+
+    public function setLegacyBudget(float $budget): self
+    {
+        $this->budgetProj = $budget;
+        return $this;
+    }
+
+    public function getLegacyType(): ?string
+    {
+        return $this->typeProj;
+    }
+
+    public function setLegacyType(?string $type): self
+    {
+        $this->typeProj = $type;
+        return $this;
+    }
+
+    public function getStartDate(): ?\DateTimeInterface
+    {
+        if ($this->createdAtProj !== null) {
+            return $this->createdAtProj;
+        }
+
+        if ($this->updatedAtProj !== null) {
+            return $this->updatedAtProj;
+        }
+
+        return new \DateTime('today');
+    }
+
+    public function setStartDate(\DateTimeInterface $dt): self
+    {
+        $this->createdAtProj = $dt;
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTimeInterface
+    {
+        return $this->updatedAtProj;
+    }
+
+    public function setEndDate(\DateTimeInterface $dt): self
+    {
+        $this->updatedAtProj = $dt;
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->stateProj;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->stateProj = $status;
+        return $this;
+    }
+
+    public function getStatusLabel(): string
+    {
+        return self::STATUSES[$this->getStatus()] ?? ($this->getStatus() ?? 'N/A');
     }
 
     public function addResource(Resource $resource): self

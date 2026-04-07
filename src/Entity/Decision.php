@@ -29,6 +29,12 @@ class Decision
         return $this;
     }
 
+    // Alias for compatibility with form/controller naming
+    public function getId(): ?int
+    {
+        return $this->idD;
+    }
+
     #[ORM\Column(type: 'string', nullable: false)]
     private ?string $StatutD = null;
 
@@ -40,6 +46,18 @@ class Decision
     public function setStatutD(string $StatutD): self
     {
         $this->StatutD = $StatutD;
+        return $this;
+    }
+
+    // Form / controller expect these names
+    public function getDecisionTitle(): ?string
+    {
+        return $this->StatutD;
+    }
+
+    public function setDecisionTitle(string $decisionTitle): self
+    {
+        $this->StatutD = $decisionTitle;
         return $this;
     }
 
@@ -57,6 +75,18 @@ class Decision
         return $this;
     }
 
+    // Alias names used by form and controller
+    public function getDescription(): ?string
+    {
+        return $this->descriptionD;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->descriptionD = $description;
+        return $this;
+    }
+
     #[ORM\Column(type: 'date', nullable: false)]
     private ?\DateTimeInterface $dateDecision = null;
 
@@ -69,6 +99,34 @@ class Decision
     {
         $this->dateDecision = $dateDecision;
         return $this;
+    }
+
+    // Alias names
+    public function getDecisionDate(): ?\DateTimeInterface
+    {
+        return $this->dateDecision;
+    }
+
+    public function setDecisionDate(\DateTimeInterface $decisionDate): self
+    {
+        $this->dateDecision = $decisionDate;
+        return $this;
+    }
+
+    /**
+     * Human readable label for the decision title/status used in templates.
+     */
+    public function getDecisionTitleLabel(): string
+    {
+        $value = (string) ($this->getDecisionTitle() ?? '');
+        $v = strtolower($value);
+
+        return match ($v) {
+            'pending', 'p', 'en attente' => 'En attente',
+            'accepted', 'accepté', 'accepte', 'accepter', 'accept' => 'Accepté',
+            'rejected', 'refused', 'refuse', 'refuser', 'reject' => 'Refusé',
+            default => $value,
+        };
     }
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'decisions')]

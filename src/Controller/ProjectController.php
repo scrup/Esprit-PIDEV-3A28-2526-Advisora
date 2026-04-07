@@ -16,15 +16,28 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ProjectController extends AbstractController
 {
     #[Route('/projects', name: 'project_index', methods: ['GET'])]
-    public function index(ProjectRepository $projectRepository): Response
+    public function index(Request $request, ProjectRepository $projectRepository): Response
     {
         $user = $this->getCurrentUser();
         $canSeeAll = $this->canSeeAllProjects($user);
 
+        $filters = [
+            'q' => trim((string) $request->query->get('q', '')),
+            'status' => trim((string) $request->query->get('status', '')),
+            'type' => trim((string) $request->query->get('type', '')),
+            'min_price' => $request->query->get('min_price', null),
+            'max_price' => $request->query->get('max_price', null),
+        ];
+
+        $projects = $projectRepository->findFrontProjects($filters, $user, $canSeeAll);
+
         return $this->render('front/project/index.html.twig', [
-            'projects' => $canSeeAll ? $projectRepository->findAllOrdered() : ($user ? $projectRepository->findByOwnerOrdered($user) : []),
+            'projects' => $projects,
             'can_manage_projects' => $this->canManageProjects($user),
             'can_see_all_projects' => $canSeeAll,
+            'filters' => $filters,
+            'status_choices' => Project::STATUSES,
+            'type_choices' => $projectRepository->findDistinctFrontTypes($user, $canSeeAll),
         ]);
     }
 
@@ -87,6 +100,10 @@ final class ProjectController extends AbstractController
         $project = new Project();
         $project->setUser($user);
         $project->setStatus(Project::STATUS_PENDING);
+        // default creation date to today so the form always displays it
+        if ($project->getStartDate() === null) {
+            $project->setStartDate(new \DateTime('today'));
+        }
         $form = $this->createForm(ProjectType::class, $project, [
             'submit_label' => 'Ajouter le projet',
             'include_status' => $user->getRoleUser() === 'admin',
@@ -354,6 +371,10 @@ final class ProjectController extends AbstractController
 
         if ($project->getLegacyBudget() === null) {
             $project->setLegacyBudget(0.01);
+        }
+
+        if ($project->getAvancementProj() === null) {
+            $project->setAvancementProj(0.0);
         }
 
         if ($project->getStatus() === null || $project->getStatus() === '') {

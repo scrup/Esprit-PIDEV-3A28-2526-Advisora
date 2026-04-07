@@ -14,7 +14,7 @@ class Cataloguefournisseur
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idFr', type: 'integer')]
     private ?int $idFr = null;
 
     public function getIdFr(): ?int

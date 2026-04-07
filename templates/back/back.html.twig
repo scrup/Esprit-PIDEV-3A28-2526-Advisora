@@ -103,11 +103,11 @@
                             <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: decision.project.id}) }}">
                                 <div>
                                     <strong>{{ decision.project.title }}</strong>
-                                    <p>{{ decision.description ?: 'Sans justification detaillee.' }}</p>
+                                    <p>{{ decision.descriptionD ?: 'Sans justification detaillee.' }}</p>
                                 </div>
                                 <div class="dashboard-list-meta">
-                                    <span class="pm-status pm-status-{{ decision.project.status|lower }}">{{ decision.getDecisionTitleLabel() }}</span>
-                                    <span>{{ decision.decisionDate|date('d/m/Y') }}</span>
+                                    <span class="pm-status pm-status-{{ decision.project.status|lower }}">{{ decision.statutD ?: 'Decision' }}</span>
+                                    <span>{{ decision.dateDecision ? decision.dateDecision|date('d/m/Y') : '' }}</span>
                                 </div>
                             </a>
                         {% else %}

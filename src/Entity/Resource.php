@@ -15,7 +15,7 @@ class Resource
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idRs', type: 'integer')]
     private ?int $idRs = null;
 
     public function getIdRs(): ?int
@@ -71,7 +71,7 @@ class Resource
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $prixRs = null;
 
     public function getPrixRs(): ?float
@@ -142,16 +142,7 @@ class Resource
         return $this;
     }
 
-    #[ORM\ManyToMany(targetEntity: Project::class, inversedBy: 'resources')]
-    #[ORM\JoinTable(
-        name: 'project_resources',
-        joinColumns: [
-            new ORM\JoinColumn(name: 'idRs', referencedColumnName: 'idRs')
-        ],
-        inverseJoinColumns: [
-            new ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj')
-        ]
-    )]
+    #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'resources')]
     private Collection $projects;
 
     public function __construct()

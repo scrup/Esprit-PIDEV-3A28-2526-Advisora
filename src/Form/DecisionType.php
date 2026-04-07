@@ -12,15 +12,45 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+
 class DecisionType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $project = $options['project'] ?? null;
+
+        if ($project) {
+            $client = $project->getUser()?->getPrenomUser() . ' ' . $project->getUser()?->getNomUser();
+
+            $builder
+                ->add('projectId', HiddenType::class, [
+                    'mapped' => false,
+                    'data' => (string) $project->getIdProj(),
+                ])
+                ->add('projectTitle', TextType::class, [
+                    'mapped' => false,
+                    'label' => 'Projet',
+                    'data' => (string) $project->getTitleProj(),
+                    'disabled' => true,
+                ])
+                ->add('projectClient', TextType::class, [
+                    'mapped' => false,
+                    'label' => 'Client',
+                    'data' => trim((string) $client),
+                    'disabled' => true,
+                ]);
+        }
         $builder
             ->add('decisionTitle', ChoiceType::class, [
                 'label' => 'Statut de la decision',
                 'required' => true,
-                'choices' => Decision::statusChoicesForForm(),
+                'choices' => [
+                    'En attente' => 'pending',
+                    'Accepté' => 'accepted',
+                    'Refusé' => 'rejected',
+                ],
                 'placeholder' => 'Choisir une decision',
                 'attr' => [
                     'data-validation-label' => 'Statut de la decision',
@@ -54,6 +84,9 @@ class DecisionType extends AbstractType
             ])
             ->add('save', SubmitType::class, [
                 'label' => $options['submit_label'],
+                'attr' => [
+                    'class' => 'pm-btn pm-btn-primary',
+                ],
             ]);
     }
 
@@ -62,8 +95,10 @@ class DecisionType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Decision::class,
             'submit_label' => 'Enregistrer la decision',
+            'project' => null,
         ]);
 
         $resolver->setAllowedTypes('submit_label', 'string');
+        $resolver->setAllowedTypes('project', ['null', 'App\\Entity\\Project']);
     }
 }

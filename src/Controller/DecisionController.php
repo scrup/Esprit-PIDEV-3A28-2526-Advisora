@@ -24,7 +24,7 @@ final class DecisionController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez pas creer de decision.');
         }
 
-        $project = $projectRepository->findOneWithDecisions($projectId);
+        $project = $projectRepository->findOneVisibleWithDecisions($projectId, $user, true);
         if (!$project instanceof Project) {
             throw $this->createNotFoundException('Projet introuvable.');
         }
@@ -32,18 +32,27 @@ final class DecisionController extends AbstractController
         $decision = new Decision();
         $decision->setProject($project);
         $decision->setUser($user ?? $project->getUser());
+        $decision->setDecisionDate(new \DateTime('today'));
 
         $form = $this->createForm(DecisionType::class, $decision, [
             'submit_label' => 'Ajouter la decision',
+            'project' => $project,
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->syncProjectStatusFromDecision($project, $decision);
             $entityManager->persist($decision);
+            $this->ensureProjectDefaults($project);
             $entityManager->flush();
 
             $this->addFlash('success', 'La decision a ete ajoutee avec succes.');
+            $this->addFlash('info', 'Statut courant du projet : ' . $project->getStatusLabel());
+            // reload from DB to verify persistence
+            $reloaded = $entityManager->getRepository(Project::class)->find($project->getId());
+            if ($reloaded instanceof Project) {
+                $this->addFlash('debug', 'Statut persiste en DB : ' . $reloaded->getStatusLabel());
+            }
 
             return $this->redirectToRoute('project_back_manage', ['id' => $project->getId()]);
         }
@@ -80,15 +89,23 @@ final class DecisionController extends AbstractController
 
         $form = $this->createForm(DecisionType::class, $decision, [
             'submit_label' => 'Ajouter cette nouvelle version',
+            'project' => $sourceDecision->getProject(),
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->syncProjectStatusFromDecision($decision->getProject(), $decision);
             $entityManager->persist($decision);
+            $this->ensureProjectDefaults($decision->getProject());
             $entityManager->flush();
 
-            $this->addFlash('success', 'Une nouvelle version de la decision a ete ajoutee avec succes.');
+                $this->addFlash('success', 'Une nouvelle version de la decision a ete ajoutee avec succes.');
+                $this->addFlash('info', 'Statut courant du projet : ' . $decision->getProject()->getStatusLabel());
+                // reload from DB to verify persistence
+                $reloaded = $entityManager->getRepository(Project::class)->find($decision->getProject()->getId());
+                if ($reloaded instanceof Project) {
+                    $this->addFlash('debug', 'Statut persiste en DB : ' . $reloaded->getStatusLabel());
+                }
 
             return $this->redirectToRoute('project_back_manage', ['id' => $sourceDecision->getProject()?->getId()]);
         }
@@ -136,11 +153,36 @@ final class DecisionController extends AbstractController
             return;
         }
 
-        $project->setStatus(match ($decision->getDecisionTitle()) {
-            'active' => Project::STATUS_ACCEPTED,
-            'refused' => Project::STATUS_REFUSED,
+        $value = strtolower((string) $decision->getDecisionTitle());
+
+        $project->setStatus(match ($value) {
+            'accepted', 'accepté', 'accepte', 'accepter', 'accept', 'active' => Project::STATUS_ACCEPTED,
+            'rejected', 'refused', 'refuse', 'refuser', 'reject' => Project::STATUS_REFUSED,
             default => Project::STATUS_PENDING,
         });
+    }
+
+    private function ensureProjectDefaults(?Project $project): void
+    {
+        if (!$project instanceof Project) {
+            return;
+        }
+
+        if ($project->getStartDate() === null) {
+            $project->setStartDate(new \DateTime('today'));
+        }
+
+        if ($project->getEndDate() === null) {
+            $project->setEndDate(clone $project->getStartDate());
+        }
+
+        if ($project->getAvancementProj() === null) {
+            $project->setAvancementProj(0.0);
+        }
+
+        if ($project->getStatus() === null || $project->getStatus() === '') {
+            $project->setStatus(Project::STATUS_PENDING);
+        }
     }
 
     private function recalculateProjectStatus(?Project $project, EntityManagerInterface $entityManager): void
@@ -165,6 +207,7 @@ final class DecisionController extends AbstractController
             $project->setStatus(Project::STATUS_PENDING);
         }
 
+        $this->ensureProjectDefaults($project);
         $entityManager->flush();
     }
 
