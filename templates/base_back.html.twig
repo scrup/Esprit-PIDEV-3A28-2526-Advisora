@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Advisora Back Office{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/back-base.css') }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+<header class="back-header">
+    <div class="logo">
+        <img src="{{ asset('assets/logo.png') }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
+        Advisora
+    </div>
+    <nav class="back-nav">
+        <a href="{{ path('app_back') }}" class="{% if app.request.get('_route') == 'app_back' %}active{% endif %}"><i class="fas fa-home"></i> Accueil</a>
+        <a href="{{ path('back_project_index') }}" class="{% if app.request.get('_route') == 'back_project_index' or app.request.get('_route') == 'project_back_manage' or app.request.get('_route') == 'project_edit' or app.request.get('_route') starts with 'decision_' %}active{% endif %}"><i class="fas fa-folder-open"></i> Projets</a>
+        <a href="{{ path('project_index') }}" class="{% if app.request.get('_route') == 'project_index' or app.request.get('_route') == 'project_show' %}active{% endif %}"><i class="fas fa-eye"></i> Front projets</a>
+        <a href="#"><i class="fas fa-chart-line"></i> Strategies</a>
+        <a href="#"><i class="fas fa-book"></i> Ressources</a>
+        <a href="#"><i class="fas fa-calendar-alt"></i> Evenements</a>
+        <a href="#"><i class="fas fa-chart-simple"></i> Investissements</a>
+        <a href="#"><i class="fas fa-user"></i> Profil</a>
+    </nav>
+    <div class="header-actions">
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
+        </div>
+        {% if app.user %}
+            <form method="post" action="{{ path('app_logout') }}" class="logout-form-inline">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                <button type="submit" class="btn-logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Deconnecter</span>
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</header>
+
+<main>
+    {% for message in app.flashes('success') %}
+        <div class="flash-message flash-success back-flash">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="flash-message flash-error back-flash">{{ message }}</div>
+    {% endfor %}
+    {% block body %}{% endblock %}
+</main>
+
+{% block javascripts %}
+    <script src="{{ asset('js/form-validation.js') }}"></script>
+{% endblock %}
+</body>
+</html>

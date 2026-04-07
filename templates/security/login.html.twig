@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Connexion{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-login-shell">
+        <div class="pm-login-card">
+            <span class="pm-badge">Authentification</span>
+            <h1>Connexion au back office</h1>
+            <p>Connecte-toi pour gerer les projets et les decisions strategiques.</p>
+
+            {% if error %}
+                <div class="flash-message flash-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <form method="post" class="pm-login-form">
+                <label for="username">Email ou identifiant</label>
+                <input type="text" id="username" name="_username" value="{{ last_username }}" autocomplete="username" required>
+
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="_password" autocomplete="current-password" required>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button class="pm-btn pm-btn-primary pm-btn-block" type="submit">Se connecter</button>
+            </form>
+        </div>
+    </section>
+{% endblock %}
