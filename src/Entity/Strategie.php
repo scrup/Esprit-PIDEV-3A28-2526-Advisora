@@ -15,7 +15,7 @@ class Strategie
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idStrategie', type: 'integer')]
     private ?int $idStrategie = null;
 
     public function getIdStrategie(): ?int
@@ -157,7 +157,7 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $budgetTotal = null;
 
     public function getBudgetTotal(): ?float
@@ -171,7 +171,7 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $gainEstime = null;
 
     public function getGainEstime(): ?float

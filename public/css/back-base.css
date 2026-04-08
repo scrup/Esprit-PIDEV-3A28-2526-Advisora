@@ -138,6 +138,10 @@ body {
     color: white;
 }
 
+.logout-form-inline {
+    margin: 0;
+}
+
 /* Main container */
 main {
     padding: 20px 5% 40px;

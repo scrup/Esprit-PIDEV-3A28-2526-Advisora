@@ -5,276 +5,122 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/back-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
 {% endblock %}
 
 {% block body %}
-<div class="dashboard-container">
-    <!-- Welcome Header -->
-    <div class="dashboard-header">
-        <div class="welcome-section">
-            <h1>Bonjour, Thomas <span class="wave">👋</span></h1>
-            <p>Voici ce qui se passe avec vos projets aujourd'hui</p>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="welcome-section">
+                <h1>Bonjour, {{ app.user ? app.user.getPrenomUser() : 'Équipe' }}</h1>
+                <p>Voici la situation actuelle des projets et des décisions du module de gestion.</p>
+            </div>
+            <div class="date-badge">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="currentDate"></span>
+            </div>
         </div>
-        <div class="date-badge">
-            <i class="fas fa-calendar-alt"></i>
-            <span id="currentDate"></span>
-        </div>
-    </div>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
-            <div class="stat-info">
-                <h3>Projets actifs</h3>
-                <div class="stat-value"><span class="counter" data-target="12">0</span></div>
-                <span class="stat-trend"><i class="fas fa-arrow-up"></i> +2 ce mois</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-            <div class="stat-info">
-                <h3>Taux de succès</h3>
-                <div class="stat-value"><span class="counter" data-target="85">0</span><span>%</span></div>
-                <span class="stat-trend"><i class="fas fa-arrow-up"></i> 17 acceptées / 3 refusées</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-coins"></i></div>
-            <div class="stat-info">
-                <h3>Investissement total</h3>
-                <div class="stat-value"><span class="counter" data-target="2400000">0</span><span> DT</span></div>
-                <span class="stat-trend"><i class="fas fa-chart-simple"></i> +12% croissance</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
-            <div class="stat-info">
-                <h3>ROI moyen</h3>
-                <div class="stat-value"><span class="counter" data-target="24">0</span><span>%</span></div>
-                <span class="stat-trend"><i class="fas fa-arrow-up"></i> +5% vs trimestre dernier</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Performance Stratégique + Répartition des investissements (Left Column) -->
-<!-- Performance Stratégique + Répartition des investissements (Left Column) -->
-<div class="two-columns">
-    <div>
-        <!-- Performance Stratégique Chart -->
-        <div class="card-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-chart-line"></i> Performance stratégique</h3>
-                <div class="chart-controls">
-                    <select id="strategyPeriod" class="period-select">
-                        <option value="6">6 mois</option>
-                        <option value="12" selected>12 mois</option>
-                    </select>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+                <div class="stat-info">
+                    <h3>Total projets</h3>
+                    <div class="stat-value">{{ total_projects }}</div>
+                    <span class="stat-trend">Tous les projets du module</span>
                 </div>
             </div>
-            <div class="compact-chart-container">
-                <canvas id="strategyPerformanceChart"></canvas>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <h3>Projets en attente</h3>
+                    <div class="stat-value">{{ pending_projects }}</div>
+                    <span class="stat-trend">À traiter par le back office</span>
+                </div>
             </div>
-            <div class="compact-chart-stats">
-                <div class="compact-stat">
-                    <span class="stat-label">Taux d'acceptation</span>
-                    <span class="stat-value" id="acceptanceRate">85%</span>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3>Projets acceptés</h3>
+                    <div class="stat-value">{{ accepted_projects }}</div>
+                    <span class="stat-trend">Validés par décision récente</span>
                 </div>
-                <div class="compact-stat">
-                    <span class="stat-label">Meilleur mois</span>
-                    <span class="stat-value" id="bestMonth">Avril</span>
-                </div>
-                <div class="compact-stat">
-                    <span class="stat-label">Progression</span>
-                    <span class="stat-value positive">+12%</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-gavel"></i></div>
+                <div class="stat-info">
+                    <h3>Décisions</h3>
+                    <div class="stat-value">{{ total_decisions }}</div>
+                    <span class="stat-trend">{{ refused_projects }} projets refusés</span>
                 </div>
             </div>
         </div>
 
-        <!-- Répartition des investissements -->
-        <div class="card-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-chart-pie"></i> Répartition des investissements</h3>
-                <a href="#" class="view-link">Détails</a>
-            </div>
-            <div class="investment-breakdown">
-                <div class="investment-chart">
-                    <canvas id="investmentChart" width="120" height="120"></canvas>
-                </div>
-                <div class="investment-legend">
-                    <div>
-                        <span class="legend-color" style="background: var(--primary-terracotta);"></span>
-                        <span>Actions</span>
-                        <strong style="margin-left: auto;">45%</strong>
+        <div class="two-columns">
+            <div>
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-clock"></i> Derniers projets soumis</h3>
+                        <a href="{{ path('back_project_index') }}" class="view-link">Voir tous</a>
                     </div>
-                    <div>
-                        <span class="legend-color" style="background: var(--sage-green);"></span>
-                        <span>Obligations</span>
-                        <strong style="margin-left: auto;">25%</strong>
-                    </div>
-                    <div>
-                        <span class="legend-color" style="background: var(--warm-beige);"></span>
-                        <span>Immobilier</span>
-                        <strong style="margin-left: auto;">20%</strong>
-                    </div>
-                    <div>
-                        <span class="legend-color" style="background: #A56143;"></span>
-                        <span>Crypto</span>
-                        <strong style="margin-left: auto;">10%</strong>
+                    <div class="dashboard-list">
+                        {% for project in latest_projects %}
+                            <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: project.id}) }}">
+                                <div>
+                                    <strong>{{ project.title }}</strong>
+                                    <p>{{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</p>
+                                </div>
+                                <div class="dashboard-list-meta">
+                                    <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
+                                    <span>{{ project.startDate ? project.startDate|date('d/m/Y') : '' }}</span>
+                                </div>
+                            </a>
+                        {% else %}
+                            <p class="dashboard-empty">Aucun projet disponible.</p>
+                        {% endfor %}
                     </div>
                 </div>
-            </div>
-            <div class="investment-footer">
-                <i class="fas fa-chart-line"></i> Performance: <strong class="positive">+15.3%</strong>
-            </div>
-        </div>
-    </div>
 
-    <!-- Right Column: Aperçu des projets + Événements à venir -->
-    <div>
-        <!-- Aperçu des projets -->
-        <div class="card-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-rocket"></i> Aperçu des projets</h3>
-                <a href="#" class="view-link">Voir tous</a>
-            </div>
-            <div class="insight-list">
-                <div class="insight-item">
-                    <span class="project-name">Plateforme e-commerce</span>
-                    <div class="progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 80%"></div>
-                        </div>
-                        <span class="progress-percent">80%</span>
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-sliders-h"></i> Actions rapides</h3>
                     </div>
-                </div>
-                <div class="insight-item">
-                    <span class="project-name">Application mobile</span>
-                    <div class="progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 40%"></div>
-                        </div>
-                        <span class="progress-percent">40%</span>
-                    </div>
-                </div>
-                <div class="insight-item">
-                    <span class="project-name">Intégration IA</span>
-                    <div class="progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 20%"></div>
-                        </div>
-                        <span class="progress-percent">20%</span>
-                    </div>
-                </div>
-                <div class="insight-item">
-                    <span class="project-name">Dashboard financier</span>
-                    <div class="progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 60%"></div>
-                        </div>
-                        <span class="progress-percent">60%</span>
+                    <div class="quick-actions quick-actions-start">
+                        <a href="{{ path('back_project_index') }}" class="action-btn"><i class="fas fa-folder-open"></i> Gérer les projets</a>
+                        <a href="{{ path('project_index') }}" class="action-btn"><i class="fas fa-eye"></i> Voir le front</a>
                     </div>
                 </div>
             </div>
-            <div class="insight-footer">
-                <i class="fas fa-chart-pie"></i> Avancement global: <strong>50%</strong> · 4 projets actifs
-                <div class="project-timeline">
-                    <span><i class="fas fa-calendar-check"></i> Échéance: 15 mai</span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Événements à venir (Moved to Right Column) -->
-        <div class="card-panel">
-            <div class="panel-header">
-                <h3><i class="fas fa-calendar-alt"></i> Événements à venir</h3>
-                <a href="#" class="view-link">Voir tout</a>
-            </div>
-            <div class="events-list">
-                <div class="event-item">
-                    <div class="event-date">
-                        <span>15</span>
-                        <span>AVR</span>
+            <div>
+                <div class="card-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-history"></i> Dernières décisions</h3>
+                        <a href="{{ path('back_project_index') }}" class="view-link">Accéder aux projets</a>
                     </div>
-                    <div class="event-info">
-                        <strong>Webinaire: Stratégies d'investissement 2025</strong>
-                        <p>15h00 - En ligne</p>
+                    <div class="dashboard-list">
+                        {% for decision in latest_decisions %}
+                            <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: decision.project.id}) }}">
+                                <div>
+                                    <strong>{{ decision.project.title }}</strong>
+                                    <p>{{ decision.descriptionD ?: 'Sans justification détaillée.' }}</p>
+                                </div>
+                                <div class="dashboard-list-meta">
+                                    <span class="pm-status pm-status-{{ decision.project.status|lower }}">{{ decision.getDecisionTitleLabel() ?: 'Décision' }}</span>
+                                    <span>{{ decision.dateDecision ? decision.dateDecision|date('d/m/Y') : '' }}</span>
+                                </div>
+                            </a>
+                        {% else %}
+                            <p class="dashboard-empty">Aucune décision enregistrée.</p>
+                        {% endfor %}
                     </div>
-                    <button class="event-btn">S'inscrire</button>
-                </div>
-                <div class="event-item">
-                    <div class="event-date">
-                        <span>22</span>
-                        <span>AVR</span>
-                    </div>
-                    <div class="event-info">
-                        <strong>Atelier: Optimisation fiscale</strong>
-                        <p>09h00 - Tunis</p>
-                    </div>
-                    <button class="event-btn">S'inscrire</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Full-Width: Ressources récentes (Moved to Bottom) -->
-<div class="full-width-card">
-    <div class="panel-header">
-        <h3><i class="fas fa-book-open"></i> Ressources récentes</h3>
-        <a href="#" class="view-link">Voir tout</a>
-    </div>
-    <div class="resources-list">
-        <div class="resource-item">
-            <div class="resource-icon">
-                <i class="fas fa-file-pdf"></i>
-            </div>
-            <div class="resource-info">
-                <strong>Guide investissement 2025</strong>
-                <p>PDF · 2.4 MB</p>
-            </div>
-            <button class="resource-btn">
-                <i class="fas fa-download"></i>
-            </button>
-        </div>
-        <div class="resource-item">
-            <div class="resource-icon">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="resource-info">
-                <strong>Rapport trimestriel Q1</strong>
-                <p>Excel · 1.8 MB</p>
-            </div>
-            <button class="resource-btn">
-                <i class="fas fa-download"></i>
-            </button>
-        </div>
-        <div class="resource-item">
-            <div class="resource-icon">
-                <i class="fas fa-video"></i>
-            </div>
-            <div class="resource-info">
-                <strong>Enregistrement webinaire</strong>
-                <p>MP4 · 500 MB</p>
-            </div>
-            <button class="resource-btn">
-                <i class="fas fa-download"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <button class="action-btn"><i class="fas fa-plus"></i> Nouveau projet</button>
-        <button class="action-btn"><i class="fas fa-chart-line"></i> Générer rapport</button>
-        <button class="action-btn"><i class="fas fa-calendar-plus"></i> Planifier réunion</button>
-        <button class="action-btn"><i class="fas fa-download"></i> Exporter données</button>
-    </div>
-</div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ asset('js/back-dashboard.js') }}"></script>
 {% endblock %}

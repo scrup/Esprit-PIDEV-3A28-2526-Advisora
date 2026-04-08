@@ -29,7 +29,7 @@ class ResourceWalletAccount
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $balanceCoins = null;
 
     public function getBalanceCoins(): ?float

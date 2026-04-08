@@ -6,16 +6,18 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 use App\Repository\UserRepository;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'user')]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idUser', type: 'integer')]
     private ?int $idUser = null;
 
     public function getIdUser(): ?int
@@ -139,6 +141,34 @@ class User
     {
         $this->roleUser = $roleUser;
         return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) ($this->EmailUser ?? '');
+    }
+
+    public function getRoles(): array
+    {
+        $legacyRole = strtolower((string) $this->roleUser);
+
+        $role = match ($legacyRole) {
+            'admin' => 'ROLE_ADMIN',
+            'gerant' => 'ROLE_GERANT',
+            default => 'ROLE_CLIENT',
+        };
+
+        return array_values(array_unique([$role, 'ROLE_USER']));
+    }
+
+    public function eraseCredentials(): void
+    {
+        // No temporary sensitive data stored on the entity.
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->passwordUser;
     }
 
     #[ORM\Column(type: 'string', nullable: true)]

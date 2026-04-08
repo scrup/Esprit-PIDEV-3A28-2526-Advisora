@@ -113,7 +113,7 @@ class ResourceMarketOrder
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $unitPrice = null;
 
     public function getUnitPrice(): ?float
@@ -127,7 +127,7 @@ class ResourceMarketOrder
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $totalPrice = null;
 
     public function getTotalPrice(): ?float

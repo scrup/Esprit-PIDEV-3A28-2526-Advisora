@@ -155,7 +155,7 @@ class ResourceMarketDelivery
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $totalPrice = null;
 
     public function getTotalPrice(): ?float
