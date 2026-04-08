@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -144,11 +143,6 @@ class Resource
 
     #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'resources')]
     private Collection $projects;
-
-    public function __construct()
-    {
-        $this->projects = new ArrayCollection();
-    }
 
     /**
      * @return Collection<int, Project>

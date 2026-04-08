@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -229,12 +228,6 @@ class Strategie
 
     #[ORM\OneToMany(targetEntity: SwotItem::class, mappedBy: 'strategie')]
     private Collection $swotItems;
-
-    public function __construct()
-    {
-        $this->objectives = new ArrayCollection();
-        $this->swotItems = new ArrayCollection();
-    }
 
     /**
      * @return Collection<int, SwotItem>

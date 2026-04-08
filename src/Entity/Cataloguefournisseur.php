@@ -115,11 +115,6 @@ class Cataloguefournisseur
     #[ORM\OneToMany(targetEntity: Resource::class, mappedBy: 'cataloguefournisseur')]
     private Collection $resources;
 
-    public function __construct()
-    {
-        $this->resources = new ArrayCollection();
-    }
-
     /**
      * @return Collection<int, Resource>
      */

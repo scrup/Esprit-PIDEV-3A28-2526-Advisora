@@ -19,7 +19,7 @@
         <a href="{{ path('app_back') }}" class="{% if app.request.get('_route') == 'app_back' %}active{% endif %}"><i class="fas fa-home"></i> Accueil</a>
         <a href="{{ path('back_project_index') }}" class="{% if app.request.get('_route') == 'back_project_index' or app.request.get('_route') == 'project_back_manage' or app.request.get('_route') == 'project_edit' or app.request.get('_route') starts with 'decision_' %}active{% endif %}"><i class="fas fa-folder-open"></i> Projets</a>
         <a href="{{ path('project_index') }}" class="{% if app.request.get('_route') == 'project_index' or app.request.get('_route') == 'project_show' %}active{% endif %}"><i class="fas fa-eye"></i> Front projets</a>
-        <a href="#"><i class="fas fa-chart-line"></i> Strategies</a>
+        <a href="{{ path('app_back_strategies') }}"><i class="fas fa-chart-line"></i> Stratégies</a>
         <a href="#"><i class="fas fa-book"></i> Ressources</a>
         <a href="#"><i class="fas fa-calendar-alt"></i> Evenements</a>
         <a href="#"><i class="fas fa-chart-simple"></i> Investissements</a>

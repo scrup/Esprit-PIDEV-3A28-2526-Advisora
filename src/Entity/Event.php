@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -237,39 +236,6 @@ class Event
     public function setImageUrlEv(?string $imageUrlEv): self
     {
         $this->imageUrlEv = $imageUrlEv;
-        return $this;
-    }
-
-    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'event')]
-    private Collection $bookings;
-
-    public function __construct()
-    {
-        $this->bookings = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, Booking>
-     */
-    public function getBookings(): Collection
-    {
-        if (!$this->bookings instanceof Collection) {
-            $this->bookings = new ArrayCollection();
-        }
-        return $this->bookings;
-    }
-
-    public function addBooking(Booking $booking): self
-    {
-        if (!$this->getBookings()->contains($booking)) {
-            $this->getBookings()->add($booking);
-        }
-        return $this;
-    }
-
-    public function removeBooking(Booking $booking): self
-    {
-        $this->getBookings()->removeElement($booking);
         return $this;
     }
 

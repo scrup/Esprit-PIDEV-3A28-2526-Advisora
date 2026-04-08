@@ -1,0 +1,219 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des Stratégies{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="strategy-container">
+    <main class="strategy-main">
+        <div class="strategy-grid">
+            <!-- Left: Strategies Management -->
+            <section class="strategies-section">
+                <div class="strategies-header">
+                    <div class="header-title-row">
+                        <h1>Gestion des Stratégies</h1>
+                        <a href="{{ path('app_back_strategies_new') }}" class="btn-new-strategy">
+                            <span class="material-symbols-outlined">add</span>
+                            Nouvelle Stratégie
+                        </a>
+                    </div>
+                    <div class="header-subtitle">
+                        <p>Analysez et validez les directions opérationnelles de vos portefeuilles.</p>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                {% for type, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="flash-message flash-{{ type }}">
+                            <span class="material-symbols-outlined">
+                                {% if type == 'success' %}check_circle{% elseif type == 'error' %}error{% else %}info{% endif %}
+                            </span>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+
+                <!-- Stats Summary -->
+                {% set totalStrategies = strategies|length %}
+                {% set pendingStrategies = strategies|filter(s => s.statusStrategie == 'pending')|length %}
+                {% set approvedStrategies = strategies|filter(s => s.statusStrategie == 'approved')|length %}
+                {% set rejectedStrategies = strategies|filter(s => s.statusStrategie == 'rejected')|length %}
+
+                <div class="stats-summary">
+                    <div class="stat-item">
+                        <p class="stat-label">Total</p>
+                        <p class="stat-value">{{ totalStrategies }}</p>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <p class="stat-label">En attente</p>
+                        <p class="stat-value pending">{{ pendingStrategies }}</p>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <p class="stat-label">Approuvées</p>
+                        <p class="stat-value approved">{{ approvedStrategies }}</p>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <p class="stat-label">Refusées</p>
+                        <p class="stat-value rejected">{{ rejectedStrategies }}</p>
+                    </div>
+                </div>
+
+                <!-- Strategy List -->
+                <div class="strategies-list">
+                    {% for strategy in strategies %}
+                    <div class="strategy-card" data-id="{{ strategy.id }}">
+                        <div class="strategy-icon">
+                            <span class="material-symbols-outlined">
+                                {% if strategy.type == 'expansion' %}public
+                                {% elseif strategy.type == 'optimisation' %}currency_bitcoin
+                                {% else %}energy_savings_leaf{% endif %}
+                            </span>
+                        </div>
+                        <div class="strategy-info">
+                            <div class="strategy-title">
+                                <h3>{{ strategy.nomStrategie }}</h3>
+                                <span class="strategy-badge">{{ strategy.DureeTerme }} mois</span>
+                            </div>
+                            <div class="strategy-tags">
+                                <div class="roi-badge {{ strategy.gainEstime < 0 ? 'negative' : '' }}">
+                                    <span class="material-symbols-outlined">{{ strategy.gainEstime >= 0 ? 'trending_up' : 'trending_down' }}</span>
+                                    Gain estimé: {{ strategy.gainEstime >= 0 ? '+' : '' }}{{ strategy.gainEstime }}%
+                                </div>
+                                <div class="budget-badge">
+                                    <span class="material-symbols-outlined">payments</span>
+                                    Budget: {{ strategy.budgetTotal|number_format(0, ',', ' ') }} €
+                                </div>
+                                {% if strategy.type %}
+                                    <span class="tag">{{ strategy.type.value }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="strategy-metrics">
+                            <div class="strategy-status">
+                                <span class="status-badge {{ strategy.statusStrategie }}">
+                                    {% if strategy.statusStrategie == 'pending' %}En attente
+                                    {% elseif strategy.statusStrategie == 'approved' %}Acceptée
+                                    {% else %}Refusée{% endif %}
+                                </span>
+                            </div>
+                            <a href="{{ path('app_back_strategies_show', {id: strategy.id}) }}" class="btn-swot">
+                                <span class="material-symbols-outlined">analytics</span>
+                                Détails
+                            </a>
+                        </div>
+                        <div class="strategy-actions">
+                            <a href="{{ path('app_back_strategies_show', {id: strategy.id}) }}" class="action-icon">
+                                <span class="material-symbols-outlined">visibility</span>
+                            </a>
+                            <a href="{{ path('app_back_strategies_edit', {id: strategy.id}) }}" class="action-icon">
+                                <span class="material-symbols-outlined">edit</span>
+                            </a>
+                            <form method="post" action="{{ path('app_back_strategies_delete', {id: strategy.id}) }}" onsubmit="return confirm('Supprimer cette stratégie ?')" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ strategy.id) }}">
+                                <button type="submit" class="action-icon delete">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <span class="material-symbols-outlined">inbox</span>
+                            <p>Aucune stratégie pour le moment</p>
+                            <a href="{{ path('app_back_strategies_new') }}" class="btn-new-strategy">Créer la première stratégie</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Right: Sidebar -->
+            <aside class="strategies-sidebar">
+                <!-- Filters -->
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <h2>Filtres</h2>
+                        <button class="reset-btn" id="resetFiltersBtn">Reset</button>
+                    </div>
+                    <div class="filters-content">
+                        <div class="filter-group">
+                            <label class="filter-label">Statut</label>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="all">Tous</option>
+                                <option value="pending">En attente</option>
+                                <option value="approved">Approuvées</option>
+                                <option value="rejected">Refusées</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Type</label>
+                            <select id="typeFilter" class="filter-select">
+                                <option value="all">Tous</option>
+                                <option value="expansion">Expansion</option>
+                                <option value="optimisation">Optimisation</option>
+                                <option value="diversification">Diversification</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Répartition des Stratégies -->
+                <div class="sidebar-card">
+                    <h2>Répartition des Stratégies</h2>
+                    <div class="donut-container">
+                        <div class="donut-chart">
+                            <canvas id="strategyDonutChart" width="160" height="160"></canvas>
+                            <div class="donut-center">
+                                <span class="donut-total">{{ totalStrategies }}</span>
+                                <span class="donut-label">Total</span>
+                            </div>
+                        </div>
+                        <div class="donut-legend">
+                            <div class="legend-item">
+                                <span class="legend-color expansion"></span>
+                                <span class="legend-label">En attente</span>
+                                <span class="legend-value">{{ pendingStrategies }}</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color optimisation"></span>
+                                <span class="legend-label">Approuvées</span>
+                                <span class="legend-value">{{ approvedStrategies }}</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color diversification"></span>
+                                <span class="legend-label">Refusées</span>
+                                <span class="legend-value">{{ rejectedStrategies }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Total -->
+                <div class="sidebar-card">
+                    <h2>Budget total alloué</h2>
+                    <div class="budget-summary">
+                        <div class="budget-amount">
+                            {{ strategies|reduce((carry, s) => carry + (s.budgetTotal ?? 0), 0)|number_format(0, ',', ' ') }} €
+                        </div>
+                        <p>Budget total des stratégies</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/back-strategy.js') }}"></script>
+{% endblock %}

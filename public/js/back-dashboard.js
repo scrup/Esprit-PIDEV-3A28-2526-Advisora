@@ -258,10 +258,30 @@ function initResourceButtons() {
     });
 }
 
+function setActiveLink() {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.back-nav a');
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        const href = link.getAttribute('href');
+        if (href === currentPath || (currentPath === '/back' && link.querySelector('i.fa-home'))) {
+            link.classList.add('active');
+        }
+    });
+}
+
 function initNavigation() {
+    setActiveLink();
+    
     const navLinks = document.querySelectorAll('.back-nav a');
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
+            // Allow navigation for strategies link
+            if (link.querySelector('i.fa-chart-line')) {
+                return; // Don't prevent default for strategies
+            }
+
+            
             e.preventDefault();
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');

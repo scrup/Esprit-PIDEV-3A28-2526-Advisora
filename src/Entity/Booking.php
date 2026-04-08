@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -71,33 +70,31 @@ class Booking
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(name: 'idEv', referencedColumnName: 'idEv')]
-    private ?Event $event = null;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $idEv = null;
 
-    public function getEvent(): ?Event
+    public function getIdEv(): ?int
     {
-        return $this->event;
+        return $this->idEv;
     }
 
-    public function setEvent(?Event $event): self
+    public function setIdEv(int $idEv): self
     {
-        $this->event = $event;
+        $this->idEv = $idEv;
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser')]
-    private ?User $user = null;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $idUser = null;
 
-    public function getUser(): ?User
+    public function getIdUser(): ?int
     {
-        return $this->user;
+        return $this->idUser;
     }
 
-    public function setUser(?User $user): self
+    public function setIdUser(int $idUser): self
     {
-        $this->user = $user;
+        $this->idUser = $idUser;
         return $this;
     }
 

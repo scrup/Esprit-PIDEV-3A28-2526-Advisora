@@ -1,0 +1,130 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Nouvelle Stratégie{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy-form.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="form-container">
+    <div class="form-header">
+        <div class="header-left">
+            <a href="{{ path('app_back_strategies') }}" class="back-link">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Retour aux stratégies
+            </a>
+            <h1>
+                <span class="material-symbols-outlined">add_circle</span>
+                Créer une nouvelle stratégie
+            </h1>
+            <p>Remplissez le formulaire ci-dessous pour créer une nouvelle stratégie d'investissement.</p>
+        </div>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form, {'attr': {'class': 'strategy-form'}}) }}
+        
+        <!-- Informations générales -->
+        <div class="form-section">
+            <h3>Informations générales</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.nomStrategie) }}
+                    {{ form_widget(form.nomStrategie, {'attr': {'placeholder': 'Ex: Expansion Marché Euro'}}) }}
+                    {{ form_errors(form.nomStrategie) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.DureeTerme) }}
+                    {{ form_widget(form.DureeTerme, {'attr': {'placeholder': 'Durée en mois'}}) }}
+                    {{ form_errors(form.DureeTerme) }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.type) }}
+                    {{ form_widget(form.type) }}
+                    {{ form_errors(form.type) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.statusStrategie) }}
+                    {{ form_widget(form.statusStrategie) }}
+                    {{ form_errors(form.statusStrategie) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Aspects financiers -->
+        <div class="form-section">
+            <h3>Aspects financiers</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.budgetTotal) }}
+                    {{ form_widget(form.budgetTotal, {'attr': {'placeholder': 'Budget total en euros'}}) }}
+                    {{ form_errors(form.budgetTotal) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.gainEstime) }}
+                    {{ form_widget(form.gainEstime, {'attr': {'placeholder': 'Gain estimé en %'}}) }}
+                    {{ form_errors(form.gainEstime) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Justification -->
+        <div class="form-section">
+            <h3>Justification</h3>
+            <div class="form-group">
+                {{ form_label(form.justification) }}
+                {{ form_widget(form.justification, {'attr': {'rows': 4, 'placeholder': 'Expliquez la justification de cette stratégie...'}}) }}
+                {{ form_errors(form.justification) }}
+            </div>
+        </div>
+
+        <!-- Actualités -->
+        <div class="form-section">
+            <h3>Actualités liées</h3>
+            <div class="form-group">
+                {{ form_label(form.news) }}
+                {{ form_widget(form.news, {'attr': {'rows': 3, 'placeholder': 'Actualités pertinentes pour cette stratégie...'}}) }}
+                {{ form_errors(form.news) }}
+            </div>
+        </div>
+
+        <!-- Association -->
+        <div class="form-section">
+            <h3>Association</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.project) }}
+                    {{ form_widget(form.project) }}
+                    {{ form_errors(form.project) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.user) }}
+                    {{ form_widget(form.user) }}
+                    {{ form_errors(form.user) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{{ path('app_back_strategies') }}" class="btn-cancel">Annuler</a>
+            <button type="submit" class="btn-submit">
+                <span class="material-symbols-outlined">check_circle</span>
+                Créer la stratégie
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/back-strategy-form.js') }}"></script>
+{% endblock %}

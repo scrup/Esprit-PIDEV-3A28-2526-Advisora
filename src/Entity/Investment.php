@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -132,11 +131,6 @@ class Investment
     #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'investment')]
     private Collection $transactions;
 
-    public function __construct()
-    {
-        $this->transactions = new ArrayCollection();
-    }
-
     /**
      * @return Collection<int, Transaction>
      */
@@ -159,30 +153,6 @@ class Investment
     public function removeTransaction(Transaction $transaction): self
     {
         $this->getTransactions()->removeElement($transaction);
-        return $this;
-    }
-
-    public function getBudMinInv(): ?string
-    {
-        return $this->bud_minInv;
-    }
-
-    public function setBudMinInv(string $bud_minInv): static
-    {
-        $this->bud_minInv = $bud_minInv;
-
-        return $this;
-    }
-
-    public function getBudMaxInv(): ?string
-    {
-        return $this->bud_maxInv;
-    }
-
-    public function setBudMaxInv(string $bud_maxInv): static
-    {
-        $this->bud_maxInv = $bud_maxInv;
-
         return $this;
     }
 
