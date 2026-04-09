@@ -18,6 +18,16 @@
     <!-- Header included here -->
     {% include 'front/header.html.twig' %}
 
+    {% for message in app.flashes('success') %}
+        <div class="flash-message flash-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="flash-message flash-error">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('info') %}
+        <div class="flash-message flash-info">{{ message }}</div>
+    {% endfor %}
+
     <!-- Main content block - changes per page -->
     <main>
         {% block body %}{% endblock %}

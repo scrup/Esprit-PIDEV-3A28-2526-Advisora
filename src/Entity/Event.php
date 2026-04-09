@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\EventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
-use App\Repository\EventRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 #[ORM\Table(name: 'events')]
@@ -17,7 +18,45 @@ class Event
     #[ORM\Column(name: 'idEv', type: 'integer')]
     private ?int $idEv = null;
 
+    #[ORM\Column(name: 'titleEv', type: 'string', length: 160)]
+    private ?string $titleEv = null;
+
+    #[ORM\Column(name: 'descriptionEv', type: 'text', nullable: true)]
+    private ?string $descriptionEv = null;
+
+    #[ORM\Column(name: 'startDateEv', type: 'datetime')]
+    private ?\DateTimeInterface $startDateEv = null;
+
+    #[ORM\Column(name: 'endDateEv', type: 'datetime')]
+    private ?\DateTimeInterface $endDateEv = null;
+
+    #[ORM\Column(name: 'organisateurName', type: 'string', length: 160, nullable: true)]
+    private ?string $organisateurName = null;
+
+    #[ORM\Column(name: 'capaciteEvnt', type: 'integer', options: ['default' => 0])]
+    private ?int $capaciteEvnt = 0;
+
+    #[ORM\Column(name: 'localisationEv', type: 'string', length: 190, nullable: true)]
+    private ?string $localisationEv = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'events')]
+    #[ORM\JoinColumn(name: 'idGerant', referencedColumnName: 'idUser', nullable: true, onDelete: 'SET NULL')]
+    private ?User $user = null;
+
+    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'event')]
+    private Collection $bookings;
+
+    public function __construct()
+    {
+        $this->bookings = new ArrayCollection();
+    }
+
     public function getIdEv(): ?int
+    {
+        return $this->idEv;
+    }
+
+    public function getId(): ?int
     {
         return $this->idEv;
     }
@@ -25,13 +64,16 @@ class Event
     public function setIdEv(int $idEv): self
     {
         $this->idEv = $idEv;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $titleEv = null;
-
     public function getTitleEv(): ?string
+    {
+        return $this->titleEv;
+    }
+
+    public function getTitle(): ?string
     {
         return $this->titleEv;
     }
@@ -39,13 +81,16 @@ class Event
     public function setTitleEv(string $titleEv): self
     {
         $this->titleEv = $titleEv;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $descriptionEv = null;
-
     public function getDescriptionEv(): ?string
+    {
+        return $this->descriptionEv;
+    }
+
+    public function getDescription(): ?string
     {
         return $this->descriptionEv;
     }
@@ -53,13 +98,16 @@ class Event
     public function setDescriptionEv(?string $descriptionEv): self
     {
         $this->descriptionEv = $descriptionEv;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $startDateEv = null;
-
     public function getStartDateEv(): ?\DateTimeInterface
+    {
+        return $this->startDateEv;
+    }
+
+    public function getStartDate(): ?\DateTimeInterface
     {
         return $this->startDateEv;
     }
@@ -67,13 +115,16 @@ class Event
     public function setStartDateEv(\DateTimeInterface $startDateEv): self
     {
         $this->startDateEv = $startDateEv;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $endDateEv = null;
-
     public function getEndDateEv(): ?\DateTimeInterface
+    {
+        return $this->endDateEv;
+    }
+
+    public function getEndDate(): ?\DateTimeInterface
     {
         return $this->endDateEv;
     }
@@ -81,13 +132,16 @@ class Event
     public function setEndDateEv(\DateTimeInterface $endDateEv): self
     {
         $this->endDateEv = $endDateEv;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $organisateurName = null;
-
     public function getOrganisateurName(): ?string
+    {
+        return $this->organisateurName;
+    }
+
+    public function getOrganizerName(): ?string
     {
         return $this->organisateurName;
     }
@@ -95,27 +149,33 @@ class Event
     public function setOrganisateurName(?string $organisateurName): self
     {
         $this->organisateurName = $organisateurName;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $capaciteEvnt = null;
 
     public function getCapaciteEvnt(): ?int
     {
         return $this->capaciteEvnt;
     }
 
+    public function getCapacity(): int
+    {
+        return (int) ($this->capaciteEvnt ?? 0);
+    }
+
     public function setCapaciteEvnt(int $capaciteEvnt): self
     {
         $this->capaciteEvnt = $capaciteEvnt;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $localisationEv = null;
-
     public function getLocalisationEv(): ?string
+    {
+        return $this->localisationEv;
+    }
+
+    public function getLocation(): ?string
     {
         return $this->localisationEv;
     }
@@ -123,12 +183,9 @@ class Event
     public function setLocalisationEv(?string $localisationEv): self
     {
         $this->localisationEv = $localisationEv;
+
         return $this;
     }
-
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'events')]
-    #[ORM\JoinColumn(name: 'idGerant', referencedColumnName: 'idUser')]
-    private ?User $user = null;
 
     public function getUser(): ?User
     {
@@ -138,105 +195,107 @@ class Event
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $ticketPrice = null;
-
-    public function getTicketPrice(): ?float
+    /**
+     * @return Collection<int, Booking>
+     */
+    public function getBookings(): Collection
     {
-        return $this->ticketPrice;
+        return $this->bookings;
     }
 
-    public function setTicketPrice(float $ticketPrice): self
+    public function addBooking(Booking $booking): self
     {
-        $this->ticketPrice = $ticketPrice;
+        if (!$this->bookings->contains($booking)) {
+            $this->bookings->add($booking);
+            $booking->setEvent($this);
+        }
+
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $currencyCode = null;
-
-    public function getCurrencyCode(): ?string
+    public function removeBooking(Booking $booking): self
     {
-        return $this->currencyCode;
-    }
+        if ($this->bookings->removeElement($booking) && $booking->getEvent() === $this) {
+            $booking->setEvent(null);
+        }
 
-    public function setCurrencyCode(string $currencyCode): self
-    {
-        $this->currencyCode = $currencyCode;
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $minReservationThreshold = null;
-
-    public function getMinReservationThreshold(): ?float
+    public function getTimelineStatus(): string
     {
-        return $this->minReservationThreshold;
+        $now = new \DateTimeImmutable();
+
+        if ($this->endDateEv instanceof \DateTimeInterface && $this->endDateEv < $now) {
+            return 'completed';
+        }
+
+        if (
+            $this->startDateEv instanceof \DateTimeInterface
+            && $this->endDateEv instanceof \DateTimeInterface
+            && $this->startDateEv <= $now
+            && $this->endDateEv >= $now
+        ) {
+            return 'in_progress';
+        }
+
+        return 'planned';
     }
 
-    public function setMinReservationThreshold(?float $minReservationThreshold): self
+    public function getTimelineLabel(): string
     {
-        $this->minReservationThreshold = $minReservationThreshold;
-        return $this;
+        return match ($this->getTimelineStatus()) {
+            'completed' => 'Termine',
+            'in_progress' => 'En cours',
+            default => 'A venir',
+        };
     }
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $thresholdDeadline = null;
-
-    public function getThresholdDeadline(): ?\DateTimeInterface
+    public function getReservedTickets(): int
     {
-        return $this->thresholdDeadline;
+        $reserved = 0;
+
+        foreach ($this->bookings as $booking) {
+            $reserved += max(0, (int) ($booking->getNumTicketBk() ?? 0));
+        }
+
+        return $reserved;
     }
 
-    public function setThresholdDeadline(?\DateTimeInterface $thresholdDeadline): self
+    public function getRemainingTickets(): int
     {
-        $this->thresholdDeadline = $thresholdDeadline;
-        return $this;
+        return max(0, $this->getCapacity() - $this->getReservedTickets());
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $statusEv = null;
-
-    public function getStatusEv(): ?string
+    public function getManagerDisplayName(): string
     {
-        return $this->statusEv;
+        if (!$this->user instanceof User) {
+            return 'Non assigne';
+        }
+
+        return trim(sprintf('%s %s', (string) $this->user->getPrenomUser(), (string) $this->user->getNomUser()));
     }
 
-    public function setStatusEv(string $statusEv): self
+    public function hasStarted(): bool
     {
-        $this->statusEv = $statusEv;
-        return $this;
+        return $this->startDateEv instanceof \DateTimeInterface && $this->startDateEv <= new \DateTimeImmutable();
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $categoryEv = null;
-
-    public function getCategoryEv(): ?string
+    #[Assert\Callback]
+    public function validateDates(ExecutionContextInterface $context): void
     {
-        return $this->categoryEv;
+        if (
+            $this->startDateEv instanceof \DateTimeInterface
+            && $this->endDateEv instanceof \DateTimeInterface
+            && $this->endDateEv <= $this->startDateEv
+        ) {
+            $context->buildViolation('La date de fin doit etre posterieure a la date de debut.')
+                ->atPath('endDateEv')
+                ->addViolation();
+        }
     }
-
-    public function setCategoryEv(?string $categoryEv): self
-    {
-        $this->categoryEv = $categoryEv;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $imageUrlEv = null;
-
-    public function getImageUrlEv(): ?string
-    {
-        return $this->imageUrlEv;
-    }
-
-    public function setImageUrlEv(?string $imageUrlEv): self
-    {
-        $this->imageUrlEv = $imageUrlEv;
-        return $this;
-    }
-
 }

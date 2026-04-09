@@ -11,27 +11,36 @@
 </head>
 <body class="back-mode">
 <header class="back-header">
-    <div class="logo">
+    <a href="{{ path('app_back') }}" class="logo back-brand">
         <img src="{{ asset('assets/logo.png') }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
-        Advisora
+        <span class="back-brand-copy">
+            <span class="back-brand-title">Advisora</span>
+            <span class="back-brand-subtitle">Pilotage du back office</span>
+        </span>
         <span class="mode-badge" id="modeBadge" data-mode-badge>Back Office</span>
-    </div>
+    </a>
 
-    <nav class="back-nav">
-        <a href="{{ path('app_back') }}" class="{% if app.request.get('_route') == 'app_back' %}active{% endif %}"><i class="fas fa-home"></i> Accueil</a>
-        <a href="{{ path('back_project_overview') }}" class="{% if app.request.get('_route') in ['back_project_overview', 'back_project_index', 'project_back_manage', 'project_edit'] or app.request.get('_route') starts with 'decision_' %}active{% endif %}"><i class="fas fa-folder-open"></i> Projets</a>
-        <a href="{{ path('app_back_strategies') }}"><i class="fas fa-chart-line"></i> Stratégies</a>
-        <a href="#"><i class="fas fa-book"></i> Ressources</a>
-        <a href="#"><i class="fas fa-calendar-alt"></i> Evenements</a>
-        <a href="#"><i class="fas fa-chart-simple"></i> Investissements</a>
+    {% set current_route = app.request.get('_route') %}
+
+    <nav class="back-nav" aria-label="Navigation back office">
+        <a href="{{ path('app_back') }}" class="back-nav-link {% if current_route == 'app_back' %}active{% endif %}"><i class="fas fa-home"></i> Accueil</a>
+        <a href="{{ path('back_project_overview') }}" class="back-nav-link {% if current_route in ['back_project_overview', 'back_project_index', 'project_back_manage', 'project_edit'] or current_route starts with 'decision_' %}active{% endif %}"><i class="fas fa-folder-open"></i> Projets</a>
+        <a href="{{ path('app_back_strategies') }}" class="back-nav-link {% if current_route starts with 'app_back_strategies' %}active{% endif %}"><i class="fas fa-chart-line"></i> Strategies</a>
+        <a href="{{ path('back_event_index') }}" class="back-nav-link {% if current_route in ['back_event_index', 'event_new', 'event_edit', 'event_back_manage', 'back_event_bookings'] or current_route starts with 'back_event_booking_' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Evenements</a>
+        <a href="#" onclick="return false;" aria-disabled="true" class="back-nav-link back-nav-link-disabled"><i class="fas fa-book"></i> Ressources</a>
+        <a href="#" onclick="return false;" aria-disabled="true" class="back-nav-link back-nav-link-disabled"><i class="fas fa-chart-simple"></i> Investissements</a>
+        <a href="#" onclick="return false;" aria-disabled="true" class="back-nav-link back-nav-link-disabled"><i class="fas fa-user"></i> Profil</a>
+        <a href="#" onclick="return false;" aria-disabled="true" class="back-nav-link back-nav-link-disabled"><i class="fas fa-users-cog"></i> Utilisateurs</a>
     </nav>
 
     <div class="header-actions">
-        {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'back'} %}
+        <div class="header-utility-actions">
+            {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'back'} %}
 
-        <div class="user-info">
-            <i class="fas fa-user-circle"></i>
-            <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
+            </div>
         </div>
 
         {% if app.user %}

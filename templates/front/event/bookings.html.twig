@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Mes inscriptions{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Inscriptions</span>
+            <h1>Mes inscriptions aux evenements</h1>
+            <p>Retrouvez ici toutes vos reservations enregistrees dans la table `bookings`.</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-primary" href="{{ path('event_index') }}">Voir les evenements</a>
+        </div>
+    </section>
+
+    <section class="pm-grid">
+        {% for booking in bookings %}
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ booking.workflowStatusCssClass }}">{{ booking.workflowStatusLabel }}</span>
+                    <span class="pm-meta">Inscription #{{ booking.id }}</span>
+                </div>
+                <h2>{{ booking.event ? booking.event.title : 'Evenement indisponible' }}</h2>
+                <p>{{ booking.event and booking.event.description ? booking.event.description : 'Aucune description disponible.' }}</p>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Organisateur :</strong> {{ booking.event ? booking.event.organizerName : 'Non renseigne' }}</span>
+                    <span><strong>Lieu :</strong> {{ booking.event ? booking.event.location : 'Non renseigne' }}</span>
+                    <span><strong>Date de reservation :</strong> {{ booking.bookingDate ? booking.bookingDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
+                    <span><strong>Nombre de tickets :</strong> {{ booking.ticketCount }}</span>
+                    <span><strong>Total en base :</strong> {{ booking.totalPrixBk|number_format(2, '.', ' ') }} TND</span>
+                </div>
+                <div class="pm-card-actions">
+                    {% if booking.event %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: booking.event.id}) }}">Voir l evenement</a>
+                    {% endif %}
+                    {% if booking.isPending %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('event_booking_edit', {id: booking.id}) }}">Modifier</a>
+                        <form method="post" action="{{ path('event_booking_delete', {id: booking.id}) }}" onsubmit="return confirm('Supprimer cette inscription ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_booking_' ~ booking.id) }}">
+                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                        </form>
+                    {% else %}
+                        <span class="pm-empty-text">Cette inscription est verrouillee.</span>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>Aucune inscription enregistree</h2>
+                <p>Inscrivez-vous a votre premier evenement depuis le catalogue public.</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}
