@@ -1,0 +1,65 @@
+security:
+    password_hashers:
+        App\Entity\User:
+            id: App\Security\LegacyCompatiblePasswordHasher
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: EmailUser
+
+    firewalls:
+        dev:
+            pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                success_handler: App\Security\LoginSuccessHandler
+            logout:
+                path: app_logout
+            access_denied_url: /403
+
+    access_control:
+        - { path: ^/role-choice, roles: ROLE_GERANT }
+        - { path: ^/projects/new$, roles: [ROLE_CLIENT, ROLE_ADMIN] }
+        - { path: ^/projects/\d+/edit$, roles: [ROLE_CLIENT, ROLE_ADMIN] }
+        - { path: ^/projects/\d+/delete$, roles: [ROLE_CLIENT, ROLE_ADMIN] }
+        - { path: ^/projects/\d+/manage$, roles: [ROLE_CLIENT, ROLE_ADMIN] }
+        - { path: ^/resources/new$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/resources/\d+/edit$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/resources/\d+/delete$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/resources/\d+/manage$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/resources/reservations$, roles: [ROLE_CLIENT] }
+        - { path: ^/resources/reservations/\d+/\d+/edit$, roles: [ROLE_CLIENT] }
+        - { path: ^/resources/reservations/\d+/\d+/delete$, roles: [ROLE_CLIENT] }
+        - { path: ^/resources/\d+/reserve$, roles: [ROLE_CLIENT] }
+        - { path: ^/suppliers/new$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/suppliers/\d+/edit$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/suppliers/\d+/delete$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/resources/reservations$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/resources/reservations/\d+/\d+/edit$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/resources/reservations/\d+/\d+/delete$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/projects$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/projects/\d+/manage$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/projects/\d+/decisions/new$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/decisions/\d+/(edit|delete)$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/resources$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/resources/\d+/manage$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/suppliers$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/suppliers/\d+/manage$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back, roles: [ROLE_GERANT, ROLE_ADMIN] }
+
+when@test:
+    security:
+        password_hashers:
+            App\Entity\User:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Choix d'espace{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-login-shell">
+        <div class="pm-login-card pm-role-card">
+            <span class="pm-badge">Gerant</span>
+            <h1>Choisis ton espace</h1>
+            <p>En tant que gerant, tu peux consulter le front office ou ouvrir le back office de gestion.</p>
+
+            <div class="pm-role-actions">
+                <a href="{{ path('project_index') }}" class="pm-btn pm-btn-secondary">Ouvrir le front office</a>
+                <a href="{{ path('app_back') }}" class="pm-btn pm-btn-primary">Ouvrir le back office</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}

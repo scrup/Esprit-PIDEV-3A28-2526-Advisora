@@ -22,13 +22,20 @@
     <nav>
         <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">Accueil</a>
         <a href="{{ path('app_shop') }}" class="nav-link {% if app.request.get('_route') == 'app_shop' %}active{% endif %}">Boutique</a>
-        <a href="#about" class="nav-link">À propos</a>
+        <a href="{{ path('project_index') }}" class="nav-link {% if app.request.get('_route') starts with 'project_' %}active{% endif %}">Projet</a>
+        <a href="{{ path('resource_index') }}" class="nav-link {% if app.request.get('_route') starts with 'resource_' %}active{% endif %}">Ressources</a>
         <a href="#solutions" class="nav-link">Solutions</a>
         <a href="#whyus" class="nav-link">Pourquoi nous choisir ?</a>
         <a href="#reviews" class="nav-link">Témoignages</a>
     </nav>
     <div class="header-actions">
-        <button class="btn btn-outline" id="loginBtn"><i class="far fa-user"></i> Connexion</button>
+        {% if app.user %}
+            <form method="post" action="{{ path('app_logout') }}">
+                <button class="btn btn-outline" type="submit"><i class="fas fa-right-from-bracket"></i> Déconnexion</button>
+            </form>
+        {% else %}
+            <a class="btn btn-outline" id="loginBtn" href="{{ path('app_login') }}"><i class="far fa-user"></i> Connexion</a>
+        {% endif %}
         <button class="btn btn-primary" id="getStartedBtn">Commencer →</button>
         <button class="cart-btn" id="cartBtn">
             <i class="fas fa-shopping-cart"></i>
@@ -62,5 +69,4 @@
 <main>
     {% block body %}{% endblock %}
 </main>
-
 

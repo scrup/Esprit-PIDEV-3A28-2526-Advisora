@@ -15,7 +15,7 @@ class Event
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idEv', type: 'integer')]
     private ?int $idEv = null;
 
     public function getIdEv(): ?int
@@ -142,7 +142,7 @@ class Event
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $ticketPrice = null;
 
     public function getTicketPrice(): ?float
@@ -170,7 +170,7 @@ class Event
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $minReservationThreshold = null;
 
     public function getMinReservationThreshold(): ?float

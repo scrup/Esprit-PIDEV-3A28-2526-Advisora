@@ -57,7 +57,7 @@ class ResourceWalletTxn
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $amountCoins = null;
 
     public function getAmountCoins(): ?float
@@ -71,7 +71,7 @@ class ResourceWalletTxn
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $balanceAfter = null;
 
     public function getBalanceAfter(): ?float

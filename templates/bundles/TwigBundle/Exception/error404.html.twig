@@ -1,0 +1,23 @@
+{% set layout = app.request.getPathInfo()|slice(0,5) == '/back' ? 'base_back.html.twig' : 'base.html.twig' %}
+{% extends layout %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/error.css') }}">
+{% endblock %}
+
+{% block title %}Page introuvable - 404{% endblock %}
+
+{% block body %}
+    <section class="error-page">
+        <div class="container">
+            <h1>404 — Page non trouvée</h1>
+            <p>La page que vous recherchez n'existe pas ou a été déplacée.</p>
+            <p>
+                <a href="{{ path('project_index') }}">Retour à l'accueil</a>
+                {% if app.request.getPathInfo()|slice(0,5) == '/back' %}
+                    · <a href="{{ path('app_back') }}">Retour au tableau de bord</a>
+                {% endif %}
+            </p>
+        </div>
+    </section>
+{% endblock %}
