@@ -103,5 +103,42 @@
                 </details>
             </article>
         </div>
+
+        <article class="pm-card pm-card-large pm-project-strategies">
+            <div class="pm-section-head">
+                <div>
+                    <span class="pm-badge">Strategies liees</span>
+                    <h2>Strategies rattachees au projet</h2>
+                    <p class="pm-section-text">Consultez les strategies associees a ce projet. La decision d acceptation ou de refus se fait desormais cote client depuis la liste front des projets.</p>
+                </div>
+                <span class="pm-history-count">{{ project.strategies|length }}</span>
+            </div>
+
+            <div class="pm-strategy-list">
+                {% for strategy in project.strategies %}
+                    <section class="pm-strategy-card">
+                        <div class="pm-strategy-main">
+                            <div>
+                                <div class="pm-strategy-topline">
+                                    <h3>{{ strategy.nomStrategie }}</h3>
+                                    <span class="pm-status pm-status-{{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="pm-strategy-meta">
+                            <span><strong>Type :</strong> {{ strategy.type ?: 'Non precise' }}</span>
+                            <span><strong>Duree :</strong> {{ strategy.DureeTerme }} mois</span>
+                            <span><strong>Budget :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                            <span><strong>Gain estime :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non precise' }}</span>
+                            <span><strong>Objectifs :</strong> {{ strategy.objectives|length }}</span>
+                        </div>
+                    </section>
+                {% else %}
+                    <p class="pm-empty-text">Aucune strategie n est encore rattachee a ce projet.</p>
+                {% endfor %}
+            </div>
+        </article>
     </section>
 {% endblock %}

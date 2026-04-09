@@ -28,6 +28,9 @@
         <a href="#reviews" class="nav-link">Témoignages</a>
     </nav>
     <div class="header-actions">
+        {% if app.user and app.user.getRoleUser() in ['admin', 'gerant'] %}
+            {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'front'} %}
+        {% endif %}
         {% if app.user %}
             <form method="post" action="{{ path('app_logout') }}">
                 <button class="btn btn-outline" type="submit"><i class="fas fa-right-from-bracket"></i> Déconnexion</button>

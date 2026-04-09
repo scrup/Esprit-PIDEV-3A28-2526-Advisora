@@ -201,49 +201,98 @@ body {
     text-decoration: underline;
 }
 
-/* ===== Charts ===== */
-.compact-chart-container,
-.strategy-chart-container {
-    position: relative;
-    height: 250px;
-    width: 100%;
-    margin-bottom: 15px;
+.positive {
+    color: var(--sage-green);
 }
 
-.compact-chart-stats,
-.chart-stats {
+/* ===== Strategy Performance ===== */
+.performance-panel {
+    margin-bottom: 20px;
+}
+
+.performance-header {
+    align-items: flex-start;
+}
+
+.performance-subtitle {
+    margin: 6px 0 0;
+    color: #6B5A48;
+    font-size: var(--font-sm);
+    max-width: 720px;
+    line-height: 1.5;
+}
+
+.performance-summary {
     display: flex;
-    justify-content: space-around;
-    gap: 12px;
-    padding-top: 15px;
-    border-top: 1px solid var(--light-border);
+    gap: 10px;
     flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
-.compact-stat,
-.chart-stat-item {
-    text-align: center;
-    flex: 1;
-    min-width: 100px;
-}
-
-.compact-stat .stat-label,
-.chart-stat-item .stat-label {
-    display: block;
+.performance-pill {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 110px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: #F9F5F0;
+    border: 1px solid var(--light-border);
+    color: #6B5A48;
     font-size: var(--font-xs);
-    color: #8A7A64;
-    margin-bottom: 5px;
 }
 
-.compact-stat .stat-value,
-.chart-stat-item .stat-value {
-    font-size: calc(var(--font-base) * 0.9);
-    font-weight: 700;
+.performance-pill strong {
+    color: var(--deep-umber);
+    font-size: 1rem;
+}
+
+.performance-pill-highlight {
+    background: linear-gradient(135deg, rgba(125, 143, 110, 0.12), rgba(125, 143, 110, 0.22));
+    border-color: rgba(125, 143, 110, 0.35);
+}
+
+.performance-chart-shell {
+    position: relative;
+    height: 340px;
+    margin-top: 8px;
+}
+
+.performance-note {
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--light-border);
+    color: #8A7A64;
+    font-size: var(--font-xs);
+    line-height: 1.5;
+}
+
+.performance-empty {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 180px;
+    padding: 18px;
+    border: 1px dashed var(--medium-border);
+    border-radius: 18px;
+    background: #FCFAF7;
+    color: #6B5A48;
+}
+
+.performance-empty i {
+    font-size: 1.8rem;
+    color: var(--primary-terracotta);
+}
+
+.performance-empty strong {
+    display: block;
+    margin-bottom: 4px;
     color: var(--deep-umber);
 }
 
-.positive {
-    color: var(--sage-green);
+.performance-empty p {
+    margin: 0;
+    font-size: var(--font-sm);
 }
 
 /* ===== Investment Breakdown ===== */
@@ -565,9 +614,11 @@ body {
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    .compact-chart-container {
-        height: 200px;
+
+    .performance-chart-shell {
+        height: 280px;
     }
+
     .quick-actions {
         justify-content: flex-start;
     }
@@ -800,47 +851,6 @@ body {
 
 .view-link:hover {
     text-decoration: underline;
-}
-
-/* ===== Charts ===== */
-.compact-chart-container,
-.strategy-chart-container {
-    position: relative;
-    height: 250px;
-    width: 100%;
-    margin-bottom: 15px;
-}
-
-.compact-chart-stats,
-.chart-stats {
-    display: flex;
-    justify-content: space-around;
-    gap: 12px;
-    padding-top: 15px;
-    border-top: 1px solid var(--light-border);
-    flex-wrap: wrap;
-}
-
-.compact-stat,
-.chart-stat-item {
-    text-align: center;
-    flex: 1;
-    min-width: 100px;
-}
-
-.compact-stat .stat-label,
-.chart-stat-item .stat-label {
-    display: block;
-    font-size: var(--font-xs);
-    color: #8A7A64;
-    margin-bottom: 5px;
-}
-
-.compact-stat .stat-value,
-.chart-stat-item .stat-value {
-    font-size: calc(var(--font-base) * 0.9);
-    font-weight: 700;
-    color: var(--deep-umber);
 }
 
 .positive {
@@ -1117,9 +1127,6 @@ body {
 @media (max-width: 600px) {
     .stats-grid {
         grid-template-columns: 1fr;
-    }
-    .compact-chart-container {
-        height: 200px;
     }
     .quick-actions {
         justify-content: flex-start;

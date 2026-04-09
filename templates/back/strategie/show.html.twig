@@ -1,11 +1,11 @@
 {% extends 'base_back.html.twig' %}
 
-{% block title %}Advisora | Détail de la stratégie{% endblock %}
+{% block title %}Advisora | Detail de la strategie{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/back-strategy-show.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -13,15 +13,15 @@
     <div class="show-header">
         <a href="{{ path('app_back_strategies') }}" class="back-link">
             <span class="material-symbols-outlined">arrow_back</span>
-            Retour aux stratégies
+            Retour aux strategies
         </a>
         <div class="header-actions">
-            <a href="{{ path('app_back_strategies_edit', {id: strategy.id}) }}" class="btn-edit">
+            <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="btn-edit">
                 <span class="material-symbols-outlined">edit</span>
                 Modifier
             </a>
-            <form method="post" action="{{ path('app_back_strategies_delete', {id: strategy.id}) }}" onsubmit="return confirm('Supprimer cette stratégie ?')" style="display: inline;">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ strategy.id) }}">
+            <form method="post" action="{{ path('app_back_strategies_delete', {id: strategy.idStrategie}) }}" onsubmit="return confirm('Supprimer cette strategie ?')" style="display: inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ strategy.idStrategie) }}">
                 <button type="submit" class="btn-delete">
                     <span class="material-symbols-outlined">delete</span>
                     Supprimer
@@ -33,53 +33,49 @@
     <div class="show-card">
         <div class="show-title">
             <h1>{{ strategy.nomStrategie }}</h1>
-            <span class="status-badge {{ strategy.statusStrategie }}">
-                {% if strategy.statusStrategie == 'pending' %}En attente
-                {% elseif strategy.statusStrategie == 'approved' %}Acceptée
-                {% else %}Refusée{% endif %}
+            <span class="status-badge {{ strategy.statusCssClass }}">
+                {{ strategy.statusLabel }}
             </span>
         </div>
 
         <div class="show-grid">
-            <!-- Informations générales -->
             <div class="info-section">
-                <h3>Informations générales</h3>
+                <h3>Informations generales</h3>
                 <div class="info-list">
                     <div class="info-item">
-                        <span class="info-label">Nom de la stratégie</span>
+                        <span class="info-label">Nom de la strategie</span>
                         <span class="info-value">{{ strategy.nomStrategie }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Durée</span>
+                        <span class="info-label">Duree</span>
                         <span class="info-value">{{ strategy.DureeTerme }} mois</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Type</span>
-                        <span class="info-value">{{ strategy.type.value ?? 'Non défini' }}</span>
+                        <span class="info-value">{{ strategy.type ?? 'Non defini' }}</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Date de création</span>
-                        <span class="info-value">{{ strategy.CreatedAtS ? strategy.CreatedAtS|date('d/m/Y H:i') : 'Non défini' }}</span>
+                        <span class="info-label">Date de creation</span>
+                        <span class="info-value">{{ strategy.CreatedAtS ? strategy.CreatedAtS|date('d/m/Y H:i') : 'Non defini' }}</span>
                     </div>
                     {% if strategy.lockedAt %}
                     <div class="info-item">
-                        <span class="info-label">Verrouillée le</span>
+                        <span class="info-label">Acceptee le</span>
                         <span class="info-value">{{ strategy.lockedAt|date('d/m/Y H:i') }}</span>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Aspects financiers -->
             <div class="info-section">
                 <h3>Aspects financiers</h3>
                 <div class="info-list">
                     <div class="info-item">
                         <span class="info-label">Budget total</span>
-                        <span class="info-value">{{ strategy.budgetTotal|number_format(0, ',', ' ') }} €</span>
+                        <span class="info-value">{{ strategy.budgetTotal|number_format(0, ',', ' ') }} EUR</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Gain estimé</span>
+                        <span class="info-label">Gain estime</span>
                         <span class="info-value {{ strategy.gainEstime >= 0 ? 'positive' : 'negative' }}">
                             {{ strategy.gainEstime >= 0 ? '+' : '' }}{{ strategy.gainEstime }}%
                         </span>
@@ -87,7 +83,6 @@
                 </div>
             </div>
 
-            <!-- Justification -->
             <div class="info-section full-width">
                 <h3>Justification</h3>
                 <div class="info-text">
@@ -95,38 +90,36 @@
                 </div>
             </div>
 
-            <!-- Actualités -->
             <div class="info-section full-width">
-                <h3>Actualités liées</h3>
+                <h3>Actualites liees</h3>
                 <div class="info-text">
-                    {{ strategy.news ?: 'Aucune actualité liée' }}
+                    {{ strategy.news ?: 'Aucune actualite liee' }}
                 </div>
             </div>
 
-            <!-- Association -->
             <div class="info-section">
-                <h3>Projet associé</h3>
+                <h3>Projet associe</h3>
                 <div class="info-list">
                     <div class="info-item">
                         <span class="info-label">Projet</span>
-                        <span class="info-value">{{ strategy.project ? strategy.project.id : 'Non associé' }}</span>
+                        <span class="info-value">{{ strategy.project ? strategy.project.idProj : 'Non associe' }}</span>
                     </div>
                 </div>
             </div>
 
             <div class="info-section">
-                <h3>Utilisateur associé</h3>
+                <h3>Utilisateur associe</h3>
                 <div class="info-list">
                     <div class="info-item">
                         <span class="info-label">Utilisateur</span>
-                        <span class="info-value">{{ strategy.user ? strategy.user.id : 'Non associé' }}</span>
+                        <span class="info-value">{{ strategy.user ? strategy.user.idUser : 'Non associe' }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="show-actions">
-            <a href="{{ path('app_back_strategies_edit', {id: strategy.id}) }}" class="btn-primary">Modifier la stratégie</a>
+            <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="btn-primary">Modifier la strategie</a>
         </div>
     </div>
 </div>

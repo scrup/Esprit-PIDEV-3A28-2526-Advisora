@@ -21,34 +21,36 @@ class StrategyType extends AbstractType
     {
         $builder
             ->add('statusStrategie', ChoiceType::class, [
-                'choices' => StatusStrategie::cases(),
-                'choice_label' => fn(StatusStrategie $status) => $status->value,
-                'choice_value' => fn(?StatusStrategie $status) => $status?->value,
+                'choices' => $this->enumChoices(StatusStrategie::cases()),
                 'constraints' => [
                     new Assert\NotBlank(),
                 ],
             ])
          
-            ->add('news')
+           
             ->add('nomStrategie', null, [
                 'constraints' => [
                     new Assert\NotBlank(),
                     new Assert\Length(['min' => 3, 'max' => 255]),
                 ],
             ])
-            ->add('justification')
+           
             ->add('type', ChoiceType::class, [
-                'choices' => TypeStrategie::cases(),
-                'choice_label' => fn(TypeStrategie $type) => $type->value,
-                'choice_value' => fn(?TypeStrategie $type) => $type?->value,
+                'choices' => $this->enumChoices(TypeStrategie::cases()),
                 'required' => false,
             ])
             ->add('budgetTotal', null, [
+                'required' => false,
                 'constraints' => [
                     new Assert\PositiveOrZero(),
                 ],
             ])
-            ->add('gainEstime')
+            ->add('gainEstime', null, [
+                'required' => false,
+                'constraints' => [
+                    new Assert\PositiveOrZero(),
+                ],
+            ])
              ->add('DureeTerme', IntegerType::class, [
                 'constraints' => [
                     new Assert\NotBlank(),
@@ -81,5 +83,20 @@ class StrategyType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Strategie::class,
         ]);
+    }
+
+    private function enumChoices(array $cases): array
+    {
+        $choices = [];
+
+        foreach ($cases as $case) {
+            if (!$case instanceof \BackedEnum) {
+                continue;
+            }
+
+            $choices[(string) $case->value] = (string) $case->value;
+        }
+
+        return $choices;
     }
 }

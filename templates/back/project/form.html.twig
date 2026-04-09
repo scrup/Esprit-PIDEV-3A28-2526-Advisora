@@ -29,7 +29,7 @@
                 <h1>{{ page_title }}</h1>
                 <p>{{ page_message|default('Le propriétaire du projet est associé automatiquement à l utilisateur connecté.') }}</p>
             </div>
-            <a class="pm-btn pm-btn-secondary" href="{{ project.id ? path(back_route|default('project_back_manage'), {id: project.id}) : path('project_index') }}">Retour</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ project.id ? path(back_route|default('project_back_manage'), {id: project.id}) : path(back_route|default('project_index')) }}">Retour</a>
         </div>
 
         <div class="pm-form-card">

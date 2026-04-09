@@ -36,9 +36,36 @@ final class ProjectController extends AbstractController
             'projects' => $projects,
             'can_manage_projects' => $this->canManageProjects($user),
             'can_see_all_projects' => $canSeeAll,
+            'can_client_decide_strategies' => $user?->getRoleUser() === 'client',
             'filters' => $filters,
             'status_choices' => Project::STATUSES,
+            'strategy_statuses' => [
+                'approved' => \App\Entity\Strategie::STATUS_APPROVED,
+                'rejected' => \App\Entity\Strategie::STATUS_REJECTED,
+            ],
             'type_choices' => $projectRepository->findDistinctFrontTypes($user, $canSeeAll),
+        ]);
+    }
+
+    #[Route('/back/projects/overview', name: 'back_project_overview', methods: ['GET'])]
+    public function backOverview(ProjectRepository $projectRepository, DecisionRepository $decisionRepository): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->canSeeAllProjects($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas consulter la vue d ensemble back des projets.');
+        }
+
+        $statusCounters = $projectRepository->getStatusCounters();
+
+        return $this->render('back/project/index.html.twig', [
+            'page_title' => 'Gestion des projets',
+            'total_projects' => array_sum($statusCounters),
+            'pending_projects' => $statusCounters['PENDING'] ?? 0,
+            'accepted_projects' => $statusCounters['ACCEPTED'] ?? 0,
+            'refused_projects' => $statusCounters['REFUSED'] ?? 0,
+            'total_decisions' => $decisionRepository->count([]),
+            'latest_projects' => $projectRepository->findLatestProjects(6),
+            'latest_decisions' => $decisionRepository->findLatestGlobal(6),
         ]);
     }
 
@@ -56,7 +83,7 @@ final class ProjectController extends AbstractController
             'owner' => trim((string) $request->query->get('owner', '')),
         ];
 
-        return $this->render('back/project/index.html.twig', [
+        return $this->render('back/project/back-projet.html.twig', [
             'projects' => $projectRepository->findBackOfficeProjects($filters),
             'filters' => $filters,
             'status_choices' => Project::STATUSES,
@@ -131,7 +158,7 @@ final class ProjectController extends AbstractController
             'page_message' => $this->isBackOfficeProjectUser($user)
                 ? 'Le propriétaire du projet est associé automatiquement à l utilisateur connecté.'
                 : 'Renseignez les informations de votre projet. Toute modification client remettra le dossier en attente de validation.',
-            'back_route' => 'project_index',
+            'back_route' => $this->isBackOfficeProjectUser($user) ? 'back_project_index' : 'project_index',
         ]);
     }
 

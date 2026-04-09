@@ -1,380 +1,463 @@
-// Strategy Data
-const strategiesData = [
-    {
-        id: 1,
-        name: "Expansion Marché Euro",
-        duration: "2 ans",
-        roi: 24,
-        roiPositive: true,
-        tags: ["Croissance", "Efficacité"],
-        impact: 85,
-        status: "pending",
-        sector: "tech",
-        risk: "moderate",
-        type: "expansion"
-    },
-    {
-        id: 2,
-        name: "Optimisation Crypto-actifs",
-        duration: "6 mois",
-        roi: 18,
-        roiPositive: true,
-        tags: ["Risque Élevé", "Innovation"],
-        impact: 62,
-        status: "approved",
-        sector: "crypto",
-        risk: "high",
-        type: "optimisation"
-    },
-    {
-        id: 3,
-        name: "Diversification ESG Vert",
-        duration: "5 ans",
-        roi: 4,
-        roiPositive: false,
-        tags: ["Durabilité", "Risque Faible"],
-        impact: 42,
-        status: "rejected",
-        sector: "energie",
-        risk: "low",
-        type: "diversification"
-    },
-    {
-        id: 4,
-        name: "Fintech Innovation Hub",
-        duration: "18 mois",
-        roi: 32,
-        roiPositive: true,
-        tags: ["Innovation", "Croissance"],
-        impact: 78,
-        status: "approved",
-        sector: "fintech",
-        risk: "moderate",
-        type: "expansion"
-    },
-    {
-        id: 5,
-        name: "Cloud Infrastructure Scale",
-        duration: "3 ans",
-        roi: 28,
-        roiPositive: true,
-        tags: ["Technologie", "Scalabilité"],
-        impact: 91,
-        status: "pending",
-        sector: "tech",
-        risk: "moderate",
-        type: "expansion"
-    }
+let typeDonutChart = null;
+
+let statusFilter;
+let typeFilter;
+let resetFiltersBtn;
+let typeLegend;
+let typeDonutTotal;
+
+const STATUS = {
+    PENDING: 'pending',
+    APPROVED: 'approved',
+    REJECTED: 'rejected',
+    IN_PROGRESS: 'in-progress',
+    UNASSIGNED: 'unassigned'
+};
+
+const TYPE_COLORS = [
+    '#C37D5D',
+    '#7D8F6E',
+    '#E3C9A0',
+    '#4E6FAE',
+    '#A56E5F',
+    '#7C9A92',
+    '#B69B5B',
+    '#9A7AA0',
+    '#5F8C5A'
 ];
 
-// DOM Elements
-let strategiesList, donutChart, goalChart, totalSpan, pendingSpan, approvedSpan;
-let currentFilter = { sector: 'all', risk: 'moderate', minPerformance: 0 };
+document.addEventListener('DOMContentLoaded', () => {
+    setActiveLink();
+    initElements();
+    populateTypeFilter();
+    initFilters();
+    initCharts();
+    initEventListeners();
+    applyFilters();
+    initObjectiveModal();
+});
 
 function setActiveLink() {
     const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.back-nav a');
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        const href = link.getAttribute('href');
-        if (href === currentPath || (currentPath === '/back' && link.querySelector('i.fa-home'))) {
-            link.classList.add('active');
+    document.querySelectorAll('.back-nav a').forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === currentPath);
+    });
+}
+
+function initElements() {
+    statusFilter = document.getElementById('statusFilter');
+    typeFilter = document.getElementById('typeFilter');
+    resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    typeLegend = document.getElementById('typeLegend');
+    typeDonutTotal = document.getElementById('typeDonutTotal');
+}
+
+function initFilters() {
+    statusFilter?.addEventListener('change', applyFilters);
+    typeFilter?.addEventListener('change', applyFilters);
+    resetFiltersBtn?.addEventListener('click', resetFilters);
+}
+
+function initCharts() {
+    const donutCtx = document.getElementById('strategyTypeDonutChart')?.getContext('2d');
+
+    if (!donutCtx) {
+        return;
+    }
+
+    typeDonutChart = new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [],
+                borderWidth: 0,
+                cutout: '65%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = typeDonutChart?.data.datasets[0].data.reduce((sum, item) => sum + item, 0) || 1;
+                            const percentage = Math.round((value / total) * 100);
+
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
         }
     });
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    setActiveLink();
-    
-    strategiesList = document.getElementById('strategiesList');
-    totalSpan = document.getElementById('totalStrategies');
-    pendingSpan = document.getElementById('pendingStrategies');
-    approvedSpan = document.getElementById('approvedStrategies');
-    
-    renderStrategies();
-    initCharts();
-    initFilters();
-    initEventListeners();
-});
+function applyFilters() {
+    const selectedStatus = statusFilter?.value || 'all';
+    const selectedType = typeFilter?.value || 'all';
+    const cards = getStrategyCards();
 
-// Render Strategies
-function renderStrategies() {
-    let filtered = strategiesData;
-    
-    // Apply sector filter
-    if (currentFilter.sector !== 'all') {
-        filtered = filtered.filter(s => s.sector === currentFilter.sector);
-    }
-    
-    // Apply risk filter
-    filtered = filtered.filter(s => s.risk === currentFilter.risk);
-    
-    // Apply performance filter
-    filtered = filtered.filter(s => s.impact >= currentFilter.minPerformance);
-    
-    // Update stats
-    const total = filtered.length;
-    const pending = filtered.filter(s => s.status === 'pending').length;
-    const approved = filtered.filter(s => s.status === 'approved').length;
-    
-    if (totalSpan) totalSpan.textContent = total;
-    if (pendingSpan) pendingSpan.textContent = pending;
-    if (approvedSpan) approvedSpan.textContent = approved;
-    
-    // Update donut chart counts
-    const expansionCount = filtered.filter(s => s.type === 'expansion').length;
-    const optimisationCount = filtered.filter(s => s.type === 'optimisation').length;
-    const diversificationCount = filtered.filter(s => s.type === 'diversification').length;
-    
-    const donutTotal = document.getElementById('donutTotal');
-    const expansionCountEl = document.getElementById('expansionCount');
-    const optimisationCountEl = document.getElementById('optimisationCount');
-    const diversificationCountEl = document.getElementById('diversificationCount');
-    
-    if (donutTotal) donutTotal.textContent = total;
-    if (expansionCountEl) expansionCountEl.textContent = expansionCount;
-    if (optimisationCountEl) optimisationCountEl.textContent = optimisationCount;
-    if (diversificationCountEl) diversificationCountEl.textContent = diversificationCount;
-    
-    // Update donut chart
-    if (donutChart) {
-        donutChart.data.datasets[0].data = [expansionCount, optimisationCount, diversificationCount];
-        donutChart.update();
-    }
-    
-    // Render cards
-    if (strategiesList) {
-        strategiesList.innerHTML = filtered.map(strategy => `
-            <div class="strategy-card" data-id="${strategy.id}">
-                <div class="strategy-checkbox">
-                    <input type="checkbox" class="strategy-select">
-                </div>
-                <div class="strategy-icon">
-                    <span class="material-symbols-outlined">${getStrategyIcon(strategy.type)}</span>
-                </div>
-                <div class="strategy-info">
-                    <div class="strategy-title">
-                        <h3>${escapeHtml(strategy.name)}</h3>
-                        <span class="strategy-badge">${strategy.duration}</span>
-                    </div>
-                    <div class="strategy-tags">
-                        <div class="roi-badge ${!strategy.roiPositive ? 'negative' : ''}">
-                            <span class="material-symbols-outlined">${strategy.roiPositive ? 'trending_up' : 'trending_down'}</span>
-                            ROI: ${strategy.roiPositive ? '+' : ''}${strategy.roi}%
-                        </div>
-                        ${strategy.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
-                    </div>
-                </div>
-                <div class="strategy-metrics">
-                    <div class="metric-impact">
-                        <div class="impact-circle">
-                            <svg width="44" height="44" viewBox="0 0 36 36">
-                                <path class="impact-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F0E7DC" stroke-width="3"></path>
-                                <path class="impact-fill" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#C37D5D" stroke-dasharray="${strategy.impact}, 100" stroke-linecap="round" stroke-width="3"></path>
-                            </svg>
-                            <span class="impact-value">${strategy.impact}</span>
-                        </div>
-                        <p class="metric-label">Impact</p>
-                    </div>
-                    <div class="strategy-status">
-                        <span class="status-badge ${strategy.status}">${getStatusText(strategy.status)}</span>
-                    </div>
-                    <button class="btn-swot" data-id="${strategy.id}">
-                        <span class="material-symbols-outlined">analytics</span>
-                        Voir SWOT
-                    </button>
-                </div>
-                <div class="strategy-actions">
-                    <button class="action-icon view-btn" data-id="${strategy.id}">
-                        <span class="material-symbols-outlined">visibility</span>
-                    </button>
-                    <button class="action-icon edit-btn" data-id="${strategy.id}">
-                        <span class="material-symbols-outlined">edit</span>
-                    </button>
-                    <button class="action-icon delete-btn" data-id="${strategy.id}">
-                        <span class="material-symbols-outlined">delete</span>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-        
-        // Attach event listeners
-        document.querySelectorAll('.btn-swot').forEach(btn => {
-            btn.addEventListener('click', () => showToast('📊 Analyse SWOT disponible dans les détails de la stratégie'));
-        });
-        
-        document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.addEventListener('click', () => showToast('👁️ Affichage des détails de la stratégie'));
-        });
-        
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', () => showToast('✏️ Fonctionnalité d\'édition à venir'));
-        });
-        
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', () => showToast('🗑️ Suppression de stratégie - Fonctionnalité à venir'));
-        });
-    }
-}
+    cards.forEach((card) => {
+        const matchesStatus = selectedStatus === 'all' || card.dataset.status === selectedStatus;
+        const matchesType = selectedType === 'all' || card.dataset.type === selectedType;
 
-function getStrategyIcon(type) {
-    const icons = {
-        expansion: 'public',
-        optimisation: 'currency_bitcoin',
-        diversification: 'energy_savings_leaf'
-    };
-    return icons[type] || 'insights';
-}
-
-function getStatusText(status) {
-    const texts = {
-        pending: 'En attente',
-        approved: 'Acceptée',
-        rejected: 'Refusée'
-    };
-    return texts[status] || status;
-}
-
-// Initialize Charts
-function initCharts() {
-    // Donut Chart
-    const donutCtx = document.getElementById('strategyDonutChart')?.getContext('2d');
-    if (donutCtx) {
-        donutChart = new Chart(donutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Expansion', 'Optimisation', 'Diversification'],
-                datasets: [{
-                    data: [21, 13, 8],
-                    backgroundColor: ['#C37D5D', '#7D8F6E', '#E3C9A0'],
-                    borderWidth: 0,
-                    cutout: '65%'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
-    
-    // Goal Chart
-    const goalCtx = document.getElementById('goalChart')?.getContext('2d');
-    if (goalCtx) {
-        goalChart = new Chart(goalCtx, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [72, 28],
-                    backgroundColor: ['#C37D5D', '#F0E7DC'],
-                    borderWidth: 0,
-                    cutout: '70%'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { display: false }, tooltip: { enabled: false } }
-            }
-        });
-    }
-}
-
-// Initialize Filters
-function initFilters() {
-    const sectorFilter = document.getElementById('sectorFilter');
-    const riskBtns = document.querySelectorAll('.risk-btn');
-    const performanceRange = document.getElementById('performanceRange');
-    const resetBtn = document.getElementById('resetFiltersBtn');
-    
-    if (sectorFilter) {
-        sectorFilter.addEventListener('change', (e) => {
-            currentFilter.sector = e.target.value;
-            renderStrategies();
-        });
-    }
-    
-    riskBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            riskBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter.risk = btn.dataset.risk;
-            renderStrategies();
-        });
+        card.style.display = matchesStatus && matchesType ? 'flex' : 'none';
     });
-    
-    if (performanceRange) {
-        performanceRange.addEventListener('input', (e) => {
-            currentFilter.minPerformance = parseInt(e.target.value);
-            renderStrategies();
-        });
-    }
-    
-    if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-            currentFilter = { sector: 'all', risk: 'moderate', minPerformance: 0 };
-            if (sectorFilter) sectorFilter.value = 'all';
-            if (performanceRange) performanceRange.value = 0;
-            riskBtns.forEach(b => {
-                b.classList.remove('active');
-                if (b.dataset.risk === 'moderate') b.classList.add('active');
-            });
-            renderStrategies();
-            showToast('🔄 Filtres réinitialisés');
-        });
-    }
+
+    updateTypeDistribution();
 }
 
-// Event Listeners
+function resetFilters() {
+    if (statusFilter) {
+        statusFilter.value = 'all';
+    }
+
+    if (typeFilter) {
+        typeFilter.value = 'all';
+    }
+
+    applyFilters();
+    showToast('Filtres reinitialises');
+}
+
+function populateTypeFilter() {
+    if (!typeFilter) {
+        return;
+    }
+
+    const types = [...new Set(
+        getStrategyCards()
+            .map((card) => card.dataset.type)
+            .filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b));
+
+    const previousValue = typeFilter.value;
+
+    typeFilter.innerHTML = '<option value="all">Tous</option>';
+
+    types.forEach((type) => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = formatTypeLabel(type);
+        typeFilter.appendChild(option);
+    });
+
+    typeFilter.value = types.includes(previousValue) ? previousValue : 'all';
+}
+
+function updateTypeDistribution() {
+    const visibleCards = getVisibleStrategyCards();
+    const counts = new Map();
+
+    visibleCards.forEach((card) => {
+        const type = card.dataset.type || 'non-defini';
+        counts.set(type, (counts.get(type) || 0) + 1);
+    });
+
+    const entries = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+    if (typeDonutTotal) {
+        typeDonutTotal.textContent = String(visibleCards.length);
+    }
+
+    renderTypeLegend(entries);
+    updateTypeDonutChart(entries);
+}
+
+function renderTypeLegend(entries) {
+    if (!typeLegend) {
+        return;
+    }
+
+    typeLegend.innerHTML = '';
+
+    if (entries.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'legend-label';
+        empty.textContent = 'Aucune strategie visible';
+        typeLegend.appendChild(empty);
+        return;
+    }
+
+    entries.forEach(([type, count], index) => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+
+        const color = document.createElement('span');
+        color.className = 'legend-color';
+        color.style.backgroundColor = TYPE_COLORS[index % TYPE_COLORS.length];
+
+        const label = document.createElement('span');
+        label.className = 'legend-label';
+        label.textContent = formatTypeLabel(type);
+
+        const value = document.createElement('span');
+        value.className = 'legend-value';
+        value.textContent = String(count);
+
+        item.appendChild(color);
+        item.appendChild(label);
+        item.appendChild(value);
+        typeLegend.appendChild(item);
+    });
+}
+
+function updateTypeDonutChart(entries) {
+    if (!typeDonutChart) {
+        return;
+    }
+
+    typeDonutChart.data.labels = entries.map(([type]) => formatTypeLabel(type));
+    typeDonutChart.data.datasets[0].data = entries.map(([, count]) => count);
+    typeDonutChart.data.datasets[0].backgroundColor = entries.map((_, index) => TYPE_COLORS[index % TYPE_COLORS.length]);
+    typeDonutChart.update();
+}
+
+function getStrategyCards() {
+    return Array.from(document.querySelectorAll('.strategy-card'));
+}
+
+function getVisibleStrategyCards() {
+    return getStrategyCards().filter((card) => card.style.display !== 'none');
+}
+
+function formatTypeLabel(type) {
+    if (!type || type === 'non-defini') {
+        return 'Non defini';
+    }
+
+    return type
+        .toLowerCase()
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
 function initEventListeners() {
-    const newStrategyBtn = document.getElementById('newStrategyBtn');
-    if (newStrategyBtn) {
-        newStrategyBtn.addEventListener('click', () => {
-            showToast('✨ Création d\'une nouvelle stratégie - Fonctionnalité à venir');
-        });
-    }
-    
-    const compareToggle = document.getElementById('compare-toggle');
-    if (compareToggle) {
-        compareToggle.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                showToast('📊 Mode comparaison activé - Sélectionnez plusieurs stratégies');
-            } else {
-                showToast('📊 Mode comparaison désactivé');
+    document.querySelectorAll('form[data-confirm-message]').forEach((form) => {
+        form.addEventListener('submit', (e) => {
+            const confirmMessage = form.dataset.confirmMessage || 'Confirmer cette action ?';
+
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
             }
         });
-    }
+    });
 }
 
-// Helper Functions
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
+function initObjectiveModal() {
+    const modal = document.getElementById('objectifModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const objectifForm = document.getElementById('objectifForm');
+    const objectifModalTitle = document.getElementById('objectifModalTitle');
+    const objectifSubmitText = document.getElementById('objectifSubmitText');
+    const selectedStrategyName = document.getElementById('selectedStrategyName');
+    const strategyIdInput = document.getElementById('strategyId');
+    const objectifNameInput = document.getElementById('objectifName');
+    const objectifDescriptionInput = document.getElementById('objectifDescription');
+    const objectifTokenInput = document.getElementById('objectifToken');
+    const priorityBtns = document.querySelectorAll('.priority-btn');
+    const priorityInput = document.getElementById('objectifPriority');
+
+    const setPriority = (priority) => {
+        const normalizedPriority = priority || 'medium';
+
+        priorityBtns.forEach((button) => {
+            button.classList.toggle('active', button.dataset.priority === normalizedPriority);
+        });
+
+        if (priorityInput) {
+            priorityInput.value = normalizedPriority;
+        }
+    };
+
+    const resetModalToCreate = () => {
+        if (objectifForm) {
+            objectifForm.action = objectifForm.dataset.createAction || objectifForm.action;
+            objectifForm.reset();
+        }
+
+        if (objectifTokenInput && objectifForm?.dataset.createToken) {
+            objectifTokenInput.value = objectifForm.dataset.createToken;
+        }
+
+        if (objectifModalTitle) {
+            objectifModalTitle.textContent = 'Attribuer un objectif';
+        }
+
+        if (objectifSubmitText) {
+            objectifSubmitText.textContent = "Attribuer l'objectif";
+        }
+
+        setPriority('medium');
+    };
+
+    const closeModal = () => {
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    };
+
+    document.querySelectorAll('.btn-attribuer-objectif').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            resetModalToCreate();
+
+            if (selectedStrategyName) {
+                selectedStrategyName.textContent = btn.dataset.name || '-';
+            }
+
+            if (strategyIdInput) {
+                strategyIdInput.value = btn.dataset.id || '';
+            }
+
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        });
     });
+
+    document.querySelectorAll('.btn-edit-objective').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            if (selectedStrategyName) {
+                selectedStrategyName.textContent = btn.dataset.strategyName || '-';
+            }
+
+            if (strategyIdInput) {
+                strategyIdInput.value = btn.dataset.strategyId || '';
+            }
+
+            if (objectifForm) {
+                objectifForm.action = btn.dataset.action || objectifForm.action;
+            }
+
+            if (objectifTokenInput) {
+                objectifTokenInput.value = btn.dataset.token || '';
+            }
+
+            if (objectifModalTitle) {
+                objectifModalTitle.textContent = 'Modifier un objectif';
+            }
+
+            if (objectifSubmitText) {
+                objectifSubmitText.textContent = "Enregistrer l'objectif";
+            }
+
+            if (objectifNameInput) {
+                objectifNameInput.value = btn.dataset.name || '';
+            }
+
+            if (objectifDescriptionInput) {
+                objectifDescriptionInput.value = btn.dataset.description || '';
+            }
+
+            setPriority(btn.dataset.priority || 'medium');
+
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+
+    closeModalBtn?.addEventListener('click', closeModal);
+    cancelModalBtn?.addEventListener('click', closeModal);
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    priorityBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            setPriority(btn.dataset.priority || 'medium');
+        });
+    });
+
+    objectifForm?.addEventListener('submit', (e) => {
+        const objectifName = objectifNameInput?.value.trim() || '';
+
+        if (!objectifName) {
+            e.preventDefault();
+            showToast('Veuillez entrer un nom pour l objectif');
+            return;
+        }
+
+        if (!strategyIdInput?.value) {
+            e.preventDefault();
+            showToast('Aucune strategie selectionnee');
+        }
+    });
+}
+
+function calculateROI(budget, gainEstime) {
+    if (!budget || budget === 0) {
+        return gainEstime || 0;
+    }
+
+    return ((gainEstime || 0) / budget) * 100;
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('fr-TN', {
+        style: 'currency',
+        currency: 'TND',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
+}
+
+function formatPercentage(value) {
+    const sign = value >= 0 ? '+' : '';
+    return `${sign}${value}%`;
+}
+
+function getStatusCssClass(status) {
+    switch (status) {
+        case STATUS.PENDING:
+            return 'pending';
+        case STATUS.APPROVED:
+            return 'approved';
+        case STATUS.REJECTED:
+            return 'rejected';
+        case STATUS.IN_PROGRESS:
+            return 'in-progress';
+        case STATUS.UNASSIGNED:
+            return 'unassigned';
+        default:
+            return 'unknown';
+    }
 }
 
 function showToast(message) {
     const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) existingToast.remove();
-    
+    if (existingToast) {
+        existingToast.remove();
+    }
+
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
     toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
     document.body.appendChild(toast);
-    
+
     setTimeout(() => toast.classList.add('show'), 10);
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
-    }, 2500);
+    }, 3000);
 }
 
-
-
-
+window.showToast = showToast;
+window.calculateROI = calculateROI;
+window.formatCurrency = formatCurrency;
+window.formatPercentage = formatPercentage;
+window.getStatusCssClass = getStatusCssClass;
