@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Gérer mon projet{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Mon projet</span>
+                <h1>{{ project.title }}</h1>
+                <p>
+                    {{ project.description ?: 'Aucune description disponible.' }}
+                    {% if not can_edit_project and is_project_accepted %}
+                        Ce projet est accepté : vous ne pouvez plus le modifier.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_show', {id: project.id}) }}">Voir le détail</a>
+                {% if can_edit_project %}
+                    <a class="pm-btn pm-btn-primary" href="{{ path('project_edit', {id: project.id}) }}">Modifier mon projet</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>Informations du projet</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Statut :</strong> {{ project.getStatusLabel() }}</span>
+                    <span><strong>Type :</strong> {{ project.legacyType ?: 'Non précisé' }}</span>
+                    <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
+                    <span><strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
+                    <span><strong>Dernière mise à jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Non disponible' }}</span>
+                </div>
+                {% if can_delete_project %}
+                    <form method="post" action="{{ path('project_delete', {id: project.id}) }}" onsubmit="return confirm('Supprimer ce projet ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_project_' ~ project.id) }}">
+                        <button class="pm-btn pm-btn-danger" type="submit">Supprimer mon projet</button>
+                    </form>
+                {% endif %}
+            </article>
+
+            <article class="pm-card">
+                {% if latest_decision %}
+                    <div class="pm-current-decision">
+                        <span class="pm-badge">Décision actuelle</span>
+                        <strong>{{ latest_decision.getDecisionTitleLabel() }}</strong>
+                        <span>{{ latest_decision.decisionDate|date('d/m/Y') }}</span>
+                        <p>{{ latest_decision.description ?: 'Aucune justification.' }}</p>
+                    </div>
+                {% else %}
+                    <p class="pm-empty-text">Aucune validation associée à ce projet.</p>
+                {% endif %}
+
+                <details class="pm-history-toggle">
+                    <summary class="pm-history-summary">
+                        <span>Afficher l'historique des validations</span>
+                        <span class="pm-history-count">{{ project.decisions|length }}</span>
+                    </summary>
+
+                    <div class="pm-decision-list">
+                        {% for decision in project.decisions %}
+                            <div class="pm-decision-item">
+                                <div class="pm-section-head">
+                                    <div>
+                                        <strong>Statut : {{ decision.getDecisionTitleLabel() }}</strong>
+                                        <span>{{ decision.decisionDate|date('d/m/Y') }}</span>
+                                    </div>
+                                </div>
+                                <p>{{ decision.description ?: 'Aucune justification.' }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </details>
+            </article>
+        </div>
+    </section>
+{% endblock %}

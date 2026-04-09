@@ -1,0 +1,67 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion transaction{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Gestion transaction</span>
+                <h1>Transaction #{{ transaction.id }}</h1>
+                <p>Traitez la transaction associee a l investissement du client.</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_transaction_index') }}">Retour a la liste</a>
+                {% if transaction.investment %}
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_investment_manage', {id: transaction.investment.id}) }}">Voir l investissement</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% include 'back/investment/_module_nav.html.twig' %}
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>Transaction</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Statut :</strong> <span class="pm-status pm-status-{{ transaction.statusCssClass }}">{{ transaction.statusLabel }}</span></span>
+                    <span><strong>Date :</strong> {{ transaction.DateTransac ? transaction.DateTransac|date('d/m/Y') : 'Non renseignee' }}</span>
+                    <span><strong>Montant :</strong> {{ transaction.MontantTransac|number_format(2, '.', ' ') }} {{ transaction.investment ? transaction.investment.CurrencyInv : 'TND' }}</span>
+                    <span><strong>Type :</strong> {{ transaction.type ?: 'Non renseigne' }}</span>
+                    <span><strong>Investissement :</strong> {{ transaction.investment ? '#' ~ transaction.investment.id : 'N/A' }}</span>
+                </div>
+                <div class="pm-card-actions">
+                    <form method="post" action="{{ path('back_transaction_pending', {id: transaction.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('pending_transaction_' ~ transaction.id) }}">
+                        <button class="pm-btn pm-btn-secondary" type="submit">Laisser pending</button>
+                    </form>
+                    <form method="post" action="{{ path('back_transaction_accept', {id: transaction.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('accept_transaction_' ~ transaction.id) }}">
+                        <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                    </form>
+                    <form method="post" action="{{ path('back_transaction_refuse', {id: transaction.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('refuse_transaction_' ~ transaction.id) }}">
+                        <button class="pm-btn pm-btn-danger" type="submit">Refuser</button>
+                    </form>
+                </div>
+            </article>
+
+            <article class="pm-card">
+                <h2>Contexte client</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Client ID :</strong> {{ transaction.client ? transaction.client.idUser : 'N/A' }}</span>
+                    <span><strong>Client :</strong> {{ transaction.clientDisplayName }}</span>
+                    <span><strong>Email :</strong> {{ transaction.client ? transaction.client.getEmailUser() : 'Non renseigne' }}</span>
+                    <span><strong>Projet :</strong> {{ transaction.investment and transaction.investment.project ? transaction.investment.project.title : 'Projet indisponible' }}</span>
+                    <span><strong>Projet ID :</strong> {{ transaction.investment and transaction.investment.project ? transaction.investment.project.id : 'N/A' }}</span>
+                    <span><strong>Fourchette investissement :</strong> {{ transaction.investment ? transaction.investment.budgetRangeLabel : 'Non disponible' }}</span>
+                </div>
+            </article>
+        </div>
+    </section>
+{% endblock %}

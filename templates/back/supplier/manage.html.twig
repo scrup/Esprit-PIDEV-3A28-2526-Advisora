@@ -1,0 +1,78 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion du fournisseur{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Gestion fournisseur</span>
+                <h1>{{ supplier.nomFr }}</h1>
+                <p>Consultez la fiche fournisseur, ses coordonnees et ses ressources rattachees avant toute action CRUD.</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_supplier_index') }}">Retour a la liste</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_index') }}">Voir les ressources</a>
+                {% if can_edit_supplier %}
+                    <a class="pm-btn pm-btn-primary" href="{{ path('supplier_edit', {id: supplier.id}) }}">Modifier le fournisseur</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% include 'back/resource/_module_nav.html.twig' %}
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>Informations du fournisseur</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Statut :</strong> {{ supplier.getStatusLabel() }}</span>
+                    <span><strong>Societe :</strong> {{ supplier.fournisseur }}</span>
+                    <span><strong>Email :</strong> {{ supplier.emailFr }}</span>
+                    <span><strong>Telephone :</strong> {{ supplier.numTelFr }}</span>
+                    <span><strong>Localisation :</strong> {{ supplier.localisationFr }}</span>
+                    <span><strong>Quantite produit :</strong> {{ supplier.quantite }}</span>
+                    <span><strong>Ressources rattachees :</strong> {{ linked_resources_count }}</span>
+                </div>
+                {% if can_delete_supplier %}
+                    <form method="post" action="{{ path('supplier_delete', {id: supplier.id}) }}" onsubmit="return confirm('Supprimer ce fournisseur ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_supplier_' ~ supplier.id) }}">
+                        <button class="pm-btn pm-btn-danger" type="submit">Supprimer le fournisseur</button>
+                    </form>
+                {% endif %}
+            </article>
+
+            <article class="pm-card">
+                <div class="pm-current-decision">
+                    <span class="pm-badge">Etat actuel</span>
+                    <strong>{{ supplier.getStatusLabel() }}</strong>
+                    <span>{{ linked_resources_count }} ressource(s) associee(s)</span>
+                    <p>Le fournisseur {{ supplier.getDisplayName() }} est integre au module Ressource Symfony avec la meme logique de validation que dans l application Java.</p>
+                </div>
+
+                <div class="pm-section-head">
+                    <h2>Ressources rattachees</h2>
+                </div>
+
+                <div class="pm-decision-list">
+                    {% for resource in supplier.resources %}
+                        <div class="pm-decision-item">
+                            <strong>{{ resource.name }}</strong>
+                            <div class="pm-decision-meta">
+                                <span>Statut : {{ resource.getStatusLabel() }}</span>
+                                <span>Quantite : {{ resource.quantity }}</span>
+                                <span>Prix : {{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="pm-empty-text">Aucune ressource n est encore rattachee a ce fournisseur.</p>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+    </section>
+{% endblock %}

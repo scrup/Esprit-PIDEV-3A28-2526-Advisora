@@ -2,20 +2,21 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 use App\Repository\UserRepository;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'user')]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idUser', type: 'integer')]
     private ?int $idUser = null;
 
     public function getIdUser(): ?int
@@ -139,6 +140,34 @@ class User
     {
         $this->roleUser = $roleUser;
         return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) ($this->EmailUser ?? '');
+    }
+
+    public function getRoles(): array
+    {
+        $legacyRole = strtolower((string) $this->roleUser);
+
+        $role = match ($legacyRole) {
+            'admin' => 'ROLE_ADMIN',
+            'gerant' => 'ROLE_GERANT',
+            default => 'ROLE_CLIENT',
+        };
+
+        return array_values(array_unique([$role, 'ROLE_USER']));
+    }
+
+    public function eraseCredentials(): void
+    {
+        // No temporary sensitive data stored on the entity.
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->passwordUser;
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
@@ -295,34 +324,6 @@ class User
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'user')]
-    private Collection $bookings;
-
-    /**
-     * @return Collection<int, Booking>
-     */
-    public function getBookings(): Collection
-    {
-        if (!$this->bookings instanceof Collection) {
-            $this->bookings = new ArrayCollection();
-        }
-        return $this->bookings;
-    }
-
-    public function addBooking(Booking $booking): self
-    {
-        if (!$this->getBookings()->contains($booking)) {
-            $this->getBookings()->add($booking);
-        }
-        return $this;
-    }
-
-    public function removeBooking(Booking $booking): self
-    {
-        $this->getBookings()->removeElement($booking);
-        return $this;
-    }
-
     #[ORM\OneToMany(targetEntity: Decision::class, mappedBy: 'user')]
     private Collection $decisions;
 
@@ -466,17 +467,6 @@ class User
     #[ORM\OneToMany(targetEntity: Userlog::class, mappedBy: 'user')]
     private Collection $userlogs;
 
-    public function __construct()
-    {
-        $this->bookings = new ArrayCollection();
-        $this->decisions = new ArrayCollection();
-        $this->events = new ArrayCollection();
-        $this->investments = new ArrayCollection();
-        $this->projects = new ArrayCollection();
-        $this->strategies = new ArrayCollection();
-        $this->userlogs = new ArrayCollection();
-    }
-
     /**
      * @return Collection<int, Userlog>
      */
@@ -499,124 +489,6 @@ class User
     public function removeUserlog(Userlog $userlog): self
     {
         $this->getUserlogs()->removeElement($userlog);
-        return $this;
-    }
-
-    public function getImagePath(): ?string
-    {
-        return $this->image_path;
-    }
-
-    public function setImagePath(?string $image_path): static
-    {
-        $this->image_path = $image_path;
-
-        return $this;
-    }
-
-    public function getFacePath(): ?string
-    {
-        return $this->face_path;
-    }
-
-    public function setFacePath(?string $face_path): static
-    {
-        $this->face_path = $face_path;
-
-        return $this;
-    }
-
-    public function getTotpSecret(): ?string
-    {
-        return $this->totp_secret;
-    }
-
-    public function setTotpSecret(?string $totp_secret): static
-    {
-        $this->totp_secret = $totp_secret;
-
-        return $this;
-    }
-
-    public function isTotpEnabled(): ?bool
-    {
-        return $this->totp_enabled;
-    }
-
-    public function setTotpEnabled(bool $totp_enabled): static
-    {
-        $this->totp_enabled = $totp_enabled;
-
-        return $this;
-    }
-
-    public function getFailedLoginCount(): ?int
-    {
-        return $this->failed_login_count;
-    }
-
-    public function setFailedLoginCount(int $failed_login_count): static
-    {
-        $this->failed_login_count = $failed_login_count;
-
-        return $this;
-    }
-
-    public function getLockUntil(): ?\DateTime
-    {
-        return $this->lock_until;
-    }
-
-    public function setLockUntil(?\DateTime $lock_until): static
-    {
-        $this->lock_until = $lock_until;
-
-        return $this;
-    }
-
-    public function getLastActivityAt(): ?\DateTime
-    {
-        return $this->last_activity_at;
-    }
-
-    public function setLastActivityAt(?\DateTime $last_activity_at): static
-    {
-        $this->last_activity_at = $last_activity_at;
-
-        return $this;
-    }
-
-    public function getPasswordChangedAt(): ?\DateTime
-    {
-        return $this->password_changed_at;
-    }
-
-    public function setPasswordChangedAt(?\DateTime $password_changed_at): static
-    {
-        $this->password_changed_at = $password_changed_at;
-
-        return $this;
-    }
-
-    public function addStrategy(Strategie $strategy): static
-    {
-        if (!$this->strategies->contains($strategy)) {
-            $this->strategies->add($strategy);
-            $strategy->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeStrategy(Strategie $strategy): static
-    {
-        if ($this->strategies->removeElement($strategy)) {
-            // set the owning side to null (unless already changed)
-            if ($strategy->getUser() === $this) {
-                $strategy->setUser(null);
-            }
-        }
-
         return $this;
     }
 

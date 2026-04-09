@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -125,42 +124,6 @@ class Task
     public function setCreated_at(\DateTimeInterface $created_at): self
     {
         $this->created_at = $created_at;
-        return $this;
-    }
-
-    public function getDurationDays(): ?int
-    {
-        return $this->duration_days;
-    }
-
-    public function setDurationDays(int $duration_days): static
-    {
-        $this->duration_days = $duration_days;
-
-        return $this;
-    }
-
-    public function getLastWarningDate(): ?\DateTime
-    {
-        return $this->last_warning_date;
-    }
-
-    public function setLastWarningDate(?\DateTime $last_warning_date): static
-    {
-        $this->last_warning_date = $last_warning_date;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTime $created_at): static
-    {
-        $this->created_at = $created_at;
-
         return $this;
     }
 

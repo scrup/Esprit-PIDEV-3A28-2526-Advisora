@@ -12,6 +12,11 @@ use App\Repository\ObjectiveRepository;
 #[ORM\Table(name: 'objectives')]
 class Objective
 {
+    public const PRIORITY_LOW = 1;
+    public const PRIORITY_MEDIUM = 2;
+    public const PRIORITY_HIGH = 3;
+    public const PRIORITY_URGENT = 4;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -54,6 +59,28 @@ class Objective
     {
         $this->priorityOb = $priorityOb;
         return $this;
+    }
+
+    public function getPriorityLabel(): string
+    {
+        return match ($this->priorityOb) {
+            self::PRIORITY_LOW => 'Basse',
+            self::PRIORITY_MEDIUM => 'Moyenne',
+            self::PRIORITY_HIGH => 'Haute',
+            self::PRIORITY_URGENT => 'Urgente',
+            default => 'Non definie',
+        };
+    }
+
+    public function getPriorityCssClass(): string
+    {
+        return match ($this->priorityOb) {
+            self::PRIORITY_LOW => 'low',
+            self::PRIORITY_MEDIUM => 'medium',
+            self::PRIORITY_HIGH => 'high',
+            self::PRIORITY_URGENT => 'urgent',
+            default => 'unknown',
+        };
     }
 
     #[ORM\ManyToOne(targetEntity: Strategie::class, inversedBy: 'objectives')]

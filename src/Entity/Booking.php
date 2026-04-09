@@ -2,23 +2,47 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\BookingRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 #[ORM\Table(name: 'bookings')]
 class Booking
 {
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_ACCEPTED = 'accepted';
+    public const STATUS_REFUSED = 'refused';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idBk', type: 'integer')]
     private ?int $idBk = null;
 
+    #[ORM\Column(name: 'bookingDate', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private ?\DateTimeInterface $bookingDate = null;
+
+    #[ORM\Column(name: 'numTicketBk', type: 'integer', options: ['default' => 1])]
+    private ?int $numTicketBk = 1;
+
+    #[ORM\Column(name: 'totalPrixBk', type: 'float', options: ['default' => 0])]
+    private ?float $totalPrixBk = 0.0;
+
+    #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'bookings')]
+    #[ORM\JoinColumn(name: 'idEv', referencedColumnName: 'idEv', nullable: false, onDelete: 'CASCADE')]
+    private ?Event $event = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'bookings')]
+    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
+    private ?User $user = null;
+
+    private ?string $workflowStatus = null;
+
     public function getIdBk(): ?int
+    {
+        return $this->idBk;
+    }
+
+    public function getId(): ?int
     {
         return $this->idBk;
     }
@@ -26,13 +50,16 @@ class Booking
     public function setIdBk(int $idBk): self
     {
         $this->idBk = $idBk;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $bookingDate = null;
-
     public function getBookingDate(): ?\DateTimeInterface
+    {
+        return $this->bookingDate;
+    }
+
+    public function getBookedAt(): ?\DateTimeInterface
     {
         return $this->bookingDate;
     }
@@ -40,25 +67,26 @@ class Booking
     public function setBookingDate(\DateTimeInterface $bookingDate): self
     {
         $this->bookingDate = $bookingDate;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $numTicketBk = null;
 
     public function getNumTicketBk(): ?int
     {
         return $this->numTicketBk;
     }
 
+    public function getTicketCount(): int
+    {
+        return (int) ($this->numTicketBk ?? 0);
+    }
+
     public function setNumTicketBk(int $numTicketBk): self
     {
         $this->numTicketBk = $numTicketBk;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'decimal', nullable: false)]
-    private ?float $totalPrixBk = null;
 
     public function getTotalPrixBk(): ?float
     {
@@ -68,12 +96,9 @@ class Booking
     public function setTotalPrixBk(float $totalPrixBk): self
     {
         $this->totalPrixBk = $totalPrixBk;
+
         return $this;
     }
-
-    #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(name: 'idEv', referencedColumnName: 'idEv')]
-    private ?Event $event = null;
 
     public function getEvent(): ?Event
     {
@@ -83,12 +108,9 @@ class Booking
     public function setEvent(?Event $event): self
     {
         $this->event = $event;
+
         return $this;
     }
-
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser')]
-    private ?User $user = null;
 
     public function getUser(): ?User
     {
@@ -98,147 +120,74 @@ class Booking
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $bookingStatus = null;
-
-    public function getBookingStatus(): ?string
+    public function isOwnedBy(?User $user): bool
     {
-        return $this->bookingStatus;
+        return $user instanceof User
+            && $this->user instanceof User
+            && $this->user->getIdUser() === $user->getIdUser();
     }
 
-    public function setBookingStatus(string $bookingStatus): self
+    public function getClientDisplayName(): string
     {
-        $this->bookingStatus = $bookingStatus;
+        if (!$this->user instanceof User) {
+            return 'Client inconnu';
+        }
+
+        return trim(sprintf('%s %s', (string) $this->user->getPrenomUser(), (string) $this->user->getNomUser()));
+    }
+
+    public function setWorkflowStatus(?string $workflowStatus): self
+    {
+        $normalizedStatus = strtolower(trim((string) $workflowStatus));
+
+        if (!in_array($normalizedStatus, [self::STATUS_PENDING, self::STATUS_ACCEPTED, self::STATUS_REFUSED], true)) {
+            $normalizedStatus = self::STATUS_PENDING;
+        }
+
+        $this->workflowStatus = $normalizedStatus;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $paymentReference = null;
-
-    public function getPaymentReference(): ?string
+    public function getWorkflowStatus(): string
     {
-        return $this->paymentReference;
+        return $this->workflowStatus ?? self::STATUS_PENDING;
     }
 
-    public function setPaymentReference(?string $paymentReference): self
+    public function getWorkflowStatusLabel(): string
     {
-        $this->paymentReference = $paymentReference;
-        return $this;
+        return match ($this->getWorkflowStatus()) {
+            self::STATUS_ACCEPTED => 'Acceptee',
+            self::STATUS_REFUSED => 'Refusee',
+            default => 'En attente',
+        };
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
-    private ?float $refundAmountBk = null;
-
-    public function getRefundAmountBk(): ?float
+    public function getWorkflowStatusCssClass(): string
     {
-        return $this->refundAmountBk;
+        return match ($this->getWorkflowStatus()) {
+            self::STATUS_ACCEPTED => 'accepted',
+            self::STATUS_REFUSED => 'refused',
+            default => 'pending',
+        };
     }
 
-    public function setRefundAmountBk(?float $refundAmountBk): self
+    public function isPending(): bool
     {
-        $this->refundAmountBk = $refundAmountBk;
-        return $this;
+        return $this->getWorkflowStatus() === self::STATUS_PENDING;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $refundDateBk = null;
-
-    public function getRefundDateBk(): ?\DateTimeInterface
+    public function isAccepted(): bool
     {
-        return $this->refundDateBk;
+        return $this->getWorkflowStatus() === self::STATUS_ACCEPTED;
     }
 
-    public function setRefundDateBk(?\DateTimeInterface $refundDateBk): self
+    public function isRefused(): bool
     {
-        $this->refundDateBk = $refundDateBk;
-        return $this;
+        return $this->getWorkflowStatus() === self::STATUS_REFUSED;
     }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $cancelReasonBk = null;
-
-    public function getCancelReasonBk(): ?string
-    {
-        return $this->cancelReasonBk;
-    }
-
-    public function setCancelReasonBk(?string $cancelReasonBk): self
-    {
-        $this->cancelReasonBk = $cancelReasonBk;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'boolean', nullable: false)]
-    private ?bool $notificationSentBk = null;
-
-    public function isNotificationSentBk(): ?bool
-    {
-        return $this->notificationSentBk;
-    }
-
-    public function setNotificationSentBk(bool $notificationSentBk): self
-    {
-        $this->notificationSentBk = $notificationSentBk;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'boolean', nullable: false)]
-    private ?bool $reminder24SentBk = null;
-
-    public function isReminder24SentBk(): ?bool
-    {
-        return $this->reminder24SentBk;
-    }
-
-    public function setReminder24SentBk(bool $reminder24SentBk): self
-    {
-        $this->reminder24SentBk = $reminder24SentBk;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'boolean', nullable: false)]
-    private ?bool $reminder48SentBk = null;
-
-    public function isReminder48SentBk(): ?bool
-    {
-        return $this->reminder48SentBk;
-    }
-
-    public function setReminder48SentBk(bool $reminder48SentBk): self
-    {
-        $this->reminder48SentBk = $reminder48SentBk;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $qrTokenBk = null;
-
-    public function getQrTokenBk(): ?string
-    {
-        return $this->qrTokenBk;
-    }
-
-    public function setQrTokenBk(?string $qrTokenBk): self
-    {
-        $this->qrTokenBk = $qrTokenBk;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $qrImagePathBk = null;
-
-    public function getQrImagePathBk(): ?string
-    {
-        return $this->qrImagePathBk;
-    }
-
-    public function setQrImagePathBk(?string $qrImagePathBk): self
-    {
-        $this->qrImagePathBk = $qrImagePathBk;
-        return $this;
-    }
-
 }

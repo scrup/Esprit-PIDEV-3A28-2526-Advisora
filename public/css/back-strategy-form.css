@@ -1,0 +1,761 @@
+/* Form Container */
+.form-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 5% 60px;
+}
+
+.form-header {
+    margin-bottom: 30px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-terracotta);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    transition: 0.2s;
+}
+
+.back-link:hover {
+    transform: translateX(-4px);
+    color: var(--primary-dark);
+}
+
+.form-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--deep-umber);
+    margin-bottom: 10px;
+}
+
+.form-header h1 .material-symbols-outlined {
+    color: var(--primary-terracotta);
+    font-size: 2rem;
+}
+
+.form-header p {
+    color: #6B5A48;
+}
+
+.form-card {
+    background: white;
+    border-radius: 28px;
+    border: 1px solid #F0E7DC;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.strategy-form {
+    padding: 32px;
+}
+
+.form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #F0E7DC;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.form-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--deep-umber);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-section h3::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: var(--primary-terracotta);
+    border-radius: 4px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 700px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .strategy-form {
+        padding: 20px;
+    }
+}
+
+/* ============================================ */
+/* IMPROVED FORM GROUP & INPUT STYLES */
+/* ============================================ */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.form-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6B5A48;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.form-group label .required {
+    color: #D68B6E;
+    margin-left: 4px;
+}
+
+/* Input wrapper for icon positioning */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    color: #B8A990;
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.input-wrapper .form-input,
+.input-wrapper .form-select {
+    padding-left: 48px;
+}
+
+/* Base input styles */
+.form-input, 
+.form-select, 
+.form-textarea {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1.5px solid #E8E0D5;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.25s ease;
+    background: #FFFFFF;
+    color: var(--deep-umber);
+    line-height: 1.5;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Select specific styles */
+.form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%238A7A64' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    cursor: pointer;
+}
+
+/* Hover state */
+.form-input:hover, 
+.form-select:hover, 
+.form-textarea:hover {
+    border-color: #CBBEAE;
+    background-color: #FEFCF8;
+}
+
+/* Focus state */
+.form-input:focus, 
+.form-select:focus, 
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-terracotta);
+    box-shadow: 0 0 0 4px rgba(195, 125, 93, 0.12);
+    background-color: #FFFFFF;
+}
+
+/* Filled state */
+.form-input:not(:placeholder-shown),
+.form-select:not([value=""]),
+.form-textarea:not(:placeholder-shown) {
+    border-color: var(--primary-terracotta);
+    background-color: #FEFAF5;
+}
+
+/* Disabled state */
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+    background-color: #F5F1E8;
+    border-color: #E8E0D5;
+    color: #A89A88;
+    cursor: not-allowed;
+}
+
+/* Placeholder styling */
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: #CBBEAE;
+    font-weight: 400;
+    font-size: 0.85rem;
+}
+
+/* Error styles */
+.form-group-error .form-input,
+.form-group-error .form-select,
+.form-group-error .form-textarea {
+    border-color: #D68B6E;
+    background-color: #FFF8F7;
+}
+
+.form-group-error .form-input:focus,
+.form-group-error .form-select:focus,
+.form-group-error .form-textarea:focus {
+    box-shadow: 0 0 0 4px rgba(214, 139, 110, 0.15);
+}
+
+.form-error {
+    color: #D68B6E;
+    font-size: 0.7rem;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-error::before {
+    content: '⚠️';
+    font-size: 0.65rem;
+}
+
+/* Helper text */
+.form-helper {
+    font-size: 0.7rem;
+    color: #A89A88;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-helper i,
+.form-helper .material-symbols-outlined {
+    font-size: 0.85rem;
+}
+
+/* ============================================ */
+/* TYPE BUTTONS (Radio styled as buttons) */
+/* ============================================ */
+
+.type-buttons-container {
+    margin-top: 5px;
+}
+
+.type-buttons-container .type-radio-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.type-buttons-container input[type="radio"] {
+    display: none;
+}
+
+.type-buttons-container input[type="radio"] + label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: white;
+    border: 1.5px solid #E8E0D5;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--deep-umber);
+}
+
+.type-buttons-container input[type="radio"] + label:hover {
+    border-color: var(--primary-terracotta);
+    background: rgba(195, 125, 93, 0.05);
+    transform: translateY(-1px);
+}
+
+.type-buttons-container input[type="radio"]:checked + label {
+    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
+    border-color: var(--primary-terracotta);
+    color: white;
+    box-shadow: 0 4px 12px rgba(195, 125, 93, 0.3);
+}
+
+.type-buttons-container input[type="radio"]:checked + label .material-symbols-outlined {
+    color: white;
+}
+
+/* ============================================ */
+/* TYPE BUTTONS (Radio styled as buttons) - FIXED */
+/* ============================================ */
+
+.type-buttons-container {
+    margin-top: 5px;
+}
+
+.type-buttons-container .type-radio-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Style for each radio option container */
+.type-buttons-container .type-radio-group div {
+    display: inline-block;
+}
+
+/* Hide the default radio inputs */
+.type-buttons-container input[type="radio"] {
+    display: none;
+}
+
+/* Style the labels as buttons */
+.type-buttons-container input[type="radio"] + label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: white;
+    border: 1.5px solid #E8E0D5;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--deep-umber);
+    margin: 0;
+}
+
+.type-buttons-container input[type="radio"] + label:hover {
+    border-color: var(--primary-terracotta);
+    background: rgba(195, 125, 93, 0.05);
+    transform: translateY(-1px);
+}
+
+/* Style for checked state */
+.type-buttons-container input[type="radio"]:checked + label {
+    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
+    border-color: var(--primary-terracotta);
+    color: white;
+    box-shadow: 0 4px 12px rgba(195, 125, 93, 0.3);
+}
+
+.type-buttons-container input[type="radio"]:checked + label .material-symbols-outlined {
+    color: white;
+}
+
+/* Alternative selector if Symfony wraps differently */
+.type-buttons-container .form-group {
+    margin-bottom: 0;
+}
+
+/* Direct styling for the radio group wrapper */
+.strategy-form .type-radio-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.strategy-form .type-radio-group div {
+    display: inline-block;
+}
+
+.strategy-form .type-radio-group input[type="radio"] {
+    display: none;
+}
+
+.strategy-form .type-radio-group input[type="radio"] + label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: white;
+    border: 1.5px solid #E8E0D5;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--deep-umber);
+}
+
+.strategy-form .type-radio-group input[type="radio"] + label:hover {
+    border-color: var(--primary-terracotta);
+    background: rgba(195, 125, 93, 0.05);
+}
+
+.strategy-form .type-radio-group input[type="radio"]:checked + label {
+    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
+    border-color: var(--primary-terracotta);
+    color: white;
+    box-shadow: 0 4px 12px rgba(195, 125, 93, 0.3);
+}
+
+/* ============================================ */
+/* STATUS RADIO BUTTONS (styled like risk) - FIXED */
+/* ============================================ */
+
+.risk-buttons-container {
+    margin-top: 5px;
+}
+
+.risk-buttons-container .risk-radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* Style for each radio option container */
+.risk-buttons-container .risk-radio-group div {
+    display: inline-block;
+}
+
+/* Hide default radio inputs */
+.risk-buttons-container input[type="radio"] {
+    display: none;
+}
+
+/* Style the labels as status badges */
+.risk-buttons-container input[type="radio"] + label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 50px;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: white;
+    border: 1.5px solid #E8E0D5;
+    cursor: pointer;
+    margin: 0;
+}
+
+.risk-buttons-container input[type="radio"] + label:hover {
+    transform: translateY(-1px);
+}
+
+/* Pending/En attente - Yellow/Orange style */
+.risk-buttons-container input[value="pending"]:checked + label {
+    background: #FFF8E7;
+    color: #D4A017;
+    border-color: #E6C87A;
+    box-shadow: 0 2px 8px rgba(212, 160, 23, 0.15);
+}
+
+/* Approved/Acceptée - Green style */
+.risk-buttons-container input[value="approved"]:checked + label {
+    background: #E8F0E4;
+    color: #5A7A4A;
+    border-color: #8FAA7E;
+    box-shadow: 0 2px 8px rgba(95, 125, 78, 0.15);
+}
+
+/* Rejected/Refusée - Red style */
+.risk-buttons-container input[value="rejected"]:checked + label {
+    background: #FFE8E6;
+    color: #D68B6E;
+    border-color: #D68B6E;
+    box-shadow: 0 2px 8px rgba(214, 139, 110, 0.15);
+}
+
+/* Alternative direct selectors */
+.strategy-form .risk-radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.strategy-form .risk-radio-group div {
+    display: inline-block;
+}
+
+.strategy-form .risk-radio-group input[type="radio"] {
+    display: none;
+}
+
+.strategy-form .risk-radio-group input[type="radio"] + label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: white;
+    border: 1.5px solid #E8E0D5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.strategy-form .risk-radio-group input[type="radio"] + label:hover {
+    transform: translateY(-1px);
+}
+
+.strategy-form .risk-radio-group input[value="pending"]:checked + label {
+    background: #FFF8E7;
+    color: #D4A017;
+    border-color: #E6C87A;
+}
+
+.strategy-form .risk-radio-group input[value="approved"]:checked + label {
+    background: #E8F0E4;
+    color: #5A7A4A;
+    border-color: #8FAA7E;
+}
+
+.strategy-form .risk-radio-group input[value="rejected"]:checked + label {
+    background: #FFE8E6;
+    color: #D68B6E;
+    border-color: #D68B6E;
+}
+
+/* ============================================ */
+/* IMPACT SLIDER */
+/* ============================================ */
+
+.impact-slider {
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, #E8E0D5, #D1C3B2);
+    border-radius: 10px;
+    accent-color: var(--primary-terracotta);
+    cursor: pointer;
+}
+
+.impact-slider:focus {
+    outline: none;
+}
+
+.slider-value {
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary-terracotta);
+    margin-top: 8px;
+    background: rgba(195, 125, 93, 0.1);
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 30px;
+}
+
+/* ============================================ */
+/* SWOT GRID */
+/* ============================================ */
+
+.swot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 700px) {
+    .swot-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.swot-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.swot-item label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 30px;
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.swot-item label::before {
+    content: '✨';
+    font-size: 0.7rem;
+}
+
+.swot-item.strengths label { background: #E8F0E4; color: #5A7A4A; }
+.swot-item.weaknesses label { background: #FFE8E6; color: #D68B6E; }
+.swot-item.opportunities label { background: #E8F0E4; color: #5A7A4A; }
+.swot-item.threats label { background: #FFE8E6; color: #D68B6E; }
+
+.swot-item .form-textarea {
+    min-height: 100px;
+}
+
+/* ============================================ */
+/* FORM ACTIONS */
+/* ============================================ */
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #F0E7DC;
+}
+
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: transparent;
+    border: 1.5px solid #D1C3B2;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--deep-umber);
+}
+
+.btn-cancel:hover {
+    background: var(--warm-beige);
+    border-color: var(--primary-terracotta);
+    transform: translateY(-1px);
+}
+
+.btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 36px;
+    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
+    border: none;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    box-shadow: 0 4px 12px rgba(195, 125, 93, 0.25);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(195, 125, 93, 0.35);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+.btn-submit .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
+/* ============================================ */
+/* FORM HINT */
+/* ============================================ */
+
+.form-hint {
+    font-size: 0.7rem;
+    color: #A89A88;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-hint::before {
+    content: '💡';
+    font-size: 0.7rem;
+}
+
+/* ============================================ */
+/* SUCCESS / ERROR STATES */
+/* ============================================ */
+
+.form-group-success .form-input,
+.form-group-success .form-select {
+    border-color: #8FAA7E;
+    background-color: #F5F9F2;
+}
+
+.success-message {
+    color: #5A7A4A;
+    font-size: 0.7rem;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.success-message::before {
+    content: '✓';
+    font-weight: bold;
+}
+
+/* ============================================ */
+/* READONLY FIELD STYLES */
+/* ============================================ */
+
+.form-input[readonly],
+.form-select[readonly],
+.form-textarea[readonly] {
+    background-color: #F5F1E8;
+    border-color: #E8E0D5;
+    cursor: default;
+    color: #8A7A64;
+}
+
+/* ============================================ */
+/* ANIMATIONS */
+/* ============================================ */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+.form-group:nth-child(1) { animation-delay: 0.05s; }
+.form-group:nth-child(2) { animation-delay: 0.1s; }
+.form-group:nth-child(3) { animation-delay: 0.15s; }
+.form-group:nth-child(4) { animation-delay: 0.2s; }

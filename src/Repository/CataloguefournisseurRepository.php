@@ -16,28 +16,62 @@ class CataloguefournisseurRepository extends ServiceEntityRepository
         parent::__construct($registry, Cataloguefournisseur::class);
     }
 
-    //    /**
-    //     * @return Cataloguefournisseur[] Returns an array of Cataloguefournisseur objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findBackOfficeSuppliers(array $filters = []): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.resources', 'r')
+            ->addSelect('r')
+            ->orderBy('c.idFr', 'DESC');
 
-    //    public function findOneBySomeField($value): ?Cataloguefournisseur
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (!empty($filters['q'])) {
+            $search = '%' . mb_strtolower(trim((string) $filters['q'])) . '%';
+            $qb->andWhere('
+                LOWER(COALESCE(c.nomFr, \'\')) LIKE :q
+                OR LOWER(COALESCE(c.fournisseur, \'\')) LIKE :q
+                OR LOWER(COALESCE(c.emailFr, \'\')) LIKE :q
+                OR LOWER(COALESCE(c.localisationFr, \'\')) LIKE :q
+                OR LOWER(COALESCE(c.numTelFr, \'\')) LIKE :q
+                OR CONCAT(\'\', c.idFr) LIKE :q
+            ')
+                ->setParameter('q', $search);
+        }
+
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === Cataloguefournisseur::STATUS_ACTIVE) {
+                $qb->andWhere('c.quantite > 0');
+            }
+
+            if ($filters['status'] === Cataloguefournisseur::STATUS_EMPTY) {
+                $qb->andWhere('c.quantite <= 0');
+            }
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findOneWithResources(int $id): ?Cataloguefournisseur
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.resources', 'r')
+            ->addSelect('r')
+            ->andWhere('c.idFr = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function existsByName(string $name, ?int $excludeId = null): bool
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->select('COUNT(c.idFr)')
+            ->andWhere('LOWER(c.nomFr) = LOWER(:name)')
+            ->setParameter('name', trim($name));
+
+        if ($excludeId !== null) {
+            $qb->andWhere('c.idFr <> :excludeId')
+                ->setParameter('excludeId', $excludeId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
 }

@@ -1,39 +1,60 @@
 {# Currency ticker #}
 <div class="top-currency-bar">
     <div class="currency-ticker" id="forexTicker">
-        <span><i class="fas fa-coins"></i> <span class="ticker-label">🇹🇳 TND/USD:</span> <span id="tndusd">0.3215</span> <span id="tndusdChange" class="positive">▲ +0.18%</span></span>
-        <span><i class="fas fa-euro-sign"></i> <span class="ticker-label">TND/EUR:</span> <span id="tndeur">0.2950</span> <span id="tndeurChange" class="positive">▲ +0.07%</span></span>
-        <span><i class="fas fa-pound-sign"></i> <span class="ticker-label">TND/GBP:</span> <span id="tndgbp">0.2532</span> <span id="tndgbpChange" class="negative">▼ -0.11%</span></span>
-        <span><i class="fas fa-chart-line"></i> <span class="ticker-label">TND/JPY:</span> <span id="tndjpy">48.62</span> <span id="tndjpyChange" class="positive">▲ +0.23%</span></span>
-        <span><i class="fas fa-franc-sign"></i> <span class="ticker-label">TND/CHF:</span> <span id="tndchf">0.2845</span> <span id="tndchfChange" class="negative">▼ -0.05%</span></span>
-        <span><i class="fas fa-dollar-sign"></i> <span class="ticker-label">TND/CAD:</span> <span id="tndcad">0.4370</span> <span id="tndcadChange" class="positive">▲ +0.09%</span></span>
-        <span><i class="fas fa-chart-simple"></i> <span class="ticker-label">TND/CNY:</span> <span id="tndcny">2.3210</span> <span id="tndcnyChange" class="negative">▼ -0.03%</span></span>
+        <span><i class="fas fa-coins"></i> <span class="ticker-label">TND/USD:</span> <span id="tndusd">0.3215</span> <span id="tndusdChange" class="positive">+0.18%</span></span>
+        <span><i class="fas fa-euro-sign"></i> <span class="ticker-label">TND/EUR:</span> <span id="tndeur">0.2950</span> <span id="tndeurChange" class="positive">+0.07%</span></span>
+        <span><i class="fas fa-pound-sign"></i> <span class="ticker-label">TND/GBP:</span> <span id="tndgbp">0.2532</span> <span id="tndgbpChange" class="negative">-0.11%</span></span>
+        <span><i class="fas fa-chart-line"></i> <span class="ticker-label">TND/JPY:</span> <span id="tndjpy">48.62</span> <span id="tndjpyChange" class="positive">+0.23%</span></span>
+        <span><i class="fas fa-franc-sign"></i> <span class="ticker-label">TND/CHF:</span> <span id="tndchf">0.2845</span> <span id="tndchfChange" class="negative">-0.05%</span></span>
+        <span><i class="fas fa-dollar-sign"></i> <span class="ticker-label">TND/CAD:</span> <span id="tndcad">0.4370</span> <span id="tndcadChange" class="positive">+0.09%</span></span>
+        <span><i class="fas fa-chart-simple"></i> <span class="ticker-label">TND/CNY:</span> <span id="tndcny">2.3210</span> <span id="tndcnyChange" class="negative">-0.03%</span></span>
     </div>
     <div class="ticker-subtitle">
-        <i class="fas fa-chart-line"></i> Dinar Tunisien (TND) · Taux de change en direct
+        <i class="fas fa-chart-line"></i> Dinar Tunisien (TND) - Taux de change en direct
     </div>
 </div>
 
-<header id="header">
-    <div class="logo">
+<header id="header" class="site-header">
+    <a href="{{ path('app_home') }}" class="logo header-brand">
         <img src="{{ asset('assets/logo.png') }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
-        Advisora
-    </div>
-    <nav>
+        <span class="logo-copy">
+            <span class="logo-title">Advisora</span>
+            <span class="logo-subtitle">Conseil et suivi strategique</span>
+        </span>
+    </a>
+    <nav class="header-nav" aria-label="Navigation principale">
         <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">Accueil</a>
         <a href="{{ path('app_shop') }}" class="nav-link {% if app.request.get('_route') == 'app_shop' %}active{% endif %}">Boutique</a>
-        <a href="#about" class="nav-link">À propos</a>
+        <a href="{{ path('project_index') }}" class="nav-link {% if app.request.get('_route') starts with 'project_' %}active{% endif %}">Projet</a>
+        {% if app.user and app.user.getRoleUser() == 'client' %}
+            <a href="{{ path('investment_index') }}" class="nav-link {% if app.request.get('_route') starts with 'investment_' or app.request.get('_route') starts with 'transaction_' %}active{% endif %}">Investissements</a>
+        {% endif %}
+        <a href="{{ path('event_index') }}" class="nav-link {% if app.request.get('_route') starts with 'event_' %}active{% endif %}">Evenements</a>
+        <a href="{{ path('resource_index') }}" class="nav-link {% if app.request.get('_route') starts with 'resource_' %}active{% endif %}">Ressources</a>
         <a href="#solutions" class="nav-link">Solutions</a>
         <a href="#whyus" class="nav-link">Pourquoi nous choisir ?</a>
-        <a href="#reviews" class="nav-link">Témoignages</a>
+        <a href="#reviews" class="nav-link">Temoignages</a>
     </nav>
     <div class="header-actions">
-        <button class="btn btn-outline" id="loginBtn"><i class="far fa-user"></i> Connexion</button>
-        <button class="btn btn-primary" id="getStartedBtn">Commencer →</button>
-        <button class="cart-btn" id="cartBtn">
-            <i class="fas fa-shopping-cart"></i>
-            <span class="cart-count" id="cartCount">0</span>
-        </button>
+        <div class="header-primary-actions">
+            {% if app.user %}
+                <form method="post" action="{{ path('app_logout') }}" class="header-auth-form">
+                    <button class="btn btn-outline" type="submit"><i class="fas fa-right-from-bracket"></i> Deconnexion</button>
+                </form>
+            {% else %}
+                <a class="btn btn-outline" id="loginBtn" href="{{ path('app_login') }}"><i class="far fa-user"></i> Connexion</a>
+            {% endif %}
+            <button class="btn btn-primary" id="getStartedBtn">Commencer</button>
+        </div>
+        <div class="header-utility-actions">
+            {% if app.user and app.user.getRoleUser() in ['admin', 'gerant'] %}
+                {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'front'} %}
+            {% endif %}
+            <button class="cart-btn" id="cartBtn" type="button" aria-label="Ouvrir le panier">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+        </div>
     </div>
 </header>
 
@@ -53,14 +74,8 @@
     <div class="cart-footer">
         <div class="cart-total">
             <span>Total</span>
-            <span class="total-amount" id="cartTotal">0.00 €</span>
+            <span class="total-amount" id="cartTotal">0.00 EUR</span>
         </div>
-        <button class="btn btn-primary checkout-btn" id="checkoutBtn">Procéder au paiement →</button>
+        <button class="btn btn-primary checkout-btn" id="checkoutBtn">Proceder au paiement -></button>
     </div>
 </div>
-
-<main>
-    {% block body %}{% endblock %}
-</main>
-
-
