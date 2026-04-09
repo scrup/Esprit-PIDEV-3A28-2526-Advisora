@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Gerer la ressource{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Gestion ressource</span>
+                <h1>{{ resource.name }}</h1>
+                <p>Supervisez la fiche ressource, son etat de stock et son rattachement fournisseur.</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('resource_show', {id: resource.id}) }}">Voir le detail</a>
+                {% if can_edit_resource %}
+                    <a class="pm-btn pm-btn-primary" href="{{ path('resource_edit', {id: resource.id}) }}">Modifier la ressource</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>Informations de la ressource</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Statut :</strong> {{ resource.getStatusLabel() }}</span>
+                    <span><strong>Fournisseur :</strong> {{ resource.getSupplierDisplayName() }}</span>
+                    <span><strong>Stock total :</strong> {{ resource.quantity }}</span>
+                    <span><strong>Stock reserve :</strong> {{ reserved_stock }}</span>
+                    <span><strong>Stock disponible :</strong> {{ available_stock }}</span>
+                    <span><strong>Prix :</strong> {{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><strong>Reservations liees :</strong> {{ assigned_projects_count }}</span>
+                </div>
+                {% if can_delete_resource %}
+                    <form method="post" action="{{ path('resource_delete', {id: resource.id}) }}" onsubmit="return confirm('Supprimer cette ressource ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_' ~ resource.id) }}">
+                        <button class="pm-btn pm-btn-danger" type="submit">Supprimer la ressource</button>
+                    </form>
+                {% endif %}
+            </article>
+
+            <article class="pm-card">
+                <div class="pm-resource-media">
+                    {% if resource.primaryImageUrl %}
+                        <img src="{{ resource.primaryImageUrl }}" alt="{{ resource.name }}">
+                    {% else %}
+                        <div class="pm-resource-placeholder"><i class="fas fa-box-open"></i></div>
+                    {% endif %}
+                </div>
+                <div class="pm-current-decision">
+                    <span class="pm-badge">Etat actuel</span>
+                    <strong>{{ resource.getStatusLabel() }}</strong>
+                    <span>{{ assigned_projects_count }} reservation(s) rattachee(s)</span>
+                    <p>Le prix catalogue de cette ressource est de {{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}.</p>
+                </div>
+
+                <details class="pm-history-toggle">
+                    <summary class="pm-history-summary">
+                        <span>Afficher les projets lies aux reservations</span>
+                        <span class="pm-history-count">{{ resource.projects|length }}</span>
+                    </summary>
+                    <div class="pm-decision-list">
+                        {% for project in resource.projects %}
+                            <div class="pm-decision-item">
+                                <strong>{{ project.title }}</strong>
+                                <div class="pm-decision-meta">
+                                    <span>Statut : {{ project.getStatusLabel() }}</span>
+                                    <span>Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                                </div>
+                                <p>{{ project.description ?: 'Aucune description disponible.' }}</p>
+                            </div>
+                        {% else %}
+                            <p class="pm-empty-text">Aucun projet n utilise encore cette ressource.</p>
+                        {% endfor %}
+                    </div>
+                </details>
+            </article>
+        </div>
+    </section>
+{% endblock %}

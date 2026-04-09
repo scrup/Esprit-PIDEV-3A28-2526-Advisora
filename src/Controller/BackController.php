@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\DecisionRepository;
 use App\Repository\ProjectRepository;
+use App\Repository\StrategieRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -11,9 +12,14 @@ use Symfony\Component\Routing\Attribute\Route;
 final class BackController extends AbstractController
 {
     #[Route('/back', name: 'app_back')]
-    public function index(ProjectRepository $projectRepository, DecisionRepository $decisionRepository): Response
+    public function index(
+        ProjectRepository $projectRepository,
+        DecisionRepository $decisionRepository,
+        StrategieRepository $strategieRepository
+    ): Response
     {
         $statusCounters = $projectRepository->getStatusCounters();
+        $strategyAcceptanceTimeline = $strategieRepository->getAcceptanceTimeline();
 
         return $this->render('back/back.html.twig', [
             'user' => $this->getUser(),
@@ -24,6 +30,7 @@ final class BackController extends AbstractController
             'total_decisions' => $decisionRepository->count([]),
             'latest_projects' => $projectRepository->findLatestProjects(6),
             'latest_decisions' => $decisionRepository->findLatestGlobal(6),
+            'strategy_acceptance_timeline' => $strategyAcceptanceTimeline,
         ]);
     }
 }

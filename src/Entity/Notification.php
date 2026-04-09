@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -110,35 +109,6 @@ class Notification
     public function setTarget_project_id(?int $target_project_id): self
     {
         $this->target_project_id = $target_project_id;
-        return $this;
-    }
-
-    public function isRead(): ?bool
-    {
-        return $this->isRead;
-    }
-
-    public function getTargetRole(): ?string
-    {
-        return $this->target_role;
-    }
-
-    public function setTargetRole(?string $target_role): static
-    {
-        $this->target_role = $target_role;
-
-        return $this;
-    }
-
-    public function getTargetProjectId(): ?int
-    {
-        return $this->target_project_id;
-    }
-
-    public function setTargetProjectId(?int $target_project_id): static
-    {
-        $this->target_project_id = $target_project_id;
-
         return $this;
     }
 

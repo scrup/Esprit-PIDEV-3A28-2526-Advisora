@@ -1,0 +1,89 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des transactions{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Back office</span>
+                <h1>Gestion des transactions</h1>
+                <p>Acceptez, refusez ou remettez en attente les transactions client.</p>
+            </div>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">Retour au tableau de bord</a>
+        </div>
+
+        {% include 'back/investment/_module_nav.html.twig' %}
+
+        <div class="pm-form-card pm-filter-card">
+            <form method="get" class="pm-filter-grid">
+                <div>
+                    <label for="q">Recherche</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Projet, type, investissement, ID...">
+                </div>
+                <div>
+                    <label for="status">Statut</label>
+                    <select id="status" name="status">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="owner">Client</label>
+                    <input id="owner" type="text" name="owner" value="{{ filters.owner }}" placeholder="Nom, email ou ID client">
+                </div>
+                <div class="pm-filter-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_transaction_index') }}">Reinitialiser</a>
+                </div>
+            </form>
+        </div>
+
+        <section class="pm-grid">
+            {% for transaction in transactions %}
+                <article class="pm-card">
+                    <div class="pm-card-head">
+                        <span class="pm-status pm-status-{{ transaction.statusCssClass }}">{{ transaction.statusLabel }}</span>
+                        <span class="pm-meta">Transaction #{{ transaction.id }}</span>
+                    </div>
+                    <h2>{{ transaction.investment and transaction.investment.project ? transaction.investment.project.title : 'Projet indisponible' }}</h2>
+                    <p>{{ transaction.type ?: 'Type non renseigne' }}</p>
+                    <div class="pm-meta-list pm-meta-list-vertical">
+                        <span><strong>Client ID :</strong> {{ transaction.client ? transaction.client.idUser : 'N/A' }}</span>
+                        <span><strong>Client :</strong> {{ transaction.clientDisplayName }}</span>
+                        <span><strong>Investissement :</strong> #{{ transaction.investment ? transaction.investment.id : 'N/A' }}</span>
+                        <span><strong>Date :</strong> {{ transaction.DateTransac ? transaction.DateTransac|date('d/m/Y') : 'Non renseignee' }}</span>
+                        <span><strong>Montant :</strong> {{ transaction.MontantTransac|number_format(2, '.', ' ') }} {{ transaction.investment ? transaction.investment.CurrencyInv : 'TND' }}</span>
+                    </div>
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('back_transaction_manage', {id: transaction.id}) }}">Ouvrir</a>
+                        <form method="post" action="{{ path('back_transaction_pending', {id: transaction.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('pending_transaction_' ~ transaction.id) }}">
+                            <button class="pm-btn pm-btn-secondary" type="submit">Pending</button>
+                        </form>
+                        <form method="post" action="{{ path('back_transaction_accept', {id: transaction.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('accept_transaction_' ~ transaction.id) }}">
+                            <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                        </form>
+                        <form method="post" action="{{ path('back_transaction_refuse', {id: transaction.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('refuse_transaction_' ~ transaction.id) }}">
+                            <button class="pm-btn pm-btn-danger" type="submit">Refuser</button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <div class="pm-empty">
+                    <h2>Aucune transaction ne correspond aux filtres</h2>
+                    <p>Les transactions client apparaitront ici avec leurs actions de traitement.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </section>
+{% endblock %}

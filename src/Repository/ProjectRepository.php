@@ -23,6 +23,11 @@ class ProjectRepository extends ServiceEntityRepository
         }
 
         $qb = $this->createQueryBuilder('p')
+            ->distinct()
+            ->leftJoin('p.user', 'u')
+            ->addSelect('u')
+            ->leftJoin('p.strategies', 's')
+            ->addSelect('s')
             ->orderBy('p.createdAtProj', 'DESC')
             ->addOrderBy('p.idProj', 'DESC');
 

@@ -1,0 +1,136 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ resource.name }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-detail-shell">
+        <div class="pm-detail-main">
+            <a class="pm-back-link" href="{{ path('resource_index') }}">← Retour a la liste des ressources</a>
+            <div class="pm-card pm-card-large">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ resource.status|default('')|lower|replace({' ':'_','-':'_'}) }}">{{ resource.getStatusLabel() }}</span>
+                    <span class="pm-meta">Ressource #{{ resource.id }}</span>
+                </div>
+                <div class="pm-resource-media">
+                    {% if resource.primaryImageUrl %}
+                        <img src="{{ resource.primaryImageUrl }}" alt="{{ resource.name }}">
+                    {% else %}
+                        <div class="pm-resource-placeholder"><i class="fas fa-box-open"></i></div>
+                    {% endif %}
+                </div>
+                <h1>{{ resource.name }}</h1>
+                <p>Cette fiche detaille la ressource, son prix, son stock disponible et son rattachement fournisseur.</p>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-boxes-stacked"></i> Quantite : {{ resource.quantity }}</span>
+                    <span><i class="fas fa-wallet"></i> Prix : {{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-truck"></i> Fournisseur : {{ resource.getSupplierDisplayName() }}</span>
+                    <span><i class="fas fa-diagram-project"></i> Reservations liees : {{ resource.projects|length }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-box"></i> Stock reserve : {{ reserved_stock }}</span>
+                    <span><i class="fas fa-check-circle"></i> Stock disponible reel : {{ available_stock }}</span>
+                </div>
+                {% if can_manage_resources %}
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ use_back_manage ? path('resource_back_manage', {id: resource.id}) : path('resource_manage', {id: resource.id}) }}">
+                            {{ use_back_manage ? 'Traiter cette ressource' : 'Gerer cette ressource' }}
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <aside class="pm-detail-side">
+            <div class="pm-card">
+                <div class="pm-current-decision">
+                    <span class="pm-badge">Synthese</span>
+                    <strong>{{ resource.getStatusLabel() }}</strong>
+                    <span>Stock actuel : {{ resource.quantity }}</span>
+                    <span>Disponible a la reservation : {{ available_stock }}</span>
+                    <p>Cette ressource est rattachee au fournisseur {{ resource.getSupplierDisplayName() }} et liee a {{ resource.projects|length }} projet(s).</p>
+                </div>
+
+                {% if can_reserve_resource %}
+                    <div class="pm-form-card pm-reservation-box" style="margin-top: 1.25rem;">
+                        <div class="pm-current-decision pm-reservation-intro">
+                            <span class="pm-badge">Reservation client</span>
+                            <strong>Reserver cette ressource</strong>
+                            <span>Choisissez un projet client ou laissez le systeme reutiliser / creer un projet automatiquement.</span>
+                            <p>La reservation garde la logique metier attendue: quantite controlee, liaison dans project_resources et stock disponible mis a jour.</p>
+                        </div>
+
+                        {% if available_stock > 0 %}
+                            <form method="post" action="{{ path('resource_reserve', {id: resource.id}) }}" class="pm-validated-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('reserve_resource_' ~ resource.id) }}">
+
+                                <div class="pm-reservation-grid">
+                                    <div class="pm-field">
+                                        <label for="reservation_quantity">Quantite</label>
+                                        <input id="reservation_quantity" type="number" name="quantity" min="1" max="{{ available_stock }}" value="1" required data-validation-label="Quantite" data-validation-min-message="Quantite doit etre superieure a 0.">
+                                        <div class="pm-field-errors" data-field-errors></div>
+                                    </div>
+
+                                    <div class="pm-field">
+                                        <label for="reservation_project">Projet</label>
+                                        <select id="reservation_project" name="project_id">
+                                            <option value="">Utiliser le dernier projet ou creer automatiquement</option>
+                                            {% for project in client_projects %}
+                                                <option value="{{ project.id }}">{{ project.title }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="pm-reservation-actions">
+                                    <button class="pm-btn pm-btn-primary pm-btn-block" type="submit">Reserver la ressource</button>
+                                    <div class="pm-reservation-secondary">
+                                        <a class="pm-btn pm-btn-secondary" href="{{ path('resource_reservations') }}">Mes reservations</a>
+                                        <a class="pm-btn pm-btn-secondary" href="{{ path('resource_index') }}">Retour au catalogue</a>
+                                    </div>
+                                </div>
+                            </form>
+                        {% else %}
+                            <p class="pm-empty-text">Cette ressource n est pas reservable pour le moment car le stock disponible reel est a zero.</p>
+                        {% endif %}
+                    </div>
+                {% elseif not app.user %}
+                    <div class="pm-form-card" style="margin-top: 1.25rem;">
+                        <div class="pm-current-decision">
+                            <span class="pm-badge">Connexion requise</span>
+                            <strong>Connectez-vous pour reserver</strong>
+                            <p>La reservation est reservee au role client. Une fois connecte, vous pourrez choisir un projet existant ou laisser le systeme creer automatiquement un projet de reservation.</p>
+                        </div>
+                        <div class="pm-card-actions">
+                            <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter</a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <details class="pm-history-toggle">
+                    <summary class="pm-history-summary">
+                        <span>Afficher les projets lies aux reservations</span>
+                        <span class="pm-history-count">{{ resource.projects|length }}</span>
+                    </summary>
+                    <div class="pm-decision-list">
+                        {% for project in resource.projects %}
+                            <div class="pm-decision-item">
+                                <strong>{{ project.title }}</strong>
+                                <span>{{ project.getStatusLabel() }}</span>
+                                <p>{{ project.description ?: 'Aucune description disponible.' }}</p>
+                            </div>
+                        {% else %}
+                            <p class="pm-empty-text">Aucun projet n utilise encore cette ressource.</p>
+                        {% endfor %}
+                    </div>
+                </details>
+            </div>
+        </aside>
+    </section>
+{% endblock %}

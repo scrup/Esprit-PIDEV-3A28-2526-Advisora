@@ -85,21 +85,4 @@ class Userlog
         return $this;
     }
 
-    public function getIdLog(): ?int
-    {
-        return $this->id_log;
-    }
-
-    public function getIpAddress(): ?string
-    {
-        return $this->ip_address;
-    }
-
-    public function setIpAddress(?string $ip_address): static
-    {
-        $this->ip_address = $ip_address;
-
-        return $this;
-    }
-
 }

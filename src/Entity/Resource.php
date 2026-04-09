@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -13,6 +12,16 @@ use App\Repository\ResourceRepository;
 #[ORM\Table(name: 'resources')]
 class Resource
 {
+    public const STATUS_AVAILABLE = 'AVAILABLE';
+    public const STATUS_RESERVED = 'RESERVED';
+    public const STATUS_UNAVAILABLE = 'UNAVAILABLE';
+
+    public const STATUSES = [
+        self::STATUS_AVAILABLE => 'Disponible',
+        self::STATUS_RESERVED => 'Reservee',
+        self::STATUS_UNAVAILABLE => 'Indisponible',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idRs', type: 'integer')]
@@ -145,11 +154,6 @@ class Resource
     #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'resources')]
     private Collection $projects;
 
-    public function __construct()
-    {
-        $this->projects = new ArrayCollection();
-    }
-
     /**
      * @return Collection<int, Project>
      */
@@ -173,6 +177,96 @@ class Resource
     {
         $this->getProjects()->removeElement($project);
         return $this;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->idRs;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->nomRs;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->nomRs = $name;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->normalizeStatusValue($this->availabilityStatusRs);
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->availabilityStatusRs = $status;
+
+        return $this;
+    }
+
+    public function getStatusLabel(): string
+    {
+        $status = $this->normalizeStatusValue($this->getStatus());
+
+        return self::STATUSES[$status] ?? ($status ?: 'Statut inconnu');
+    }
+
+    public function getQuantity(): ?int
+    {
+        return $this->QuantiteRs;
+    }
+
+    public function setQuantity(int $quantity): self
+    {
+        $this->QuantiteRs = $quantity;
+
+        return $this;
+    }
+
+    public function getPrice(): ?float
+    {
+        return $this->prixRs;
+    }
+
+    public function setPrice(float $price): self
+    {
+        $this->prixRs = $price;
+
+        return $this;
+    }
+
+    public function getPrimaryImageUrl(): ?string
+    {
+        return $this->imageUrlRs ?: $this->thumbnailUrlRs;
+    }
+
+    public function getSupplierDisplayName(): string
+    {
+        if ($this->cataloguefournisseur?->getFournisseur()) {
+            return (string) $this->cataloguefournisseur->getFournisseur();
+        }
+
+        if ($this->cataloguefournisseur?->getNomFr()) {
+            return (string) $this->cataloguefournisseur->getNomFr();
+        }
+
+        return 'Non assigne';
+    }
+
+    private function normalizeStatusValue(?string $status): string
+    {
+        $normalized = strtoupper(trim((string) $status));
+
+        return match ($normalized) {
+            'AVAILABLE', 'DISPONIBLE' => self::STATUS_AVAILABLE,
+            'RESERVED', 'LOW_STOCK', 'MAINTENANCE', 'RESERVEE', 'RESERVE' => self::STATUS_RESERVED,
+            'UNAVAILABLE', 'OUT_OF_STOCK', 'INDISPONIBLE' => self::STATUS_UNAVAILABLE,
+            default => $normalized,
+        };
     }
 
 }

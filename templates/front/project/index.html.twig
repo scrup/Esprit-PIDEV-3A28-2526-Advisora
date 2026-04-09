@@ -11,12 +11,12 @@
     <section class="pm-hero">
         <div>
             <span class="pm-badge">Project Management</span>
-            <h1>Suivez les projets stratégiques d'Advisora</h1>
+            <h1>Suivez les projets strategiques d'Advisora</h1>
             <p>
                 {% if app.user and not can_see_all_projects %}
-                    Consultez uniquement vos projets et les décisions prises sur vos initiatives.
+                    Consultez uniquement vos projets et les decisions prises sur vos initiatives.
                 {% else %}
-                    Consultez l'état des projets et les décisions prises pour chaque initiative.
+                    Consultez l'etat des projets et les decisions prises pour chaque initiative.
                 {% endif %}
             </p>
         </div>
@@ -24,7 +24,7 @@
             {% if app.user and can_manage_projects %}
                 <a class="pm-btn pm-btn-primary" href="{{ path('project_new') }}">Ajouter un projet</a>
             {% elseif not app.user %}
-                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gérer</a>
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gerer</a>
             {% endif %}
         </div>
     </section>
@@ -70,7 +70,7 @@
 
             <div class="pm-filter-actions">
                 <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
-                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Réinitialiser</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Reinitialiser</a>
             </div>
         </form>
     </section>
@@ -85,17 +85,70 @@
                 <h2>{{ project.title }}</h2>
                 <p>{{ project.description ?: 'Aucune description pour ce projet.' }}</p>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non précisé' }}</span>
-                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
-                    <span><i class="fas fa-calendar-plus"></i> Création : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
+                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non precise' }}</span>
+                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><i class="fas fa-calendar-plus"></i> Creation : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
                 </div>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} décision(s)</span>
+                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} decision(s)</span>
                 </div>
+
+                {% if project.strategies|length > 0 %}
+                    <div class="pm-project-strategies pm-project-strategies-inline">
+                        <div class="pm-section-head">
+                            <div>
+                                <span class="pm-badge">Strategies proposees</span>
+                                <p class="pm-section-text">Consultez les strategies rattachees a ce projet et, pour le client proprietaire, choisissez de les accepter ou de les refuser.</p>
+                            </div>
+                            <span class="pm-history-count">{{ project.strategies|length }}</span>
+                        </div>
+
+                        <div class="pm-strategy-list pm-strategy-list-inline">
+                            {% for strategy in project.strategies %}
+                                <section class="pm-strategy-card pm-strategy-card-inline">
+                                    <div class="pm-strategy-main">
+                                        <div>
+                                            <div class="pm-strategy-topline">
+                                                <h3>{{ strategy.nomStrategie }}</h3>
+                                                <span class="pm-status pm-status-{{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
+                                            </div>
+                                            <p class="pm-strategy-description">{{ strategy.justification ?: 'Aucune justification fournie.' }}</p>
+                                        </div>
+
+                                        {% if can_client_decide_strategies and app.user and project.user and project.user.idUser == app.user.idUser %}
+                                            <div class="pm-strategy-actions">
+                                                <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
+                                                    <input type="hidden" name="status" value="{{ strategy_statuses.approved }}">
+                                                    <button class="pm-btn pm-btn-primary" type="submit" {% if strategy.statusStrategie == strategy_statuses.approved %}disabled{% endif %}>Accepter</button>
+                                                </form>
+
+                                                <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
+                                                    <input type="hidden" name="status" value="{{ strategy_statuses.rejected }}">
+                                                    <button class="pm-btn pm-btn-danger" type="submit" {% if strategy.statusStrategie == strategy_statuses.rejected %}disabled{% endif %}>Refuser</button>
+                                                </form>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="pm-strategy-meta">
+                                        <span><strong>Type :</strong> {{ strategy.type ?: 'Non precise' }}</span>
+                                        <span><strong>Duree :</strong> {{ strategy.DureeTerme }} mois</span>
+                                        <span><strong>Budget :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                                        <span><strong>Gain estime :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non precise' }}</span>
+                                        <span><strong>Objectifs :</strong> {{ strategy.objectives|length }}</span>
+                                    </div>
+                                </section>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
                 <div class="pm-card-actions">
-                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le détail</a>
+                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
                     {% if app.user and project.user and project.user.idUser == app.user.idUser %}
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gérer</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gerer</a>
                     {% elseif app.user and can_see_all_projects %}
                         <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
                     {% endif %}
@@ -104,7 +157,7 @@
         {% else %}
             <div class="pm-empty">
                 <h2>Aucun projet pour le moment</h2>
-                <p>Commencez par créer un premier projet stratégique depuis l espace projets.</p>
+                <p>Commencez par creer un premier projet strategique depuis l espace projets.</p>
             </div>
         {% endfor %}
     </section>
