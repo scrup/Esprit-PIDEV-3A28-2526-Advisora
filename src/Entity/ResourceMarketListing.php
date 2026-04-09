@@ -99,7 +99,7 @@ class ResourceMarketListing
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $unitPrice = null;
 
     public function getUnitPrice(): ?float

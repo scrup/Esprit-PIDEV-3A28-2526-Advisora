@@ -1,0 +1,268 @@
+Symfony Guide - Gestion Ressource
+=================================
+
+Objectif
+--------
+Mettre en place le module web Gestion Ressource dans Symfony en suivant la meme structure que Gestion Projet, sans modifier la logique metier des autres modules.
+Le perimetre couvre maintenant :
+
+- CRUD Ressource
+- CRUD Fournisseur
+
+Perimetre retenu
+----------------
+- CRUD Ressource prioritaire
+- CRUD Fournisseur prioritaire
+- meme structure visuelle et technique que Gestion Projet
+- controle de saisie conserve
+- integration minimale dans le menu front/back
+- aucune modification de logique metier dans les autres gestions
+
+Structure reprise de Gestion Projet
+-----------------------------------
+Le module Ressource/Fournisseur a ete construit en reprenant le meme schema que le module Projet :
+
+- un controller principal avec front + back + manage + form
+- des templates Twig separes pour front et back
+- le meme fichier CSS principal : public/css/project-management.css
+- le meme script de validation formulaire : public/js/project-form-validation.js
+- le meme principe de filtres, cartes, pages de detail et page de gestion
+- un dashboard back de module pour gerant/admin avec acces separe a la fenetre Ressources et a la fenetre Fournisseurs
+
+CRUD Ressource ajoute
+---------------------
+Routes principales :
+
+- /back/resources/dashboard
+- /resources
+- /back/resources
+- /resources/{id}
+- /resources/new
+- /resources/{id}/manage
+- /back/resources/{id}/manage
+- /resources/{id}/edit
+- /resources/{id}/delete
+
+Comportement :
+
+- dashboard back module Ressource/Fournisseur
+- lecture catalogue front
+- lecture back office
+- detail ressource
+- ajout ressource
+- modification ressource
+- suppression avec protection si la ressource est liee a des projets ou au mini-shop
+- visualisation explicite de la liaison ressource <-> projet via project_resources
+
+CRUD Fournisseur ajoute
+-----------------------
+Routes principales :
+
+- /back/suppliers
+- /suppliers/new
+- /back/suppliers/{id}/manage
+- /suppliers/{id}/edit
+- /suppliers/{id}/delete
+
+Comportement :
+
+- lecture back office des fournisseurs
+- ajout fournisseur
+- modification fournisseur
+- suppression fournisseur si aucune ressource n est rattachee
+- passerelle directe fournisseur -> ajout ressource avec fournisseur preselectionne
+
+Controle de saisie ajoute
+-------------------------
+- nom de la ressource obligatoire
+- longueur max du nom : 160
+- statut obligatoire
+- fournisseur obligatoire
+- quantite >= 0
+- prix > 0
+- URL image optionnelle mais valide si renseignee
+- suppression securisee par jeton CSRF
+
+Controle de saisie Fournisseur
+------------------------------
+- nom fournisseur obligatoire
+- nom fournisseur unique
+- quantite >= 0
+- entreprise fournisseur obligatoire
+- email obligatoire et valide
+- localisation obligatoire
+- numero de telephone obligatoire et valide
+- suppression securisee par jeton CSRF
+
+Fichiers crees
+--------------
+- src/Controller/ResourceController.php
+- src/Controller/SupplierController.php
+- src/Form/ResourceType.php
+- src/Form/SupplierType.php
+- templates/front/resource/index.html.twig
+- templates/front/resource/show.html.twig
+- templates/front/resource/manage.html.twig
+- templates/front/resource/form.html.twig
+- templates/back/resource/index.html.twig
+- templates/back/resource/dashboard.html.twig
+- templates/back/resource/manage.html.twig
+- templates/back/resource/form.html.twig
+- templates/back/supplier/index.html.twig
+- templates/back/supplier/manage.html.twig
+- templates/back/supplier/form.html.twig
+
+Fichiers modifies
+-----------------
+- src/Entity/Resource.php
+- src/Entity/Cataloguefournisseur.php
+- src/Repository/ResourceRepository.php
+- src/Repository/CataloguefournisseurRepository.php
+- config/packages/security.yaml
+- templates/front/header.html.twig
+- templates/base_back.html.twig
+- public/css/project-management.css
+
+Note importante sur les autres modules
+--------------------------------------
+Je n ai pas modifie la logique metier des autres gestions.
+Les seuls fichiers partages touches sont :
+
+- le menu front pour afficher le bouton Ressources
+- le menu back pour ouvrir la gestion Ressource
+- la securite Symfony pour autoriser les routes Ressource/Fournisseur a admin/gerant
+
+Commandes utilisees
+-------------------
+Analyse et verification :
+
+- php bin/console about
+- php bin/console lint:twig templates
+- php -l src/Controller/ResourceController.php
+- php -l src/Form/ResourceType.php
+- php bin/console debug:router | Select-String resource
+- php bin/console debug:router | Select-String supplier
+- php bin/console debug:router | Select-String "back_resource_dashboard|back_resource_index|back_supplier_index"
+- php bin/console doctrine:schema:validate --skip-sync
+- php bin/console lint:yaml config
+- php bin/console dbal:run-sql "SELECT 1 AS ok"
+- php bin/console dbal:run-sql "SELECT COUNT(*) AS total_resources FROM resources"
+- php bin/console dbal:run-sql "SELECT COUNT(*) AS total_suppliers FROM cataloguefournisseur"
+- php -l src/Controller/SupplierController.php
+- php -l src/Form/SupplierType.php
+- php -l src/Repository/CataloguefournisseurRepository.php
+
+Resultats de verification
+-------------------------
+- Twig : OK
+- PHP ResourceController : OK
+- PHP ResourceType : OK
+- PHP SupplierController : OK
+- PHP SupplierType : OK
+- PHP CataloguefournisseurRepository : OK
+- routes Ressource detectees : OK
+- routes Fournisseur detectees : OK
+- route back dashboard Ressource detectee : OK
+- mapping Doctrine : OK
+- YAML config : OK
+- connexion DB lecture seule : OK
+- table resources detectee : 23 lignes
+- table cataloguefournisseur detectee : 11 lignes
+
+Ce que je peux dire au professeur
+---------------------------------
+J ai repris la meme architecture que Gestion Projet pour garder une coherence globale du site Symfony.
+J ai implemente le CRUD principal de Gestion Ressource avec :
+
+- un controller dedie
+- un formulaire Symfony avec validation
+- des vues front/back coherentes avec le design du module Projet
+- une fenetre back de module pour le gerant/admin
+- des filtres de recherche
+- une page detail
+- une page de gestion
+- une suppression protegee selon les dependances
+- une visualisation des projets lies via la table project_resources
+
+J ai aussi implemente le CRUD Fournisseur en reprenant la logique du projet Java :
+
+- nom unique
+- quantite positive ou nulle
+- email valide
+- telephone valide
+- acces reserve a admin/gerant
+- lien naturel vers la creation de ressource
+
+Liaison Ressource -> Projet via project_resources
+-------------------------------------------------
+Analyse de la base :
+
+- table project_resources detectee
+- colonnes : idProj, idRs
+- cle primaire composite : (idProj, idRs)
+- foreign keys actives vers projects et resources
+- liaisons orphelines : 0
+
+Mise a jour du CRUD Ressource :
+
+- ajout d un champ "Projets lies (optionnel)" dans le formulaire Ressource
+- champ disponible dans les fenetres front/back du module Ressource
+- lors de l ajout d une ressource, si un ou plusieurs projets sont choisis, la liaison est enregistree dans project_resources
+- lors de la modification d une ressource, les liaisons projet sont synchronisees
+- structure respectee : Controller + Form + templates, comme le module Projet
+
+Regle de saisie ajoutee
+-----------------------
+- dans "Ajouter ressource", la selection d au moins un projet lie est maintenant obligatoire
+- dans "Modifier ressource", la liaison projet reste modifiable
+
+Pourquoi c est propre techniquement
+-----------------------------------
+- meme organisation que le module deja valide du projet
+- pas de refactor global
+- pas d impact metier sur les autres membres
+- validation serveur + validation interface
+- verification console Symfony faite avant livraison
+
+Point a completer plus tard si besoin
+-------------------------------------
+Si un fichier Excel est fourni ensuite, ajouter ici :
+
+- la correspondance Excel -> champs Symfony
+- les cas metier demandes par le professeur
+- la liste des regles de saisie supplementaires
+
+Etat final
+----------
+Guide mis a jour apres implementation du CRUD Gestion Ressource.
+
+Reservation ressource cote client
+---------------------------------
+La reservation client a ete branchee dans le module Ressource Symfony pour suivre la logique de l ancien projet Java.
+
+- fiche ressource front : /resources/{id}
+- action de reservation : /resources/{id}/reserve
+- liste client des reservations : /resources/reservations
+- edition client d une reservation : /resources/reservations/{projectId}/{resourceId}/edit
+- role autorise : client uniquement
+- quantite obligatoire et controlee par rapport au stock disponible reel
+- projet selectionnable
+- si aucun projet n est choisi, le systeme reutilise le dernier projet client ou cree automatiquement "Reservation Ressources"
+- liaison en base : table project_resources
+- si une quantite > 1 est reservee, la colonne qtyAllocated peut etre ajoutee automatiquement a project_resources
+
+Historique back des reservations
+--------------------------------
+- liste globale : /back/resources/reservations
+- edition manager/admin : /back/resources/reservations/{projectId}/{resourceId}/edit
+- suppression manager/admin : /back/resources/reservations/{projectId}/{resourceId}/delete
+- le gerant et l admin voient toutes les reservations
+- le client ne voit que ses propres reservations
+
+Fichiers relies a la reservation
+--------------------------------
+- src/Service/ResourceReservationService.php
+- src/Controller/ResourceController.php
+- templates/front/resource/show.html.twig
+- templates/front/resource/reservations.html.twig
+- config/packages/security.yaml

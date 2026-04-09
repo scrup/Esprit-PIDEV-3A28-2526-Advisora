@@ -12,9 +12,12 @@ use App\Repository\CataloguefournisseurRepository;
 #[ORM\Table(name: 'cataloguefournisseur')]
 class Cataloguefournisseur
 {
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_EMPTY = 'empty';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idFr', type: 'integer')]
     private ?int $idFr = null;
 
     public function getIdFr(): ?int
@@ -143,6 +146,33 @@ class Cataloguefournisseur
     {
         $this->getResources()->removeElement($resource);
         return $this;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->idFr;
+    }
+
+    public function getDisplayName(): string
+    {
+        $primary = trim((string) ($this->fournisseur ?: $this->nomFr));
+
+        return $primary !== '' ? $primary : 'Fournisseur #' . ($this->idFr ?? '');
+    }
+
+    public function getStatus(): string
+    {
+        return ($this->quantite ?? 0) > 0 ? self::STATUS_ACTIVE : self::STATUS_EMPTY;
+    }
+
+    public function getStatusLabel(): string
+    {
+        return $this->getStatus() === self::STATUS_ACTIVE ? 'Actif' : 'Vide';
+    }
+
+    public function isActiveSupplier(): bool
+    {
+        return $this->getStatus() === self::STATUS_ACTIVE;
     }
 
 }

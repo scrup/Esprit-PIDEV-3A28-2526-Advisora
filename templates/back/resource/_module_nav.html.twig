@@ -1,0 +1,14 @@
+<div class="pm-form-card pm-filter-card">
+    <div class="pm-card-actions">
+        <a class="pm-btn {% if app.request.get('_route') in ['back_resource_index', 'resource_back_manage', 'resource_edit', 'resource_new'] %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_resource_index') }}">
+            Fenetre Ressources
+        </a>
+        <a class="pm-btn {% if app.request.get('_route') in ['back_supplier_index', 'supplier_back_manage', 'supplier_edit', 'supplier_new'] %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_supplier_index') }}">
+            Fenetre CatalogueFournisseur
+        </a>
+        <a class="pm-btn {% if app.request.get('_route') in ['back_resource_reservations', 'back_resource_reservation_edit'] %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_resource_reservations') }}">
+            Historique reservations
+        </a>
+        <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">Retour au tableau de bord</a>
+    </div>
+</div>

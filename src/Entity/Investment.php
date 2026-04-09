@@ -15,7 +15,7 @@ class Investment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idInv', type: 'integer')]
     private ?int $idInv = null;
 
     public function getIdInv(): ?int
@@ -57,7 +57,7 @@ class Investment
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $bud_minInv = null;
 
     public function getBud_minInv(): ?float
@@ -71,7 +71,7 @@ class Investment
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $bud_maxInv = null;
 
     public function getBud_maxInv(): ?float

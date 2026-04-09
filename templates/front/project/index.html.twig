@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Projets{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Project Management</span>
+            <h1>Suivez les projets stratégiques d'Advisora</h1>
+            <p>
+                {% if app.user and not can_see_all_projects %}
+                    Consultez uniquement vos projets et les décisions prises sur vos initiatives.
+                {% else %}
+                    Consultez l'état des projets et les décisions prises pour chaque initiative.
+                {% endif %}
+            </p>
+        </div>
+        <div class="pm-actions">
+            {% if app.user and can_manage_projects %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('project_new') }}">Ajouter un projet</a>
+            {% elseif not app.user %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gérer</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="pm-hero">
+        <form method="get" action="{{ path('project_index') }}" class="pm-form-card">
+            <div class="pm-filter-grid">
+                <div class="pm-field">
+                    <label for="filter_q">Recherche</label>
+                    <input id="filter_q" type="search" name="q" placeholder="Titre, description, type, statut ou ID..." value="{{ filters.q|default('') }}">
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_status">Statut</label>
+                    <select id="filter_status" name="status">
+                        <option value="">Tous</option>
+                        {% for status_value, status_label in status_choices %}
+                            <option value="{{ status_value }}" {% if filters.status is defined and filters.status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_type">Type</label>
+                    <select id="filter_type" name="type">
+                        <option value="">Tous</option>
+                        {% for project_type in type_choices %}
+                            <option value="{{ project_type }}" {% if filters.type is defined and filters.type == project_type %}selected{% endif %}>{{ project_type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_min_price">Budget min</label>
+                    <input id="filter_min_price" type="number" step="0.01" name="min_price" placeholder="Min" value="{{ filters.min_price|default('') }}">
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_max_price">Budget max</label>
+                    <input id="filter_max_price" type="number" step="0.01" name="max_price" placeholder="Max" value="{{ filters.max_price|default('') }}">
+                </div>
+            </div>
+
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Réinitialiser</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="pm-grid">
+        {% for project in projects %}
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
+                    <span class="pm-meta">Projet #{{ project.id }}</span>
+                </div>
+                <h2>{{ project.title }}</h2>
+                <p>{{ project.description ?: 'Aucune description pour ce projet.' }}</p>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non précisé' }}</span>
+                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
+                    <span><i class="fas fa-calendar-plus"></i> Création : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} décision(s)</span>
+                </div>
+                <div class="pm-card-actions">
+                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le détail</a>
+                    {% if app.user and project.user and project.user.idUser == app.user.idUser %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gérer</a>
+                    {% elseif app.user and can_see_all_projects %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>Aucun projet pour le moment</h2>
+                <p>Commencez par créer un premier projet stratégique depuis l espace projets.</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

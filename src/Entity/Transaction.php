@@ -43,7 +43,7 @@ class Transaction
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $MontantTransac = null;
 
     public function getMontantTransac(): ?float

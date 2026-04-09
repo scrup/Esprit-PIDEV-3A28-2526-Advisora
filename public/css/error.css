@@ -1,0 +1,65 @@
+/* Error page styles */
+html, body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    background: linear-gradient(135deg, #0f1724 0%, #1f2937 50%, #111827 100%);
+    color: #e6edf3;
+}
+.error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 120px);
+    padding: 40px 16px;
+}
+.error-card {
+    max-width: 880px;
+    width: 100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 36px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+}
+.error-title {
+    font-size: 48px;
+    margin: 0 0 8px 0;
+    color: #fff;
+    line-height: 1;
+}
+.error-code {
+    display: inline-block;
+    background: rgba(255,255,255,0.06);
+    color: #ffd166;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-left: 12px;
+}
+.error-message {
+    font-size: 18px;
+    color: #cbd5e1;
+    margin: 12px 0 20px 0;
+}
+.error-actions a {
+    display: inline-block;
+    margin-right: 12px;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    color: #e6edf3;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+.error-actions a.primary {
+    background: linear-gradient(90deg,#06b6d4,#3b82f6);
+    color: white;
+    border: none;
+}
+@media (max-width: 640px) {
+    .error-title { font-size: 32px; }
+    .error-card { padding: 20px; }
+}

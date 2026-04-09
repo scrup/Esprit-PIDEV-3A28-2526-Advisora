@@ -57,7 +57,7 @@ class Booking
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'float', nullable: false)]
     private ?float $totalPrixBk = null;
 
     public function getTotalPrixBk(): ?float
@@ -129,7 +129,7 @@ class Booking
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $refundAmountBk = null;
 
     public function getRefundAmountBk(): ?float
