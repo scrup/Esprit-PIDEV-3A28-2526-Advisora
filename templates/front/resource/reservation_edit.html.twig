@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Modifier ma reservation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Reservation client</span>
+                <h1>Modifier ma reservation</h1>
+                <p>Mettez a jour la quantite ou changez le projet lie a cette ressource. Seules vos reservations sont modifiables ici.</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('resource_reservations') }}">Retour a mes reservations</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('resource_show', {id: reservation.resource_id}) }}">Voir la ressource</a>
+            </div>
+        </div>
+
+        <div class="pm-form-card">
+            <div class="pm-info-banner">
+                <strong>Ressource :</strong> {{ reservation.resource_name }}
+                <br>
+                <strong>Projet actuel :</strong> {{ reservation.project_title }}
+                <br>
+                <strong>Quantite actuelle :</strong> {{ reservation.reserved_qty }}
+                <br>
+                <strong>Stock total :</strong> {{ reservation.resource_stock }}
+                <br>
+                <strong>Stock reserve :</strong> {{ reservation.resource_reserved_total }}
+                <br>
+                <strong>Stock disponible :</strong> {{ reservation.resource_available_stock }}
+                <br>
+                <strong>Maximum modifiable :</strong> {{ reservation.resource_editable_max }}
+            </div>
+
+            <form method="post" class="pm-validated-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('edit_reservation_' ~ reservation.project_id ~ '_' ~ reservation.resource_id) }}">
+                <div class="pm-form-grid">
+                    <div class="pm-field">
+                        <label for="quantity">Quantite</label>
+                        <input id="quantity" type="number" name="quantity" min="1" max="{{ reservation.resource_editable_max }}" value="{{ reservation.reserved_qty }}" required data-validation-label="Quantite" data-validation-min-message="Quantite doit etre superieure a 0.">
+                    </div>
+                    <div class="pm-field">
+                        <label for="project_id">Projet</label>
+                        <select id="project_id" name="project_id">
+                            <option value="">Garder le projet actuel</option>
+                            {% for project in projects %}
+                                <option value="{{ project.id }}" {% if reservation.project_id == project.id %}selected{% endif %}>{{ project.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="pm-form-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Mettre a jour la reservation</button>
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,63 @@
+:root {
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --bg-main: #f9fafb;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --danger: #ef4444;
+    --success: #10b981;
+    --border: #e5e7eb;
+}
+
+.admin-container {
+    padding: 2.5rem;
+    background: var(--bg-main);
+    font-family: 'Plus Jakarta Sans', sans-serif; /* Modern font */
+}
+
+/* Search Bar Styling */
+.search-container {
+    position: relative;
+    width: 300px;
+}
+.search-input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    transition: 0.3s;
+}
+.search-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+
+/* Table Upgrades */
+.user-table th {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+.user-table th:hover { background: #e2e8f0; }
+
+/* Live Validation Styles */
+.error-label {
+    color: var(--danger);
+    font-size: 0.75rem;
+    margin-top: 4px;
+    display: block;
+    font-weight: 500;
+}
+input.invalid { border-color: var(--danger) !important; }
+
+/* Icon Buttons */
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    transition: 0.2s;
+    border: none;
+    cursor: pointer;
+}
+.btn-edit-icon { color: var(--primary); background: #eef2ff; }
+.btn-delete-icon { color: var(--danger); background: #fef2f2; }

@@ -143,7 +143,7 @@
             <div class="card-panel">
                 <div class="panel-header">
                     <h3><i class="fas fa-rocket"></i> Apercu des projets</h3>
-                    <a href="#" class="view-link">Voir tous</a>
+                    <a href="{{ path('back_project_index') }}" class="view-link">Voir tous</a>
                 </div>
                 <div class="insight-list">
                     <div class="insight-item">
@@ -194,7 +194,7 @@
             <div class="card-panel">
                 <div class="panel-header">
                     <h3><i class="fas fa-calendar-alt"></i> Evenements a venir</h3>
-                    <a href="#" class="view-link">Voir tout</a>
+                    <a href="{{ path('back_event_index') }}" class="view-link">Voir tout</a>
                 </div>
                 <div class="events-list">
                     <div class="event-item">
@@ -227,7 +227,7 @@
     <div class="full-width-card">
         <div class="panel-header">
             <h3><i class="fas fa-book-open"></i> Ressources recentes</h3>
-            <a href="#" class="view-link">Voir tout</a>
+            <a href="{{ path('back_resource_index') }}" class="view-link">Voir tout</a>
         </div>
         <div class="resources-list">
             <div class="resource-item">
@@ -269,9 +269,9 @@
         </div>
 
         <div class="quick-actions">
-            <button class="action-btn"><i class="fas fa-chart-line"></i> Generer rapport</button>
-            <button class="action-btn"><i class="fas fa-calendar-plus"></i> Planifier reunion</button>
-            <button class="action-btn"><i class="fas fa-download"></i> Exporter donnees</button>
+            <a class="action-btn" href="{{ path('back_project_overview') }}"><i class="fas fa-folder-open"></i> Gerer projets</a>
+            <a class="action-btn" href="{{ path('back_resource_dashboard') }}"><i class="fas fa-book"></i> Gerer ressources</a>
+            <a class="action-btn" href="{{ path('back_user_index') }}"><i class="fas fa-users-cog"></i> Gerer utilisateurs</a>
         </div>
     </div>
 </div>
