@@ -1,0 +1,78 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Inscriptions evenement{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Back office</span>
+                <h1>Inscriptions aux evenements</h1>
+                <p>Consultez toutes les reservations enregistrees dans la table `bookings`.</p>
+            </div>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_index') }}">Retour aux evenements</a>
+        </div>
+
+        {% include 'back/event/_module_nav.html.twig' %}
+
+        <div class="pm-form-card pm-filter-card">
+            <form method="get" class="pm-filter-grid">
+                <div>
+                    <label for="q">Recherche</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Client, email, evenement...">
+                </div>
+                <div class="pm-filter-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_bookings') }}">Reinitialiser</a>
+                </div>
+            </form>
+        </div>
+
+        <section class="pm-grid">
+            {% for booking in bookings %}
+                <article class="pm-card">
+                    <div class="pm-card-head">
+                        <span class="pm-status pm-status-{{ booking.workflowStatusCssClass }}">{{ booking.workflowStatusLabel }}</span>
+                        <span class="pm-meta">Booking #{{ booking.id }}</span>
+                    </div>
+                    <h2>{{ booking.event ? booking.event.title : 'Evenement indisponible' }}</h2>
+                    <p>{{ booking.event and booking.event.description ? booking.event.description : 'Aucune description disponible.' }}</p>
+                    <div class="pm-meta-list pm-meta-list-vertical">
+                        <span><strong>Client :</strong> {{ booking.getClientDisplayName() }}</span>
+                        <span><strong>Email :</strong> {{ booking.user ? booking.user.getEmailUser() : 'Non renseigne' }}</span>
+                        <span><strong>Organisateur :</strong> {{ booking.event ? booking.event.organizerName : 'Non renseigne' }}</span>
+                        <span><strong>Date reservation :</strong> {{ booking.bookingDate ? booking.bookingDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
+                        <span><strong>Nombre de tickets :</strong> {{ booking.ticketCount }}</span>
+                        <span><strong>Total stocke :</strong> {{ booking.totalPrixBk|number_format(2, '.', ' ') }} TND</span>
+                    </div>
+                    <div class="pm-card-actions">
+                        {% if booking.event %}
+                            <a class="pm-btn pm-btn-primary" href="{{ path('event_back_manage', {id: booking.event.id}) }}">Ouvrir l evenement</a>
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: booking.event.id}) }}">Voir le front</a>
+                        {% endif %}
+                        {% if booking.isPending %}
+                            <form method="post" action="{{ path('back_event_booking_accept', {id: booking.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('accept_booking_' ~ booking.id) }}">
+                                <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                            </form>
+                            <form method="post" action="{{ path('back_event_booking_refuse', {id: booking.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('refuse_booking_' ~ booking.id) }}">
+                                <button class="pm-btn pm-btn-danger" type="submit">Refuser</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <div class="pm-empty">
+                    <h2>Aucune inscription ne correspond aux filtres</h2>
+                    <p>Le module affichera ici les reservations clientes des evenements.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </section>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Evenements{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Event Management</span>
+            <h1>Consultez les evenements disponibles</h1>
+            <p>Explorez les evenements du module et gerez vos inscriptions depuis un espace simple et clair.</p>
+        </div>
+        <div class="pm-actions">
+            {% if app.user and can_manage_events %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('back_event_index') }}">Ouvrir le back office</a>
+            {% elseif app.user and can_book_events %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('event_my_bookings') }}">Mes inscriptions</a>
+            {% else %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="pm-hero">
+        <form method="get" action="{{ path('event_index') }}" class="pm-form-card">
+            <div class="pm-filter-grid">
+                <div class="pm-field">
+                    <label for="filter_q">Recherche</label>
+                    <input id="filter_q" type="search" name="q" value="{{ filters.q }}" placeholder="Titre, organisateur, lieu...">
+                </div>
+                <div class="pm-field">
+                    <label for="filter_location">Localisation</label>
+                    <input id="filter_location" type="text" name="location" value="{{ filters.location }}" placeholder="Ex: Tunis">
+                </div>
+            </div>
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('event_index') }}">Reinitialiser</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="pm-grid">
+        {% for event in events %}
+            {% set existingBooking = existing_bookings[event.id]|default(null) %}
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ event.getTimelineStatus() }}">{{ event.getTimelineLabel() }}</span>
+                    <span class="pm-meta">Evenement #{{ event.id }}</span>
+                </div>
+                <h2>{{ event.title }}</h2>
+                <p>{{ event.description ?: 'Aucune description disponible pour cet evenement.' }}</p>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Organisateur :</strong> {{ event.organizerName ?: 'Non renseigne' }}</span>
+                    <span><strong>Lieu :</strong> {{ event.location ?: 'Non renseigne' }}</span>
+                    <span><strong>Debut :</strong> {{ event.startDate ? event.startDate|date('d/m/Y H:i') : 'Non renseigne' }}</span>
+                    <span><strong>Fin :</strong> {{ event.endDate ? event.endDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
+                    <span><strong>Capacite :</strong> {{ event.capacity }}</span>
+                    <span><strong>Tickets reserves :</strong> {{ event.reservedTickets }}</span>
+                    <span><strong>Places restantes :</strong> {{ event.remainingTickets }}</span>
+                </div>
+                <div class="pm-card-actions">
+                    <a class="pm-btn pm-btn-primary" href="{{ path('event_show', {id: event.id}) }}">Voir le detail</a>
+                    {% if app.user and can_manage_events %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_back_manage', {id: event.id}) }}">Gerer</a>
+                    {% elseif app.user and can_book_events %}
+                        {% if existingBooking %}
+                            <span class="pm-status pm-status-{{ existingBooking.workflowStatusCssClass }}">{{ existingBooking.workflowStatusLabel }}</span>
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_booking_edit', {id: existingBooking.id}) }}">
+                                {{ existingBooking.isPending ? 'Modifier mon inscription' : 'Voir mon inscription' }}
+                            </a>
+                        {% elseif event.remainingTickets > 0 %}
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_book', {id: event.id}) }}">S inscrire</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>Aucun evenement ne correspond aux filtres</h2>
+                <p>Essayez une autre recherche ou revenez plus tard.</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

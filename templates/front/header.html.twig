@@ -22,7 +22,9 @@
     <nav>
         <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">Accueil</a>
         <a href="{{ path('app_shop') }}" class="nav-link {% if app.request.get('_route') == 'app_shop' %}active{% endif %}">Boutique</a>
-        <a href="{{ path('project_index') }}" class="nav-link">Projet</a>
+        <a href="{{ path('project_index') }}" class="nav-link {% if app.request.get('_route') starts with 'project_' %}active{% endif %}">Projet</a>
+        <a href="{{ path('event_index') }}" class="nav-link {% if app.request.get('_route') starts with 'event_' or app.request.get('_route') starts with 'back_event_' %}active{% endif %}">Evenements</a>
+        <a href="{{ path('resource_index') }}" class="nav-link {% if app.request.get('_route') starts with 'resource_' %}active{% endif %}">Ressources</a>
         <a href="#solutions" class="nav-link">Solutions</a>
         <a href="#whyus" class="nav-link">Pourquoi nous choisir ?</a>
         <a href="#reviews" class="nav-link">Témoignages</a>
@@ -68,5 +70,3 @@
 <main>
     {% block body %}{% endblock %}
 </main>
-
-
