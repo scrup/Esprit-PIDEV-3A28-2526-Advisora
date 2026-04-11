@@ -34,6 +34,16 @@ security:
         - { path: ^/events/my-bookings$, roles: [ROLE_CLIENT] }
         - { path: ^/events/bookings/\d+/edit$, roles: [ROLE_CLIENT] }
         - { path: ^/events/bookings/\d+/delete$, roles: [ROLE_CLIENT] }
+        - { path: ^/investments$, roles: [ROLE_CLIENT] }
+        - { path: ^/investments/new$, roles: [ROLE_CLIENT] }
+        - { path: ^/projects/\d+/investments/new$, roles: [ROLE_CLIENT] }
+        - { path: ^/investments/\d+/manage$, roles: [ROLE_CLIENT] }
+        - { path: ^/investments/\d+/edit$, roles: [ROLE_CLIENT] }
+        - { path: ^/investments/\d+/delete$, roles: [ROLE_CLIENT] }
+        - { path: ^/transactions$, roles: [ROLE_CLIENT] }
+        - { path: ^/investments/\d+/transactions/new$, roles: [ROLE_CLIENT] }
+        - { path: ^/transactions/\d+/edit$, roles: [ROLE_CLIENT] }
+        - { path: ^/transactions/\d+/delete$, roles: [ROLE_CLIENT] }
         - { path: ^/projects/new$, roles: [ROLE_CLIENT, ROLE_ADMIN] }
         - { path: ^/projects/\d+/edit$, roles: [ROLE_CLIENT, ROLE_ADMIN] }
         - { path: ^/projects/\d+/delete$, roles: [ROLE_CLIENT, ROLE_ADMIN] }
@@ -52,6 +62,14 @@ security:
         - { path: ^/back/resources/reservations$, roles: [ROLE_GERANT, ROLE_ADMIN] }
         - { path: ^/back/resources/reservations/\d+/\d+/edit$, roles: [ROLE_GERANT, ROLE_ADMIN] }
         - { path: ^/back/resources/reservations/\d+/\d+/delete$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+<<<<<<< HEAD
+=======
+        - { path: ^/back/investments$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/investments/\d+/manage$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/transactions$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/transactions/\d+/manage$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+        - { path: ^/back/transactions/\d+/(accept|refuse|pending)$, roles: [ROLE_GERANT, ROLE_ADMIN] }
+>>>>>>> gestion_projets
         - { path: ^/back/projects$, roles: [ROLE_GERANT, ROLE_ADMIN] }
         - { path: ^/back/projects/\d+/manage$, roles: [ROLE_GERANT, ROLE_ADMIN] }
         - { path: ^/back/events$, roles: [ROLE_GERANT, ROLE_ADMIN] }

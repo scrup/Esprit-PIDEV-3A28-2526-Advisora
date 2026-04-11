@@ -28,7 +28,7 @@
         <a href="{{ path('app_back_strategies') }}" class="back-nav-link {% if current_route starts with 'app_back_strategies' %}active{% endif %}"><i class="fas fa-chart-line"></i> Strategies</a>
         <a href="{{ path('back_event_index') }}" class="back-nav-link {% if current_route in ['back_event_index', 'event_new', 'event_edit', 'event_back_manage', 'back_event_bookings'] or current_route starts with 'back_event_booking_' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Evenements</a>
         <a href="{{ path('back_resource_dashboard') }}" class="back-nav-link {% if current_route starts with 'back_resource' or current_route starts with 'back_supplier' or current_route in ['resource_back_manage', 'resource_edit', 'resource_new', 'supplier_back_manage', 'supplier_edit', 'supplier_new'] %}active{% endif %}"><i class="fas fa-book"></i> Ressources</a>
-        <a href="#" onclick="return false;" aria-disabled="true" class="back-nav-link back-nav-link-disabled"><i class="fas fa-chart-simple"></i> Investissements</a>
+        <a href="{{ path('back_investment_index') }}" class="back-nav-link {% if current_route starts with 'back_investment' or current_route starts with 'back_transaction' %}active{% endif %}"><i class="fas fa-chart-simple"></i> Investissements</a>
         <a href="#" onclick="return false;" aria-disabled="true" class="back-nav-link back-nav-link-disabled"><i class="fas fa-user"></i> Profil</a>
         <a href="{{ path('back_user_index') }}" class="back-nav-link {% if current_route starts with 'back_user_' %}active{% endif %}"><i class="fas fa-users-cog"></i> Utilisateurs</a>
     </nav>

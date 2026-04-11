@@ -47,8 +47,8 @@ final class UserController extends AbstractController
         UserPasswordHasherInterface $passwordHasher
     ): Response {
         $user = new User();
-        $user->setCreatedAt(new \DateTimeImmutable());
-        $user->setUpdatedAt(new \DateTimeImmutable());
+        $user->setCreatedAt(new \DateTime());
+        $user->setUpdatedAt(new \DateTime());
         $user->setFailed_login_count(0);
         $user->setTotp_enabled(false);
 
@@ -96,7 +96,7 @@ final class UserController extends AbstractController
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                $user->setUpdatedAt(new \DateTimeImmutable());
+                $user->setUpdatedAt(new \DateTime());
                 $entityManager->flush();
 
                 $this->addFlash('success', 'Utilisateur modifie avec succes.');

@@ -408,6 +408,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'user')]
+    private Collection $bookings;
+
+    /**
+     * @return Collection<int, Booking>
+     */
+    public function getBookings(): Collection
+    {
+        if (!$this->bookings instanceof Collection) {
+            $this->bookings = new ArrayCollection();
+        }
+        return $this->bookings;
+    }
+
+    public function addBooking(Booking $booking): self
+    {
+        if (!$this->getBookings()->contains($booking)) {
+            $this->getBookings()->add($booking);
+        }
+        return $this;
+    }
+
+    public function removeBooking(Booking $booking): self
+    {
+        $this->getBookings()->removeElement($booking);
+        return $this;
+    }
+
     #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'user')]
     private Collection $projects;
 

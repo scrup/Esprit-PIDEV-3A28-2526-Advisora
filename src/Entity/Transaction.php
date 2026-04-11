@@ -12,6 +12,18 @@ use App\Repository\TransactionRepository;
 #[ORM\Table(name: 'transaction')]
 class Transaction
 {
+    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_SUCCESS = 'SUCCESS';
+    public const STATUS_FAILED = 'FAILED';
+
+    public const STATUSES = [
+        self::STATUS_PENDING => 'En attente',
+        self::STATUS_SUCCESS => 'Acceptee',
+        self::STATUS_FAILED => 'Refusee',
+    ];
+
+    public const TYPE_INVESTMENT_PAYMENT = 'INVESTMENT_PAYMENT';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -26,6 +38,11 @@ class Transaction
     {
         $this->idTransac = $idTransac;
         return $this;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->idTransac;
     }
 
     #[ORM\Column(type: 'date', nullable: false)]
@@ -84,6 +101,31 @@ class Transaction
         return $this;
     }
 
+    public function getStatusLabel(): string
+    {
+        return self::STATUSES[$this->getStatut() ?? ''] ?? ((string) ($this->getStatut() ?? ''));
+    }
+
+    public function getStatusCssClass(): string
+    {
+        return strtolower((string) ($this->getStatut() ?? 'pending'));
+    }
+
+    public function isPending(): bool
+    {
+        return $this->getStatut() === self::STATUS_PENDING;
+    }
+
+    public function isSuccessful(): bool
+    {
+        return $this->getStatut() === self::STATUS_SUCCESS;
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->getStatut() === self::STATUS_FAILED;
+    }
+
     #[ORM\ManyToOne(targetEntity: Investment::class, inversedBy: 'transactions')]
     #[ORM\JoinColumn(name: 'idInv', referencedColumnName: 'idInv')]
     private ?Investment $investment = null;
@@ -97,6 +139,23 @@ class Transaction
     {
         $this->investment = $investment;
         return $this;
+    }
+
+    public function getClient(): ?User
+    {
+        return $this->getInvestment()?->getUser();
+    }
+
+    public function getClientDisplayName(): string
+    {
+        $client = $this->getClient();
+        if (!$client instanceof User) {
+            return 'Client inconnu';
+        }
+
+        $label = trim((string) ($client->getPrenomUser() . ' ' . $client->getNomUser()));
+
+        return $label !== '' ? $label : ((string) $client->getEmailUser());
     }
 
 }

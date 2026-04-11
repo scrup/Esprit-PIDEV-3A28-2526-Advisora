@@ -1,0 +1,82 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des investissements{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Back office</span>
+                <h1>Gestion des investissements</h1>
+                <p>Consultez tous les investissements existants sans modifier les autres modules.</p>
+            </div>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">Retour au tableau de bord</a>
+        </div>
+
+        {% include 'back/investment/_module_nav.html.twig' %}
+
+        <div class="pm-form-card pm-filter-card">
+            <form method="get" class="pm-filter-grid">
+                <div>
+                    <label for="q">Recherche</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Projet, commentaire, devise, ID...">
+                </div>
+                <div>
+                    <label for="status">Statut transaction</label>
+                    <select id="status" name="status">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="owner">Client</label>
+                    <input id="owner" type="text" name="owner" value="{{ filters.owner }}" placeholder="Nom, email ou ID client">
+                </div>
+                <div class="pm-filter-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_investment_index') }}">Reinitialiser</a>
+                </div>
+            </form>
+        </div>
+
+        <section class="pm-grid">
+            {% for investment in investments %}
+                {% set latestTransaction = investment.latestTransaction %}
+                <article class="pm-card">
+                    <div class="pm-card-head">
+                        <span class="pm-status pm-status-{{ latestTransaction ? latestTransaction.statusCssClass : 'pending' }}">
+                            {{ latestTransaction ? latestTransaction.statusLabel : 'Sans transaction' }}
+                        </span>
+                        <span class="pm-meta">Investissement #{{ investment.id }}</span>
+                    </div>
+                    <h2>{{ investment.project ? investment.project.title : 'Projet indisponible' }}</h2>
+                    <p>{{ investment.commentaireInv ?: 'Aucun commentaire fourni.' }}</p>
+                    <div class="pm-meta-list pm-meta-list-vertical">
+                        <span><strong>Client ID :</strong> {{ investment.user ? investment.user.idUser : 'N/A' }}</span>
+                        <span><strong>Client :</strong> {{ investment.user ? (investment.user.getPrenomUser() ~ ' ' ~ investment.user.getNomUser())|trim : 'Non renseigne' }}</span>
+                        <span><strong>Projet ID :</strong> {{ investment.project ? investment.project.id : 'N/A' }}</span>
+                        <span><strong>Fourchette :</strong> {{ investment.budgetRangeLabel }}</span>
+                    </div>
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('back_investment_manage', {id: investment.id}) }}">Ouvrir</a>
+                        {% if latestTransaction %}
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('back_transaction_manage', {id: latestTransaction.id}) }}">Voir la transaction</a>
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <div class="pm-empty">
+                    <h2>Aucun investissement ne correspond aux filtres</h2>
+                    <p>Les investissements client apparaitront ici avec leur transaction associee.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </section>
+{% endblock %}
