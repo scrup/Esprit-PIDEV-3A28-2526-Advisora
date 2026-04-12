@@ -38,7 +38,7 @@
                 <br>
                 <strong>Dernière mise à jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
             </div>
-            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'project'}}) }}
+            {{ form_start(form, {attr: {novalidate: 'novalidate', 'data-skip-validation': 'true'}}) }}
                 {{ form_errors(form) }}
                 <div class="pm-form-grid">
                     {{ forms.field(form.title) }}
@@ -56,9 +56,4 @@
             {{ form_end(form) }}
         </div>
     </section>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('js/project-form-validation.js') }}"></script>
 {% endblock %}

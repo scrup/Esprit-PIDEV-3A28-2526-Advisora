@@ -64,6 +64,7 @@
                             'maxlength': 255,
                             'minlength': 3,
                             'required': 'required',
+                            'data-validation-role': 'strategy-name',
                             'data-validation-label': 'Le nom de la strategie'
                         }}) }}
                     </div>
@@ -78,9 +79,11 @@
                             'class': 'form-input',
                             'placeholder': 'Duree en mois',
                             'min': 1,
+                            'max': 600,
                             'step': 1,
                             'required': 'required',
                             'inputmode': 'numeric',
+                            'data-validation-role': 'strategy-duration',
                             'data-integer': 'true',
                             'data-validation-label': 'La duree'
                         }}) }}
@@ -96,6 +99,8 @@
                         <span class="input-icon material-symbols-outlined">category</span>
                         {{ form_widget(form.type, {'attr': {
                             'class': 'form-select',
+                            'required': 'required',
+                            'data-validation-role': 'strategy-type',
                             'data-validation-label': 'Le type de strategie'
                         }}) }}
                     </div>
@@ -109,6 +114,7 @@
                         {{ form_widget(form.statusStrategie, {'attr': {
                             'class': 'form-select',
                             'required': 'required',
+                            'data-validation-role': 'strategy-status',
                             'data-validation-label': 'Le statut'
                         }}) }}
                     </div>
@@ -129,8 +135,11 @@
                             'class': 'form-input',
                             'placeholder': 'Budget total en euros',
                             'min': 0,
+                            'max': 1000000000,
                             'step': '0.01',
                             'inputmode': 'decimal',
+                            'data-decimals': 2,
+                            'data-validation-role': 'strategy-budget',
                             'data-validation-label': 'Le budget total'
                         }}) }}
                     </div>
@@ -144,9 +153,12 @@
                         {{ form_widget(form.gainEstime, {'attr': {
                             'class': 'form-input',
                             'placeholder': 'Gain estime en %',
-                            'step': '0.1',
+                            'step': '0.01',
                             'min': 0,
+                            'max': 1000,
                             'inputmode': 'decimal',
+                            'data-decimals': 2,
+                            'data-validation-role': 'strategy-gain',
                             'data-validation-label': 'Le gain estime'
                         }}) }}
                     </div>
@@ -166,6 +178,7 @@
                         {{ form_widget(form.project, {'attr': {
                             'class': 'form-select',
                             'required': 'required',
+                            'data-validation-role': 'strategy-project',
                             'data-validation-label': 'Le projet associe'
                         }}) }}
                     </div>
@@ -179,6 +192,7 @@
                         {{ form_widget(form.user, {'attr': {
                             'class': 'form-select',
                             'required': 'required',
+                            'data-validation-role': 'strategy-user',
                             'data-validation-label': 'L utilisateur responsable'
                         }}) }}
                     </div>
