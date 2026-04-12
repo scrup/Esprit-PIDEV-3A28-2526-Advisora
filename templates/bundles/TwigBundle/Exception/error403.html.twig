@@ -1,0 +1,23 @@
+{% set layout = app.request.getPathInfo()|slice(0,5) == '/back' ? 'base_back.html.twig' : 'base.html.twig' %}
+{% extends layout %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/error.css') }}">
+{% endblock %}
+
+{% block title %}Accès refusé - 403{% endblock %}
+
+{% block body %}
+    <section class="error-page">
+        <div class="container">
+            <h1>403 — Accès refusé</h1>
+            <p>Vous n'avez pas la permission d'accéder à cette page.</p>
+            <p>
+                <a href="{{ path('project_index') }}">Retour à l'accueil</a>
+                {% if app.request.getPathInfo()|slice(0,5) == '/back' %}
+                    · <a href="{{ path('app_back') }}">Retour au tableau de bord</a>
+                {% endif %}
+            </p>
+        </div>
+    </section>
+{% endblock %}

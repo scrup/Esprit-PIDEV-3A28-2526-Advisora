@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -13,9 +12,15 @@ use App\Repository\StrategieRepository;
 #[ORM\Table(name: 'strategies')]
 class Strategie
 {
+    public const STATUS_PENDING = 'En_attente';
+    public const STATUS_APPROVED = 'Acceptée';
+    public const STATUS_REJECTED = 'Refusée';
+    public const STATUS_IN_PROGRESS = 'En_cours';
+    public const STATUS_UNASSIGNED = 'Non_affectée';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idStrategie', type: 'integer')]
     private ?int $idStrategie = null;
 
     public function getIdStrategie(): ?int
@@ -41,6 +46,30 @@ class Strategie
     {
         $this->statusStrategie = $statusStrategie;
         return $this;
+    }
+
+    public function getStatusLabel(): string
+    {
+        return match ($this->statusStrategie) {
+            self::STATUS_PENDING => 'En attente',
+            self::STATUS_APPROVED => 'Acceptée',
+            self::STATUS_REJECTED => 'Refusée',
+            self::STATUS_IN_PROGRESS => 'En cours',
+            self::STATUS_UNASSIGNED => 'Non affectée',
+            default => $this->statusStrategie ?? 'Non défini',
+        };
+    }
+
+    public function getStatusCssClass(): string
+    {
+        return match ($this->statusStrategie) {
+            self::STATUS_PENDING => 'pending',
+            self::STATUS_APPROVED => 'approved',
+            self::STATUS_REJECTED => 'rejected',
+            self::STATUS_IN_PROGRESS => 'in-progress',
+            self::STATUS_UNASSIGNED => 'unassigned',
+            default => 'unknown',
+        };
     }
 
     #[ORM\Column(type: 'datetime', nullable: false)]
@@ -157,7 +186,7 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $budgetTotal = null;
 
     public function getBudgetTotal(): ?float
@@ -171,7 +200,7 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'float', nullable: true)]
     private ?float $gainEstime = null;
 
     public function getGainEstime(): ?float
@@ -185,17 +214,30 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $DureeTerme = null;
+    #[ORM\Column(name: 'versions', type: 'integer', nullable: false)]
+    private ?int $versions = null;
 
-    public function getDureeTerme(): ?string
+    public function getVersions(): ?int
     {
-        return $this->DureeTerme;
+        return $this->versions;
     }
 
-    public function setDureeTerme(string $DureeTerme): self
+    public function setVersions(int $versions): self
     {
-        $this->DureeTerme = $DureeTerme;
+        $this->versions = $versions;
+
+        return $this;
+    }
+
+    public function getDureeTerme(): ?int
+    {
+        return $this->versions;
+    }
+
+    public function setDureeTerme(int $DureeTerme): self
+    {
+        $this->versions = $DureeTerme;
+
         return $this;
     }
 
@@ -229,12 +271,6 @@ class Strategie
 
     #[ORM\OneToMany(targetEntity: SwotItem::class, mappedBy: 'strategie')]
     private Collection $swotItems;
-
-    public function __construct()
-    {
-        $this->objectives = new ArrayCollection();
-        $this->swotItems = new ArrayCollection();
-    }
 
     /**
      * @return Collection<int, SwotItem>

@@ -1,0 +1,96 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion evenement{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Gestion evenement</span>
+                <h1>{{ event.title }}</h1>
+                <p>{{ event.description ?: 'Aucune description disponible.' }}</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_index') }}">Retour a la liste</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: event.id}) }}">Voir en front</a>
+                <a class="pm-btn pm-btn-primary" href="{{ path('event_edit', {id: event.id}) }}">Modifier</a>
+            </div>
+        </div>
+
+        {% include 'back/event/_module_nav.html.twig' %}
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>Informations de l evenement</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Statut temporel :</strong> {{ event.getTimelineLabel() }}</span>
+                    <span><strong>Organisateur :</strong> {{ event.organizerName ?: 'Non renseigne' }}</span>
+                    <span><strong>Lieu :</strong> {{ event.location ?: 'Non renseigne' }}</span>
+                    <span><strong>Debut :</strong> {{ event.startDate ? event.startDate|date('d/m/Y H:i') : 'Non renseigne' }}</span>
+                    <span><strong>Fin :</strong> {{ event.endDate ? event.endDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
+                    <span><strong>Capacite :</strong> {{ event.capacity }}</span>
+                    <span><strong>Tickets reserves :</strong> {{ event.reservedTickets }}</span>
+                    <span><strong>Places restantes :</strong> {{ event.remainingTickets }}</span>
+                    <span><strong>Gerant :</strong> {{ event.getManagerDisplayName() }}</span>
+                </div>
+                <form method="post" action="{{ path('event_delete', {id: event.id}) }}" onsubmit="return confirm('Supprimer cet evenement ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
+                    <button class="pm-btn pm-btn-danger" type="submit">Supprimer l evenement</button>
+                </form>
+            </article>
+
+            <article class="pm-card">
+                <div class="pm-section-head">
+                    <h2>Inscriptions liees</h2>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_bookings') }}">Voir toutes les inscriptions</a>
+                </div>
+
+                <details class="pm-history-toggle" open>
+                    <summary class="pm-history-summary">
+                        <span>Afficher les reservations de cet evenement</span>
+                        <span class="pm-history-count">{{ event_bookings|length }}</span>
+                    </summary>
+                    <div class="pm-decision-list">
+                        {% for booking in event_bookings %}
+                            <div class="pm-decision-item">
+                                <div class="pm-section-head">
+                                    <div>
+                                        <strong>{{ booking.getClientDisplayName() }}</strong>
+                                        <span>{{ booking.user ? booking.user.getEmailUser() : 'Email indisponible' }}</span>
+                                    </div>
+                                    <div class="pm-card-actions">
+                                        <span class="pm-status pm-status-{{ booking.workflowStatusCssClass }}">{{ booking.workflowStatusLabel }}</span>
+                                        <span>{{ booking.bookingDate ? booking.bookingDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
+                                    </div>
+                                </div>
+                                <p>
+                                    Nombre de tickets : {{ booking.ticketCount }}<br>
+                                    Total stocke : {{ booking.totalPrixBk|number_format(2, '.', ' ') }} TND
+                                </p>
+                                {% if booking.isPending %}
+                                    <div class="pm-card-actions">
+                                        <form method="post" action="{{ path('back_event_booking_accept', {id: booking.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('accept_booking_' ~ booking.id) }}">
+                                            <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                                        </form>
+                                        <form method="post" action="{{ path('back_event_booking_refuse', {id: booking.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('refuse_booking_' ~ booking.id) }}">
+                                            <button class="pm-btn pm-btn-danger" type="submit">Refuser</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <p class="pm-empty-text">Aucune inscription n est encore associee a cet evenement.</p>
+                        {% endfor %}
+                    </div>
+                </details>
+            </article>
+        </div>
+    </section>
+{% endblock %}

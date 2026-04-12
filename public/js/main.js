@@ -275,13 +275,7 @@ function initButtons() {
         });
     });
 
-    // Login button
-    const loginBtn = document.getElementById('loginBtn');
-    if(loginBtn) {
-        loginBtn.addEventListener('click', () => {
-            showToastMessage('🔐 Accès sécurisé — connectez-vous avec SSO ou email.');
-        });
-    }
+    // Login button: keep default link navigation to /login
 
     // Card links
     const cardLinks = document.querySelectorAll('.card-link');

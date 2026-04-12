@@ -1,0 +1,60 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | {{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% macro field(field) %}
+    <div class="pm-field {% if field.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
+        {{ form_label(field) }}
+        {{ form_widget(field) }}
+        {% if field.vars.help %}
+            <div class="pm-field-help">{{ form_help(field) }}</div>
+        {% endif %}
+        <div class="pm-field-errors" data-field-errors>
+            {{ form_errors(field) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% block body %}
+    {% import _self as forms %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">{{ form_badge|default('Validation du projet') }}</span>
+                <h1>{{ page_title }}</h1>
+                <p>{{ form_message|default('Projet cible : ' ~ project.title ~ '. Ce formulaire sert à accepter, refuser ou laisser le projet en attente.') }}</p>
+                <div class="pm-decision-meta">
+                    <span><strong>ID du projet :</strong> #{{ project.id }}</span>
+                    <span><strong>Titre du projet :</strong> {{ project.title }}</span>
+                    <span><strong>Client :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</span>
+                </div>
+            </div>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">Retour au projet</a>
+        </div>
+
+        <div class="pm-form-card">
+            {% if source_decision is defined and source_decision %}
+                <div class="pm-info-banner">
+                    <strong>Décision source :</strong> {{ source_decision.getDecisionTitleLabel() }} du {{ source_decision.decisionDate|date('d/m/Y') }}.
+                    L'historique reste conservé, cette action ajoute une nouvelle version.
+                </div>
+            {% endif %}
+            {{ form_start(form, {attr: {novalidate: 'novalidate', 'data-skip-validation': 'true'}}) }}
+                {{ form_errors(form) }}
+                <div class="pm-form-grid">
+                    {{ forms.field(form.decisionTitle) }}
+                    {{ forms.field(form.decisionDate) }}
+                </div>
+                {{ forms.field(form.description) }}
+                <div class="pm-form-actions">
+                    {{ form_row(form.save) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock %}

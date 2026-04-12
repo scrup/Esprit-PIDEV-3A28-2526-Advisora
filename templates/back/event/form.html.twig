@@ -1,0 +1,58 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | {{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% macro field(field) %}
+    <div class="pm-field {% if field.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
+        {{ form_label(field) }}
+        {{ form_widget(field) }}
+        {% if field.vars.help %}
+            <div class="pm-field-help">{{ form_help(field) }}</div>
+        {% endif %}
+        <div class="pm-field-errors" data-field-errors>
+            {{ form_errors(field) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% block body %}
+    {% import _self as forms %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">{{ page_badge|default('Back office') }}</span>
+                <h1>{{ page_title }}</h1>
+                <p>{{ page_message|default('Le gerant createur est associe automatiquement a l utilisateur connecte.') }}</p>
+            </div>
+            <a class="pm-btn pm-btn-secondary" href="{{ event.id ? path(back_route|default('event_back_manage'), {id: event.id}) : path('back_event_index') }}">Retour</a>
+        </div>
+
+        {% include 'back/event/_module_nav.html.twig' %}
+
+        <div class="pm-form-card">
+            <div class="pm-info-banner">
+                <strong>Gerant rattache :</strong> {{ event.user ? event.getManagerDisplayName() : 'Sera renseigne a l enregistrement.' }}
+            </div>
+            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form'}}) }}
+                {{ form_errors(form) }}
+                <div class="pm-form-grid">
+                    {{ forms.field(form.titleEv) }}
+                    {{ forms.field(form.organisateurName) }}
+                    {{ forms.field(form.localisationEv) }}
+                    {{ forms.field(form.capaciteEvnt) }}
+                    {{ forms.field(form.startDateEv) }}
+                    {{ forms.field(form.endDateEv) }}
+                </div>
+                {{ forms.field(form.descriptionEv) }}
+                <div class="pm-form-actions">
+                    {{ form_row(form.save) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock %}
