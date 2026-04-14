@@ -47,6 +47,7 @@
         <section class="pm-grid">
             {% for project in projects %}
                 <article class="pm-card">
+                    {% set estimate = project_acceptance_estimates[project.id]|default(null) %}
                     <div class="pm-card-head">
                         <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
                         <span class="pm-meta">Projet #{{ project.id }}</span>
@@ -60,6 +61,9 @@
                         <span><strong>Porteur :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</span>
                         <span><strong>Historique des décisions :</strong> {{ project.decisions|length }}</span>
                     </div>
+                    {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
+                        {% include 'shared/project_acceptance_estimate.html.twig' with { estimate: estimate, variant: 'compact' } only %}
+                    {% endif %}
                     <div class="pm-card-actions">
                         <a class="pm-btn pm-btn-primary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
                         {% if can_edit_any_project %}
