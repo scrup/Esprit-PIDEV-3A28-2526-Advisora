@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Playbook Strategie</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            color: #2f2419;
+            background: #fffdfa;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .page {
+            padding: 34px 40px 52px;
+        }
+
+        .hero {
+            padding: 28px 30px;
+            border-radius: 24px;
+            background: linear-gradient(140deg, #f7efe4 0%, #fff8ef 62%, #f4e4d2 100%);
+            border: 1px solid #eadbc9;
+            margin-bottom: 20px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: #9a7b61;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 30px;
+            line-height: 1.18;
+            color: #2c2016;
+        }
+
+        .hero-summary {
+            margin: 0;
+            font-size: 14px;
+            color: #6c5847;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: #f2e3d1;
+            color: #7a563f;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .meta-grid,
+        .dual-grid,
+        .objective-grid,
+        .phase-grid,
+        .kpi-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+
+        .meta-grid td {
+            width: 33.33%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .dual-grid td,
+        .objective-grid td,
+        .kpi-grid td {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .phase-grid td {
+            width: 33.33%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .card,
+        .section-box {
+            background: #ffffff;
+            border: 1px solid #efe3d6;
+            border-radius: 18px;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+
+        .meta-card {
+            padding: 14px 16px;
+            min-height: 88px;
+        }
+
+        .meta-label,
+        .pill {
+            display: inline-block;
+            color: #9a8a77;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .meta-label {
+            margin-bottom: 8px;
+        }
+
+        .meta-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2f2419;
+        }
+
+        .meta-detail {
+            margin-top: 6px;
+            color: #8d7765;
+            font-size: 12px;
+        }
+
+        .section {
+            margin-top: 8px;
+            margin-bottom: 18px;
+        }
+
+        .section h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #6f4d38;
+        }
+
+        .section-box {
+            padding: 18px 20px;
+        }
+
+        .panel-title {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #5a3d2c;
+        }
+
+        .paragraph {
+            margin: 0;
+            color: #4f3d30;
+        }
+
+        .subtle {
+            color: #8a7564;
+        }
+
+        .note-title {
+            margin: 0 0 8px;
+            color: #6f4d38;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .note-copy {
+            margin: 0;
+            color: #5c493c;
+        }
+
+        .note-copy + .note-title {
+            margin-top: 14px;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        li + li {
+            margin-top: 8px;
+        }
+
+        .objective-card,
+        .phase-card,
+        .kpi-card {
+            padding: 16px 18px;
+        }
+
+        .pill {
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #f6eee4;
+            color: #8f6d55;
+            margin-bottom: 10px;
+        }
+
+        .objective-title,
+        .phase-title,
+        .kpi-name {
+            margin: 0 0 8px;
+            font-size: 15px;
+            color: #2f2419;
+        }
+
+        .objective-copy,
+        .phase-copy,
+        .kpi-target,
+        .kpi-cadence {
+            margin: 0;
+            color: #5b483a;
+        }
+
+        .phase-horizon {
+            margin: 0 0 8px;
+            color: #9a7b61;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .kpi-target {
+            font-weight: 700;
+            color: #3f2f24;
+        }
+
+        .kpi-cadence {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #8a7564;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 16px;
+            border-top: 1px solid #eadfd2;
+            color: #8a7a64;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    {% set strategyOwner = strategy.user ? (strategy.user.prenomUser ~ ' ' ~ strategy.user.nomUser)|trim : 'Non defini' %}
+    {% set projectOwner = project and project.user ? (project.user.prenomUser ~ ' ' ~ project.user.nomUser)|trim : 'Non defini' %}
+    {% set projectProgress = project and project.avancementProj is not null ? project.avancementProj|number_format(0, ',', ' ') ~ '%' : 'Non defini' %}
+    {% set projectStatus = project ? project.statusLabel : 'Non defini' %}
+    {% set hasProjectContext = project and project.descriptionProj %}
+    {% set hasStrategyContext = strategy.news or strategy.justification %}
+
+    <div class="page">
+        <section class="hero">
+            <p class="eyebrow">Playbook strategie</p>
+            <h1>{{ strategy.nomStrategie ?: 'Strategie sans nom' }}</h1>
+            <p class="hero-summary">{{ content.executive_summary }}</p>
+            <div class="status">{{ strategy.statusLabel }}</div>
+        </section>
+
+        <table class="meta-grid" role="presentation">
+            <tr>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Projet associe</div>
+                        <div class="meta-value">{{ project ? (project.titleProj ?: 'Projet #' ~ project.idProj) : 'Aucun projet' }}</div>
+                        <div class="meta-detail">Statut: {{ projectStatus }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Budget strategie</div>
+                        <div class="meta-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</div>
+                        <div class="meta-detail">Budget projet: {{ project and project.budgetProj is not null ? project.budgetProj|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Gain estime</div>
+                        <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non defini' }}</div>
+                        <div class="meta-detail">Avancement projet: {{ projectProgress }}</div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Duree cible</div>
+                        <div class="meta-value">{{ strategy.dureeTerme ?: 'Non definie' }} mois</div>
+                        <div class="meta-detail">Type: {{ strategy.type ?: 'Non defini' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Responsable strategie</div>
+                        <div class="meta-value">{{ strategyOwner ?: 'Non defini' }}</div>
+                        <div class="meta-detail">Client projet: {{ projectOwner ?: 'Non defini' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Objectifs relies</div>
+                        <div class="meta-value">{{ strategy.objectives|length }}</div>
+                        <div class="meta-detail">Document genere le {{ "now"|date("d/m/Y H:i") }}</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        {% if hasProjectContext or hasStrategyContext %}
+            <section class="section">
+                <h2>Contexte et signaux</h2>
+                <table class="dual-grid" role="presentation">
+                    <tr>
+                        <td>
+                            <div class="section-box">
+                                <h3 class="note-title">Contexte projet</h3>
+                                <p class="note-copy">
+                                    {{ hasProjectContext ? project.descriptionProj : 'Aucune description projet disponible.' }}
+                                </p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="section-box">
+                                <h3 class="note-title">Contexte strategique</h3>
+                                {% if strategy.news %}
+                                    <p class="note-copy"><strong>Actualites :</strong> {{ strategy.news }}</p>
+                                {% endif %}
+                                {% if strategy.justification %}
+                                    <h3 class="note-title">Justification</h3>
+                                    <p class="note-copy">{{ strategy.justification }}</p>
+                                {% elseif not strategy.news %}
+                                    <p class="note-copy">Aucune note de contexte strategique fournie.</p>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </section>
+        {% endif %}
+
+        <section class="section">
+            <h2>Diagnostic strategique</h2>
+            <div class="section-box">
+                <p class="paragraph">{{ content.strategic_diagnosis }}</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <table class="dual-grid" role="presentation">
+                <tr>
+                    <td>
+                        <div class="section-box">
+                            <h2>Points cles</h2>
+                            <ul>
+                                {% for item in content.highlights %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="section-box">
+                            <h2>Priorites strategiques</h2>
+                            <ul>
+                                {% for item in content.strategic_priorities %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        {% if strategy.objectives|length > 0 %}
+            <section class="section">
+                <h2>Objectifs rattaches</h2>
+                <table class="objective-grid" role="presentation">
+                    {% for row in strategy.objectives|batch(2, null) %}
+                        <tr>
+                            {% for objective in row %}
+                                <td>
+                                    {% if objective %}
+                                        <div class="card objective-card">
+                                            <div class="pill">Priorite {{ objective.priorityLabel|lower }}</div>
+                                            <h3 class="objective-title">{{ objective.nomObj ?: 'Objectif' }}</h3>
+                                            <p class="objective-copy">{{ objective.descriptionOb ?: 'Aucune description fournie.' }}</p>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </section>
+        {% endif %}
+
+        <section class="section">
+            <h2>Opportunites et creation de valeur</h2>
+            <div class="section-box">
+                <ul>
+                    {% for item in content.opportunities %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Feuille de route d execution</h2>
+            <table class="phase-grid" role="presentation">
+                <tr>
+                    {% for phase in content.execution_phases %}
+                        <td>
+                            <div class="card phase-card">
+                                <p class="phase-horizon">{{ phase.horizon }}</p>
+                                <h3 class="phase-title">{{ phase.title }}</h3>
+                                <p class="phase-copy">{{ phase.focus }}</p>
+                            </div>
+                        </td>
+                    {% endfor %}
+                </tr>
+            </table>
+        </section>
+
+        <section class="section">
+            <table class="dual-grid" role="presentation">
+                <tr>
+                    <td>
+                        <div class="section-box">
+                            <h2>Risques et points de vigilance</h2>
+                            <ul>
+                                {% for item in content.risks %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="section-box">
+                            <h2>Contre-mesures recommandees</h2>
+                            <ul>
+                                {% for item in content.mitigation_actions %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="section">
+            <h2>Plan d action recommande</h2>
+            <div class="section-box">
+                <ul>
+                    {% for item in content.actions %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Indicateurs de pilotage</h2>
+            <table class="kpi-grid" role="presentation">
+                {% for row in content.kpis|batch(2, null) %}
+                    <tr>
+                        {% for kpi in row %}
+                            <td>
+                                {% if kpi %}
+                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">{{ kpi.name }}</h3>
+                                        <p class="kpi-target">{{ kpi.target }}</p>
+                                        <p class="kpi-cadence">Cadence: {{ kpi.cadence }}</p>
+                                    </div>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </section>
+
+        <div class="footer">
+            Document genere le {{ "now"|date("d/m/Y H:i") }} depuis Advisora.
+        </div>
+    </div>
+</body>
+</html>

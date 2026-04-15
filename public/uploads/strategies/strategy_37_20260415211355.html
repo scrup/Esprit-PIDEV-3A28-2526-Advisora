@@ -45,6 +45,17 @@
             color: #6c5847;
         }
 
+        .status {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #f3e7d8;
+            color: #7f5b45;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
         .meta-grid {
             width: 100%;
             border-collapse: separate;
@@ -114,26 +125,15 @@
             color: #8a7a64;
             font-size: 12px;
         }
-
-        .status {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            background: #f3e7d8;
-            color: #7f5b45;
-            font-size: 12px;
-            font-weight: 700;
-        }
     </style>
 </head>
 <body>
     <div class="page">
         <section class="hero">
             <p class="eyebrow">Playbook strategie</p>
-            <h1>{{ strategy.nomStrategie ?: 'Strategie sans nom' }}</h1>
-            <p>{{ content.executive_summary }}</p>
-            <div class="status">{{ strategy.statusLabel }}</div>
+            <h1>Expansion du marché</h1>
+            <p>La strategie &quot;Expansion du marché&quot; vise une execution sur 4 mois avec un budget de 500 DT. Elle est rattachee au projet &quot;Smart Housing Insights&quot; et affiche un gain estime de 1500%.</p>
+            <div class="status">Acceptée</div>
         </section>
 
         <table class="meta-grid" role="presentation">
@@ -141,13 +141,13 @@
                 <td>
                     <div class="meta-card">
                         <span class="meta-label">Projet associe</span>
-                        <div class="meta-value">{{ project ? (project.titleProj ?: 'Projet #' ~ project.idProj) : 'Aucun projet' }}</div>
+                        <div class="meta-value">Smart Housing Insights</div>
                     </div>
                 </td>
                 <td>
                     <div class="meta-card">
                         <span class="meta-label">Budget strategie</span>
-                        <div class="meta-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</div>
+                        <div class="meta-value">500 DT</div>
                     </div>
                 </td>
             </tr>
@@ -155,13 +155,13 @@
                 <td>
                     <div class="meta-card">
                         <span class="meta-label">Gain estime</span>
-                        <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non defini' }}</div>
+                        <div class="meta-value">1500%</div>
                     </div>
                 </td>
                 <td>
                     <div class="meta-card">
                         <span class="meta-label">Duree</span>
-                        <div class="meta-value">{{ strategy.DureeTerme ?: 'Non definie' }} mois</div>
+                        <div class="meta-value">4 mois</div>
                     </div>
                 </td>
             </tr>
@@ -171,10 +171,11 @@
             <h2>Points cles</h2>
             <div class="section-box">
                 <ul>
-                    {% for item in content.highlights %}
-                        <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
+                                            <li>Type de strategie: CROISSANCE</li>
+                                            <li>Responsable: azza chouikh</li>
+                                            <li>Projet support: Smart Housing Insights</li>
+                                            <li>Client du projet: One Client</li>
+                                    </ul>
             </div>
         </section>
 
@@ -182,10 +183,10 @@
             <h2>Opportunites</h2>
             <div class="section-box">
                 <ul>
-                    {% for item in content.opportunities %}
-                        <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
+                                            <li>Le gain estime represente environ 7 500 DT sur la base du budget courant.</li>
+                                            <li>Le projet associe dispose d un avancement de 0% pour accueillir la strategie.</li>
+                                            <li>Les objectifs relies peuvent servir de feuille de route immediate pour le lancement du playbook.</li>
+                                    </ul>
             </div>
         </section>
 
@@ -193,10 +194,8 @@
             <h2>Risques et points de vigilance</h2>
             <div class="section-box">
                 <ul>
-                    {% for item in content.risks %}
-                        <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
+                                            <li>Aucun risque bloquant n a ete detecte a partir des donnees budgetaires disponibles.</li>
+                                    </ul>
             </div>
         </section>
 
@@ -204,10 +203,11 @@
             <h2>Plan d action recommande</h2>
             <div class="section-box">
                 <ul>
-                    {% for item in content.actions %}
-                        <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
+                                            <li>Valider les hypotheses budgetaires avant lancement.</li>
+                                            <li>Confirmer les responsables, livrables et jalons cles.</li>
+                                            <li>Suivre les objectifs relies pour piloter la mise en oeuvre.</li>
+                                            <li>Aligner la strategie avec le calendrier du projet associe.</li>
+                                    </ul>
             </div>
         </section>
 
@@ -215,15 +215,16 @@
             <h2>Indicateurs a suivre</h2>
             <div class="section-box">
                 <ul>
-                    {% for item in content.kpis %}
-                        <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
+                                            <li>Budget strategie: 500 DT</li>
+                                            <li>Gain estime: 1500%</li>
+                                            <li>Nombre d objectifs: 1</li>
+                                            <li>Budget projet: 98 000 DT</li>
+                                    </ul>
             </div>
         </section>
 
         <div class="footer">
-            Document genere le {{ "now"|date("d/m/Y H:i") }} depuis Advisora.
+            Document genere le 15/04/2026 21:13 depuis Advisora.
         </div>
     </div>
 </body>

@@ -212,6 +212,20 @@
     {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const extractServerError = (html) => {
+                if (!html || typeof html !== 'string') {
+                    return '';
+                }
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const title = doc.querySelector('title')?.textContent?.trim();
+                const heading = doc.querySelector('h1')?.textContent?.trim();
+                const bodyText = doc.body?.textContent?.replace(/\s+/g, ' ').trim() || '';
+
+                return title || heading || bodyText.slice(0, 220);
+            };
+
             document.querySelectorAll('.pdf-generate-btn').forEach((button) => {
                 button.addEventListener('click', async (event) => {
                     event.preventDefault();
@@ -234,10 +248,11 @@
                     progressDiv.style.display = 'flex';
                     downloadDiv.style.display = 'none';
 
-                    const showDownload = (url) => {
+                    const showDownload = (url, label = 'Ouvrir') => {
                         progressDiv.style.display = 'none';
                         downloadDiv.style.display = 'block';
                         downloadLink.href = url;
+                        downloadLink.innerHTML = `<i class="fas fa-download"></i> ${label}`;
                     };
 
                     const resetState = () => {
@@ -249,21 +264,40 @@
                         const response = await fetch(generateUrl, {
                             method: 'POST',
                             headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
                             }
                         });
 
-                        const data = await response.json();
-                        if (!response.ok) {
-                            throw new Error(data.error || 'Impossible de lancer la generation du PDF.');
+                        const responseText = await response.text();
+                        let data = null;
+
+                        if (responseText.trim() !== '') {
+                            try {
+                                data = JSON.parse(responseText);
+                            } catch (parseError) {
+                                throw new Error(
+                                    extractServerError(responseText)
+                                    || `Le serveur a renvoye une reponse non JSON (${response.status}).`
+                                );
+                            }
                         }
 
-                        if (data.status === 'failed') {
+                        if (!response.ok) {
+                            throw new Error(data?.error || `Impossible de lancer la generation du PDF (${response.status}).`);
+                        }
+
+                        if (data?.status === 'failed') {
                             throw new Error(data.error || 'La generation du PDF a echoue.');
                         }
 
-                        if (data.status === 'completed' && data.url) {
-                            showDownload(data.url);
+                        if (data?.status === 'completed' && data.url) {
+                            const isHtmlFallback = data.format === 'html';
+                            showDownload(data.url, isHtmlFallback ? 'Ouvrir la version imprimable' : 'Telecharger le PDF');
+
+                            if (data.message) {
+                                alert(data.message);
+                            }
 
                             return;
                         }
