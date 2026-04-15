@@ -9,14 +9,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/front.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/front-management.css') }}">
+
     
     <!-- Page specific CSS -->
     {% block stylesheets %}{% endblock %}
 </head>
-<body>
+<body class="front-mode">
 
     <!-- Header included here -->
     {% include 'front/header.html.twig' %}
+
+    {% for message in app.flashes('success') %}
+        <div class="flash-message flash-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="flash-message flash-error">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('info') %}
+        <div class="flash-message flash-info">{{ message }}</div>
+    {% endfor %}
 
     <!-- Main content block - changes per page -->
     <main>
@@ -28,6 +40,7 @@
 
     <!-- Global JavaScript -->
     <script src="{{ asset('js/main.js') }}"></script>
+    <script src="{{ asset('js/interface-toggle.js') }}"></script>
     
     <!-- Page specific JavaScript -->
     {% block javascripts %}{% endblock %}

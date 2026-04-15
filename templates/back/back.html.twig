@@ -4,123 +4,294 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/back-dashboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}"
+    <link rel="stylesheet" href="{{ asset('css/back-dashboard.css') }}?v=20260411-shell-v2">
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
 {% endblock %}
 
 {% block body %}
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <div class="welcome-section">
-                <h1>Bonjour, {{ app.user ? app.user.getPrenomUser() : 'Équipe' }}</h1>
-                <p>Voici la situation actuelle des projets et des décisions du module de gestion.</p>
-            </div>
-            <div class="date-badge">
-                <i class="fas fa-calendar-alt"></i>
-                <span id="currentDate"></span>
-            </div>
+<section class="dashboard-shell">
+    <header class="dashboard-hero">
+        <div class="dashboard-hero-copy">
+            <span class="dashboard-eyebrow">Tableau de bord executif</span>
+            <h1>Centre de pilotage du back office</h1>
+            <p>Suivez les projets, les strategies, les evenements, les ressources et les investissements depuis une seule vue de controle.</p>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
-                <div class="stat-info">
-                    <h3>Total projets</h3>
-                    <div class="stat-value">{{ total_projects }}</div>
-                    <span class="stat-trend">Tous les projets du module</span>
+        <div class="dashboard-hero-side">
+            <label class="dashboard-search" aria-label="Recherche">
+                <i class="fas fa-search"></i>
+                <input type="search" placeholder="Rechercher un module ou un indicateur" />
+            </label>
+
+            <div class="dashboard-hero-meta">
+                <div class="dashboard-date-card">
+                    <span>Aujourd hui</span>
+                    <strong id="currentDate"></strong>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
-                <div class="stat-info">
-                    <h3>Projets en attente</h3>
-                    <div class="stat-value">{{ pending_projects }}</div>
-                    <span class="stat-trend">À traiter par le back office</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                <div class="stat-info">
-                    <h3>Projets acceptés</h3>
-                    <div class="stat-value">{{ accepted_projects }}</div>
-                    <span class="stat-trend">Validés par décision récente</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-gavel"></i></div>
-                <div class="stat-info">
-                    <h3>Décisions</h3>
-                    <div class="stat-value">{{ total_decisions }}</div>
-                    <span class="stat-trend">{{ refused_projects }} projets refusés</span>
+                <div class="dashboard-user-card">
+                    <span class="dashboard-user-avatar">{{ app.user ? app.user.getPrenomUser()|slice(0, 1)|upper : 'A' }}</span>
+                    <div>
+                        <strong>{{ app.user ? app.user.getPrenomUser() : 'Equipe' }}</strong>
+                        <span>Back office</span>
+                    </div>
                 </div>
             </div>
         </div>
+    </header>
 
-        <div class="two-columns">
-            <div>
-                <div class="card-panel">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-clock"></i> Derniers projets soumis</h3>
-                        <a href="{{ path('back_project_index') }}" class="view-link">Voir tous</a>
-                    </div>
-                    <div class="dashboard-list">
-                        {% for project in latest_projects %}
-                            <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: project.id}) }}">
-                                <div>
-                                    <strong>{{ project.title }}</strong>
-                                    <p>{{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</p>
-                                </div>
-                                <div class="dashboard-list-meta">
-                                    <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
-                                    <span>{{ project.startDate ? project.startDate|date('d/m/Y') : '' }}</span>
-                                </div>
-                            </a>
-                        {% else %}
-                            <p class="dashboard-empty">Aucun projet disponible.</p>
-                        {% endfor %}
-                    </div>
+    <div class="executive-grid">
+        <article class="executive-card">
+            <span class="executive-icon"><i class="fas fa-briefcase"></i></span>
+            <div class="executive-copy">
+                <span class="executive-label">Projets actifs</span>
+                <strong>{{ total_projects }}</strong>
+                <span class="executive-meta">{{ accepted_projects }} acceptes</span>
+            </div>
+        </article>
+
+        <article class="executive-card">
+            <span class="executive-icon executive-icon-warm"><i class="fas fa-hourglass-half"></i></span>
+            <div class="executive-copy">
+                <span class="executive-label">Projets en attente</span>
+                <strong>{{ pending_projects }}</strong>
+                <span class="executive-meta">{{ refused_projects }} refuses</span>
+            </div>
+        </article>
+
+        <article class="executive-card">
+            <span class="executive-icon executive-icon-cool"><i class="fas fa-gavel"></i></span>
+            <div class="executive-copy">
+                <span class="executive-label">Decisions prises</span>
+                <strong>{{ total_decisions }}</strong>
+                <span class="executive-meta">Historique global</span>
+            </div>
+        </article>
+
+        <article class="executive-card">
+            <span class="executive-icon executive-icon-emerald"><i class="fas fa-wallet"></i></span>
+            <div class="executive-copy">
+                <span class="executive-label">Volume engage</span>
+                <strong>{{ investment_metrics.total_amount|number_format(0, '.', ' ') }} DT</strong>
+                <span class="executive-meta">{{ investment_metrics.count }} investissement(s)</span>
+            </div>
+        </article>
+    </div>
+
+    <div class="dashboard-core-grid">
+        <article class="dashboard-panel dashboard-panel-main">
+            <div class="panel-header">
+                <div>
+                    <span class="panel-eyebrow">Analyse strategique</span>
+                    <h2>Performance strategique</h2>
+                    <p>Visualisation des strategies acceptees et du taux de reussite consolide.</p>
                 </div>
-
-                <div class="card-panel">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-sliders-h"></i> Actions rapides</h3>
-                    </div>
-                    <div class="quick-actions quick-actions-start">
-                        <a href="{{ path('back_project_index') }}" class="action-btn"><i class="fas fa-folder-open"></i> Gérer les projets</a>
-                        <a href="{{ path('project_index') }}" class="action-btn"><i class="fas fa-eye"></i> Voir le front</a>
-                    </div>
+                <div class="panel-badges">
+                    <span>{{ strategy_acceptance_timeline.accepted_total }} acceptees</span>
+                    <span>{{ strategy_acceptance_timeline.refused_total }} refusees</span>
+                    <span class="panel-badge-strong">{{ strategy_acceptance_timeline.latest_success_rate|number_format(1, '.', ' ') }}% succes</span>
                 </div>
             </div>
 
-            <div>
-                <div class="card-panel">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-history"></i> Dernières décisions</h3>
-                        <a href="{{ path('back_project_index') }}" class="view-link">Accéder aux projets</a>
-                    </div>
-                    <div class="dashboard-list">
-                        {% for decision in latest_decisions %}
-                            <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: decision.project.id}) }}">
-                                <div>
-                                    <strong>{{ decision.project.title }}</strong>
-                                    <p>{{ decision.descriptionD ?: 'Sans justification détaillée.' }}</p>
-                                </div>
-                                <div class="dashboard-list-meta">
-                                    <span class="pm-status pm-status-{{ decision.project.status|lower }}">{{ decision.getDecisionTitleLabel() ?: 'Décision' }}</span>
-                                    <span>{{ decision.dateDecision ? decision.dateDecision|date('d/m/Y') : '' }}</span>
-                                </div>
-                            </a>
-                        {% else %}
-                            <p class="dashboard-empty">Aucune décision enregistrée.</p>
-                        {% endfor %}
+            {% if strategy_acceptance_timeline.labels is not empty %}
+                <div
+                    class="performance-chart-shell"
+                    id="strategyPerformanceCard"
+                    data-chart="{{ strategy_acceptance_timeline|json_encode|e('html_attr') }}"
+                >
+                    <canvas id="strategyPerformanceChart"></canvas>
+                </div>
+            {% else %}
+                <div class="dashboard-empty-state">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <strong>Aucune serie disponible</strong>
+                        <p>Le graphique apparaitra des qu une strategie acceptee aura une date de validation exploitable.</p>
                     </div>
                 </div>
-            </div>
+            {% endif %}
+        </article>
+
+        <div class="dashboard-side-stack">
+            <article class="dashboard-panel">
+                <div class="panel-header panel-header-compact">
+                    <div>
+                        <span class="panel-eyebrow">Synthese investissement</span>
+                        <h2>Portefeuille engage</h2>
+                    </div>
+                    <span class="panel-inline-indicator">{{ investment_metrics.largest_ticket|number_format(0, '.', ' ') }} DT max</span>
+                </div>
+
+                <div class="balance-value">{{ investment_metrics.total_amount|number_format(0, '.', ' ') }} DT</div>
+
+                <div class="balance-grid">
+                    <div class="balance-tile">
+                        <span>Investissements</span>
+                        <strong>{{ investment_metrics.count }}</strong>
+                    </div>
+                    <div class="balance-tile">
+                        <span>Evenements a venir</span>
+                        <strong>{{ upcoming_events_count }}</strong>
+                    </div>
+                    <div class="balance-tile">
+                        <span>Ressources disponibles</span>
+                        <strong>{{ resource_metrics.available }}</strong>
+                    </div>
+                    <div class="balance-tile">
+                        <span>Ressources liees</span>
+                        <strong>{{ resource_metrics.linked }}</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article class="dashboard-panel">
+                <div class="panel-header panel-header-compact">
+                    <div>
+                        <span class="panel-eyebrow">Repartition</span>
+                        <h2>Allocation des investissements</h2>
+                    </div>
+                </div>
+
+                {% if investment_metrics.distribution is not empty %}
+                    <div class="allocation-shell" data-donut="{{ investment_metrics.distribution|json_encode|e('html_attr') }}">
+                        <div class="allocation-chart">
+                            <canvas id="investmentChart" width="170" height="170"></canvas>
+                        </div>
+                        <div class="allocation-legend">
+                            {% for item in investment_metrics.distribution %}
+                                <div>
+                                    <span class="legend-color legend-color-{{ loop.index0 }}"></span>
+                                    <span>{{ item.label }}</span>
+                                    <strong>{{ item.value|number_format(0, '.', ' ') }}</strong>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="dashboard-empty-copy">Aucune donnee d investissement disponible.</p>
+                {% endif %}
+            </article>
         </div>
     </div>
+
+    <div class="operations-grid">
+        <article class="dashboard-panel">
+            <div class="panel-header panel-header-compact">
+                <div>
+                    <span class="panel-eyebrow">Projets</span>
+                    <h2>Projets recents</h2>
+                </div>
+                <a href="{{ path('back_project_index') }}" class="panel-link">Voir tout</a>
+            </div>
+
+            {% if latest_projects is not empty %}
+                <div class="stack-list">
+                    {% for project in latest_projects %}
+                        <a class="stack-item" href="{{ path('project_back_manage', {id: project.id}) }}">
+                            <div class="stack-copy">
+                                <strong>{{ project.title ?: 'Projet sans titre' }}</strong>
+                                <span>{{ project.legacyType ?: 'Type non precise' }} - {{ project.statusLabel }}</span>
+                            </div>
+                            <div class="stack-metric">
+                                <span>Avancement</span>
+                                <strong>{{ project.avancementProj|default(0)|number_format(0, '.', ' ') }}%</strong>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="dashboard-empty-copy">Aucun projet recent.</p>
+            {% endif %}
+        </article>
+
+        <article class="dashboard-panel">
+            <div class="panel-header panel-header-compact">
+                <div>
+                    <span class="panel-eyebrow">Decisions</span>
+                    <h2>Dernieres decisions</h2>
+                </div>
+                <a href="{{ path('back_project_overview') }}" class="panel-link">Historique</a>
+            </div>
+
+            {% if latest_decisions is not empty %}
+                <div class="stack-list">
+                    {% for decision in latest_decisions %}
+                        <a class="stack-item" href="{{ path('project_back_manage', {id: decision.project.id}) }}">
+                            <div class="stack-copy">
+                                <strong>{{ decision.project ? decision.project.title : 'Projet indisponible' }}</strong>
+                                <span>{{ decision.decisionDate ? decision.decisionDate|date('d/m/Y') : 'Non datee' }}</span>
+                            </div>
+                            <span class="status-pill status-pill-{{ decision.decisionTitle|default('pending') }}">{{ decision.decisionTitleLabel }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="dashboard-empty-copy">Aucune decision recente.</p>
+            {% endif %}
+        </article>
+
+        <article class="dashboard-panel">
+            <div class="panel-header panel-header-compact">
+                <div>
+                    <span class="panel-eyebrow">Evenements</span>
+                    <h2>Evenements a venir</h2>
+                </div>
+                <a href="{{ path('back_event_index') }}" class="panel-link">Calendrier</a>
+            </div>
+
+            {% if upcoming_events is not empty %}
+                <div class="stack-list">
+                    {% for event in upcoming_events %}
+                        <a class="stack-item" href="{{ path('event_back_manage', {id: event.id}) }}">
+                            <div class="stack-copy">
+                                <strong>{{ event.title ?: 'Evenement' }}</strong>
+                                <span>{{ event.location ?: 'Lieu non precise' }} - {{ event.timelineLabel }}</span>
+                            </div>
+                            <div class="stack-metric">
+                                <span>Debut</span>
+                                <strong>{{ event.startDate ? event.startDate|date('d M H:i') : '--' }}</strong>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="dashboard-empty-copy">Aucun evenement planifie.</p>
+            {% endif %}
+        </article>
+
+        <article class="dashboard-panel">
+            <div class="panel-header panel-header-compact">
+                <div>
+                    <span class="panel-eyebrow">Ressources</span>
+                    <h2>Ressources recentes</h2>
+                </div>
+                <a href="{{ path('back_resource_dashboard') }}" class="panel-link">Ouvrir</a>
+            </div>
+
+            {% if recent_resources is not empty %}
+                <div class="stack-list">
+                    {% for resource in recent_resources %}
+                        <a class="stack-item" href="{{ path('resource_back_manage', {id: resource.id}) }}">
+                            <div class="stack-copy">
+                                <strong>{{ resource.name ?: 'Ressource' }}</strong>
+                                <span>{{ resource.statusLabel }} - {{ resource.getSupplierDisplayName() }}</span>
+                            </div>
+                            <div class="stack-metric">
+                                <span>Stock</span>
+                                <strong>{{ resource.quantity ?? 0 }}</strong>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="dashboard-empty-copy">Aucune ressource recente.</p>
+            {% endif %}
+        </article>
+    </div>
+</section>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('js/back-dashboard.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/back-dashboard.js') }}?v=20260411-shell-v2"></script>
 {% endblock %}

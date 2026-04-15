@@ -33,7 +33,7 @@ function validateField(field) {
     const isRequired = field.required;
 
     if (isRequired && value === '') {
-        messages.push(field.dataset.validationRequiredMessage || `${label} est obligatoire.`);
+        messages.push(`${label} est obligatoire.`);
     }
 
     if (value !== '') {
@@ -45,26 +45,13 @@ function validateField(field) {
 
             const min = field.getAttribute('min');
             if (min !== null && numericValue < Number(min)) {
-                messages.push(field.dataset.validationMinMessage || `${label} doit être supérieur ou égal à ${min}.`);
-            }
-
-            if (field.dataset.validationInteger === 'true' && !Number.isInteger(numericValue)) {
-                messages.push(`${label} doit être un entier valide.`);
+                messages.push(`${label} doit être strictement supérieur à 0.`);
             }
         }
 
         const maxLength = field.getAttribute('maxlength');
         if (maxLength && value.length > Number(maxLength)) {
             messages.push(`${label} ne doit pas dépasser ${maxLength} caractères.`);
-        }
-
-        const allowedChoices = (field.dataset.validationChoices || '')
-            .split(',')
-            .map((item) => item.trim())
-            .filter((item) => item !== '');
-
-        if (allowedChoices.length > 0 && !allowedChoices.includes(value)) {
-            messages.push(field.dataset.validationChoiceMessage || `${label} sélectionné est invalide.`);
         }
     }
 

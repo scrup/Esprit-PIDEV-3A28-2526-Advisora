@@ -1,84 +1,168 @@
 {% extends 'base_back.html.twig' %}
 
-{% block title %}Advisora | Gestion des projets{% endblock %}
+{% block title %}Advisora | {{ page_title }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/back-dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
 {% block body %}
-    <section class="pm-admin-shell">
-        <div class="pm-admin-header">
-            <div>
-                <span class="pm-badge">Back office</span>
-                <h1>Gestion des projets</h1>
-                <p>Consultez tous les projets du module, appliquez des filtres et ouvrez leur dossier pour traitement.</p>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="welcome-section">
+                <h1>Aperçu des projets</h1>
+                <p>Voici la situation actuelle des projets et des décisions du module de gestion.</p>
             </div>
-            <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">Retour au tableau de bord</a>
+            <div class="date-badge">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="currentDate"></span>
+            </div>
         </div>
 
-        <div class="pm-form-card pm-filter-card">
-            <form method="get" class="pm-filter-grid">
-                <div>
-                    <label for="q">Recherche</label>
-                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre du projet">
-                </div>
-                <div>
-                    <label for="status">Statut</label>
-                    <select id="status" name="status">
-                        <option value="">Tous les statuts</option>
-                        {% for value, label in status_choices %}
-                            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label for="owner">Porteur</label>
-                    <input id="owner" type="text" name="owner" value="{{ filters.owner }}" placeholder="Nom du client">
-                </div>
-                <div class="pm-filter-actions">
-                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
-                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">Réinitialiser</a>
-                </div>
-            </form>
+        <!-- Quick Actions - Compact & Modern -->
+        <div class="quick-actions-bar">
+            <div class="quick-actions-title">
+                <i class="fas fa-bolt"></i>
+                <span>Actions rapides</span>
+            </div>
+            <div class="quick-actions-buttons">
+                <a href="{{ path('back_project_index') }}" class="quick-action-btn primary">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Gérer les projets</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="{{ path('project_index') }}" class="quick-action-btn secondary">
+                    <i class="fas fa-eye"></i>
+                    <span>Voir le front</span>
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+            </div>
         </div>
 
-        <section class="pm-grid">
-            {% for project in projects %}
-                <article class="pm-card">
-                    <div class="pm-card-head">
-                        <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
-                        <span class="pm-meta">Projet #{{ project.id }}</span>
-                    </div>
-                    <h2>{{ project.title }}</h2>
-                    <p>{{ project.description ?: 'Aucune description disponible.' }}</p>
-                    <div class="pm-meta-list pm-meta-list-vertical">
-                        <span><strong>Type :</strong> {{ project.legacyType ?: 'Non précisé' }}</span>
-                        <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
-                        <span><strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
-                        <span><strong>Porteur :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</span>
-                        <span><strong>Historique des décisions :</strong> {{ project.decisions|length }}</span>
-                    </div>
-                    <div class="pm-card-actions">
-                        <a class="pm-btn pm-btn-primary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
-                        {% if can_edit_any_project %}
-                            <a class="pm-btn pm-btn-secondary" href="{{ path('project_edit', {id: project.id}) }}">Modifier le projet</a>
-                        {% endif %}
-                        {% if can_delete_any_project %}
-                            <form method="post" action="{{ path('project_delete', {id: project.id}) }}" onsubmit="return confirm('Supprimer ce projet ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_project_' ~ project.id) }}">
-                                <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
-                            </form>
-                        {% endif %}
-                    </div>
-                </article>
-            {% else %}
-                <div class="pm-empty">
-                    <h2>Aucun projet ne correspond aux filtres</h2>
-                    <p>Essayez de modifier la recherche ou de réinitialiser les filtres.</p>
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+                <div class="stat-info">
+                    <h3>Total projets</h3>
+                    <div class="stat-value">{{ total_projects }}</div>
+                    <span class="stat-trend">Tous les projets du module</span>
                 </div>
-            {% endfor %}
-        </section>
-    </section>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <h3>Projets en attente</h3>
+                    <div class="stat-value">{{ pending_projects }}</div>
+                    <span class="stat-trend">À traiter par le back office</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3>Projets acceptés</h3>
+                    <div class="stat-value">{{ accepted_projects }}</div>
+                    <span class="stat-trend">Validés par décision récente</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-gavel"></i></div>
+                <div class="stat-info">
+                    <h3>Décisions</h3>
+                    <div class="stat-value">{{ total_decisions }}</div>
+                    <span class="stat-trend">{{ refused_projects }} projets refusés</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Columns -->
+        <div class="two-columns">
+            <!-- Left Column: Latest Projects -->
+            <div class="card-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-clock"></i> Derniers projets soumis</h3>
+                    <a href="{{ path('back_project_index') }}" class="view-link">
+                        Voir tous <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="dashboard-list">
+                    {% for project in latest_projects %}
+                        <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: project.id}) }}">
+                            <div class="list-item-content">
+                                <div class="list-item-icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="list-item-info">
+                                    <strong>{{ project.title }}</strong>
+                                    <p>
+                                        <i class="fas fa-user"></i> 
+                                        {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="dashboard-list-meta">
+                                <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
+                                <span class="list-item-date">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ project.startDate ? project.startDate|date('d/m/Y') : '' }}
+                                </span>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="dashboard-empty">
+                            <i class="fas fa-inbox"></i>
+                            <p>Aucun projet disponible.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Column: Latest Decisions -->
+            <div class="card-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-history"></i> Dernières décisions</h3>
+                    <a href="{{ path('back_project_index') }}" class="view-link">
+                        Accéder aux projets <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="dashboard-list">
+                    {% for decision in latest_decisions %}
+                        <a class="dashboard-list-item" href="{{ path('project_back_manage', {id: decision.project.id}) }}">
+                            <div class="list-item-content">
+                                <div class="list-item-icon">
+                                    <i class="fas fa-gavel"></i>
+                                </div>
+                                <div class="list-item-info">
+                                    <strong>{{ decision.project.title }}</strong>
+                                    <p>{{ decision.descriptionD ?: 'Sans justification détaillée.'|slice(0, 60) }}{{ decision.descriptionD|length > 60 ? '...' : '' }}</p>
+                                </div>
+                            </div>
+                            <div class="dashboard-list-meta">
+                                <span class="pm-status pm-status-{{ decision.project.status|lower }}">
+                                    {{ decision.getDecisionTitleLabel() ?: 'Décision' }}
+                                </span>
+                                <span class="list-item-date">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ decision.dateDecision ? decision.dateDecision|date('d/m/Y') : '' }}
+                                </span>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="dashboard-empty">
+                            <i class="fas fa-inbox"></i>
+                            <p>Aucune décision enregistrée.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/back-dashboard.js') }}"></script>
 {% endblock %}

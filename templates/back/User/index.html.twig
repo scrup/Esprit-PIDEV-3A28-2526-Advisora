@@ -1,150 +1,156 @@
 {% extends 'base_back.html.twig' %}
 
-{% block body %}
-{% set sortIcon = asset('assets/images/tri.png') %}
+{% block title %}Advisora | Gestion des utilisateurs{% endblock %}
 
-<div class="admin-container" style="padding: 2.5rem; background-color: #f9fafb; font-family: 'Plus Jakarta Sans', sans-serif;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <div>
-            <h1 style="color: #111827; margin: 0; font-size: 1.8rem; font-weight: 700;">Utilisateurs</h1>
-            <p style="color: #6b7280; margin-top: 4px;">Gérez les comptes et les accès de la plateforme</p>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-            {# Search Bar #}
-            <div style="position: relative;">
-                <input type="text" id="userSearch" placeholder="Rechercher..." 
-                       style="padding: 10px 15px; border-radius: 10px; border: 1px solid #e5e7eb; width: 250px; outline: none;">
-            </div>
-
-            {# Single Sort Form #}
-            <form method="get" action="{{ path('back_user_index') }}" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
-                <select name="sort"
-                        onchange="this.form.submit()"
-                        style="padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; outline: none; color: #475467; background: white;">
-                    <option value="idUser" {{ currentSort == 'idUser' ? 'selected' : '' }}>Trier par ID</option>
-                    <option value="roleUser" {{ currentSort == 'roleUser' ? 'selected' : '' }}>Trier par rôle</option>
-                    <option value="dateNUser" {{ currentSort == 'dateNUser' ? 'selected' : '' }}>Trier par date naissance</option>
-                </select>
-
-                <input type="hidden" name="direction" value="{{ nextDirection }}">
-
-                <button type="submit"
-                        title="Changer le sens du tri"
-                        style="border: 1px solid #e5e7eb; background: white; border-radius: 10px; padding: 9px 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <img src="{{ sortIcon }}" width="18" alt="Trier">
-                </button>
-            </form>
-
-            {# Add Button #}
-            <a href="{{ path('back_user_new') }}" 
-               title="Nouveau Utilisateur" 
-               style="display: inline-block; 
-                      padding: 8px 16px; 
-                      color: #427c68; 
-                      text-decoration: none; 
-                      border: 2px solid #427c68; 
-                      border-radius: 6px; 
-                      font-weight: 600; 
-                      transition: all 0.2s ease;">
-                Ajouter
-            </a>
-        </div>
-    </div>
-
-    <div style="margin-bottom: 1rem; color: #667085; font-size: 0.9rem;">
-        Tri actuel :
-        <strong>
-            {% if currentSort == 'roleUser' %}
-                Rôle
-            {% elseif currentSort == 'dateNUser' %}
-                Date de naissance
-            {% elseif currentSort == 'idUser' %}
-                ID
-            {% else %}
-                ID
-            {% endif %}
-        </strong>
-        -
-        <strong>{{ currentDirection }}</strong>
-    </div>
-
-    <div style="background: white; border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left;">
-            <thead>
-                <tr style="background: #fcfcfd; border-bottom: 1px solid #f2f4f7;">
-                    <th style="padding: 1.25rem 1.5rem; color: #667085; font-weight: 500; font-size: 0.85rem;">ID</th>
-                    <th style="padding: 1.25rem 1.5rem; color: #667085; font-weight: 500; font-size: 0.85rem;">NOM COMPLET</th>
-                    <th style="padding: 1.25rem 1.5rem; color: #667085; font-weight: 500; font-size: 0.85rem;">EMAIL</th>
-                    <th style="padding: 1.25rem 1.5rem; color: #667085; font-weight: 500; font-size: 0.85rem;">RÔLE</th>
-                    <th style="padding: 1.25rem 1.5rem; color: #667085; font-weight: 500; font-size: 0.85rem;">DATE NAISSANCE</th>
-                    <th style="padding: 1.25rem 1.5rem; color: #667085; font-weight: 500; font-size: 0.85rem; text-align: right;">ACTIONS</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for user in users %}
-                    <tr class="user-row" style="border-bottom: 1px solid #f2f4f7;">
-                        <td style="padding: 1.25rem 1.5rem; color: #667085;">#{{ user.idUser }}</td>
-
-                        <td style="padding: 1.25rem 1.5rem;" class="user-name">
-                            <span style="color: #101828; font-weight: 600;">{{ user.prenomUser }} {{ user.nomUser }}</span>
-                        </td>
-
-                        <td style="padding: 1.25rem 1.5rem; color: #475467;">{{ user.EmailUser }}</td>
-
-                        <td style="padding: 1.25rem 1.5rem;">
-                            {% if user.roleUser|upper == 'ADMIN' %}
-                                <span style="background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">ADMIN</span>
-                            {% elseif user.roleUser|upper == 'GERANT' %}
-                                <span style="background: #fef9c3; color: #a16207; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">GERANT</span>
-                            {% else %}
-                                <span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">CLIENT</span>
-                            {% endif %}
-                        </td>
-
-                        <td style="padding: 1.25rem 1.5rem; color: #475467;">
-                            {{ user.dateNUser ? user.dateNUser|date('d/m/Y') : '-' }}
-                        </td>
-
-                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <a href="{{ path('back_user_edit', {idUser: user.idUser}) }}" style="margin-right: 12px;">
-                                <img src="{{ asset('assets/images/edit.png') }}" width="30" alt="Modifier">
-                            </a>
-
-                            <form method="post"
-                                  action="{{ path('back_user_delete', {idUser: user.idUser}) }}"
-                                  style="display:inline;"
-                                  onsubmit="return confirm('Supprimer cet utilisateur ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.idUser) }}">
-                                <button type="submit" style="border:none; background:none; padding:0; cursor:pointer;">
-                                    <img src="{{ asset('assets/images/trash.png') }}" width="30" alt="Supprimer">
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="6" style="padding: 1.5rem; text-align: center; color: #667085;">
-                            Aucun utilisateur trouvé.
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
-{% block javascripts %}
-<script>
-    document.getElementById('userSearch').addEventListener('keyup', function() {
-        let filter = this.value.toLowerCase();
-        document.querySelectorAll('.user-row').forEach(row => {
-            let text = row.querySelector('.user-name').textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
-        });
-    });
-</script>
+{% block body %}
+<section class="back-users-shell">
+    <div class="pm-admin-header">
+        <div class="back-users-title">
+            <span class="pm-badge">Back office</span>
+            <h1>Gestion des utilisateurs</h1>
+            <p>Gérez les comptes, les rôles et les accès avec une interface plus moderne et visuelle.</p>
+        </div>
+
+        <div class="pm-card-actions">
+            <a href="{{ path('app_back') }}" class="pm-btn pm-btn-secondary">Retour</a>
+            <a href="{{ path('back_user_new') }}" class="pm-btn pm-btn-primary">Ajouter un utilisateur</a>
+        </div>
+    </div>
+
+    <div class="users-overview-grid">
+        <div class="users-stat-card">
+            <span>Total</span>
+            <strong>{{ users|length }}</strong>
+            <small>Utilisateurs enregistrés</small>
+        </div>
+
+        <div class="users-stat-card">
+            <span>Admins</span>
+            <strong>{{ users|filter(u => u.roleUser|upper == 'ADMIN')|length }}</strong>
+            <small>Accès complet</small>
+        </div>
+
+        <div class="users-stat-card">
+            <span>Gérants</span>
+            <strong>{{ users|filter(u => u.roleUser|upper == 'GERANT')|length }}</strong>
+            <small>Gestion intermédiaire</small>
+        </div>
+
+        <div class="users-stat-card">
+            <span>Clients</span>
+            <strong>{{ users|filter(u => u.roleUser|upper == 'CLIENT')|length }}</strong>
+            <small>Accès standard</small>
+        </div>
+    </div>
+<div class="users-toolbar-modern">
+    <form method="get" action="{{ path('back_user_index') }}" class="users-filter-form">
+        <div class="users-filter-group users-search-group">
+            <label for="search">Recherche</label>
+            <input
+                type="text"
+                id="search"
+                name="search"
+                value="{{ currentSearch|default('') }}"
+                placeholder="Nom, prenom, email, telephone..."
+                class="users-search-input"
+            >
+        </div>
+
+        <div class="users-filter-group">
+            <label for="sort">Tri</label>
+            <select id="sort" name="sort">
+                <option value="idUser" {{ currentSort == 'idUser' ? 'selected' : '' }}>Par ID</option>
+                <option value="roleUser" {{ currentSort == 'roleUser' ? 'selected' : '' }}>Par rôle</option>
+                <option value="dateNUser" {{ currentSort == 'dateNUser' ? 'selected' : '' }}>Par date de naissance</option>
+            </select>
+        </div>
+
+        <div class="users-filter-group">
+            <label for="direction">Ordre</label>
+            <select id="direction" name="direction">
+                <option value="ASC" {{ currentDirection == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                <option value="DESC" {{ currentDirection == 'DESC' ? 'selected' : '' }}>Décroissant</option>
+            </select>
+        </div>
+
+        <button type="submit" class="pm-btn pm-btn-primary">Appliquer</button>
+        <a href="{{ path('back_user_index') }}" class="pm-btn pm-btn-secondary">Reset</a>
+    </form>
+</div>
+
+    <div class="users-card-grid">
+        {% for user in users %}
+            <article class="user-card-modern">
+            <div class="user-card-top">
+    <div class="user-avatar">
+        {% if user.image_path %}
+            <img src="{{ asset(user.image_path) }}" alt="{{ user.prenomUser }} {{ user.nomUser }}">
+        {% else %}
+            {{ user.prenomUser|slice(0, 1)|upper }}{{ user.nomUser|slice(0, 1)|upper }}
+        {% endif %}
+    </div>
+                     <div class="user-main-info">
+                        <h3>{{ user.prenomUser }} {{ user.nomUser }}</h3>
+                        <p>{{ user.EmailUser }}</p>
+                    </div>
+
+                    <div class="user-role-zone">
+                        {% if user.roleUser|upper == 'ADMIN' %}
+                            <span class="role-badge role-admin">ADMIN</span>
+                        {% elseif user.roleUser|upper == 'GERANT' %}
+                            <span class="role-badge role-gerant">GERANT</span>
+                        {% else %}
+                            <span class="role-badge role-client">CLIENT</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="user-card-body">
+                    <div class="user-meta-item">
+                        <span class="meta-label">ID</span>
+                        <strong>#{{ user.idUser }}</strong>
+                    </div>
+
+                    <div class="user-meta-item">
+                        <span class="meta-label">Date naissance</span>
+                        <strong>{{ user.dateNUser ? user.dateNUser|date('d/m/Y') : '-' }}</strong>
+                    </div>
+
+                    <div class="user-meta-item">
+                        <span class="meta-label">CIN</span>
+                        <strong>{{ user.cin ?: '-' }}</strong>
+                    </div>
+
+                    <div class="user-meta-item">
+                        <span class="meta-label">Téléphone</span>
+                        <strong>{{ user.NumTelUser ?: '-' }}</strong>
+                    </div>
+                </div>
+
+                <div class="user-card-actions">
+                    <a href="{{ path('back_user_edit', {idUser: user.idUser}) }}" class="user-action-btn">
+                        Modifier
+                    </a>
+
+                    <form method="post" action="{{ path('back_user_delete', {idUser: user.idUser}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.idUser) }}">
+                        <button type="submit" class="user-action-btn danger" onclick="return confirm('Supprimer cet utilisateur ?');">
+                            Supprimer
+                        </button>
+                    </form>
+                </div>
+            </article>
+        {% else %}
+            <div class="empty-users-state">
+                <h3>Aucun utilisateur trouvé</h3>
+                <p>Ajoutez votre premier utilisateur pour commencer.</p>
+                <a href="{{ path('back_user_new') }}" class="pm-btn pm-btn-primary">Ajouter un utilisateur</a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
 {% endblock %}

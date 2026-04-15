@@ -1,0 +1,243 @@
+{% extends 'base_back.html.twig' %}
+
+{% set isEdit = strategy is defined and strategy.idStrategie is not null %}
+
+{% block title %}
+    {% if isEdit %}
+        Advisora | Modifier la strategie
+    {% else %}
+        Advisora | Nouvelle strategie
+    {% endif %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy-form.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+{% endblock %}
+
+{% block body %}
+<div class="form-container">
+    <div class="form-header">
+        <div class="header-left">
+            <a href="{{ path('app_back_strategies') }}" class="back-link">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Retour aux strategies
+            </a>
+            <h1>
+                <span class="material-symbols-outlined">{% if isEdit %}edit{% else %}add_circle{% endif %}</span>
+                {% if isEdit %}
+                    Modifier la strategie
+                {% else %}
+                    Creer une nouvelle strategie
+                {% endif %}
+            </h1>
+            <p>
+                {% if isEdit %}
+                    Mettez a jour les informations de cette strategie d'investissement.
+                {% else %}
+                    Remplissez le formulaire ci-dessous pour creer une nouvelle strategie d'investissement.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form, {'attr': {
+            'class': 'strategy-form',
+            'novalidate': 'novalidate',
+            'data-skip-validation': 'true',
+            'data-strategy-validation': 'true'
+        }}) }}
+        {{ form_errors(form) }}
+
+        <div class="form-section">
+            <h3>Informations generales</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.nomStrategie, 'Nom de la strategie', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">strategy</span>
+                        {{ form_widget(form.nomStrategie, {'attr': {
+                            'class': 'form-input',
+                            'placeholder': 'Ex: Expansion Marche Euro',
+                            'maxlength': 255,
+                            'minlength': 3,
+                            'required': 'required',
+                            'data-validation-role': 'strategy-name',
+                            'data-validation-label': 'Le nom de la strategie'
+                        }}) }}
+                    </div>
+                    <div class="form-helper">Donnez un nom clair et descriptif a votre strategie</div>
+                    {{ form_errors(form.nomStrategie) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.DureeTerme, 'Duree (mois)', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">schedule</span>
+                        {{ form_widget(form.DureeTerme, {'attr': {
+                            'class': 'form-input',
+                            'placeholder': 'Duree en mois',
+                            'min': 1,
+                            'max': 600,
+                            'step': 1,
+                            'required': 'required',
+                            'inputmode': 'numeric',
+                            'data-validation-role': 'strategy-duration',
+                            'data-integer': 'true',
+                            'data-validation-label': 'La duree'
+                        }}) }}
+                    </div>
+                    <div class="form-helper">Duree prevue pour la realisation de la strategie</div>
+                    {{ form_errors(form.DureeTerme) }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.type, 'Type de strategie', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">category</span>
+                        {{ form_widget(form.type, {'attr': {
+                            'class': 'form-select',
+                            'required': 'required',
+                            'data-validation-role': 'strategy-type',
+                            'data-validation-label': 'Le type de strategie'
+                        }}) }}
+                    </div>
+                    <div class="form-helper">Choisissez la categorie de la strategie</div>
+                    {{ form_errors(form.type) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.statusStrategie, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">flag</span>
+                        {{ form_widget(form.statusStrategie, {'attr': {
+                            'class': 'form-select',
+                            'required': 'required',
+                            'data-validation-role': 'strategy-status',
+                            'data-validation-label': 'Le statut'
+                        }}) }}
+                    </div>
+                    <div class="form-helper">Definissez l'etat actuel de la strategie</div>
+                    {{ form_errors(form.statusStrategie) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Aspects financiers</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.budgetTotal, 'Budget total', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">payments</span>
+                        {{ form_widget(form.budgetTotal, {'attr': {
+                            'class': 'form-input',
+                            'placeholder': 'Budget total en euros',
+                            'min': 0,
+                            'max': 1000000000,
+                            'step': '0.01',
+                            'inputmode': 'decimal',
+                            'data-decimals': 2,
+                            'data-validation-role': 'strategy-budget',
+                            'data-validation-label': 'Le budget total'
+                        }}) }}
+                    </div>
+                    <div class="form-helper">Montant total alloue a cette strategie</div>
+                    {{ form_errors(form.budgetTotal) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.gainEstime, 'Gain estime (%)', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">trending_up</span>
+                        {{ form_widget(form.gainEstime, {'attr': {
+                            'class': 'form-input',
+                            'placeholder': 'Gain estime en %',
+                            'step': '0.01',
+                            'min': 0,
+                            'max': 1000,
+                            'inputmode': 'decimal',
+                            'data-decimals': 2,
+                            'data-validation-role': 'strategy-gain',
+                            'data-validation-label': 'Le gain estime'
+                        }}) }}
+                    </div>
+                    <div class="form-helper">Retour sur investissement attendu</div>
+                    {{ form_errors(form.gainEstime) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Association</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.project, 'Projet associe', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">folder</span>
+                        {{ form_widget(form.project, {'attr': {
+                            'class': 'form-select',
+                            'required': 'required',
+                            'data-validation-role': 'strategy-project',
+                            'data-validation-label': 'Le projet associe'
+                        }}) }}
+                    </div>
+                    <div class="form-helper">Selectionnez le projet auquel rattacher cette strategie</div>
+                    {{ form_errors(form.project) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.user, 'Utilisateur responsable', {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">person</span>
+                        {{ form_widget(form.user, {'attr': {
+                            'class': 'form-select',
+                            'required': 'required',
+                            'data-validation-role': 'strategy-user',
+                            'data-validation-label': 'L utilisateur responsable'
+                        }}) }}
+                    </div>
+                    <div class="form-helper">Choisissez la personne en charge du suivi</div>
+                    {{ form_errors(form.user) }}
+                </div>
+            </div>
+        </div>
+
+        {% if form.CreatedAtS is defined %}
+        <div class="form-section">
+            <h3>Dates</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.CreatedAtS, 'Date de creation', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.CreatedAtS, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.CreatedAtS) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.lockedAt, 'Date de verrouillage', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.lockedAt, {'attr': {'class': 'form-input'}}) }}
+                    {{ form_errors(form.lockedAt) }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <a href="{{ path('app_back_strategies') }}" class="btn-cancel">
+                <span class="material-symbols-outlined">close</span>
+                Annuler
+            </a>
+            <button type="submit" class="btn-submit">
+                <span class="material-symbols-outlined">check_circle</span>
+                {% if isEdit %}Enregistrer les modifications{% else %}Creer la strategie{% endif %}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/back-strategy-form.js') }}"></script>
+{% endblock %}

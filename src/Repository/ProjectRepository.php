@@ -23,6 +23,11 @@ class ProjectRepository extends ServiceEntityRepository
         }
 
         $qb = $this->createQueryBuilder('p')
+            ->distinct()
+            ->leftJoin('p.user', 'u')
+            ->addSelect('u')
+            ->leftJoin('p.strategies', 's')
+            ->addSelect('s')
             ->orderBy('p.createdAtProj', 'DESC')
             ->addOrderBy('p.idProj', 'DESC');
 
@@ -208,6 +213,207 @@ class ProjectRepository extends ServiceEntityRepository
             ->setMaxResults(max(1, $limit))
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @return array{accepted: int, refused: int, total: int}
+     */
+    public function getHistoricalDecisionStats(): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.stateProj AS status, COUNT(p.idProj) AS total')
+            ->andWhere('p.stateProj IN (:statuses)')
+            ->setParameter('statuses', [Project::STATUS_ACCEPTED, Project::STATUS_REFUSED])
+            ->groupBy('p.stateProj')
+            ->getQuery()
+            ->getArrayResult();
+
+        $stats = [
+            'accepted' => 0,
+            'refused' => 0,
+            'total' => 0,
+        ];
+
+        foreach ($rows as $row) {
+            $status = (string) ($row['status'] ?? '');
+            $total = (int) ($row['total'] ?? 0);
+
+            if ($status === Project::STATUS_ACCEPTED) {
+                $stats['accepted'] = $total;
+            }
+
+            if ($status === Project::STATUS_REFUSED) {
+                $stats['refused'] = $total;
+            }
+        }
+
+        $stats['total'] = $stats['accepted'] + $stats['refused'];
+
+        return $stats;
+    }
+
+    /**
+     * @param list<string> $normalizedTypes
+     *
+     * @return array<string, array{accepted: int, refused: int, total: int}>
+     */
+    public function getHistoricalDecisionStatsByTypes(array $normalizedTypes): array
+    {
+        $normalizedTypes = array_values(array_filter(array_unique($normalizedTypes), static fn (?string $type): bool => $type !== null && $type !== ''));
+        if ($normalizedTypes === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('p')
+            ->select("LOWER(TRIM(COALESCE(p.typeProj, ''))) AS normalizedType", 'p.stateProj AS status', 'COUNT(p.idProj) AS total')
+            ->andWhere('p.stateProj IN (:statuses)')
+            ->andWhere("LOWER(TRIM(COALESCE(p.typeProj, ''))) IN (:types)")
+            ->setParameter('statuses', [Project::STATUS_ACCEPTED, Project::STATUS_REFUSED])
+            ->setParameter('types', $normalizedTypes)
+            ->groupBy('normalizedType, p.stateProj')
+            ->getQuery()
+            ->getArrayResult();
+
+        $stats = [];
+        foreach ($rows as $row) {
+            $type = (string) ($row['normalizedType'] ?? '');
+            $status = (string) ($row['status'] ?? '');
+            $total = (int) ($row['total'] ?? 0);
+
+            if (!isset($stats[$type])) {
+                $stats[$type] = [
+                    'accepted' => 0,
+                    'refused' => 0,
+                    'total' => 0,
+                ];
+            }
+
+            if ($status === Project::STATUS_ACCEPTED) {
+                $stats[$type]['accepted'] = $total;
+            }
+
+            if ($status === Project::STATUS_REFUSED) {
+                $stats[$type]['refused'] = $total;
+            }
+
+            $stats[$type]['total'] = $stats[$type]['accepted'] + $stats[$type]['refused'];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * @param list<int> $clientIds
+     *
+     * @return array<int, array{accepted: int, refused: int, total: int}>
+     */
+    public function getHistoricalDecisionStatsByClients(array $clientIds): array
+    {
+        $clientIds = array_values(array_filter(array_unique(array_map('intval', $clientIds)), static fn (int $id): bool => $id > 0));
+        if ($clientIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('p')
+            ->leftJoin('p.user', 'u')
+            ->select('u.idUser AS clientId', 'p.stateProj AS status', 'COUNT(p.idProj) AS total')
+            ->andWhere('p.stateProj IN (:statuses)')
+            ->andWhere('u.idUser IN (:clientIds)')
+            ->setParameter('statuses', [Project::STATUS_ACCEPTED, Project::STATUS_REFUSED])
+            ->setParameter('clientIds', $clientIds)
+            ->groupBy('u.idUser, p.stateProj')
+            ->getQuery()
+            ->getArrayResult();
+
+        $stats = [];
+        foreach ($rows as $row) {
+            $clientId = (int) ($row['clientId'] ?? 0);
+            $status = (string) ($row['status'] ?? '');
+            $total = (int) ($row['total'] ?? 0);
+
+            if ($clientId <= 0) {
+                continue;
+            }
+
+            if (!isset($stats[$clientId])) {
+                $stats[$clientId] = [
+                    'accepted' => 0,
+                    'refused' => 0,
+                    'total' => 0,
+                ];
+            }
+
+            if ($status === Project::STATUS_ACCEPTED) {
+                $stats[$clientId]['accepted'] = $total;
+            }
+
+            if ($status === Project::STATUS_REFUSED) {
+                $stats[$clientId]['refused'] = $total;
+            }
+
+            $stats[$clientId]['total'] = $stats[$clientId]['accepted'] + $stats[$clientId]['refused'];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * @param list<string> $normalizedTypes
+     *
+     * @return array<string, list<float>>
+     */
+    public function getAcceptedBudgetsByTypes(array $normalizedTypes): array
+    {
+        $normalizedTypes = array_values(array_filter(array_unique($normalizedTypes), static fn (?string $type): bool => $type !== null && $type !== ''));
+        if ($normalizedTypes === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('p')
+            ->select("LOWER(TRIM(COALESCE(p.typeProj, ''))) AS normalizedType", 'p.budgetProj AS budget')
+            ->andWhere('p.stateProj = :accepted')
+            ->andWhere('p.budgetProj > 0')
+            ->andWhere("LOWER(TRIM(COALESCE(p.typeProj, ''))) IN (:types)")
+            ->setParameter('accepted', Project::STATUS_ACCEPTED)
+            ->setParameter('types', $normalizedTypes)
+            ->orderBy('normalizedType', 'ASC')
+            ->addOrderBy('p.budgetProj', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $budgets = [];
+        foreach ($rows as $row) {
+            $type = (string) ($row['normalizedType'] ?? '');
+            $budget = (float) ($row['budget'] ?? 0);
+            if ($type === '' || $budget <= 0) {
+                continue;
+            }
+
+            $budgets[$type] ??= [];
+            $budgets[$type][] = $budget;
+        }
+
+        return $budgets;
+    }
+
+    /**
+     * @return list<float>
+     */
+    public function getAcceptedGlobalBudgets(): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.budgetProj AS budget')
+            ->andWhere('p.stateProj = :accepted')
+            ->andWhere('p.budgetProj > 0')
+            ->setParameter('accepted', Project::STATUS_ACCEPTED)
+            ->orderBy('p.budgetProj', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_values(array_map(
+            static fn (array $row): float => (float) ($row['budget'] ?? 0),
+            array_filter($rows, static fn (array $row): bool => (float) ($row['budget'] ?? 0) > 0)
+        ));
     }
 
     //    /**

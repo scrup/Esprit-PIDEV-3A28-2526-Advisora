@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -111,30 +110,6 @@ class SwotItem
     public function setUpdated_at(?\DateTimeInterface $updated_at): self
     {
         $this->updated_at = $updated_at;
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(?\DateTime $created_at): static
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updated_at;
-    }
-
-    public function setUpdatedAt(?\DateTime $updated_at): static
-    {
-        $this->updated_at = $updated_at;
-
         return $this;
     }
 
