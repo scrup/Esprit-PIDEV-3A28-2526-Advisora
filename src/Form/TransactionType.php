@@ -11,7 +11,9 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\GreaterThan;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class TransactionType extends AbstractType
 {
@@ -54,6 +56,16 @@ class TransactionType extends AbstractType
                     'data-validation-label' => 'Type de transaction',
                 ],
                 'help' => 'Si vous laissez vide, la valeur `INVESTMENT_PAYMENT` sera utilisee.',
+                'constraints' => [
+                    new Length([
+                        'max' => 100,
+                        'maxMessage' => 'Le type de transaction ne doit pas depasser 100 caracteres.',
+                    ]),
+                    new Regex([
+                        'pattern' => '/^[A-Za-z][A-Za-z0-9_-]*$/',
+                        'message' => 'Le type de transaction doit commencer par une lettre et ne contenir que des lettres, chiffres, tirets ou underscores.',
+                    ]),
+                ],
             ])
             ->add('save', SubmitType::class, [
                 'label' => $options['submit_label'],

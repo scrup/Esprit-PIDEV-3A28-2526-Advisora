@@ -106,29 +106,74 @@
                         <div class="pm-strategy-list pm-strategy-list-inline">
                             {% for strategy in project.strategies %}
                                 <section class="pm-strategy-card pm-strategy-card-inline">
+                                {# Inside the loop for project.strategies, after strategy status check #}
+{% if strategy.statusStrategie == strategy_statuses.approved %}
+    <div class="pm-strategy-pdf-action" data-strategy-id="{{ strategy.idStrategie }}">
+        <button class="pm-btn pm-btn-primary pdf-generate-btn" type="button" data-strategy-id="{{ strategy.idStrategie }}" data-generate-url="{{ path('strategy_generate_pdf', {id: strategy.idStrategie}) }}">
+            <i class="fas fa-file-pdf"></i> Télécharger le playbook
+        </button>
+        <div class="pdf-progress-container" style="display: none;">
+            <div class="progress-circle"></div>
+            <span class="progress-text">Génération en cours...</span>
+        </div>
+        <div class="pdf-download-link" style="display: none;">
+            <a href="#" class="pm-btn pm-btn-secondary" target="_blank">
+                <i class="fas fa-download"></i> Télécharger
+            </a>
+        </div>
+    </div>
+{% endif %}
+                                    {% set strategy_decision_taken = strategy.statusStrategie in [strategy_statuses.approved, strategy_statuses.rejected] %}
                                     <div class="pm-strategy-main">
                                         <div>
                                             <div class="pm-strategy-topline">
                                                 <h3>{{ strategy.nomStrategie }}</h3>
                                                 <span class="pm-status pm-status-{{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
                                             </div>
-                                            <p class="pm-strategy-description">{{ strategy.justification ?: 'Aucune justification fournie.' }}</p>
+                                            <p class="pm-strategy-description">
+                                                {% if strategy.statusStrategie == strategy_statuses.rejected and strategy.justification %}
+                                                    Motif du refus : {{ strategy.justification }}
+                                                {% elseif strategy.statusStrategie == strategy_statuses.rejected %}
+                                                    Cette strategie a ete refusee par le client.
+                                                {% elseif strategy.statusStrategie == strategy_statuses.approved %}
+                                                    Cette strategie a ete acceptee par le client.
+                                                {% elseif strategy.justification %}
+                                                    {{ strategy.justification }}
+                                                {% else %}
+                                                    En attente de la decision du client.
+                                                {% endif %}
+                                            </p>
                                         </div>
 
                                         {% if can_client_decide_strategies and app.user and project.user and project.user.idUser == app.user.idUser %}
-                                            <div class="pm-strategy-actions">
-                                                <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
-                                                    <input type="hidden" name="status" value="{{ strategy_statuses.approved }}">
-                                                    <button class="pm-btn pm-btn-primary" type="submit" {% if strategy.statusStrategie == strategy_statuses.approved %}disabled{% endif %}>Accepter</button>
-                                                </form>
+                                            {% if strategy_decision_taken %}
+                                                <div class="pm-strategy-decision-state">
+                                                    <strong>Decision confirmee.</strong>
+                                                    Votre choix a deja ete enregistre pour cette strategie.
+                                                </div>
+                                            {% else %}
+                                                <div class="pm-strategy-actions">
+                                                    <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" onsubmit="return confirm('Confirmer l acceptation de cette strategie ? Cette decision sera definitive.');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
+                                                        <input type="hidden" name="status" value="{{ strategy_statuses.approved }}">
+                                                        <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                                                    </form>
 
-                                                <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
-                                                    <input type="hidden" name="status" value="{{ strategy_statuses.rejected }}">
-                                                    <button class="pm-btn pm-btn-danger" type="submit" {% if strategy.statusStrategie == strategy_statuses.rejected %}disabled{% endif %}>Refuser</button>
-                                                </form>
-                                            </div>
+                                                    <details class="pm-strategy-reject-panel">
+                                                        <summary class="pm-btn pm-btn-danger pm-strategy-reject-summary">Refuser</summary>
+                                                        <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" class="pm-strategy-reject-form" novalidate onsubmit="return confirm('Confirmer le refus de cette strategie ? Cette decision sera definitive.');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
+                                                            <input type="hidden" name="status" value="{{ strategy_statuses.rejected }}">
+                                                            <label for="strategy_reject_{{ strategy.idStrategie }}">Justification obligatoire</label>
+                                                            <textarea id="strategy_reject_{{ strategy.idStrategie }}" name="justification" rows="4" placeholder="Expliquez pourquoi cette strategie doit etre refusee."></textarea>
+                                                            <p class="pm-field-help">Le refus doit etre motive entre 10 et 255 caracteres.</p>
+                                                            <div class="pm-strategy-reject-actions">
+                                                                <button class="pm-btn pm-btn-danger" type="submit">Confirmer le refus</button>
+                                                            </div>
+                                                        </form>
+                                                    </details>
+                                                </div>
+                                            {% endif %}
                                         {% endif %}
                                     </div>
 
@@ -161,4 +206,75 @@
             </div>
         {% endfor %}
     </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.pdf-generate-btn').forEach((button) => {
+                button.addEventListener('click', async (event) => {
+                    event.preventDefault();
+
+                    const container = button.closest('.pm-strategy-pdf-action');
+                    if (!container) {
+                        return;
+                    }
+
+                    const progressDiv = container.querySelector('.pdf-progress-container');
+                    const downloadDiv = container.querySelector('.pdf-download-link');
+                    const downloadLink = downloadDiv ? downloadDiv.querySelector('a') : null;
+                    const generateUrl = button.dataset.generateUrl;
+
+                    if (!progressDiv || !downloadDiv || !downloadLink || !generateUrl) {
+                        return;
+                    }
+
+                    button.style.display = 'none';
+                    progressDiv.style.display = 'flex';
+                    downloadDiv.style.display = 'none';
+
+                    const showDownload = (url) => {
+                        progressDiv.style.display = 'none';
+                        downloadDiv.style.display = 'block';
+                        downloadLink.href = url;
+                    };
+
+                    const resetState = () => {
+                        progressDiv.style.display = 'none';
+                        button.style.display = 'inline-flex';
+                    };
+
+                    try {
+                        const response = await fetch(generateUrl, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        const data = await response.json();
+                        if (!response.ok) {
+                            throw new Error(data.error || 'Impossible de lancer la generation du PDF.');
+                        }
+
+                        if (data.status === 'failed') {
+                            throw new Error(data.error || 'La generation du PDF a echoue.');
+                        }
+
+                        if (data.status === 'completed' && data.url) {
+                            showDownload(data.url);
+
+                            return;
+                        }
+
+                        throw new Error('Reponse PDF inattendue.');
+                    } catch (error) {
+                        resetState();
+                        alert('Erreur: ' + error.message);
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

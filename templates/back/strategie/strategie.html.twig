@@ -26,6 +26,8 @@
                     </div>
                 </div>
 
+           
+
                 {% for type, messages in app.flashes %}
                     {% for message in messages %}
                         <div class="flash-message flash-{{ type }}">
@@ -66,59 +68,96 @@
 
                 <div class="strategies-list">
                     {% for strategy in strategies %}
+                    {% set strategyOwner = strategy.user ? ((strategy.user.prenomUser ?: '') ~ ' ' ~ (strategy.user.nomUser ?: ''))|trim : '' %}
+                    {% set budgetLabel = strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' %}
+                    {% set gainLabel = strategy.gainEstime is not null ? ((strategy.gainEstime >= 0 ? '+' : '') ~ strategy.gainEstime ~ '%') : 'Non defini' %}
                     <article class="strategy-card"
                              data-id="{{ strategy.idStrategie }}"
                              data-status="{{ strategy.statusCssClass }}"
                              data-type="{{ strategy.type ? strategy.type|lower : '' }}">
                         <div class="strategy-card-main">
-                            <div class="strategy-identity">
-                                <div class="strategy-icon">
-                                    <span class="material-symbols-outlined">
-                                        {% if strategy.type == 'expansion' %}public
-                                        {% elseif strategy.type == 'optimisation' %}currency_bitcoin
-                                        {% else %}energy_savings_leaf{% endif %}
-                                    </span>
-                                </div>
-                                <div class="strategy-info">
-                                    <div class="strategy-title">
-                                        <h3>{{ strategy.nomStrategie }}</h3>
-                                        <span class="strategy-badge">{{ strategy.DureeTerme }} mois</span>
-                                        <span class="status-badge {{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
+                            <div class="strategy-card-primary">
+                                <div class="strategy-identity">
+                                    <div class="strategy-icon">
+                                        <span class="material-symbols-outlined">
+                                            {% if strategy.type == 'expansion' %}public
+                                            {% elseif strategy.type == 'optimisation' %}currency_bitcoin
+                                            {% else %}energy_savings_leaf{% endif %}
+                                        </span>
                                     </div>
-                                    <div class="strategy-tags">
-                                        <div class="budget-badge">
-                                            <span class="material-symbols-outlined">payments</span>
-                                            Budget: {{ strategy.budgetTotal|number_format(0, ',', ' ') }} DT
+                                    <div class="strategy-info">
+                                        <div class="strategy-title-head">
+                                            <div class="strategy-title-copy">
+                                                <p class="strategy-eyebrow">
+                                                    Strategie #{{ strategy.idStrategie }}
+                                                    {% if strategy.CreatedAtS %}
+                                                        · Creee le {{ strategy.CreatedAtS|date('d/m/Y') }}
+                                                    {% endif %}
+                                                </p>
+                                                <h3>{{ strategy.nomStrategie }}</h3>
+                                            </div>
+                                            <div class="strategy-title-statuses">
+                                                <span class="strategy-badge">{{ strategy.DureeTerme }} mois</span>
+                                                <span class="status-badge {{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
+                                            </div>
                                         </div>
-                                        <div class="roi-badge {{ strategy.gainEstime < 0 ? 'negative' : '' }}">
-                                            <span class="material-symbols-outlined">{{ strategy.gainEstime >= 0 ? 'trending_up' : 'trending_down' }}</span>
-                                            Gain estime: {{ strategy.gainEstime >= 0 ? '+' : '' }}{{ strategy.gainEstime }}%
-                                        </div>
-                                        {% if strategy.type %}
-                                            <span class="tag">{{ strategy.type|replace({'_': ' '}) }}</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="strategy-toolbar">
-                                <button class="btn-attribuer-objectif" data-id="{{ strategy.idStrategie }}" data-name="{{ strategy.nomStrategie }}">
-                                    <span class="material-symbols-outlined">assignment_add</span>
-                                    Attribuer Objectif
-                                </button>
-                                <div class="strategy-actions">
-                                    <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="action-icon" title="Modifier">
-                                        <span class="material-symbols-outlined">edit</span>
-                                    </a>
-                                    <form method="post" action="{{ path('app_back_strategies_delete', {id: strategy.idStrategie}) }}" data-confirm-message="Supprimer cette strategie ?" style="display: inline;">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ strategy.idStrategie) }}">
-                                        <button type="submit" class="action-icon delete" title="Supprimer">
-                                            <span class="material-symbols-outlined">delete</span>
-                                        </button>
-                                    </form>
+                                        <div class="strategy-summary-grid">
+                                            <div class="strategy-summary-item">
+                                                <span class="strategy-summary-label">Budget total</span>
+                                                <strong class="strategy-summary-value">{{ budgetLabel }}</strong>
+                                            </div>
+                                            <div class="strategy-summary-item">
+                                                <span class="strategy-summary-label">Gain estime</span>
+                                                <strong class="strategy-summary-value {{ strategy.gainEstime is not null and strategy.gainEstime < 0 ? 'negative' : 'positive' }}">{{ gainLabel }}</strong>
+                                            </div>
+                                            
+                                            <div class="strategy-summary-item">
+                                                <span class="strategy-summary-label">Responsable</span>
+                                                <strong class="strategy-summary-value">{{ strategyOwner != '' ? strategyOwner : 'Non assigne' }}</strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="strategy-tags">
+                                            {% if strategy.type %}
+                                                <span class="tag">{{ strategy.type|replace({'_': ' '}) }}</span>
+                                            {% endif %}
+                                        </div>
+
+                                        {% include 'back/strategie/_project_spotlight.html.twig' with {strategy: strategy, compact: true} %}
+                                        {% if strategy.statusStrategie == constant('App\\Entity\\Strategie::STATUS_REJECTED') %}
+                                            <div class="strategy-rejection-note">
+                                                <span class="material-symbols-outlined">comment</span>
+                                                <div>
+                                                    <strong>Justification du refus</strong>
+                                                    <p>{{ strategy.justification ?: 'Aucune justification n a ete enregistree pour ce refus.' }}</p>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="strategy-action-row">
+                                            <button class="btn-attribuer-objectif strategy-action-pill" data-id="{{ strategy.idStrategie }}" data-name="{{ strategy.nomStrategie }}">
+                                                <span class="material-symbols-outlined">assignment_add</span>
+                                                Attribuer Objectif
+                                            </button>
+                                            <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="strategy-text-action">
+                                                <span class="material-symbols-outlined">edit</span>
+                                                Modifier
+                                            </a>
+                                            <form method="post" action="{{ path('app_back_strategies_delete', {id: strategy.idStrategie}) }}" data-confirm-message="Supprimer cette strategie ?" class="strategy-inline-form">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ strategy.idStrategie) }}">
+                                                <button type="submit" class="strategy-text-action delete">
+                                                    <span class="material-symbols-outlined">delete</span>
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        {% include 'back/strategie/_admin_decision_panel.html.twig' with {strategy: strategy} %}
 
                         <div class="strategy-objectives-panel">
                             <div class="panel-heading">
@@ -188,8 +227,13 @@
                     {% else %}
                         <div class="empty-state">
                             <span class="material-symbols-outlined">inbox</span>
-                            <p>Aucune strategie pour le moment</p>
-                            <a href="{{ path('app_back_strategies_new') }}" class="btn-new-strategy">Creer la premiere strategie</a>
+                            {% if hasActiveFilters %}
+                                <p>Aucune strategie ne correspond a votre recherche actuelle.</p>
+                                <a href="{{ path('app_back_strategies') }}" class="btn-new-strategy">Reinitialiser la recherche</a>
+                            {% else %}
+                                <p>Aucune strategie pour le moment</p>
+                                <a href="{{ path('app_back_strategies_new') }}" class="btn-new-strategy">Creer la premiere strategie</a>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -198,28 +242,84 @@
             <aside class="strategies-sidebar">
                 <div class="sidebar-card">
                     <div class="card-header">
-                        <h2>Filtres</h2>
-                        <button class="reset-btn" id="resetFiltersBtn">Reset</button>
+                        <h2>Recherche et tri</h2>
+                        <a href="{{ path('app_back_strategies') }}" class="reset-btn">Tout effacer</a>
                     </div>
-                    <div class="filters-content">
+                    <form method="get" action="{{ path('app_back_strategies') }}" class="sort-form">
                         <div class="filter-group">
-                            <label class="filter-label">Statut</label>
-                            <select id="statusFilter" class="filter-select">
-                                <option value="all">Tous</option>
-                                <option value="pending">En attente</option>
-                                <option value="approved">Approuvees</option>
-                                <option value="rejected">Refusees</option>
-                            </select>
+                            <label class="filter-label" for="strategySearch">Recherche</label>
+                            <input
+                                type="search"
+                                id="strategySearch"
+                                name="q"
+                                class="filter-input"
+                                value="{{ searchQuery }}"
+                                placeholder="Nom, projet, objectif, actualite..."
+                            >
+                            <p class="filter-help">Recherche dans le nom, le type, le projet, les objectifs, la justification et l actualite.</p>
                         </div>
-                        <div class="filter-group">
-                            <label class="filter-label">Type</label>
-                            <select id="typeFilter" class="filter-select">
-                                <option value="all">Tous</option>
-                            </select>
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label class="filter-label" for="strategyStatus">Statut</label>
+                                <select id="strategyStatus" name="status" class="filter-select">
+                                    {% for statusKey, statusLabel in statusOptions %}
+                                        <option value="{{ statusKey }}" {{ currentStatus == statusKey ? 'selected' : '' }}>{{ statusLabel }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label" for="strategyType">Type</label>
+                                <select id="strategyType" name="type" class="filter-select">
+                                    <option value="">Tous</option>
+                                    {% for typeKey, typeLabel in typeOptions %}
+                                        <option value="{{ typeKey }}" {{ currentType == typeKey ? 'selected' : '' }}>{{ typeLabel }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label class="filter-label" for="sortStrategiesBy">Champ</label>
+                                <select id="sortStrategiesBy" name="sort" class="filter-select">
+                                    {% for sortKey, sortLabel in sortOptions %}
+                                        <option value="{{ sortKey }}" {{ currentSort == sortKey ? 'selected' : '' }}>{{ sortLabel }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label" for="sortStrategiesDirection">Sens</label>
+                                <select id="sortStrategiesDirection" name="direction" class="filter-select">
+                                    <option value="DESC" {{ currentDirection == 'DESC' ? 'selected' : '' }}>Decroissant</option>
+                                    <option value="ASC" {{ currentDirection == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <button type="submit" class="sort-submit-btn">Appliquer</button>
+                            <a href="{{ path('app_back_strategies') }}" class="filter-clear-link">Reinitialiser</a>
+                        </div>
+                    </form>
+                </div>
+
+                
+
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <h2>Raccourcis de tri</h2>
+                    </div>
+                    <div class="quick-sort-list">
+                        <a class="quick-sort-link" href="{{ path('app_back_strategies', {q: searchQuery, status: currentStatus, type: currentType, sort: 'created_at', direction: 'DESC'}) }}">Plus recentes</a>
+                        <a class="quick-sort-link" href="{{ path('app_back_strategies', {q: searchQuery, status: currentStatus, type: currentType, sort: 'budget', direction: 'DESC'}) }}">Budget le plus eleve</a>
+                        <a class="quick-sort-link" href="{{ path('app_back_strategies', {q: searchQuery, status: currentStatus, type: currentType, sort: 'gain', direction: 'DESC'}) }}">Gain estime max</a>
+                        <a class="quick-sort-link" href="{{ path('app_back_strategies', {q: searchQuery, status: currentStatus, type: currentType, sort: 'objectives', direction: 'DESC'}) }}">Plus d objectifs</a>
+                        <a class="quick-sort-link" href="{{ path('app_back_strategies', {q: searchQuery, status: currentStatus, type: currentType, sort: 'name', direction: 'ASC'}) }}">Nom A-Z</a>
+                        <a class="quick-sort-link" href="{{ path('app_back_strategies', {q: searchQuery, status: currentStatus, type: currentType, sort: 'project', direction: 'ASC'}) }}">Projet A-Z</a>
                     </div>
                 </div>
 
+               
+
+                
                 <div class="sidebar-card">
                     <h2>Repartition par Type</h2>
                     <div class="donut-container">

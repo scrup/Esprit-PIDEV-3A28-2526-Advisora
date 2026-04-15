@@ -12,7 +12,9 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice as AssertChoice;
 use Symfony\Component\Validator\Constraints\GreaterThan;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ProjectType extends AbstractType
@@ -30,6 +32,12 @@ class ProjectType extends AbstractType
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Le titre du projet est requis.']),
+                    new Length([
+                        'min' => 3,
+                        'minMessage' => 'Le titre du projet doit contenir au moins 3 caracteres.',
+                        'max' => 160,
+                        'maxMessage' => 'Le titre du projet ne doit pas depasser 160 caracteres.',
+                    ]),
                 ],
             ])
             ->add('legacyType', TextType::class, [
@@ -42,6 +50,12 @@ class ProjectType extends AbstractType
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Le type du projet est requis.']),
+                    new Length([
+                        'min' => 2,
+                        'minMessage' => 'Le type du projet doit contenir au moins 2 caracteres.',
+                        'max' => 100,
+                        'maxMessage' => 'Le type du projet ne doit pas depasser 100 caracteres.',
+                    ]),
                 ],
             ])
             ->add('legacyBudget', NumberType::class, [
@@ -72,6 +86,12 @@ class ProjectType extends AbstractType
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'La description est requise.']),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'La description doit contenir au moins 10 caracteres.',
+                        'max' => 2000,
+                        'maxMessage' => 'La description ne doit pas depasser 2000 caracteres.',
+                    ]),
                 ],
             ])
             ->add('startDate', DateType::class, [
@@ -97,6 +117,10 @@ class ProjectType extends AbstractType
                 'help' => 'État actuel du projet dans la plateforme.',
                 'constraints' => [
                     new NotBlank(['message' => 'Le statut du projet est requis.']),
+                    new AssertChoice([
+                        'choices' => array_keys(Project::STATUSES),
+                        'message' => 'Le statut du projet selectionne est invalide.',
+                    ]),
                 ],
             ]);
         }

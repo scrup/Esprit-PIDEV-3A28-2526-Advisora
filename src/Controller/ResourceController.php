@@ -16,6 +16,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ResourceController extends AbstractController
 {
@@ -149,7 +151,8 @@ final class ResourceController extends AbstractController
         int $resourceId,
         Request $request,
         ProjectRepository $projectRepository,
-        ResourceReservationService $reservationService
+        ResourceReservationService $reservationService,
+        ValidatorInterface $validator
     ): Response {
         $user = $this->getCurrentUser();
         if (!$this->canReserveResources($user)) {
@@ -168,12 +171,29 @@ final class ResourceController extends AbstractController
                 return $this->redirectToRoute('resource_reservation_edit', ['projectId' => $projectId, 'resourceId' => $resourceId]);
             }
 
-            $quantity = max(0, (int) $request->request->get('quantity', 1));
-            $targetProjectId = $request->request->get('project_id');
-            $targetProjectId = ($targetProjectId === null || $targetProjectId === '') ? null : (int) $targetProjectId;
+            ['quantity' => $quantity, 'projectId' => $targetProjectId, 'errors' => $errors] = $this->parseReservationPayload($request, $validator);
+
+            if ($errors !== []) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error);
+                }
+
+                if ($targetProjectId !== null && $targetProjectId > 0) {
+                    $reservation['project_id'] = $targetProjectId;
+                }
+
+                if ($quantity !== null) {
+                    $reservation['reserved_qty'] = $quantity;
+                }
+
+                return $this->render('front/resource/reservation_edit.html.twig', [
+                    'reservation' => $reservation,
+                    'projects' => $projectRepository->findByOwnerOrdered($user),
+                ]);
+            }
 
             try {
-                $newProjectId = $reservationService->updateClientReservation($user, $projectId, $resourceId, $quantity, $targetProjectId);
+                $reservationService->updateClientReservation($user, $projectId, $resourceId, $quantity, $targetProjectId);
                 $this->addFlash('success', 'La reservation a ete modifiee avec succes.');
 
                 return $this->redirectToRoute('resource_reservations');
@@ -210,7 +230,8 @@ final class ResourceController extends AbstractController
         int $id,
         Request $request,
         ResourceRepository $resourceRepository,
-        ResourceReservationService $reservationService
+        ResourceReservationService $reservationService,
+        ValidatorInterface $validator
     ): Response {
         $user = $this->getCurrentUser();
         if (!$this->canReserveResources($user)) {
@@ -228,9 +249,15 @@ final class ResourceController extends AbstractController
             return $this->redirectToRoute('resource_show', ['id' => $resource->getId()]);
         }
 
-        $quantity = max(0, (int) $request->request->get('quantity', 1));
-        $projectId = $request->request->get('project_id');
-        $projectId = ($projectId === null || $projectId === '') ? null : (int) $projectId;
+        ['quantity' => $quantity, 'projectId' => $projectId, 'errors' => $errors] = $this->parseReservationPayload($request, $validator);
+
+        if ($errors !== []) {
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error);
+            }
+
+            return $this->redirectToRoute('resource_show', ['id' => $resource->getId()]);
+        }
 
         try {
             $resolvedProjectId = $reservationService->reserveForClient($user, $resource, $quantity, $projectId);
@@ -283,7 +310,8 @@ final class ResourceController extends AbstractController
         int $resourceId,
         Request $request,
         ProjectRepository $projectRepository,
-        ResourceReservationService $reservationService
+        ResourceReservationService $reservationService,
+        ValidatorInterface $validator
     ): Response {
         $user = $this->getCurrentUser();
         if (!$this->canManageResources($user)) {
@@ -302,9 +330,26 @@ final class ResourceController extends AbstractController
                 return $this->redirectToRoute('back_resource_reservation_edit', ['projectId' => $projectId, 'resourceId' => $resourceId]);
             }
 
-            $quantity = max(0, (int) $request->request->get('quantity', 1));
-            $targetProjectId = $request->request->get('project_id');
-            $targetProjectId = ($targetProjectId === null || $targetProjectId === '') ? null : (int) $targetProjectId;
+            ['quantity' => $quantity, 'projectId' => $targetProjectId, 'errors' => $errors] = $this->parseReservationPayload($request, $validator);
+
+            if ($errors !== []) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error);
+                }
+
+                if ($targetProjectId !== null && $targetProjectId > 0) {
+                    $reservation['project_id'] = $targetProjectId;
+                }
+
+                if ($quantity !== null) {
+                    $reservation['reserved_qty'] = $quantity;
+                }
+
+                return $this->render('back/resource/reservation_edit.html.twig', [
+                    'reservation' => $reservation,
+                    'projects' => $projectRepository->findAllOrdered(),
+                ]);
+            }
 
             try {
                 $reservationService->updateReservationForManager($projectId, $resourceId, $quantity, $targetProjectId);
@@ -675,5 +720,63 @@ final class ResourceController extends AbstractController
         }
 
         return $snapshots;
+    }
+
+    /**
+     * @return array{quantity:?int, projectId:?int, errors:array<int, string>}
+     */
+    private function parseReservationPayload(Request $request, ValidatorInterface $validator): array
+    {
+        $quantityRaw = trim((string) $request->request->get('quantity', ''));
+        $projectIdRaw = trim((string) $request->request->get('project_id', ''));
+
+        $violations = $validator->validate(
+            [
+                'quantity' => $quantityRaw,
+                'project_id' => $projectIdRaw,
+            ],
+            new Assert\Collection([
+                'allowExtraFields' => true,
+                'fields' => [
+                    'quantity' => [
+                        new Assert\NotBlank(['message' => 'La quantite est obligatoire.']),
+                        new Assert\Regex([
+                            'pattern' => '/^\d+$/',
+                            'message' => 'La quantite doit etre un entier positif.',
+                        ]),
+                        new Assert\GreaterThan([
+                            'value' => 0,
+                            'message' => 'La quantite doit etre strictement superieure a 0.',
+                        ]),
+                    ],
+                    'project_id' => new Assert\Optional([
+                        new Assert\Regex([
+                            'pattern' => '/^\d+$/',
+                            'message' => 'Le projet cible est invalide.',
+                        ]),
+                        new Assert\GreaterThan([
+                            'value' => 0,
+                            'message' => 'Le projet cible est invalide.',
+                        ]),
+                    ]),
+                ],
+            ])
+        );
+
+        $errors = [];
+        foreach ($violations as $violation) {
+            $message = trim((string) $violation->getMessage());
+            if ($message === '' || in_array($message, $errors, true)) {
+                continue;
+            }
+
+            $errors[] = $message;
+        }
+
+        return [
+            'quantity' => $quantityRaw !== '' && ctype_digit($quantityRaw) ? (int) $quantityRaw : null,
+            'projectId' => $projectIdRaw !== '' && ctype_digit($projectIdRaw) ? (int) $projectIdRaw : null,
+            'errors' => $errors,
+        ];
     }
 }

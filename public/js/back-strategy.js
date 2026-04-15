@@ -1,8 +1,5 @@
 let typeDonutChart = null;
 
-let statusFilter;
-let typeFilter;
-let resetFiltersBtn;
 let typeLegend;
 let typeDonutTotal;
 
@@ -29,11 +26,9 @@ const TYPE_COLORS = [
 document.addEventListener('DOMContentLoaded', () => {
     setActiveLink();
     initElements();
-    populateTypeFilter();
-    initFilters();
     initCharts();
     initEventListeners();
-    applyFilters();
+    updateTypeDistribution();
     initObjectiveModal();
 });
 
@@ -45,17 +40,8 @@ function setActiveLink() {
 }
 
 function initElements() {
-    statusFilter = document.getElementById('statusFilter');
-    typeFilter = document.getElementById('typeFilter');
-    resetFiltersBtn = document.getElementById('resetFiltersBtn');
     typeLegend = document.getElementById('typeLegend');
     typeDonutTotal = document.getElementById('typeDonutTotal');
-}
-
-function initFilters() {
-    statusFilter?.addEventListener('change', applyFilters);
-    typeFilter?.addEventListener('change', applyFilters);
-    resetFiltersBtn?.addEventListener('click', resetFilters);
 }
 
 function initCharts() {
@@ -98,64 +84,11 @@ function initCharts() {
     });
 }
 
-function applyFilters() {
-    const selectedStatus = statusFilter?.value || 'all';
-    const selectedType = typeFilter?.value || 'all';
-    const cards = getStrategyCards();
-
-    cards.forEach((card) => {
-        const matchesStatus = selectedStatus === 'all' || card.dataset.status === selectedStatus;
-        const matchesType = selectedType === 'all' || card.dataset.type === selectedType;
-
-        card.style.display = matchesStatus && matchesType ? 'flex' : 'none';
-    });
-
-    updateTypeDistribution();
-}
-
-function resetFilters() {
-    if (statusFilter) {
-        statusFilter.value = 'all';
-    }
-
-    if (typeFilter) {
-        typeFilter.value = 'all';
-    }
-
-    applyFilters();
-    showToast('Filtres reinitialises');
-}
-
-function populateTypeFilter() {
-    if (!typeFilter) {
-        return;
-    }
-
-    const types = [...new Set(
-        getStrategyCards()
-            .map((card) => card.dataset.type)
-            .filter(Boolean)
-    )].sort((a, b) => a.localeCompare(b));
-
-    const previousValue = typeFilter.value;
-
-    typeFilter.innerHTML = '<option value="all">Tous</option>';
-
-    types.forEach((type) => {
-        const option = document.createElement('option');
-        option.value = type;
-        option.textContent = formatTypeLabel(type);
-        typeFilter.appendChild(option);
-    });
-
-    typeFilter.value = types.includes(previousValue) ? previousValue : 'all';
-}
-
 function updateTypeDistribution() {
-    const visibleCards = getVisibleStrategyCards();
+    const cards = getStrategyCards();
     const counts = new Map();
 
-    visibleCards.forEach((card) => {
+    cards.forEach((card) => {
         const type = card.dataset.type || 'non-defini';
         counts.set(type, (counts.get(type) || 0) + 1);
     });
@@ -163,7 +96,7 @@ function updateTypeDistribution() {
     const entries = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 
     if (typeDonutTotal) {
-        typeDonutTotal.textContent = String(visibleCards.length);
+        typeDonutTotal.textContent = String(cards.length);
     }
 
     renderTypeLegend(entries);
@@ -221,10 +154,6 @@ function updateTypeDonutChart(entries) {
 
 function getStrategyCards() {
     return Array.from(document.querySelectorAll('.strategy-card'));
-}
-
-function getVisibleStrategyCards() {
-    return getStrategyCards().filter((card) => card.style.display !== 'none');
 }
 
 function formatTypeLabel(type) {

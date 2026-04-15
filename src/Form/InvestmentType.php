@@ -14,7 +14,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class InvestmentType extends AbstractType
 {
@@ -49,20 +51,32 @@ class InvestmentType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'rows' => 4,
-                    'maxlength' => 1000,
+                    'maxlength' => 170,
                     'placeholder' => 'Contexte de votre investissement sur ce projet.',
                     'data-validation-label' => 'Commentaire',
+                ],
+                'constraints' => [
+                    new Length([
+                        'max' => 170,
+                        'maxMessage' => 'Le commentaire ne doit pas depasser 170 caracteres.',
+                    ]),
                 ],
             ])
             ->add('durationEstimateLabel', TextType::class, [
                 'label' => 'Duree estimee',
                 'required' => false,
                 'attr' => [
-                    'maxlength' => 100,
+                    'maxlength' => 60,
                     'placeholder' => 'Ex: 4 mois, 2 ans, 18 mois',
                     'data-validation-label' => 'Duree estimee',
                 ],
                 'help' => 'Champ libre compatible avec des durees longues. La colonne legacy `dureeInv` ne permet pas de stocker proprement des mois ou des annees.',
+                'constraints' => [
+                    new Length([
+                        'max' => 60,
+                        'maxMessage' => 'La duree estimee ne doit pas depasser 60 caracteres.',
+                    ]),
+                ],
             ])
             ->add('bud_minInv', NumberType::class, [
                 'label' => 'Montant minimum',
@@ -106,6 +120,14 @@ class InvestmentType extends AbstractType
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'La devise est obligatoire.']),
+                    new Length([
+                        'max' => 20,
+                        'maxMessage' => 'La devise ne doit pas depasser 20 caracteres.',
+                    ]),
+                    new Regex([
+                        'pattern' => '/^[A-Za-z]{3,20}$/',
+                        'message' => 'La devise doit contenir uniquement des lettres, par exemple TND ou EUR.',
+                    ]),
                 ],
             ])
             ->add('save', SubmitType::class, [

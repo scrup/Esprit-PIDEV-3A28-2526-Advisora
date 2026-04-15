@@ -1,0 +1,54 @@
+{% set project = strategy.project %}
+{% set isCompact = compact|default(false) %}
+
+<div class="strategy-project-spotlight {{ isCompact ? 'compact' : 'detailed' }} {{ project ? '' : 'empty' }}">
+    <div class="strategy-project-spotlight-icon">
+        <span class="material-symbols-outlined">{{ project ? 'folder_managed' : 'folder_off' }}</span>
+    </div>
+
+    <div class="strategy-project-spotlight-content">
+        <p class="strategy-project-eyebrow">Projet associe</p>
+
+        {% if project %}
+            {% set projectOwner = project.user ? ((project.user.prenomUser ?: '') ~ ' ' ~ (project.user.nomUser ?: ''))|trim : '' %}
+            {% set projectDescription = project.descriptionProj ?: '' %}
+
+            <div class="strategy-project-heading">
+                <strong>{{ project.titleProj ?: 'Projet #' ~ project.idProj }}</strong>
+                <span class="strategy-project-status strategy-project-status-{{ (project.status ?: 'pending')|lower }}">
+                    {{ project.statusLabel }}
+                </span>
+            </div>
+
+            <div class="strategy-project-facts">
+                <span class="strategy-project-fact">#{{ project.idProj }}</span>
+                <span class="strategy-project-fact">Budget projet: {{ project.budgetProj|number_format(0, ',', ' ') }} DT</span>
+                <span class="strategy-project-fact">Avancement: {{ project.avancementProj|number_format(0, ',', ' ') }}%</span>
+                {% if project.typeProj %}
+                    <span class="strategy-project-fact">Type: {{ project.typeProj }}</span>
+                {% endif %}
+                {% if projectOwner != '' %}
+                    <span class="strategy-project-fact">Client: {{ projectOwner }}</span>
+                {% endif %}
+            </div>
+
+            {% if not isCompact and projectDescription != '' %}
+                <p class="strategy-project-description">
+                    {{ projectDescription|slice(0, 180) }}{{ projectDescription|length > 180 ? '...' : '' }}
+                </p>
+            {% elseif isCompact %}
+                <p class="strategy-project-description compact-copy">
+                    {{ projectDescription != '' ? (projectDescription|slice(0, 120) ~ (projectDescription|length > 120 ? '...' : '')) : 'Ce projet porte actuellement cette strategie.' }}
+                </p>
+            {% endif %}
+        {% else %}
+            <div class="strategy-project-heading">
+                <strong>Aucun projet associe</strong>
+                <span class="strategy-project-status strategy-project-status-empty">Non affectee</span>
+            </div>
+            <p class="strategy-project-description">
+                Cette strategie n est rattachee a aucun projet pour le moment.
+            </p>
+        {% endif %}
+    </div>
+</div>

@@ -214,29 +214,17 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(name: 'versions', type: 'integer', nullable: false)]
-    private ?int $versions = null;
-
-    public function getVersions(): ?int
-    {
-        return $this->versions;
-    }
-
-    public function setVersions(int $versions): self
-    {
-        $this->versions = $versions;
-
-        return $this;
-    }
+  #[ORM\Column(name: 'DureeTerme', type: 'string', length: 255, nullable: false)]
+    private ?string $dureeTerme = null;
 
     public function getDureeTerme(): ?int
     {
-        return $this->versions;
+        return $this->dureeTerme !== null ? (int) $this->dureeTerme : null;
     }
 
     public function setDureeTerme(int $DureeTerme): self
     {
-        $this->versions = $DureeTerme;
+        $this->dureeTerme = (string) $DureeTerme;
 
         return $this;
     }
