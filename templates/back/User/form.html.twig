@@ -2,6 +2,11 @@
 
 {% block title %}Advisora | {{ title }}{% endblock %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-form-v2">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+{% endblock %}
+
 {% block body %}
 <section class="back-users-shell">
     <div class="pm-admin-header">
@@ -14,63 +19,67 @@
     </div>
 
     <div class="form-card">
-        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'userForm'}}) }}
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
         <div class="back-user-form">
             <div class="pm-form-grid">
                 <div class="pm-field">
-                    <label>Nom</label>
-                    {{ form_widget(form.nomUser, {'attr': {'class': 'pm-input', 'id': 'nomUser'}}) }}
-                    <div class="pm-field-errors field-error" id="nomUserError">{{ form_errors(form.nomUser) }}</div>
+                    {{ form_label(form.nomUser, 'Nom') }}
+                    {{ form_widget(form.nomUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.nomUser) }}</div>
                 </div>
 
                 <div class="pm-field">
-                    <label>Prenom</label>
-                    {{ form_widget(form.PrenomUser, {'attr': {'class': 'pm-input', 'id': 'PrenomUser'}}) }}
-                    <div class="pm-field-errors field-error" id="PrenomUserError">{{ form_errors(form.PrenomUser) }}</div>
+                    {{ form_label(form.PrenomUser, 'Prenom') }}
+                    {{ form_widget(form.PrenomUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.PrenomUser) }}</div>
                 </div>
 
                 <div class="pm-field">
-                    <label>Email</label>
-                    {{ form_widget(form.EmailUser, {'attr': {'class': 'pm-input', 'id': 'EmailUser'}}) }}
-                    <div class="pm-field-errors field-error" id="EmailUserError">{{ form_errors(form.EmailUser) }}</div>
+                    {{ form_label(form.EmailUser, 'Email') }}
+                    {{ form_widget(form.EmailUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.EmailUser) }}</div>
                 </div>
 
                 <div class="pm-field">
-                    <label>Role</label>
-                    {{ form_widget(form.roleUser, {'attr': {'id': 'roleUser'}}) }}
-                    <div class="pm-field-errors field-error" id="roleUserError">{{ form_errors(form.roleUser) }}</div>
+                    {{ form_label(form.roleUser, 'Role') }}
+                    {{ form_widget(form.roleUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.roleUser) }}</div>
                 </div>
 
                 <div class="pm-field">
-                    <label>CIN</label>
-                    {{ form_widget(form.cin, {'attr': {'class': 'pm-input', 'id': 'cin'}}) }}
-                    <div class="pm-field-errors field-error" id="cinError">{{ form_errors(form.cin) }}</div>
+                    {{ form_label(form.cin, 'CIN') }}
+                    {{ form_widget(form.cin, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.cin) }}</div>
                 </div>
 
                 <div class="pm-field">
-                    <label>Numero telephone</label>
-                    {{ form_widget(form.NumTelUser, {'attr': {'class': 'pm-input', 'id': 'NumTelUser'}}) }}
-                    <div class="pm-field-errors field-error" id="NumTelUserError">{{ form_errors(form.NumTelUser) }}</div>
+                    {{ form_label(form.NumTelUser, 'Numero telephone') }}
+                    {{ form_widget(form.NumTelUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.NumTelUser) }}</div>
                 </div>
 
                 <div class="pm-field">
-                    <label>Date de naissance</label>
-                    {{ form_widget(form.dateNUser, {'attr': {'class': 'pm-input', 'id': 'dateNUser'}}) }}
-                    <div class="pm-field-errors field-error" id="dateNUserError">{{ form_errors(form.dateNUser) }}</div>
+                    {{ form_label(form.dateNUser, 'Date de naissance') }}
+                    {{ form_widget(form.dateNUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.dateNUser) }}</div>
                 </div>
 
                 <div class="pm-field">
-                    <label>Expertise area</label>
-                    {{ form_widget(form.expertiseAreaUser, {'attr': {'class': 'pm-input', 'id': 'expertiseAreaUser'}}) }}
-                    <div class="pm-field-errors field-error" id="expertiseAreaUserError">{{ form_errors(form.expertiseAreaUser) }}</div>
+                    {{ form_label(form.expertiseAreaUser, 'Expertise area') }}
+                    {{ form_widget(form.expertiseAreaUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.expertiseAreaUser) }}</div>
                 </div>
-
+<div class="pm-field" style="grid-column: 1 / -1;">
+    {{ form_label(form.profileImage, 'Photo de profil') }}
+    {{ form_widget(form.profileImage, {'attr': {'class': 'pm-input', 'accept': 'image/*'}}) }}
+    <div class="pm-field-errors field-error">{{ form_errors(form.profileImage) }}</div>
+</div>
                 {% if form.passwordUser is defined %}
                     <div class="pm-field" style="grid-column: 1 / -1;">
-                        <label>Mot de passe</label>
-                        {{ form_widget(form.passwordUser, {'attr': {'class': 'pm-input', 'id': 'passwordUser'}}) }}
-                        <div class="pm-field-errors field-error" id="passwordUserError">{{ form_errors(form.passwordUser) }}</div>
+                        {{ form_label(form.passwordUser, 'Mot de passe') }}
+                        {{ form_widget(form.passwordUser, {'attr': {'class': 'pm-input'}}) }}
+                        <div class="pm-field-errors field-error">{{ form_errors(form.passwordUser) }}</div>
                     </div>
                 {% endif %}
             </div>
@@ -80,157 +89,7 @@
             </div>
         </div>
 
-        {{ form_widget(form._token) }}
-        {{ form_end(form, {'render_rest': false}) }}
+        {{ form_end(form) }}
     </div>
 </section>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const nom = document.getElementById('nomUser');
-            const prenom = document.getElementById('PrenomUser');
-            const email = document.getElementById('EmailUser');
-            const cin = document.getElementById('cin');
-            const numTel = document.getElementById('NumTelUser');
-            const dateN = document.getElementById('dateNUser');
-            const role = document.getElementById('roleUser');
-            const expertise = document.getElementById('expertiseAreaUser');
-            const password = document.getElementById('passwordUser');
-            const form = document.getElementById('userForm');
-
-            function setError(input, errorId, message) {
-                const errorBox = document.getElementById(errorId);
-                if (!errorBox || !input) {
-                    return true;
-                }
-
-                errorBox.textContent = message;
-                input.classList.toggle('input-invalid', Boolean(message));
-                return !message;
-            }
-
-            function validateName(input, errorId, label) {
-                const value = input.value.trim();
-                if (value === '') return setError(input, errorId, label + ' est obligatoire.');
-                if (!/^[a-zA-ZÀ-ÿ\\s-]+$/u.test(value)) return setError(input, errorId, label + ' invalide. Pas de chiffres.');
-                if (value.length < 2) return setError(input, errorId, label + ' trop court.');
-                return setError(input, errorId, '');
-            }
-
-            function validateEmail() {
-                const value = email.value.trim();
-                if (value === '') return setError(email, 'EmailUserError', 'Email obligatoire.');
-                if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value)) return setError(email, 'EmailUserError', 'Email invalide. Exemple : xx@xx.xx');
-                return setError(email, 'EmailUserError', '');
-            }
-
-            function validateCin() {
-                const value = cin.value.trim();
-                if (value === '') return setError(cin, 'cinError', 'Le CIN est obligatoire.');
-                if (!/^\\d+$/.test(value)) return setError(cin, 'cinError', 'Le CIN doit contenir seulement des chiffres.');
-                if (value.length !== 8) return setError(cin, 'cinError', 'Le CIN doit contenir exactement 8 chiffres.');
-                return setError(cin, 'cinError', '');
-            }
-
-            function validateNumTel() {
-                const value = numTel.value.trim();
-                if (value === '') return setError(numTel, 'NumTelUserError', 'Le numero de telephone est obligatoire.');
-                if (!/^\\d+$/.test(value)) return setError(numTel, 'NumTelUserError', 'Le numero de telephone doit contenir seulement des chiffres.');
-                if (value.length !== 8) return setError(numTel, 'NumTelUserError', 'Le numero de telephone doit contenir exactement 8 chiffres.');
-                return setError(numTel, 'NumTelUserError', '');
-            }
-
-            function validateBirthDate() {
-                const value = dateN.value;
-                if (!value) return setError(dateN, 'dateNUserError', 'Date de naissance obligatoire.');
-
-                const birth = new Date(value);
-                const today = new Date();
-                const minDate = new Date('1900-01-01');
-
-                if (birth > today) return setError(dateN, 'dateNUserError', 'La date ne peut pas etre dans le futur.');
-                if (birth < minDate) return setError(dateN, 'dateNUserError', 'Date trop ancienne.');
-
-                let age = today.getFullYear() - birth.getFullYear();
-                const monthGap = today.getMonth() - birth.getMonth();
-                if (monthGap < 0 || (monthGap === 0 && today.getDate() < birth.getDate())) {
-                    age--;
-                }
-
-                if (age < 17) return setError(dateN, 'dateNUserError', 'L utilisateur doit avoir au moins 17 ans.');
-                if (age > 100) return setError(dateN, 'dateNUserError', 'Age invalide.');
-                return setError(dateN, 'dateNUserError', '');
-            }
-
-            function validateExpertise() {
-                if (role.value === 'gerant') {
-                    const value = expertise.value.trim();
-                    if (value === '') {
-                        return setError(expertise, 'expertiseAreaUserError', 'Expertise obligatoire pour un gerant.');
-                    }
-                }
-
-                return setError(expertise, 'expertiseAreaUserError', '');
-            }
-
-            function validatePassword() {
-                if (!password) {
-                    return true;
-                }
-
-                const value = password.value.trim();
-                if (value.length < 6) {
-                    return setError(password, 'passwordUserError', 'Mot de passe minimum 6 caracteres.');
-                }
-
-                return setError(password, 'passwordUserError', '');
-            }
-
-            function toggleExpertise() {
-                const isGerant = role.value === 'gerant';
-
-                expertise.disabled = !isGerant;
-                expertise.classList.toggle('input-disabled', !isGerant);
-
-                if (!isGerant) {
-                    expertise.value = '';
-                    setError(expertise, 'expertiseAreaUserError', '');
-                } else {
-                    validateExpertise();
-                }
-            }
-
-            if (nom) nom.addEventListener('input', function () { validateName(nom, 'nomUserError', 'Le nom'); });
-            if (prenom) prenom.addEventListener('input', function () { validateName(prenom, 'PrenomUserError', 'Le prenom'); });
-            if (email) email.addEventListener('input', validateEmail);
-            if (cin) cin.addEventListener('input', validateCin);
-            if (numTel) numTel.addEventListener('input', validateNumTel);
-            if (dateN) dateN.addEventListener('change', validateBirthDate);
-            if (role) role.addEventListener('change', toggleExpertise);
-            if (expertise) expertise.addEventListener('input', validateExpertise);
-            if (password) password.addEventListener('input', validatePassword);
-
-            toggleExpertise();
-
-            form.addEventListener('submit', function (e) {
-                let valid = true;
-
-                valid = validateName(nom, 'nomUserError', 'Le nom') && valid;
-                valid = validateName(prenom, 'PrenomUserError', 'Le prenom') && valid;
-                valid = validateEmail() && valid;
-                valid = validateCin() && valid;
-                valid = validateNumTel() && valid;
-                valid = validateBirthDate() && valid;
-                valid = validateExpertise() && valid;
-                valid = validatePassword() && valid;
-
-                if (!valid) {
-                    e.preventDefault();
-                }
-            });
-        });
-    </script>
 {% endblock %}

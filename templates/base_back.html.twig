@@ -7,9 +7,12 @@
     {% set back_asset_version = '20260411-shell-v2' %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link rel="stylesheet" href="{{ asset('css/back-base.css') }}?v={{ back_asset_version }}">
-    {% block stylesheets %}{% endblock %}
     <link rel="stylesheet" href="{{ asset('css/back-management.css') }}?v=20260412-management-v1">
+        <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+
+    {% block stylesheets %}{% endblock %}
 </head>
 <body class="back-mode">
 {% set current_route = app.request.get('_route') %}
@@ -77,24 +80,28 @@
                 </div>
             </div>
 
-            <div class="back-topbar-actions">
-                {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
+           <div class="back-topbar-actions">
+    {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
 
-                <div class="back-user-chip">
-                    <i class="fas fa-user-circle"></i>
-                    <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
-                </div>
+    <a href="{{ path('back_user_profile') }}" class="back-user-chip">
+        {% if app.user and app.user.image_path %}
+            <img src="{{ asset(app.user.image_path) }}" alt="Profil" class="back-user-chip-avatar">
+        {% else %}
+            <i class="fas fa-user-circle"></i>
+        {% endif %}
+        <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
+    </a>
 
-                {% if app.user %}
-                    <form method="post" action="{{ path('app_logout') }}" class="back-logout-form">
-                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-                        <button type="submit" class="back-logout-button" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Deconnecter</span>
-                        </button>
-                    </form>
-                {% endif %}
-            </div>
+    {% if app.user %}
+        <form method="post" action="{{ path('app_logout') }}" class="back-logout-form">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+            <button type="submit" class="back-logout-button" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Deconnecter</span>
+            </button>
+        </form>
+    {% endif %}
+</div>
         </header>
 
         <main class="back-content">
