@@ -6,6 +6,7 @@ use App\Entity\Project;
 use App\Entity\Strategie;
 use App\Entity\User;
 use App\Enum\TypeStrategie;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -89,11 +90,27 @@ class StrategyType extends AbstractType
             ])
             ->add('project', EntityType::class, [
                 'class' => Project::class,
-                'choice_label' => 'titleProj',
-                'label' => 'Projet',
-                'placeholder' => 'Aucun projet',
+                'choice_label' => function (Project $project) {
+                    return sprintf('#%d - %s', $project->getIdProj(), $project->getTitleProj());
+                },
+                'placeholder' => 'Sélectionnez un projet',
                 'required' => false,
-                'invalid_message' => 'Le projet selectionne est invalide.',
+                'query_builder' => function (EntityRepository $er) use ($options) {
+                    $qb = $er->createQueryBuilder('p')
+                        ->where('p.stateProj = :accepted')
+                        ->setParameter('accepted', Project::STATUS_ACCEPTED);
+
+                    // If editing an existing strategy, include its current project even if not accepted
+                    if (isset($options['data']) && $options['data']->getProject()) {
+                        $currentProject = $options['data']->getProject();
+                        $qb->orWhere('p.idProj = :currentId')
+                           ->setParameter('currentId', $currentProject->getIdProj());
+                    }
+
+                    $qb->orderBy('p.titleProj', 'ASC');
+                    return $qb;
+                },
+                'attr' => ['class' => 'form-select'],
             ])
             ->add('user', EntityType::class, [
                 'class' => User::class,

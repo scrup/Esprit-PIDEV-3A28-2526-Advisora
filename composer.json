@@ -17,15 +17,15 @@
         "symfony/form": "6.4.*",
         "symfony/framework-bundle": "6.4.*",
         "symfony/http-client-contracts": "^3.6",
+        "symfony/mailer": "6.4.*",
         "symfony/mime": "^7.4",
         "symfony/property-info": "6.4.*",
         "symfony/runtime": "6.4.*",
         "symfony/security-bundle": "6.4.*",
         "symfony/twig-bundle": "6.4.*",
-        "symfony/validator": "6.4.*",
         "symfony/ux-turbo": "^2.35",
+        "symfony/validator": "6.4.*",
         "symfony/yaml": "6.4.*"
-        
     },
     "config": {
         "allow-plugins": {

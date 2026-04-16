@@ -214,20 +214,21 @@ class Strategie
         return $this;
     }
 
-  #[ORM\Column(name: 'DureeTerme', type: 'string', length: 255, nullable: false)]
-    private ?string $dureeTerme = null;
+  #[ORM\Column(name: 'DureeTerme', type: 'integer', nullable: true)]
+private ?int $DureeTerme = null;
 
-    public function getDureeTerme(): ?int
-    {
-        return $this->dureeTerme !== null ? (int) $this->dureeTerme : null;
-    }
+public function getDureeTerme(): ?int
+{
+    return $this->DureeTerme;
+}
 
-    public function setDureeTerme(int $DureeTerme): self
-    {
-        $this->dureeTerme = (string) $DureeTerme;
+public function setDureeTerme(?int $DureeTerme): self
+{
+    $this->DureeTerme = $DureeTerme;
 
-        return $this;
-    }
+    return $this;
+}
+
 
     #[ORM\OneToMany(targetEntity: Objective::class, mappedBy: 'strategie')]
     private Collection $objectives;

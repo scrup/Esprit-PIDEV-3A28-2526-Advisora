@@ -1,4 +1,7 @@
-/* Form Container */
+/* ============================================
+   FORM CONTAINER & LAYOUT (Dark Theme)
+   ============================================ */
+
 .form-container {
     max-width: 1000px;
     margin: 0 auto;
@@ -13,7 +16,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--primary-terracotta);
+    color: var(--primary-terracotta, #b99169);
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 500;
@@ -23,7 +26,7 @@
 
 .back-link:hover {
     transform: translateX(-4px);
-    color: var(--primary-dark);
+    color: var(--primary-dark, #946c4a);
 }
 
 .form-header h1 {
@@ -32,7 +35,7 @@
     gap: 12px;
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--deep-umber);
+    color: var(--deep-umber, #f3eee6);
     margin-bottom: 10px;
 }
 
@@ -42,15 +45,15 @@
 }
 
 .form-header p {
-    color: #6B5A48;
+    color: var(--back-text-soft, #b9b0a2);
 }
 
 .form-card {
-    background: white;
+    background: var(--card-white, #20282c);
     border-radius: 28px;
-    border: 1px solid #F0E7DC;
+    border: 1px solid var(--back-border, rgba(232, 221, 208, 0.12));
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-md, 0 12px 28px rgba(0, 0, 0, 0.4));
 }
 
 .strategy-form {
@@ -60,10 +63,10 @@
 .form-errors-global {
     margin: 0 32px 24px;
     padding: 14px 18px;
-    border: 1.5px solid #D68B6E;
+    border: 1.5px solid #d68b6e;
     border-radius: 18px;
-    background: #FFF8F7;
-    color: #B85F43;
+    background: rgba(214, 139, 110, 0.12);
+    color: #e6a192;
 }
 
 .form-errors-global ul,
@@ -80,7 +83,7 @@
 .form-section {
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 1px solid #F0E7DC;
+    border-bottom: 1px solid var(--back-border);
 }
 
 .form-section:last-child {
@@ -128,9 +131,9 @@
     }
 }
 
-/* ============================================ */
-/* IMPROVED FORM GROUP & INPUT STYLES */
-/* ============================================ */
+/* ============================================
+   IMPROVED FORM GROUP & INPUT STYLES (Dark)
+   ============================================ */
 
 .form-group {
     display: flex;
@@ -142,14 +145,14 @@
 .form-group label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #6B5A48;
+    color: var(--back-text-soft);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
 }
 
 .form-group label .required {
-    color: #D68B6E;
+    color: #d68b6e;
     margin-left: 4px;
 }
 
@@ -163,7 +166,7 @@
 .input-icon {
     position: absolute;
     left: 16px;
-    color: #B8A990;
+    color: var(--back-text-soft);
     font-size: 1.1rem;
     pointer-events: none;
 }
@@ -179,12 +182,12 @@
 .form-textarea {
     width: 100%;
     padding: 14px 18px;
-    border: 1.5px solid #E8E0D5;
+    border: 1.5px solid var(--back-border-strong, rgba(232, 221, 208, 0.22));
     border-radius: 16px;
     font-size: 0.9rem;
     font-family: 'Inter', sans-serif;
     transition: all 0.25s ease;
-    background: #FFFFFF;
+    background: var(--back-surface, #14191b);
     color: var(--deep-umber);
     line-height: 1.5;
 }
@@ -197,7 +200,7 @@
 /* Select specific styles */
 .form-select {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%238A7A64' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23b9b0a2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 16px center;
     cursor: pointer;
@@ -207,8 +210,8 @@
 .form-input:hover, 
 .form-select:hover, 
 .form-textarea:hover {
-    border-color: #CBBEAE;
-    background-color: #FEFCF8;
+    border-color: var(--primary-terracotta);
+    background-color: var(--back-surface-soft, #1b2124);
 }
 
 /* Focus state */
@@ -217,8 +220,8 @@
 .form-textarea:focus {
     outline: none;
     border-color: var(--primary-terracotta);
-    box-shadow: 0 0 0 4px rgba(195, 125, 93, 0.12);
-    background-color: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(185, 145, 105, 0.2);
+    background-color: var(--back-surface-elevated, #20282c);
 }
 
 /* Filled state */
@@ -226,23 +229,23 @@
 .form-select:not([value=""]),
 .form-textarea:not(:placeholder-shown) {
     border-color: var(--primary-terracotta);
-    background-color: #FEFAF5;
+    background-color: var(--back-surface-soft);
 }
 
 /* Disabled state */
 .form-input:disabled,
 .form-select:disabled,
 .form-textarea:disabled {
-    background-color: #F5F1E8;
-    border-color: #E8E0D5;
-    color: #A89A88;
+    background-color: rgba(232, 221, 208, 0.08);
+    border-color: var(--back-border);
+    color: var(--back-text-soft);
     cursor: not-allowed;
 }
 
 /* Placeholder styling */
 .form-input::placeholder,
 .form-textarea::placeholder {
-    color: #CBBEAE;
+    color: #9e9587;
     font-weight: 400;
     font-size: 0.85rem;
 }
@@ -251,18 +254,18 @@
 .form-group-error .form-input,
 .form-group-error .form-select,
 .form-group-error .form-textarea {
-    border-color: #D68B6E;
-    background-color: #FFF8F7;
+    border-color: #d68b6e;
+    background-color: rgba(214, 139, 110, 0.08);
 }
 
 .form-group-error .form-input:focus,
 .form-group-error .form-select:focus,
 .form-group-error .form-textarea:focus {
-    box-shadow: 0 0 0 4px rgba(214, 139, 110, 0.15);
+    box-shadow: 0 0 0 4px rgba(214, 139, 110, 0.2);
 }
 
 .form-error {
-    color: #D68B6E;
+    color: #e6a192;
     font-size: 0.7rem;
     margin-top: 6px;
     display: flex;
@@ -276,7 +279,7 @@
 }
 
 .field-errors {
-    color: #D68B6E;
+    color: #e6a192;
     font-size: 0.75rem;
     margin-top: 6px;
 }
@@ -284,7 +287,7 @@
 /* Helper text */
 .form-helper {
     font-size: 0.7rem;
-    color: #A89A88;
+    color: var(--back-text-soft);
     margin-top: 6px;
     display: flex;
     align-items: center;
@@ -301,9 +304,9 @@
     align-items: flex-start;
     gap: 14px;
     padding: 16px 18px;
-    border: 1.5px solid #E8E0D5;
+    border: 1.5px solid var(--back-border-strong);
     border-radius: 18px;
-    background: #FEFAF5;
+    background: rgba(232, 221, 208, 0.04);
 }
 
 .status-auto-card .material-symbols-outlined {
@@ -327,12 +330,12 @@
     margin: 0;
     font-size: 0.78rem;
     line-height: 1.55;
-    color: #7A6A58;
+    color: var(--back-text-soft);
 }
 
-/* ============================================ */
-/* TYPE BUTTONS (Radio styled as buttons) */
-/* ============================================ */
+/* ============================================
+   TYPE BUTTONS (Radio styled as buttons) - Dark
+   ============================================ */
 
 .type-buttons-container {
     margin-top: 5px;
@@ -348,70 +351,13 @@
     display: none;
 }
 
-.type-buttons-container input[type="radio"] + label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: white;
-    border: 1.5px solid #E8E0D5;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--deep-umber);
-}
-
-.type-buttons-container input[type="radio"] + label:hover {
-    border-color: var(--primary-terracotta);
-    background: rgba(195, 125, 93, 0.05);
-    transform: translateY(-1px);
-}
-
-.type-buttons-container input[type="radio"]:checked + label {
-    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
-    border-color: var(--primary-terracotta);
-    color: white;
-    box-shadow: 0 4px 12px rgba(195, 125, 93, 0.3);
-}
-
-.type-buttons-container input[type="radio"]:checked + label .material-symbols-outlined {
-    color: white;
-}
-
-/* ============================================ */
-/* TYPE BUTTONS (Radio styled as buttons) - FIXED */
-/* ============================================ */
-
-.type-buttons-container {
-    margin-top: 5px;
-}
-
-.type-buttons-container .type-radio-group {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-/* Style for each radio option container */
-.type-buttons-container .type-radio-group div {
-    display: inline-block;
-}
-
-/* Hide the default radio inputs */
-.type-buttons-container input[type="radio"] {
-    display: none;
-}
-
-/* Style the labels as buttons */
 .type-buttons-container input[type="radio"] + label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: white;
-    border: 1.5px solid #E8E0D5;
+    background: var(--back-surface);
+    border: 1.5px solid var(--back-border-strong);
     border-radius: 50px;
     font-size: 0.85rem;
     font-weight: 500;
@@ -423,72 +369,24 @@
 
 .type-buttons-container input[type="radio"] + label:hover {
     border-color: var(--primary-terracotta);
-    background: rgba(195, 125, 93, 0.05);
+    background: rgba(185, 145, 105, 0.1);
     transform: translateY(-1px);
 }
 
-/* Style for checked state */
 .type-buttons-container input[type="radio"]:checked + label {
     background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
     border-color: var(--primary-terracotta);
     color: white;
-    box-shadow: 0 4px 12px rgba(195, 125, 93, 0.3);
+    box-shadow: 0 4px 12px rgba(185, 145, 105, 0.4);
 }
 
 .type-buttons-container input[type="radio"]:checked + label .material-symbols-outlined {
     color: white;
 }
 
-/* Alternative selector if Symfony wraps differently */
-.type-buttons-container .form-group {
-    margin-bottom: 0;
-}
-
-/* Direct styling for the radio group wrapper */
-.strategy-form .type-radio-group {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.strategy-form .type-radio-group div {
-    display: inline-block;
-}
-
-.strategy-form .type-radio-group input[type="radio"] {
-    display: none;
-}
-
-.strategy-form .type-radio-group input[type="radio"] + label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: white;
-    border: 1.5px solid #E8E0D5;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: var(--deep-umber);
-}
-
-.strategy-form .type-radio-group input[type="radio"] + label:hover {
-    border-color: var(--primary-terracotta);
-    background: rgba(195, 125, 93, 0.05);
-}
-
-.strategy-form .type-radio-group input[type="radio"]:checked + label {
-    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
-    border-color: var(--primary-terracotta);
-    color: white;
-    box-shadow: 0 4px 12px rgba(195, 125, 93, 0.3);
-}
-
-/* ============================================ */
-/* STATUS RADIO BUTTONS (styled like risk) - FIXED */
-/* ============================================ */
+/* ============================================
+   STATUS RADIO BUTTONS (Dark theme badges)
+   ============================================ */
 
 .risk-buttons-container {
     margin-top: 5px;
@@ -500,119 +398,59 @@
     flex-wrap: wrap;
 }
 
-/* Style for each radio option container */
-.risk-buttons-container .risk-radio-group div {
-    display: inline-block;
-}
-
-/* Hide default radio inputs */
 .risk-buttons-container input[type="radio"] {
     display: none;
 }
 
-/* Style the labels as status badges */
 .risk-buttons-container input[type="radio"] + label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 8px 20px;
     border-radius: 50px;
-    transition: all 0.2s ease;
     font-size: 0.85rem;
     font-weight: 500;
-    background: white;
-    border: 1.5px solid #E8E0D5;
+    background: var(--back-surface);
+    border: 1.5px solid var(--back-border-strong);
     cursor: pointer;
+    transition: all 0.2s ease;
     margin: 0;
 }
 
 .risk-buttons-container input[type="radio"] + label:hover {
     transform: translateY(-1px);
+    border-color: var(--primary-terracotta);
 }
 
-/* Pending/En attente - Yellow/Orange style */
 .risk-buttons-container input[value="pending"]:checked + label {
-    background: #FFF8E7;
-    color: #D4A017;
-    border-color: #E6C87A;
-    box-shadow: 0 2px 8px rgba(212, 160, 23, 0.15);
+    background: rgba(212, 160, 23, 0.25);
+    color: #e6c87a;
+    border-color: #e6c87a;
+    box-shadow: 0 2px 8px rgba(212, 160, 23, 0.3);
 }
 
-/* Approved/Acceptée - Green style */
 .risk-buttons-container input[value="approved"]:checked + label {
-    background: #E8F0E4;
-    color: #5A7A4A;
-    border-color: #8FAA7E;
-    box-shadow: 0 2px 8px rgba(95, 125, 78, 0.15);
+    background: rgba(126, 139, 99, 0.25);
+    color: #bcd0a0;
+    border-color: #bcd0a0;
+    box-shadow: 0 2px 8px rgba(126, 139, 99, 0.3);
 }
 
-/* Rejected/Refusée - Red style */
 .risk-buttons-container input[value="rejected"]:checked + label {
-    background: #FFE8E6;
-    color: #D68B6E;
-    border-color: #D68B6E;
-    box-shadow: 0 2px 8px rgba(214, 139, 110, 0.15);
+    background: rgba(214, 139, 110, 0.25);
+    color: #e6a192;
+    border-color: #e6a192;
+    box-shadow: 0 2px 8px rgba(214, 139, 110, 0.3);
 }
 
-/* Alternative direct selectors */
-.strategy-form .risk-radio-group {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.strategy-form .risk-radio-group div {
-    display: inline-block;
-}
-
-.strategy-form .risk-radio-group input[type="radio"] {
-    display: none;
-}
-
-.strategy-form .risk-radio-group input[type="radio"] + label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 20px;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    background: white;
-    border: 1.5px solid #E8E0D5;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.strategy-form .risk-radio-group input[type="radio"] + label:hover {
-    transform: translateY(-1px);
-}
-
-.strategy-form .risk-radio-group input[value="pending"]:checked + label {
-    background: #FFF8E7;
-    color: #D4A017;
-    border-color: #E6C87A;
-}
-
-.strategy-form .risk-radio-group input[value="approved"]:checked + label {
-    background: #E8F0E4;
-    color: #5A7A4A;
-    border-color: #8FAA7E;
-}
-
-.strategy-form .risk-radio-group input[value="rejected"]:checked + label {
-    background: #FFE8E6;
-    color: #D68B6E;
-    border-color: #D68B6E;
-}
-
-/* ============================================ */
-/* IMPACT SLIDER */
-/* ============================================ */
+/* ============================================
+   IMPACT SLIDER (Dark)
+   ============================================ */
 
 .impact-slider {
     width: 100%;
     height: 6px;
-    background: linear-gradient(90deg, #E8E0D5, #D1C3B2);
+    background: linear-gradient(90deg, var(--back-border-strong), var(--back-text-soft));
     border-radius: 10px;
     accent-color: var(--primary-terracotta);
     cursor: pointer;
@@ -628,15 +466,15 @@
     font-weight: 700;
     color: var(--primary-terracotta);
     margin-top: 8px;
-    background: rgba(195, 125, 93, 0.1);
+    background: rgba(185, 145, 105, 0.2);
     display: inline-block;
     padding: 4px 12px;
     border-radius: 30px;
 }
 
-/* ============================================ */
-/* SWOT GRID */
-/* ============================================ */
+/* ============================================
+   SWOT GRID (Dark)
+   ============================================ */
 
 .swot-grid {
     display: grid;
@@ -672,18 +510,18 @@
     font-size: 0.7rem;
 }
 
-.swot-item.strengths label { background: #E8F0E4; color: #5A7A4A; }
-.swot-item.weaknesses label { background: #FFE8E6; color: #D68B6E; }
-.swot-item.opportunities label { background: #E8F0E4; color: #5A7A4A; }
-.swot-item.threats label { background: #FFE8E6; color: #D68B6E; }
+.swot-item.strengths label { background: rgba(126, 139, 99, 0.25); color: #bcd0a0; }
+.swot-item.weaknesses label { background: rgba(214, 139, 110, 0.25); color: #e6a192; }
+.swot-item.opportunities label { background: rgba(126, 139, 99, 0.25); color: #bcd0a0; }
+.swot-item.threats label { background: rgba(214, 139, 110, 0.25); color: #e6a192; }
 
 .swot-item .form-textarea {
     min-height: 100px;
 }
 
-/* ============================================ */
-/* FORM ACTIONS */
-/* ============================================ */
+/* ============================================
+   FORM ACTIONS (Dark)
+   ============================================ */
 
 .form-actions {
     display: flex;
@@ -691,7 +529,7 @@
     gap: 16px;
     margin-top: 32px;
     padding-top: 24px;
-    border-top: 1px solid #F0E7DC;
+    border-top: 1px solid var(--back-border);
 }
 
 .btn-cancel {
@@ -700,7 +538,7 @@
     gap: 8px;
     padding: 12px 28px;
     background: transparent;
-    border: 1.5px solid #D1C3B2;
+    border: 1.5px solid var(--back-border-strong);
     border-radius: 50px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -711,7 +549,7 @@
 }
 
 .btn-cancel:hover {
-    background: var(--warm-beige);
+    background: rgba(232, 221, 208, 0.1);
     border-color: var(--primary-terracotta);
     transform: translateY(-1px);
 }
@@ -729,12 +567,12 @@
     cursor: pointer;
     transition: all 0.2s;
     color: white;
-    box-shadow: 0 4px 12px rgba(195, 125, 93, 0.25);
+    box-shadow: 0 4px 12px rgba(185, 145, 105, 0.3);
 }
 
 .btn-submit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(195, 125, 93, 0.35);
+    box-shadow: 0 8px 20px rgba(185, 145, 105, 0.45);
 }
 
 .btn-submit:active {
@@ -745,13 +583,13 @@
     font-size: 1.2rem;
 }
 
-/* ============================================ */
-/* FORM HINT */
-/* ============================================ */
+/* ============================================
+   FORM HINT (Dark)
+   ============================================ */
 
 .form-hint {
     font-size: 0.7rem;
-    color: #A89A88;
+    color: var(--back-text-soft);
     margin-top: 6px;
     display: flex;
     align-items: center;
@@ -763,18 +601,18 @@
     font-size: 0.7rem;
 }
 
-/* ============================================ */
-/* SUCCESS / ERROR STATES */
-/* ============================================ */
+/* ============================================
+   SUCCESS / ERROR STATES (Dark)
+   ============================================ */
 
 .form-group-success .form-input,
 .form-group-success .form-select {
-    border-color: #8FAA7E;
-    background-color: #F5F9F2;
+    border-color: #bcd0a0;
+    background-color: rgba(126, 139, 99, 0.08);
 }
 
 .success-message {
-    color: #5A7A4A;
+    color: #bcd0a0;
     font-size: 0.7rem;
     margin-top: 6px;
     display: flex;
@@ -787,22 +625,22 @@
     font-weight: bold;
 }
 
-/* ============================================ */
-/* READONLY FIELD STYLES */
-/* ============================================ */
+/* ============================================
+   READONLY FIELD STYLES (Dark)
+   ============================================ */
 
 .form-input[readonly],
 .form-select[readonly],
 .form-textarea[readonly] {
-    background-color: #F5F1E8;
-    border-color: #E8E0D5;
+    background-color: rgba(232, 221, 208, 0.06);
+    border-color: var(--back-border);
     cursor: default;
-    color: #8A7A64;
+    color: var(--back-text-soft);
 }
 
-/* ============================================ */
-/* ANIMATIONS */
-/* ============================================ */
+/* ============================================
+   ANIMATIONS (unchanged)
+   ============================================ */
 
 @keyframes fadeInUp {
     from {
@@ -823,3 +661,63 @@
 .form-group:nth-child(2) { animation-delay: 0.1s; }
 .form-group:nth-child(3) { animation-delay: 0.15s; }
 .form-group:nth-child(4) { animation-delay: 0.2s; }
+
+
+/* ============================================
+   FIX: SELECT DROPDOWN TEXT CLARITY (Dark theme)
+   ============================================ */
+
+/* Style the select itself (already done, but ensure high contrast) */
+.form-select {
+    background-color: var(--back-surface, #14191b);
+    color: var(--deep-umber, #f3eee6);
+    border-color: var(--back-border-strong, rgba(232, 221, 208, 0.22));
+}
+
+/* Force dropdown options to have light text on dark background */
+.form-select option,
+select option {
+    background-color: var(--back-surface-elevated, #20282c) !important;
+    color: var(--back-text, #f3eee6) !important;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+}
+
+/* Hover & selected states for options (works in most browsers) */
+.form-select option:hover,
+select option:hover,
+.form-select option:checked,
+select option:checked {
+    background-color: var(--primary-terracotta, #b99169) !important;
+    color: white !important;
+}
+
+/* For Firefox (which uses different select internals) */
+@-moz-document url-prefix() {
+    .form-select,
+    select {
+        background-color: var(--back-surface);
+        color: var(--deep-umber);
+    }
+    .form-select option,
+    select option {
+        background-color: var(--back-surface-elevated);
+        color: var(--back-text);
+    }
+}
+
+/* For Webkit browsers (Chrome, Edge, Safari) - improves the dropdown arrow and overall contrast */
+.form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23d9c2a4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    appearance: none;
+}
+
+/* Focus state for select */
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-terracotta);
+    box-shadow: 0 0 0 4px rgba(185, 145, 105, 0.2);
+    background-color: var(--back-surface-soft);
+}
