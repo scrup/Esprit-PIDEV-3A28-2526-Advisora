@@ -3,10 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setCurrentDate();
     initStrategyPerformanceChart();
     initInvestmentChart();
-    initQuickActions();
-    initEventButtons();
-    initResourceButtons();
-    initNavigation();
     initPassiveNavigationState();
 });
 
@@ -74,6 +70,15 @@ function initStrategyPerformanceChart() {
         return;
     }
 
+    const context = canvas.getContext('2d');
+    const barGradient = context.createLinearGradient(0, 0, 0, 320);
+    barGradient.addColorStop(0, 'rgba(185, 145, 105, 0.5)');
+    barGradient.addColorStop(1, 'rgba(185, 145, 105, 0.08)');
+
+    const lineGradient = context.createLinearGradient(0, 0, 0, 320);
+    lineGradient.addColorStop(0, 'rgba(126, 139, 99, 0.26)');
+    lineGradient.addColorStop(1, 'rgba(126, 139, 99, 0.02)');
+
     new Chart(canvas, {
         data: {
             labels: chartData.labels,
@@ -83,26 +88,26 @@ function initStrategyPerformanceChart() {
                     label: 'Strategies acceptees',
                     data: chartData.accepted_counts,
                     yAxisID: 'y',
-                    backgroundColor: 'rgba(195, 125, 93, 0.72)',
-                    borderColor: '#C37D5D',
+                    backgroundColor: barGradient,
+                    borderColor: '#b99169',
                     borderWidth: 1,
                     borderRadius: 10,
-                    maxBarThickness: 42
+                    maxBarThickness: 36
                 },
                 {
                     type: 'line',
                     label: 'Taux de reussite',
                     data: chartData.success_rates,
                     yAxisID: 'y1',
-                    borderColor: '#7D8F6E',
-                    backgroundColor: 'rgba(125, 143, 110, 0.16)',
-                    pointBackgroundColor: '#7D8F6E',
-                    pointBorderColor: '#ffffff',
+                    borderColor: '#7e8b63',
+                    backgroundColor: lineGradient,
+                    pointBackgroundColor: '#7e8b63',
+                    pointBorderColor: '#11161a',
                     pointBorderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 5,
                     tension: 0.35,
-                    fill: false
+                    fill: true
                 }
             ]
         },
@@ -115,9 +120,20 @@ function initStrategyPerformanceChart() {
             },
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: {
+                        color: '#d7dde3',
+                        usePointStyle: true,
+                        boxWidth: 10,
+                        padding: 16
+                    }
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(19, 24, 29, 0.96)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#e5ebf0',
+                    borderColor: 'rgba(255, 255, 255, 0.08)',
+                    borderWidth: 1,
                     callbacks: {
                         label(context) {
                             const value = context.parsed.y;
@@ -134,22 +150,23 @@ function initStrategyPerformanceChart() {
             scales: {
                 x: {
                     grid: {
-                        display: false
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawTicks: false
                     },
                     ticks: {
-                        autoSkip: true,
+                        color: '#97a5b2',
                         maxRotation: 0,
                         minRotation: 0
                     }
                 },
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        precision: 0
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
                     },
-                    title: {
-                        display: true,
-                        text: 'Strategies acceptees'
+                    ticks: {
+                        color: '#97a5b2',
+                        precision: 0
                     }
                 },
                 y1: {
@@ -160,14 +177,51 @@ function initStrategyPerformanceChart() {
                         drawOnChartArea: false
                     },
                     ticks: {
+                        color: '#97a5b2',
                         callback(value) {
                             return `${value}%`;
                         }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Taux de reussite'
                     }
+                }
+            }
+        }
+    });
+}
+
+function initInvestmentChart() {
+    const canvas = document.getElementById('investmentChart');
+    const shell = document.querySelector('[data-donut]');
+    if (!canvas || !shell || typeof Chart === 'undefined') {
+        return;
+    }
+
+    const distribution = parseJsonDataset(shell.dataset.donut, []);
+    if (!Array.isArray(distribution) || distribution.length === 0) {
+        return;
+    }
+
+    new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: distribution.map((item) => item.label),
+            datasets: [{
+                data: distribution.map((item) => item.value),
+                backgroundColor: ['#b99169', '#7e8b63', '#d7b98c', '#8f785e'],
+                borderWidth: 0,
+                cutout: '70%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(19, 24, 29, 0.96)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#e5ebf0',
+                    borderColor: 'rgba(255, 255, 255, 0.08)',
+                    borderWidth: 1
                 }
             }
         }
@@ -176,98 +230,8 @@ function initStrategyPerformanceChart() {
 
 function parseJsonDataset(rawValue, fallback) {
     try {
-        const parsed = JSON.parse(rawValue || '{}');
-        return { ...fallback, ...parsed };
+        return JSON.parse(rawValue || 'null') ?? fallback;
     } catch (error) {
         return fallback;
     }
-}
-
-function initInvestmentChart() {
-    const ctx = document.getElementById('investmentChart');
-    if (!ctx || typeof Chart === 'undefined') {
-        return;
-    }
-
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Actions', 'Obligations', 'Immobilier', 'Crypto'],
-            datasets: [{
-                data: [45, 25, 20, 10],
-                backgroundColor: ['#C37D5D', '#7D8F6E', '#E3C9A0', '#A56143'],
-                borderWidth: 0,
-                cutout: '55%'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    });
-}
-
-function initQuickActions() {
-    document.querySelectorAll('.action-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            showToast(`${btn.innerText.trim()} - fonctionnalite a venir`);
-        });
-    });
-}
-
-function initEventButtons() {
-    document.querySelectorAll('.event-btn').forEach((btn) => {
-        btn.addEventListener('click', () => showToast('Inscription enregistree'));
-    });
-}
-
-function initResourceButtons() {
-    document.querySelectorAll('.resource-btn').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const resourceName = btn.closest('.resource-item')?.querySelector('strong')?.innerText || 'Document';
-            showToast(`Telechargement de "${resourceName}" demarre`);
-        });
-    });
-}
-
-function setActiveLink() {
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.back-nav a').forEach((link) => {
-        const href = link.getAttribute('href');
-        const isActive = href === currentPath || (currentPath === '/back' && link.querySelector('i.fa-home'));
-        link.classList.toggle('active', Boolean(isActive));
-    });
-}
-
-function initNavigation() {
-    setActiveLink();
-
-    document.querySelectorAll('.view-link').forEach((link) => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            showToast('Affichage de tous les elements');
-        });
-    });
-}
-
-function showToast(message) {
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) {
-        existingToast.remove();
-    }
-
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-    document.body.appendChild(toast);
-
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 2500);
 }

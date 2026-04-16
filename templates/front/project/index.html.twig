@@ -78,6 +78,7 @@
     <section class="pm-grid">
         {% for project in projects %}
             <article class="pm-card">
+                {% set estimate = project_acceptance_estimates[project.id]|default(null) %}
                 <div class="pm-card-head">
                     <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
                     <span class="pm-meta">Projet #{{ project.id }}</span>
@@ -92,6 +93,10 @@
                 <div class="pm-meta-list">
                     <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} decision(s)</span>
                 </div>
+
+                {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
+                    {% include 'shared/project_acceptance_estimate.html.twig' with { estimate: estimate } only %}
+                {% endif %}
 
                 {% if project.strategies|length > 0 %}
                     <div class="pm-project-strategies pm-project-strategies-inline">

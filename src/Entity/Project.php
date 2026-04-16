@@ -328,6 +328,7 @@ class Project
     {
         if (!$this->tasks->contains($task)) {
             $this->tasks->add($task);
+            $task->setProject($this);
         }
 
         return $this;
@@ -335,7 +336,9 @@ class Project
 
     public function removeTask(Task $task): self
     {
-        $this->tasks->removeElement($task);
+        if ($this->tasks->removeElement($task) && $task->getProject() === $this) {
+            $task->setProject(null);
+        }
 
         return $this;
     }

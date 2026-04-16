@@ -5,6 +5,12 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/project-task-board.js') }}"></script>
 {% endblock %}
 
 {% block body %}
@@ -16,12 +22,12 @@
                 <p>
                     {{ project.description ?: 'Aucune description disponible.' }}
                     {% if not can_edit_project and can_manage_project and is_project_accepted %}
-                        Ce projet est accepté : le client ne peut plus le modifier.
+                        Ce projet est accepte : le client ne peut plus le modifier.
                     {% endif %}
                 </p>
             </div>
             <div class="pm-card-actions">
-                <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">Retour à la liste</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">Retour a la liste</a>
                 <a class="pm-btn pm-btn-secondary" href="{{ path('project_show', {id: project.id}) }}">Voir en front</a>
                 {% if can_edit_project %}
                     <a class="pm-btn pm-btn-primary" href="{{ path('project_edit', {id: project.id}) }}">Modifier le projet</a>
@@ -34,11 +40,12 @@
                 <h2>Informations du projet</h2>
                 <div class="pm-meta-list pm-meta-list-vertical">
                     <span><strong>Statut :</strong> {{ project.getStatusLabel() }}</span>
-                    <span><strong>Type :</strong> {{ project.legacyType ?: 'Non précisé' }}</span>
-                    <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
-                    <span><strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
-                    <span><strong>Dernière mise à jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Non disponible' }}</span>
-                    <span><strong>Utilisateur :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</span>
+                    <span><strong>Type :</strong> {{ project.legacyType ?: 'Non precise' }}</span>
+                    <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><strong>Avancement taches :</strong> {{ task_board.progress|number_format(2, '.', ' ') }}%</span>
+                    <span><strong>Date de creation :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
+                    <span><strong>Derniere mise a jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Non disponible' }}</span>
+                    <span><strong>Utilisateur :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigne' }}</span>
                 </div>
                 {% if can_delete_project %}
                     <form method="post" action="{{ path('project_delete', {id: project.id}) }}" onsubmit="return confirm('Supprimer ce projet ?');">
@@ -51,14 +58,14 @@
             <article class="pm-card">
                 {% if latest_decision %}
                     <div class="pm-current-decision">
-                        <span class="pm-badge">Décision actuelle</span>
+                        <span class="pm-badge">Decision actuelle</span>
                         <strong>{{ latest_decision.getDecisionTitleLabel() }}</strong>
                         <span>{{ latest_decision.decisionDate|date('d/m/Y') }}</span>
                         <p>{{ latest_decision.description ?: 'Aucune justification.' }}</p>
                     </div>
                 {% endif %}
                 <div class="pm-section-head">
-                    <h2>Historique des décisions</h2>
+                    <h2>Historique des decisions</h2>
                     {% if can_manage_decisions %}
                         <a class="pm-btn pm-btn-primary" href="{{ path('decision_new', {projectId: project.id}) }}">Ajouter une validation</a>
                     {% endif %}
@@ -66,7 +73,7 @@
 
                 <details class="pm-history-toggle">
                     <summary class="pm-history-summary">
-                        <span>Afficher l'historique des décisions</span>
+                        <span>Afficher l historique des decisions</span>
                         <span class="pm-history-count">{{ project.decisions|length }}</span>
                     </summary>
 
@@ -78,7 +85,7 @@
                                         <strong>Statut : {{ decision.getDecisionTitleLabel() }}</strong>
                                         <span>{{ decision.decisionDate|date('d/m/Y') }}</span>
                                         <div class="pm-decision-meta">
-                                            <span>Auteur : {{ decision.user ? decision.user.getPrenomUser() ~ ' ' ~ decision.user.getNomUser() : 'Non renseigné' }}</span>
+                                            <span>Auteur : {{ decision.user ? decision.user.getPrenomUser() ~ ' ' ~ decision.user.getNomUser() : 'Non renseigne' }}</span>
                                             {% if latest_decision and latest_decision.id == decision.id %}
                                                 <span class="pm-current-label">Version courante</span>
                                             {% endif %}
@@ -87,7 +94,7 @@
                                     {% if can_manage_decisions %}
                                         <div class="pm-card-actions">
                                             <a class="pm-btn pm-btn-secondary" href="{{ path('decision_edit', {id: decision.id}) }}">Nouvelle version</a>
-                                            <form method="post" action="{{ path('decision_delete', {id: decision.id}) }}" onsubmit="return confirm('Supprimer cette décision ?');">
+                                            <form method="post" action="{{ path('decision_delete', {id: decision.id}) }}" onsubmit="return confirm('Supprimer cette decision ?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_decision_' ~ decision.id) }}">
                                                 <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
                                             </form>
@@ -97,12 +104,23 @@
                                 <p>{{ decision.description ?: 'Aucune justification.' }}</p>
                             </div>
                         {% else %}
-                            <p class="pm-empty-text">Aucune validation associée à ce projet.</p>
+                            <p class="pm-empty-text">Aucune validation associee a ce projet.</p>
                         {% endfor %}
                     </div>
                 </details>
             </article>
         </div>
+
+        {% include 'shared/project_task_board.html.twig' with {
+            project: project,
+            task_board: task_board,
+            task_form: task_form,
+            editing_task: editing_task,
+            can_manage_tasks: can_manage_tasks,
+            can_move_tasks: can_move_tasks,
+            task_readonly_hint: task_readonly_hint,
+            management_route: 'project_back_manage'
+        } %}
 
         <article class="pm-card pm-card-large pm-project-strategies">
             <div class="pm-section-head">
@@ -124,7 +142,6 @@
                                     <span class="pm-status pm-status-{{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
                                 </div>
                             </div>
-
                         </div>
 
                         <div class="pm-strategy-meta">

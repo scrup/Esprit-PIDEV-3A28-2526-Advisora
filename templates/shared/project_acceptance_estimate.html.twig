@@ -1,0 +1,83 @@
+{% set variant = variant|default('default') %}
+{% set is_compact = variant == 'compact' %}
+
+{% if estimate %}
+    <section class="pm-estimate-box{% if is_compact %} is-compact{% endif %}">
+        <div class="pm-estimate-header">
+            <div>
+                <span class="pm-badge">{% if is_compact %}Score{% else %}Score d acceptation{% endif %}</span>
+                {% if not is_compact %}
+                    <p class="pm-section-text">Estimation simple basee sur l historique reel.</p>
+                {% endif %}
+            </div>
+            <div class="pm-estimate-score-block">
+                <strong class="pm-estimate-score">{{ estimate.scorePercent }}%</strong>
+                <span class="pm-estimate-label {% if estimate.scorePercent >= 70 %}is-high{% elseif estimate.scorePercent >= 40 %}is-medium{% else %}is-low{% endif %}">{{ estimate.label }}</span>
+            </div>
+        </div>
+
+        {% if estimate.confidenceLow %}
+            <div class="pm-estimate-badge">Faible confiance</div>
+        {% endif %}
+
+        <div class="pm-estimate-bar">
+            <span class="pm-estimate-bar-fill" style="width: {{ estimate.scorePercent }}%;"></span>
+        </div>
+
+        {% if is_compact %}
+            <div class="pm-estimate-list">
+                <article class="pm-estimate-line">
+                    <span class="pm-estimate-line-label">Type</span>
+                    <span class="pm-estimate-line-value">{{ (estimate.contribType * 100)|number_format(0, '.', ' ') }}%</span>
+                    <p>{{ estimate.reasons['type'] }}</p>
+                </article>
+                <article class="pm-estimate-line">
+                    <span class="pm-estimate-line-label">Client</span>
+                    <span class="pm-estimate-line-value">{{ (estimate.contribClient * 100)|number_format(0, '.', ' ') }}%</span>
+                    <p>{{ estimate.reasons['client'] }}</p>
+                </article>
+                <article class="pm-estimate-line">
+                    <span class="pm-estimate-line-label">Budget</span>
+                    <span class="pm-estimate-line-value">{{ (estimate.contribBudget * 100)|number_format(0, '.', ' ') }}%</span>
+                    <p>{{ estimate.reasons['budget'] }}</p>
+                </article>
+                <article class="pm-estimate-line">
+                    <span class="pm-estimate-line-label">Dossier</span>
+                    <span class="pm-estimate-line-value">{{ (estimate.contribDossier * 100)|number_format(0, '.', ' ') }}%</span>
+                    <p>{{ estimate.reasons['dossier'] }}</p>
+                </article>
+            </div>
+        {% else %}
+            <div class="pm-estimate-reasons">
+                <article class="pm-estimate-reason">
+                    <div class="pm-estimate-reason-head">
+                        <span>Type</span>
+                        <strong>{{ (estimate.contribType * 100)|number_format(0, '.', ' ') }}%</strong>
+                    </div>
+                    <p>{{ estimate.reasons['type'] }}</p>
+                </article>
+                <article class="pm-estimate-reason">
+                    <div class="pm-estimate-reason-head">
+                        <span>Client</span>
+                        <strong>{{ (estimate.contribClient * 100)|number_format(0, '.', ' ') }}%</strong>
+                    </div>
+                    <p>{{ estimate.reasons['client'] }}</p>
+                </article>
+                <article class="pm-estimate-reason">
+                    <div class="pm-estimate-reason-head">
+                        <span>Budget</span>
+                        <strong>{{ (estimate.contribBudget * 100)|number_format(0, '.', ' ') }}%</strong>
+                    </div>
+                    <p>{{ estimate.reasons['budget'] }}</p>
+                </article>
+                <article class="pm-estimate-reason">
+                    <div class="pm-estimate-reason-head">
+                        <span>Dossier</span>
+                        <strong>{{ (estimate.contribDossier * 100)|number_format(0, '.', ' ') }}%</strong>
+                    </div>
+                    <p>{{ estimate.reasons['dossier'] }}</p>
+                </article>
+            </div>
+        {% endif %}
+    </section>
+{% endif %}

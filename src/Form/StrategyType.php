@@ -18,6 +18,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class StrategyType extends AbstractType
 {
+    private const MAX_DURATION_MONTHS = 600;
+    private const MAX_BUDGET_TOTAL = 1000000000;
+    private const MAX_GAIN_PERCENTAGE = 1000;
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $typeValues = $this->enumValues(TypeStrategie::cases());

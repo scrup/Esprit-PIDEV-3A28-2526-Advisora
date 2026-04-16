@@ -44,7 +44,7 @@
                     L'historique reste conservé, cette action ajoute une nouvelle version.
                 </div>
             {% endif %}
-            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'decision'}}) }}
+            {{ form_start(form, {attr: {novalidate: 'novalidate', 'data-skip-validation': 'true'}}) }}
                 {{ form_errors(form) }}
                 <div class="pm-form-grid">
                     {{ forms.field(form.decisionTitle) }}
@@ -57,9 +57,4 @@
             {{ form_end(form) }}
         </div>
     </section>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('js/project-form-validation.js') }}"></script>
 {% endblock %}

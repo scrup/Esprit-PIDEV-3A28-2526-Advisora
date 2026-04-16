@@ -5,7 +5,8 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}?v=20260412-objectives-v1">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
 {% block body %}
@@ -161,9 +162,14 @@
 
                         <div class="strategy-objectives-panel">
                             <div class="panel-heading">
-                                <div>
+                                <div class="panel-heading-copy">
                                     <p class="panel-eyebrow">Objectifs associes</p>
-                                    <h4>{{ strategy.objectives|length }} objectif{{ strategy.objectives|length > 1 ? 's' : '' }}</h4>
+                                    <div class="panel-heading-main">
+                                        <h4>{{ strategy.objectives|length }} objectif{{ strategy.objectives|length > 1 ? 's' : '' }}</h4>
+                                        <span class="objective-count-badge">
+                                            {{ strategy.objectives|length }} item{{ strategy.objectives|length > 1 ? 's' : '' }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <span class="panel-note">Ajoutez et suivez les priorites directement depuis cette carte.</span>
                             </div>
@@ -172,12 +178,15 @@
                                 <div class="objective-list">
                                     {% for objective in strategy.objectives %}
                                         <div class="objective-item">
-                                            <div class="objective-header">
-                                                <div class="objective-title-group">
-                                                    <span class="objective-dot"></span>
-                                                    <strong>{{ objective.nomObj ?: 'Objectif sans nom' }}</strong>
+                                            <div class="objective-main">
+                                                <div class="objective-copy">
+                                                    <div class="objective-title-row">
+                                                        <span class="objective-dot">{{ loop.index }}</span>
+                                                        <strong>{{ objective.nomObj ?: 'Objectif sans nom' }}</strong>
+                                                    </div>
+                                                    <p class="objective-description">{{ objective.descriptionOb ?: 'Aucune description fournie.' }}</p>
                                                 </div>
-                                                <div class="objective-header-actions">
+                                                <div class="objective-side">
                                                     <span class="objective-priority {{ objective.priorityCssClass }}">{{ objective.priorityLabel }}</span>
                                                     <div class="objective-actions">
                                                         <button
@@ -209,7 +218,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <p class="objective-description">{{ objective.descriptionOb ?: 'Aucune description fournie.' }}</p>
                                         </div>
                                     {% endfor %}
                                 </div>

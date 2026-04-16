@@ -5,13 +5,15 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 use App\Repository\UserRepository;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'user')]
+#[UniqueEntity(fields: ['NumTelUser'], message: 'Ce numero de telephone existe deja.')]
+#[UniqueEntity(fields: ['EmailUser'], message: 'Cet email existe deja.')]
+#[UniqueEntity(fields: ['cin'], message: 'Ce CIN existe deja.')]
+
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
