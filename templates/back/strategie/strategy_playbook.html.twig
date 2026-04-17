@@ -233,6 +233,83 @@
             color: #8a7564;
         }
 
+        .chart-box {
+            padding-bottom: 22px;
+        }
+
+        .chart-summary {
+            margin: 0 0 16px;
+            color: #5a483a;
+        }
+
+        .chart-svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .chart-grid {
+            stroke: #e8dbcf;
+            stroke-width: 1;
+        }
+
+        .chart-axis {
+            stroke: #d7c4b2;
+            stroke-width: 1.2;
+        }
+
+        .chart-axis-label {
+            fill: #9a8a77;
+            font-size: 11px;
+        }
+
+        .chart-area {
+            fill: #ead8c6;
+            opacity: 0.7;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke: #8f5f46;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chart-point {
+            fill: #8f5f46;
+            stroke: #fffdfa;
+            stroke-width: 2;
+        }
+
+        .chart-point-value {
+            fill: #6f4d38;
+            font-size: 11px;
+            font-weight: 700;
+            text-anchor: middle;
+        }
+
+        .chart-point-label {
+            fill: #8a7564;
+            font-size: 11px;
+            text-anchor: middle;
+        }
+
+        .chart-footer {
+            margin-top: 8px;
+            overflow: hidden;
+            color: #8a7564;
+            font-size: 12px;
+        }
+
+        .chart-footer-left {
+            float: left;
+        }
+
+        .chart-footer-right {
+            float: right;
+        }
+
         .footer {
             margin-top: 30px;
             padding-top: 16px;
@@ -404,6 +481,34 @@
                         <li>{{ item }}</li>
                     {% endfor %}
                 </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Projection d outcome attendu</h2>
+            <div class="section-box chart-box">
+                <p class="chart-summary">{{ content.expected_outcome_summary }}</p>
+                {% set chart = content.expected_outcome_chart %}
+                <svg class="chart-svg" viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-label="{{ chart.aria_label }}">
+                    {% for tick in chart.y_ticks %}
+                        <line class="chart-grid" x1="{{ chart.plot_left }}" y1="{{ tick.y }}" x2="{{ chart.plot_right }}" y2="{{ tick.y }}"></line>
+                        <text class="chart-axis-label" x="{{ chart.plot_left - 10 }}" y="{{ tick.y + 4 }}" text-anchor="end">{{ tick.label }}</text>
+                    {% endfor %}
+
+                    <line class="chart-axis" x1="{{ chart.plot_left }}" y1="{{ chart.plot_bottom }}" x2="{{ chart.plot_right }}" y2="{{ chart.plot_bottom }}"></line>
+                    <polygon class="chart-area" points="{{ chart.area_points }}"></polygon>
+                    <polyline class="chart-line" points="{{ chart.polyline_points }}"></polyline>
+
+                    {% for point in chart.points %}
+                        <circle class="chart-point" cx="{{ point.x }}" cy="{{ point.y }}" r="4.5"></circle>
+                        <text class="chart-point-value" x="{{ point.x }}" y="{{ point.value_y }}">{{ point.value_label }}</text>
+                        <text class="chart-point-label" x="{{ point.x }}" y="{{ chart.x_label_y }}">{{ point.period }}</text>
+                    {% endfor %}
+                </svg>
+                <div class="chart-footer">
+                    <span class="chart-footer-left">Depart projete: {{ chart.start_value_label }}</span>
+                    <span class="chart-footer-right">Projection finale: {{ chart.final_value_label }}</span>
+                </div>
             </div>
         </section>
 

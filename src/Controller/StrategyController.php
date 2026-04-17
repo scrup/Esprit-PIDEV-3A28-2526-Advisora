@@ -482,6 +482,16 @@ final class StrategyController extends AbstractController
         try {
             $project = $strategy->getProject();
             $content = $contentGenerator->generate($strategy, $project);
+            $generationMeta = $contentGenerator->getLastGenerationMeta();
+            $messages = [];
+
+            if (($generationMeta['used_ai'] ?? false) !== true && is_string($generationMeta['warning'] ?? null)) {
+                $warning = trim((string) $generationMeta['warning']);
+                if ($warning !== '') {
+                    $messages[] = $warning;
+                }
+            }
+
             $html = $pdfGenerator->renderHtml('back/strategie/strategy_playbook.html.twig', [
                 'strategy' => $strategy,
                 'project' => $project,
@@ -494,31 +504,46 @@ final class StrategyController extends AbstractController
                 $htmlFilename = $baseFilename . '.html';
                 $pdfGenerator->saveHtml($html, $htmlFilename, 'uploads/strategies');
 
-                return $this->json([
+                $messages[] = 'La generation PDF est desactivee. Une version imprimable a ete preparee. Ouvrez-la puis utilisez Imprimer > Enregistrer en PDF.';
+
+                $payload = [
                     'status' => 'completed',
                     'format' => 'html',
                     'url' => '/uploads/strategies/' . $htmlFilename,
-                    'message' => 'La generation PDF est desactivee. Une version imprimable a ete preparee. Ouvrez-la puis utilisez Imprimer > Enregistrer en PDF.',
-                ]);
+                ];
+
+                if ($messages !== []) {
+                    $payload['message'] = implode(' ', $messages);
+                }
+
+                return $this->json($payload);
             }
 
             try {
                 $pdfGenerator->generate($html, $pdfFilename, 'uploads/strategies');
 
-                return $this->json([
+                $payload = [
                     'status' => 'completed',
                     'format' => 'pdf',
                     'url' => '/uploads/strategies/' . $pdfFilename,
-                ]);
+                ];
+
+                if ($messages !== []) {
+                    $payload['message'] = implode(' ', $messages);
+                }
+
+                return $this->json($payload);
             } catch (\Throwable $pdfException) {
                 $htmlFilename = $baseFilename . '.html';
                 $pdfGenerator->saveHtml($html, $htmlFilename, 'uploads/strategies');
+
+                $messages[] = 'Le service PDF est indisponible. Une version imprimable a ete preparee. Ouvrez-la puis utilisez Imprimer > Enregistrer en PDF.';
 
                 return $this->json([
                     'status' => 'completed',
                     'format' => 'html',
                     'url' => '/uploads/strategies/' . $htmlFilename,
-                    'message' => 'Le service PDF est indisponible. Une version imprimable a ete preparee. Ouvrez-la puis utilisez Imprimer > Enregistrer en PDF.',
+                    'message' => implode(' ', $messages),
                 ]);
             }
         } catch (\Throwable $exception) {

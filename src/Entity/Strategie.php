@@ -12,6 +12,12 @@ use App\Repository\StrategieRepository;
 #[ORM\Table(name: 'strategies')]
 class Strategie
 {
+    public function __construct()
+    {
+        $this->objectives = new ArrayCollection();
+        $this->swotItems = new ArrayCollection();
+    }
+
     public const STATUS_PENDING = 'En_attente';
     public const STATUS_APPROVED = 'Acceptée';
     public const STATUS_REJECTED = 'Refusée';
