@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Advisora | Projets{% endblock %}
+{% block title %}{{ 'project.meta.title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -10,21 +10,21 @@
 {% block body %}
     <section class="pm-hero">
         <div>
-            <span class="pm-badge">Project Management</span>
-            <h1>Suivez les projets strategiques d'Advisora</h1>
+            <span class="pm-badge">{{ 'project.hero.badge'|trans }}</span>
+            <h1>{{ 'project.hero.title'|trans }}</h1>
             <p>
                 {% if app.user and not can_see_all_projects %}
-                    Consultez uniquement vos projets et les decisions prises sur vos initiatives.
+                    {{ 'project.hero.description_client'|trans }}
                 {% else %}
-                    Consultez l'etat des projets et les decisions prises pour chaque initiative.
+                    {{ 'project.hero.description_all'|trans }}
                 {% endif %}
             </p>
         </div>
         <div class="pm-actions">
             {% if app.user and can_manage_projects %}
-                <a class="pm-btn pm-btn-primary" href="{{ path('project_new') }}">Ajouter un projet</a>
+                <a class="pm-btn pm-btn-primary" href="{{ path('project_new') }}">{{ 'project.hero.add'|trans }}</a>
             {% elseif not app.user %}
-                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gerer</a>
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">{{ 'project.hero.login_manage'|trans }}</a>
             {% endif %}
         </div>
     </section>
@@ -33,14 +33,14 @@
         <form method="get" action="{{ path('project_index') }}" class="pm-form-card">
             <div class="pm-filter-grid">
                 <div class="pm-field">
-                    <label for="filter_q">Recherche</label>
-                    <input id="filter_q" type="search" name="q" placeholder="Titre, description, type, statut ou ID..." value="{{ filters.q|default('') }}">
+                    <label for="filter_q">{{ 'project.filters.search'|trans }}</label>
+                    <input id="filter_q" type="search" name="q" placeholder="{{ 'project.filters.search_placeholder'|trans }}" value="{{ filters.q|default('') }}">
                 </div>
 
                 <div class="pm-field">
-                    <label for="filter_status">Statut</label>
+                    <label for="filter_status">{{ 'project.filters.status'|trans }}</label>
                     <select id="filter_status" name="status">
-                        <option value="">Tous</option>
+                        <option value="">{{ 'project.filters.all'|trans }}</option>
                         {% for status_value, status_label in status_choices %}
                             <option value="{{ status_value }}" {% if filters.status is defined and filters.status == status_value %}selected{% endif %}>{{ status_label }}</option>
                         {% endfor %}
@@ -48,9 +48,9 @@
                 </div>
 
                 <div class="pm-field">
-                    <label for="filter_type">Type</label>
+                    <label for="filter_type">{{ 'project.filters.type'|trans }}</label>
                     <select id="filter_type" name="type">
-                        <option value="">Tous</option>
+                        <option value="">{{ 'project.filters.all'|trans }}</option>
                         {% for project_type in type_choices %}
                             <option value="{{ project_type }}" {% if filters.type is defined and filters.type == project_type %}selected{% endif %}>{{ project_type }}</option>
                         {% endfor %}
@@ -58,19 +58,19 @@
                 </div>
 
                 <div class="pm-field">
-                    <label for="filter_min_price">Budget min</label>
-                    <input id="filter_min_price" type="number" step="0.01" name="min_price" placeholder="Min" value="{{ filters.min_price|default('') }}">
+                    <label for="filter_min_price">{{ 'project.filters.min_budget'|trans }}</label>
+                    <input id="filter_min_price" type="number" step="0.01" name="min_price" placeholder="{{ 'project.filters.min'|trans }}" value="{{ filters.min_price|default('') }}">
                 </div>
 
                 <div class="pm-field">
-                    <label for="filter_max_price">Budget max</label>
-                    <input id="filter_max_price" type="number" step="0.01" name="max_price" placeholder="Max" value="{{ filters.max_price|default('') }}">
+                    <label for="filter_max_price">{{ 'project.filters.max_budget'|trans }}</label>
+                    <input id="filter_max_price" type="number" step="0.01" name="max_price" placeholder="{{ 'project.filters.max'|trans }}" value="{{ filters.max_price|default('') }}">
                 </div>
             </div>
 
             <div class="pm-filter-actions">
-                <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
-                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Reinitialiser</a>
+                <button class="pm-btn pm-btn-primary" type="submit">{{ 'project.filters.apply'|trans }}</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">{{ 'project.filters.reset'|trans }}</a>
             </div>
         </form>
     </section>
@@ -81,17 +81,17 @@
                 {% set estimate = project_acceptance_estimates[project.id]|default(null) %}
                 <div class="pm-card-head">
                     <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
-                    <span class="pm-meta">Projet #{{ project.id }}</span>
+                    <span class="pm-meta">{{ 'project.card.project_number'|trans }} #{{ project.id }}</span>
                 </div>
                 <h2>{{ project.title }}</h2>
-                <p>{{ project.description ?: 'Aucune description pour ce projet.' }}</p>
+                <p>{{ project.description ?: ('project.card.no_description'|trans) }}</p>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non precise' }}</span>
-                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                    <span><i class="fas fa-calendar-plus"></i> Creation : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
+                    <span><i class="fas fa-layer-group"></i> {{ 'project.card.type'|trans }} : {{ project.legacyType ?: ('project.card.not_specified'|trans) }}</span>
+                    <span><i class="fas fa-wallet"></i> {{ 'project.card.budget'|trans }} : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
+                    <span><i class="fas fa-calendar-plus"></i> {{ 'project.card.creation'|trans }} : {{ project.startDate ? project.startDate|date('d/m/Y') : ('project.card.not_specified_female'|trans) }}</span>
                 </div>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} decision(s)</span>
+                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} {{ 'project.card.decisions'|trans }}</span>
                 </div>
 
                 {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
@@ -102,8 +102,8 @@
                     <div class="pm-project-strategies pm-project-strategies-inline">
                         <div class="pm-section-head">
                             <div>
-                                <span class="pm-badge">Strategies proposees</span>
-                                <p class="pm-section-text">Consultez les strategies rattachees a ce projet et, pour le client proprietaire, choisissez de les accepter ou de les refuser.</p>
+                                <span class="pm-badge">{{ 'project.strategies.badge'|trans }}</span>
+                                <p class="pm-section-text">{{ 'project.strategies.text'|trans }}</p>
                             </div>
                             <span class="pm-history-count">{{ project.strategies|length }}</span>
                         </div>
@@ -111,30 +111,30 @@
                         <div class="pm-strategy-list pm-strategy-list-inline">
                             {% for strategy in project.strategies %}
                                 <section class="pm-strategy-card pm-strategy-card-inline">
-                                {# Inside the loop for project.strategies, after strategy status check #}
-{% if strategy.statusStrategie == strategy_statuses.approved %}
-    <div class="pm-strategy-pdf-action" data-strategy-id="{{ strategy.idStrategie }}">
-        <div class="pm-strategy-pdf-controls">
-            <label class="pm-strategy-pdf-language" for="playbook_lang_{{ strategy.idStrategie }}">Langue du playbook</label>
-            <select id="playbook_lang_{{ strategy.idStrategie }}" class="pm-playbook-language-select" aria-label="Choisir la langue du playbook">
-                <option value="fr" selected>Francais</option>
-                <option value="en">English</option>
-            </select>
-        </div>
-        <button class="pm-btn pm-btn-primary pdf-generate-btn" type="button" data-strategy-id="{{ strategy.idStrategie }}" data-generate-url="{{ path('strategy_generate_pdf', {id: strategy.idStrategie}) }}">
-            <i class="fas fa-file-pdf"></i> Télécharger le playbook
-        </button>
-        <div class="pdf-progress-container" style="display: none;">
-            <div class="progress-circle"></div>
-            <span class="progress-text">Génération en cours...</span>
-        </div>
-        <div class="pdf-download-link" style="display: none;">
-            <a href="#" class="pm-btn pm-btn-secondary" target="_blank">
-                <i class="fas fa-download"></i> Télécharger
-            </a>
-        </div>
-    </div>
-{% endif %}
+                                    {% if strategy.statusStrategie == strategy_statuses.approved %}
+                                        <div class="pm-strategy-pdf-action" data-strategy-id="{{ strategy.idStrategie }}">
+                                            <div class="pm-strategy-pdf-controls">
+                                                <label class="pm-strategy-pdf-language" for="playbook_lang_{{ strategy.idStrategie }}">{{ 'project.playbook.language'|trans }}</label>
+                                                <select id="playbook_lang_{{ strategy.idStrategie }}" class="pm-playbook-language-select" aria-label="{{ 'project.playbook.choose_language'|trans }}">
+                                                    <option value="fr" selected>{{ 'project.playbook.french'|trans }}</option>
+                                                    <option value="en">{{ 'project.playbook.english'|trans }}</option>
+                                                </select>
+                                            </div>
+                                            <button class="pm-btn pm-btn-primary pdf-generate-btn" type="button" data-strategy-id="{{ strategy.idStrategie }}" data-generate-url="{{ path('strategy_generate_pdf', {id: strategy.idStrategie}) }}">
+                                                <i class="fas fa-file-pdf"></i> {{ 'project.playbook.download'|trans }}
+                                            </button>
+                                            <div class="pdf-progress-container" style="display: none;">
+                                                <div class="progress-circle"></div>
+                                                <span class="progress-text">{{ 'project.playbook.generating'|trans }}</span>
+                                            </div>
+                                            <div class="pdf-download-link" style="display: none;">
+                                                <a href="#" class="pm-btn pm-btn-secondary" target="_blank">
+                                                    <i class="fas fa-download"></i> {{ 'project.playbook.download_simple'|trans }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
                                     {% set strategy_decision_taken = strategy.statusStrategie in [strategy_statuses.approved, strategy_statuses.rejected] %}
                                     <div class="pm-strategy-main">
                                         <div>
@@ -144,15 +144,15 @@
                                             </div>
                                             <p class="pm-strategy-description">
                                                 {% if strategy.statusStrategie == strategy_statuses.rejected and strategy.justification %}
-                                                    Motif du refus : {{ strategy.justification }}
+                                                    {{ 'project.strategy.rejection_reason'|trans }} : {{ strategy.justification }}
                                                 {% elseif strategy.statusStrategie == strategy_statuses.rejected %}
-                                                    Cette strategie a ete refusee par le client.
+                                                    {{ 'project.strategy.rejected_client'|trans }}
                                                 {% elseif strategy.statusStrategie == strategy_statuses.approved %}
-                                                    Cette strategie a ete acceptee par le client.
+                                                    {{ 'project.strategy.approved_client'|trans }}
                                                 {% elseif strategy.justification %}
                                                     {{ strategy.justification }}
                                                 {% else %}
-                                                    En attente de la decision du client.
+                                                    {{ 'project.strategy.pending_client_decision'|trans }}
                                                 {% endif %}
                                             </p>
                                         </div>
@@ -160,27 +160,27 @@
                                         {% if can_client_decide_strategies and app.user and project.user and project.user.idUser == app.user.idUser %}
                                             {% if strategy_decision_taken %}
                                                 <div class="pm-strategy-decision-state">
-                                                    <strong>Decision confirmee.</strong>
-                                                    Votre choix a deja ete enregistre pour cette strategie.
+                                                    <strong>{{ 'project.strategy.confirmed'|trans }}</strong>
+                                                    {{ 'project.strategy.already_saved'|trans }}
                                                 </div>
                                             {% else %}
                                                 <div class="pm-strategy-actions">
-                                                    <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" onsubmit="return confirm('Confirmer l acceptation de cette strategie ? Cette decision sera definitive.');">
+                                                    <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" onsubmit="return confirm('{{ 'project.strategy.confirm_accept'|trans|e('js') }}');">
                                                         <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
                                                         <input type="hidden" name="status" value="{{ strategy_statuses.approved }}">
-                                                        <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                                                        <button class="pm-btn pm-btn-primary" type="submit">{{ 'project.strategy.accept'|trans }}</button>
                                                     </form>
 
                                                     <details class="pm-strategy-reject-panel">
-                                                        <summary class="pm-btn pm-btn-danger pm-strategy-reject-summary">Refuser</summary>
-                                                        <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" class="pm-strategy-reject-form" novalidate onsubmit="return confirm('Confirmer le refus de cette strategie ? Cette decision sera definitive.');">
+                                                        <summary class="pm-btn pm-btn-danger pm-strategy-reject-summary">{{ 'project.strategy.reject'|trans }}</summary>
+                                                        <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" class="pm-strategy-reject-form" novalidate onsubmit="return confirm('{{ 'project.strategy.confirm_reject'|trans|e('js') }}');">
                                                             <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
                                                             <input type="hidden" name="status" value="{{ strategy_statuses.rejected }}">
-                                                            <label for="strategy_reject_{{ strategy.idStrategie }}">Justification obligatoire</label>
-                                                            <textarea id="strategy_reject_{{ strategy.idStrategie }}" name="justification" rows="4" placeholder="Expliquez pourquoi cette strategie doit etre refusee."></textarea>
-                                                            <p class="pm-field-help">Le refus doit etre motive entre 10 et 255 caracteres.</p>
+                                                            <label for="strategy_reject_{{ strategy.idStrategie }}">{{ 'project.strategy.justification_required'|trans }}</label>
+                                                            <textarea id="strategy_reject_{{ strategy.idStrategie }}" name="justification" rows="4" placeholder="{{ 'project.strategy.justification_placeholder'|trans }}"></textarea>
+                                                            <p class="pm-field-help">{{ 'project.strategy.justification_help'|trans }}</p>
                                                             <div class="pm-strategy-reject-actions">
-                                                                <button class="pm-btn pm-btn-danger" type="submit">Confirmer le refus</button>
+                                                                <button class="pm-btn pm-btn-danger" type="submit">{{ 'project.strategy.confirm_reject_button'|trans }}</button>
                                                             </div>
                                                         </form>
                                                     </details>
@@ -190,11 +190,11 @@
                                     </div>
 
                                     <div class="pm-strategy-meta">
-                                        <span><strong>Type :</strong> {{ strategy.type ?: 'Non precise' }}</span>
-                                        <span><strong>Duree :</strong> {{ strategy.DureeTerme }} mois</span>
-                                        <span><strong>Budget :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                                        <span><strong>Gain estime :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non precise' }}</span>
-                                        <span><strong>Objectifs :</strong> {{ strategy.objectives|length }}</span>
+                                        <span><strong>{{ 'project.strategy.type'|trans }} :</strong> {{ strategy.type ?: ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.duration'|trans }} :</strong> {{ strategy.DureeTerme }} {{ 'project.strategy.months'|trans }}</span>
+                                        <span><strong>{{ 'project.strategy.budget'|trans }} :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.estimated_gain'|trans }} :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.objectives'|trans }} :</strong> {{ strategy.objectives|length }}</span>
                                     </div>
                                 </section>
                             {% endfor %}
@@ -203,18 +203,18 @@
                 {% endif %}
 
                 <div class="pm-card-actions">
-                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
+                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">{{ 'project.actions.view_detail'|trans }}</a>
                     {% if app.user and project.user and project.user.idUser == app.user.idUser %}
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gerer</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">{{ 'project.actions.manage'|trans }}</a>
                     {% elseif app.user and can_see_all_projects %}
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">{{ 'project.actions.process'|trans }}</a>
                     {% endif %}
                 </div>
             </article>
         {% else %}
             <div class="pm-empty">
-                <h2>Aucun projet pour le moment</h2>
-                <p>Commencez par creer un premier projet strategique depuis l espace projets.</p>
+                <h2>{{ 'project.empty.title'|trans }}</h2>
+                <p>{{ 'project.empty.text'|trans }}</p>
             </div>
         {% endfor %}
     </section>
@@ -224,6 +224,20 @@
     {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const i18n = {
+                invalidJson: {{ 'project.js.invalid_json'|trans|json_encode|raw }},
+                launchError: {{ 'project.js.launch_error'|trans|json_encode|raw }},
+                failed: {{ 'project.js.failed'|trans|json_encode|raw }},
+                unexpected: {{ 'project.js.unexpected'|trans|json_encode|raw }},
+                error: {{ 'project.js.error'|trans|json_encode|raw }},
+                frLoading: {{ 'project.js.fr_loading'|trans|json_encode|raw }},
+                frHtml: {{ 'project.js.fr_html'|trans|json_encode|raw }},
+                frPdf: {{ 'project.js.fr_pdf'|trans|json_encode|raw }},
+                enLoading: {{ 'project.js.en_loading'|trans|json_encode|raw }},
+                enHtml: {{ 'project.js.en_html'|trans|json_encode|raw }},
+                enPdf: {{ 'project.js.en_pdf'|trans|json_encode|raw }}
+            };
+
             const extractServerError = (html) => {
                 if (!html || typeof html !== 'string') {
                     return '';
@@ -254,16 +268,17 @@
                     const languageSelect = container.querySelector('.pm-playbook-language-select');
                     const generateUrl = button.dataset.generateUrl;
                     const language = languageSelect ? languageSelect.value : 'fr';
+
                     const languageLabels = language === 'en'
                         ? {
-                            loading: 'Generating playbook...',
-                            html: 'Open printable version',
-                            pdf: 'Download PDF'
+                            loading: i18n.enLoading,
+                            html: i18n.enHtml,
+                            pdf: i18n.enPdf
                         }
                         : {
-                            loading: 'Generation en cours...',
-                            html: 'Ouvrir la version imprimable',
-                            pdf: 'Telecharger le PDF'
+                            loading: i18n.frLoading,
+                            html: i18n.frHtml,
+                            pdf: i18n.frPdf
                         };
 
                     if (!progressDiv || !downloadDiv || !downloadLink || !generateUrl) {
@@ -278,7 +293,7 @@
                     progressDiv.style.display = 'flex';
                     downloadDiv.style.display = 'none';
 
-                    const showDownload = (url, label = 'Ouvrir') => {
+                    const showDownload = (url, label) => {
                         progressDiv.style.display = 'none';
                         downloadDiv.style.display = 'block';
                         downloadLink.href = url;
@@ -312,17 +327,17 @@
                             } catch (parseError) {
                                 throw new Error(
                                     extractServerError(responseText)
-                                    || `Le serveur a renvoye une reponse non JSON (${response.status}).`
+                                    || `${i18n.invalidJson} (${response.status}).`
                                 );
                             }
                         }
 
                         if (!response.ok) {
-                            throw new Error(data?.error || `Impossible de lancer la generation du PDF (${response.status}).`);
+                            throw new Error(data?.error || `${i18n.launchError} (${response.status}).`);
                         }
 
                         if (data?.status === 'failed') {
-                            throw new Error(data.error || 'La generation du PDF a echoue.');
+                            throw new Error(data.error || i18n.failed);
                         }
 
                         if (data?.status === 'completed' && data.url) {
@@ -336,10 +351,10 @@
                             return;
                         }
 
-                        throw new Error('Reponse PDF inattendue.');
+                        throw new Error(i18n.unexpected);
                     } catch (error) {
                         resetState();
-                        alert('Erreur: ' + error.message);
+                        alert(i18n.error + ': ' + error.message);
                     }
                 });
             });
