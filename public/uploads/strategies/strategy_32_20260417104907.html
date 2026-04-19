@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Playbook Strategie</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            color: #2f2419;
+            background: #fffdfa;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .page {
+            padding: 34px 40px 52px;
+        }
+
+        .hero {
+            padding: 28px 30px;
+            border-radius: 24px;
+            background: linear-gradient(140deg, #f7efe4 0%, #fff8ef 62%, #f4e4d2 100%);
+            border: 1px solid #eadbc9;
+            margin-bottom: 20px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: #9a7b61;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 30px;
+            line-height: 1.18;
+            color: #2c2016;
+        }
+
+        .hero-summary {
+            margin: 0;
+            font-size: 14px;
+            color: #6c5847;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: #f2e3d1;
+            color: #7a563f;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .meta-grid,
+        .dual-grid,
+        .objective-grid,
+        .phase-grid,
+        .kpi-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+
+        .meta-grid td {
+            width: 33.33%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .dual-grid td,
+        .objective-grid td,
+        .kpi-grid td {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .phase-grid td {
+            width: 33.33%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .card,
+        .section-box {
+            background: #ffffff;
+            border: 1px solid #efe3d6;
+            border-radius: 18px;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+
+        .meta-card {
+            padding: 14px 16px;
+            min-height: 88px;
+        }
+
+        .meta-label,
+        .pill {
+            display: inline-block;
+            color: #9a8a77;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .meta-label {
+            margin-bottom: 8px;
+        }
+
+        .meta-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2f2419;
+        }
+
+        .meta-detail {
+            margin-top: 6px;
+            color: #8d7765;
+            font-size: 12px;
+        }
+
+        .section {
+            margin-top: 8px;
+            margin-bottom: 18px;
+        }
+
+        .section h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #6f4d38;
+        }
+
+        .section-box {
+            padding: 18px 20px;
+        }
+
+        .panel-title {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #5a3d2c;
+        }
+
+        .paragraph {
+            margin: 0;
+            color: #4f3d30;
+        }
+
+        .subtle {
+            color: #8a7564;
+        }
+
+        .note-title {
+            margin: 0 0 8px;
+            color: #6f4d38;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .note-copy {
+            margin: 0;
+            color: #5c493c;
+        }
+
+        .note-copy + .note-title {
+            margin-top: 14px;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        li + li {
+            margin-top: 8px;
+        }
+
+        .objective-card,
+        .phase-card,
+        .kpi-card {
+            padding: 16px 18px;
+        }
+
+        .pill {
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #f6eee4;
+            color: #8f6d55;
+            margin-bottom: 10px;
+        }
+
+        .objective-title,
+        .phase-title,
+        .kpi-name {
+            margin: 0 0 8px;
+            font-size: 15px;
+            color: #2f2419;
+        }
+
+        .objective-copy,
+        .phase-copy,
+        .kpi-target,
+        .kpi-cadence {
+            margin: 0;
+            color: #5b483a;
+        }
+
+        .phase-horizon {
+            margin: 0 0 8px;
+            color: #9a7b61;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .kpi-target {
+            font-weight: 700;
+            color: #3f2f24;
+        }
+
+        .kpi-cadence {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #8a7564;
+        }
+
+        .chart-box {
+            padding-bottom: 22px;
+        }
+
+        .chart-summary {
+            margin: 0 0 16px;
+            color: #5a483a;
+        }
+
+        .chart-svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .chart-grid {
+            stroke: #e8dbcf;
+            stroke-width: 1;
+        }
+
+        .chart-axis {
+            stroke: #d7c4b2;
+            stroke-width: 1.2;
+        }
+
+        .chart-axis-label {
+            fill: #9a8a77;
+            font-size: 11px;
+        }
+
+        .chart-area {
+            fill: #ead8c6;
+            opacity: 0.7;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke: #8f5f46;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chart-point {
+            fill: #8f5f46;
+            stroke: #fffdfa;
+            stroke-width: 2;
+        }
+
+        .chart-point-value {
+            fill: #6f4d38;
+            font-size: 11px;
+            font-weight: 700;
+            text-anchor: middle;
+        }
+
+        .chart-point-label {
+            fill: #8a7564;
+            font-size: 11px;
+            text-anchor: middle;
+        }
+
+        .chart-footer {
+            margin-top: 8px;
+            overflow: hidden;
+            color: #8a7564;
+            font-size: 12px;
+        }
+
+        .chart-footer-left {
+            float: left;
+        }
+
+        .chart-footer-right {
+            float: right;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 16px;
+            border-top: 1px solid #eadfd2;
+            color: #8a7a64;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+                        
+    <div class="page">
+        <section class="hero">
+            <p class="eyebrow">Playbook strategie</p>
+            <h1>Optimisation Coûts</h1>
+            <p class="hero-summary">La strategie &quot;Optimisation Coûts&quot; vise une execution sur 12 mois avec un budget de 2 000 DT. Elle est rattachee au projet &quot;FinPay Modernization&quot; et affiche un gain estime de 12000%. Sa reussite depend d un pilotage serre, d un scope maitrise et d une mise en oeuvre progressive.</p>
+            <div class="status">Acceptée</div>
+        </section>
+
+        <table class="meta-grid" role="presentation">
+            <tr>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Projet associe</div>
+                        <div class="meta-value">FinPay Modernization</div>
+                        <div class="meta-detail">Statut: Accepté</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Budget strategie</div>
+                        <div class="meta-value">2 000 DT</div>
+                        <div class="meta-detail">Budget projet: 125 000 DT</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Gain estime</div>
+                        <div class="meta-value">12000%</div>
+                        <div class="meta-detail">Avancement projet: 0%</div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Duree cible</div>
+                        <div class="meta-value">12 mois</div>
+                        <div class="meta-detail">Type: FINANCIERE</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Responsable strategie</div>
+                        <div class="meta-value">chouikhi azza</div>
+                        <div class="meta-detail">Client projet: One Client</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Objectifs relies</div>
+                        <div class="meta-value">0</div>
+                        <div class="meta-detail">Document genere le 17/04/2026 10:49</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+                    <section class="section">
+                <h2>Contexte et signaux</h2>
+                <table class="dual-grid" role="presentation">
+                    <tr>
+                        <td>
+                            <div class="section-box">
+                                <h3 class="note-title">Contexte projet</h3>
+                                <p class="note-copy">
+                                    Modernize payment rails and digital wallet integrations.
+                                </p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="section-box">
+                                <h3 class="note-title">Contexte strategique</h3>
+                                                                                                    <p class="note-copy">Aucune note de contexte strategique fournie.</p>
+                                                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </section>
+        
+        <section class="section">
+            <h2>Diagnostic strategique</h2>
+            <div class="section-box">
+                <p class="paragraph">Le point de depart montre une strategie de type FINANCIERE portee par chouikhi azza, avec un horizon de 12 mois et un budget de 2 000 DT. Le projet support &quot;FinPay Modernization&quot; se situe actuellement a 0% d avancement avec un statut &quot;Accepté&quot;. La dynamique semble favorable si les priorites sont resserrees, les hypotheses budgetaires confirmees et les objectifs traduits en jalons operationnels suivis dans le temps.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <table class="dual-grid" role="presentation">
+                <tr>
+                    <td>
+                        <div class="section-box">
+                            <h2>Points cles</h2>
+                            <ul>
+                                                                    <li>Type de strategie: FINANCIERE</li>
+                                                                    <li>Responsable strategie: chouikhi azza</li>
+                                                                    <li>Projet support: FinPay Modernization</li>
+                                                                    <li>Client du projet: One Client</li>
+                                                                    <li>Avancement du projet support: 0%</li>
+                                                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="section-box">
+                            <h2>Priorites strategiques</h2>
+                            <ul>
+                                                                    <li>Maintenir une discipline budgetaire stricte autour d une enveloppe de 2 000 DT.</li>
+                                                                    <li>Aligner les priorites avec les jalons, contraintes et dependances du projet support.</li>
+                                                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        
+        <section class="section">
+            <h2>Opportunites et creation de valeur</h2>
+            <div class="section-box">
+                <ul>
+                                            <li>Le gain estime represente environ 240 000 DT sur la base du budget courant.</li>
+                                            <li>Le projet associe dispose d un avancement de 0% pour accueillir la strategie.</li>
+                                            <li>Les objectifs relies peuvent servir de feuille de route immediate pour le lancement du playbook.</li>
+                                            <li>Une execution par phases permet de tester rapidement la traction avant de generaliser les investissements.</li>
+                                    </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Projection d outcome attendu</h2>
+            <div class="section-box chart-box">
+                <p class="chart-summary">La trajectoire attendue projette une progression graduelle sur 12 mois, avec une acceleration visible autour de M7 (5 760 %) avant une cible finale a M12 (12 000 % de gain projete).</p>
+                                <svg class="chart-svg" viewBox="0 0 640 260" role="img" aria-label="Projection d outcome attendu de 720 % a 12 000 % sur 12 mois.">
+                                            <line class="chart-grid" x1="56" y1="20" x2="618" y2="20"></line>
+                        <text class="chart-axis-label" x="46" y="24" text-anchor="end">13 800 %</text>
+                                            <line class="chart-grid" x1="56" y1="68.5" x2="618" y2="68.5"></line>
+                        <text class="chart-axis-label" x="46" y="72.5" text-anchor="end">10 350 %</text>
+                                            <line class="chart-grid" x1="56" y1="117" x2="618" y2="117"></line>
+                        <text class="chart-axis-label" x="46" y="121" text-anchor="end">6 900 %</text>
+                                            <line class="chart-grid" x1="56" y1="165.5" x2="618" y2="165.5"></line>
+                        <text class="chart-axis-label" x="46" y="169.5" text-anchor="end">3 450 %</text>
+                                            <line class="chart-grid" x1="56" y1="214" x2="618" y2="214"></line>
+                        <text class="chart-axis-label" x="46" y="218" text-anchor="end">0 %</text>
+                    
+                    <line class="chart-axis" x1="56" y1="214" x2="618" y2="214"></line>
+                    <polygon class="chart-area" points="56.0,214.0 56.0,203.9 196.5,176.9 337.0,133.0 477.5,85.8 618.0,45.3 618.0,214.0"></polygon>
+                    <polyline class="chart-line" points="56.0,203.9 196.5,176.9 337.0,133.0 477.5,85.8 618.0,45.3"></polyline>
+
+                                            <circle class="chart-point" cx="56" cy="203.9" r="4.5"></circle>
+                        <text class="chart-point-value" x="56" y="191.9">720 %</text>
+                        <text class="chart-point-label" x="56" y="238">M2</text>
+                                            <circle class="chart-point" cx="196.5" cy="176.9" r="4.5"></circle>
+                        <text class="chart-point-value" x="196.5" y="164.9">2 640 %</text>
+                        <text class="chart-point-label" x="196.5" y="238">M5</text>
+                                            <circle class="chart-point" cx="337" cy="133" r="4.5"></circle>
+                        <text class="chart-point-value" x="337" y="121">5 760 %</text>
+                        <text class="chart-point-label" x="337" y="238">M7</text>
+                                            <circle class="chart-point" cx="477.5" cy="85.8" r="4.5"></circle>
+                        <text class="chart-point-value" x="477.5" y="73.8">9 120 %</text>
+                        <text class="chart-point-label" x="477.5" y="238">M10</text>
+                                            <circle class="chart-point" cx="618" cy="45.3" r="4.5"></circle>
+                        <text class="chart-point-value" x="618" y="33.3">12 000 %</text>
+                        <text class="chart-point-label" x="618" y="238">M12</text>
+                                    </svg>
+                <div class="chart-footer">
+                    <span class="chart-footer-left">Depart projete: 720 %</span>
+                    <span class="chart-footer-right">Projection finale: 12 000 %</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Feuille de route d execution</h2>
+            <table class="phase-grid" role="presentation">
+                <tr>
+                                            <td>
+                            <div class="card phase-card">
+                                <p class="phase-horizon">Debut de programme</p>
+                                <h3 class="phase-title">Cadrage et alignement</h3>
+                                <p class="phase-copy">Confirmer la cible, le budget, les responsables et les dependances critiques autour de la strategie &quot;Optimisation Coûts&quot;.</p>
+                            </div>
+                        </td>
+                                            <td>
+                            <div class="card phase-card">
+                                <p class="phase-horizon">Milieu de programme</p>
+                                <h3 class="phase-title">Execution pilote</h3>
+                                <p class="phase-copy">Lancer les chantiers prioritaires en tenant compte de l avancement du projet support (0%).</p>
+                            </div>
+                        </td>
+                                            <td>
+                            <div class="card phase-card">
+                                <p class="phase-horizon">Fin de programme</p>
+                                <h3 class="phase-title">Acceleration et mesure</h3>
+                                <p class="phase-copy">Industrialiser ce qui fonctionne, corriger les ecarts et consolider le suivi de performance.</p>
+                            </div>
+                        </td>
+                                    </tr>
+            </table>
+        </section>
+
+        <section class="section">
+            <table class="dual-grid" role="presentation">
+                <tr>
+                    <td>
+                        <div class="section-box">
+                            <h2>Risques et points de vigilance</h2>
+                            <ul>
+                                                                    <li>Aucun risque bloquant n a ete detecte a partir des donnees budgetaires disponibles.</li>
+                                                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="section-box">
+                            <h2>Contre-mesures recommandees</h2>
+                            <ul>
+                                                                    <li>Installer un point de pilotage mensuel avec arbitrage budget, avancement et decisions ouvertes.</li>
+                                                                    <li>Valider les hypotheses de valeur avant tout engagement de ressources supplementaires.</li>
+                                                                    <li>Synchroniser les jalons de la strategie avec le calendrier reel du projet support.</li>
+                                                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="section">
+            <h2>Plan d action recommande</h2>
+            <div class="section-box">
+                <ul>
+                                            <li>Valider les hypotheses budgetaires, les dependances et les criteres de succes avant lancement.</li>
+                                            <li>Convertir les priorites strategiques en chantiers avec responsables, livrables et echeances.</li>
+                                            <li>Mettre en place un rituel de revue avec decisions, ecarts et arbitrages documentes.</li>
+                                            <li>Aligner la strategie avec le calendrier du projet associe.</li>
+                                            <li>Suivre les objectifs relies avec un tableau de bord simple et partage.</li>
+                                    </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Indicateurs de pilotage</h2>
+            <table class="kpi-grid" role="presentation">
+                                    <tr>
+                                                    <td>
+                                                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">Respect budgetaire</h3>
+                                        <p class="kpi-target">&lt;= 2 000 DT</p>
+                                        <p class="kpi-cadence">Cadence: Mensuelle</p>
+                                    </div>
+                                                            </td>
+                                                    <td>
+                                                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">Couverture des objectifs</h3>
+                                        <p class="kpi-target">100% des 1 objectifs suivis</p>
+                                        <p class="kpi-cadence">Cadence: Mensuelle</p>
+                                    </div>
+                                                            </td>
+                                            </tr>
+                                    <tr>
+                                                    <td>
+                                                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">Avancement du projet support</h3>
+                                        <p class="kpi-target">Progression maintenue au-dela de 0%</p>
+                                        <p class="kpi-cadence">Cadence: Mensuelle</p>
+                                    </div>
+                                                            </td>
+                                                    <td>
+                                                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">Creation de valeur</h3>
+                                        <p class="kpi-target">Tendre vers +12000% a horizon strategie</p>
+                                        <p class="kpi-cadence">Cadence: Trimestrielle</p>
+                                    </div>
+                                                            </td>
+                                            </tr>
+                            </table>
+        </section>
+
+        <div class="footer">
+            Document genere le 17/04/2026 10:49 depuis Advisora.
+        </div>
+    </div>
+</body>
+</html>

@@ -1334,3 +1334,47 @@ body.back-mode .back-header {
         gap: 10px;
     }
 }
+/* Back Office Language Switcher */
+.back-lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-right: 0.5rem;
+}
+
+.back-lang-option {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #b0b8c5;
+  border-radius: 30px;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.back-lang-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.back-lang-option.active {
+  background: #c37d5d; /* primary terracotta – adjust if back office uses different accent */
+  color: white;
+  box-shadow: 0 2px 6px rgba(195, 125, 93, 0.2);
+}
+
+.back-lang-divider {
+  color: rgba(255, 255, 255, 0.2);
+  font-weight: 300;
+  user-select: none;
+  margin: 0 2px;
+}

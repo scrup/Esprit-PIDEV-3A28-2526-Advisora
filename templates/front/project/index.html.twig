@@ -114,6 +114,13 @@
                                 {# Inside the loop for project.strategies, after strategy status check #}
 {% if strategy.statusStrategie == strategy_statuses.approved %}
     <div class="pm-strategy-pdf-action" data-strategy-id="{{ strategy.idStrategie }}">
+        <div class="pm-strategy-pdf-controls">
+            <label class="pm-strategy-pdf-language" for="playbook_lang_{{ strategy.idStrategie }}">Langue du playbook</label>
+            <select id="playbook_lang_{{ strategy.idStrategie }}" class="pm-playbook-language-select" aria-label="Choisir la langue du playbook">
+                <option value="fr" selected>Francais</option>
+                <option value="en">English</option>
+            </select>
+        </div>
         <button class="pm-btn pm-btn-primary pdf-generate-btn" type="button" data-strategy-id="{{ strategy.idStrategie }}" data-generate-url="{{ path('strategy_generate_pdf', {id: strategy.idStrategie}) }}">
             <i class="fas fa-file-pdf"></i> Télécharger le playbook
         </button>
@@ -243,10 +250,28 @@
                     const progressDiv = container.querySelector('.pdf-progress-container');
                     const downloadDiv = container.querySelector('.pdf-download-link');
                     const downloadLink = downloadDiv ? downloadDiv.querySelector('a') : null;
+                    const progressText = progressDiv ? progressDiv.querySelector('.progress-text') : null;
+                    const languageSelect = container.querySelector('.pm-playbook-language-select');
                     const generateUrl = button.dataset.generateUrl;
+                    const language = languageSelect ? languageSelect.value : 'fr';
+                    const languageLabels = language === 'en'
+                        ? {
+                            loading: 'Generating playbook...',
+                            html: 'Open printable version',
+                            pdf: 'Download PDF'
+                        }
+                        : {
+                            loading: 'Generation en cours...',
+                            html: 'Ouvrir la version imprimable',
+                            pdf: 'Telecharger le PDF'
+                        };
 
                     if (!progressDiv || !downloadDiv || !downloadLink || !generateUrl) {
                         return;
+                    }
+
+                    if (progressText) {
+                        progressText.textContent = languageLabels.loading;
                     }
 
                     button.style.display = 'none';
@@ -270,8 +295,12 @@
                             method: 'POST',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            }
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                            },
+                            body: new URLSearchParams({
+                                lang: language
+                            }).toString()
                         });
 
                         const responseText = await response.text();
@@ -298,7 +327,7 @@
 
                         if (data?.status === 'completed' && data.url) {
                             const isHtmlFallback = data.format === 'html';
-                            showDownload(data.url, isHtmlFallback ? 'Ouvrir la version imprimable' : 'Telecharger le PDF');
+                            showDownload(data.url, isHtmlFallback ? languageLabels.html : languageLabels.pdf);
 
                             if (data.message) {
                                 alert(data.message);

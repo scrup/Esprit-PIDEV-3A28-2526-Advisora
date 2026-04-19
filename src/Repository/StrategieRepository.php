@@ -140,7 +140,6 @@ class StrategieRepository extends ServiceEntityRepository
                 'LOWER(s.nomStrategie) LIKE :search',
                 'LOWER(COALESCE(s.type, \'\')) LIKE :search',
                 'LOWER(COALESCE(s.justification, \'\')) LIKE :search',
-                'LOWER(COALESCE(s.news, \'\')) LIKE :search',
                 'LOWER(COALESCE(p.titleProj, \'\')) LIKE :search',
                 'LOWER(COALESCE(p.descriptionProj, \'\')) LIKE :search',
                 'LOWER(COALESCE(o.nomObj, \'\')) LIKE :search',

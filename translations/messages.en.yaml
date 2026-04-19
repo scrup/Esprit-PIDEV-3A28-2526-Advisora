@@ -1,0 +1,127 @@
+header:
+  ticker:
+    subtitle: "Tunisian Dinar (TND) - Live exchange rates"
+  logo:
+    alt: "Advisora Logo"
+    subtitle: "Strategic consulting and monitoring"
+  nav:
+    aria: "Main navigation"
+    home: "Home"
+    shop: "Shop"
+    project: "Project"
+    investments: "Investments"
+    events: "Events"
+    resources: "Resources"
+    solutions: "Solutions"
+    why_us: "Why choose us?"
+    reviews: "Testimonials"
+  auth:
+    login: "Login"
+    logout: "Logout"
+    get_started: "Get Started"
+  lang:
+    fr: "French"
+    en: "English"
+
+cart:
+  open: "Open cart"
+  title: "My cart"
+  empty: "Your cart is empty"
+  total: "Total"
+  checkout: "Proceed to checkout ->"
+
+home:
+  meta:
+    title: "Advisora | Smart financial consulting"
+
+  common:
+    learn_more: "Learn more →"
+
+  hero:
+    badge: "Next-generation financial consulting"
+    title: "Informed decisions for sustainable growth"
+    description: "Combine the power of AI with human expertise to turn your data into concrete opportunities."
+    cta: "Discover our solutions"
+    image_alt: "Financial analysis"
+    floating_card: "Average performance +32%"
+    stats:
+      assets: "Assets under advisory"
+      clients: "Satisfied clients"
+      awards: "Excellence awards"
+
+  about:
+    title: "Who are we?"
+    intro: "We are here to guide you and achieve your financial goals with excellence and integrity."
+    description: "Founded in 2012, Advisora is a next-generation financial consulting firm that combines cutting-edge technology with human expertise. Our mission: democratize access to premium financial advice through artificial intelligence and predictive analytics."
+    commitment_title: "Our commitment"
+    commitment_text: "Support every client with transparency, innovation, and measurable results."
+    image_alt: "Our team"
+    badge: "+42% average client ROI"
+    stats:
+      experience: "years of expertise"
+      companies: "companies supported"
+      rating: "average client rating"
+
+  solutions:
+    title_before: "Smart solutions for"
+    title_highlight: "growth"
+    subtitle: "From predictive modeling to risk management — we help you succeed."
+    cards:
+      analytics:
+        title: "Smart analytics"
+        text: "Interactive dashboards with real-time KPI tracking and market signals."
+      ai:
+        title: "AI strategy engine"
+        text: "Tailor-made investment strategies powered by machine learning."
+      risk:
+        title: "Risk & compliance"
+        text: "Proactive risk assessment and automated regulatory compliance tools."
+      wealth:
+        title: "Wealth acceleration"
+        text: "Portfolio optimization for high-net-worth clients with tax-efficient models."
+
+  whyus:
+    title_before: "Why"
+    title_highlight: "choose us?"
+    subtitle: "Discover the measurable impact of our support on your financial performance."
+    cards:
+      performance:
+        title: "Proven performance"
+        text: "Our clients see an average improvement of <strong>+42%</strong> in profitability within the first 12 months."
+      time:
+        title: "Valuable time savings"
+        text: "Analytics automation reduces time spent on financial reporting by <strong>70%</strong>."
+      security:
+        title: "Maximum security"
+        text: "Bank-level data protection and certified GDPR compliance."
+    charts:
+      roi:
+        title: "Projected ROI growth"
+        note: "With Advisora vs traditional strategy - 5-year projection"
+      risk:
+        title: "Risk reduction"
+        note: "Decrease in portfolio volatility after support"
+    predictions:
+      roi: "Average return on investment"
+      success: "Strategic success rate"
+      recommend: "Clients who recommend us"
+
+  reviews:
+    title_before: "What our"
+    title_highlight: "clients say"
+    subtitle: "Authentic feedback from leaders who trusted us."
+    cards:
+      elena:
+        quote: "“Advisora transformed our asset allocation. Real-time alerts and AI insights gave us a clear competitive advantage.”"
+        role: "CFO, FinCore"
+      james:
+        quote: "“Exceptional strategic tools. Our ROI increased by 27% in 6 months thanks to their dashboard and personalized recommendations.”"
+        role: "Strategy Director"
+      priya:
+        quote: "“Modern, elegant, and incredibly insightful. Predictive analytics helped us avoid major losses and optimize our investments.”"
+        role: "Investment Director"
+
+  cta:
+    title: "Ready to transform your financial approach?"
+    text: "Join the companies that trust Advisora for sustainable, high-performance growth."
+    button: "Schedule a demo →"

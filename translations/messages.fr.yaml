@@ -1,0 +1,127 @@
+header:
+  ticker:
+    subtitle: "Dinar Tunisien (TND) - Taux de change en direct"
+  logo:
+    alt: "Logo Advisora"
+    subtitle: "Conseil et suivi strategique"
+  nav:
+    aria: "Navigation principale"
+    home: "Accueil"
+    shop: "Boutique"
+    project: "Projet"
+    investments: "Investissements"
+    events: "Evenements"
+    resources: "Ressources"
+    solutions: "Solutions"
+    why_us: "Pourquoi nous choisir ?"
+    reviews: "Temoignages"
+  auth:
+    login: "Connexion"
+    logout: "Deconnexion"
+    get_started: "Commencer"
+  lang:
+    fr: "Français"
+    en: "English"
+
+cart:
+  open: "Ouvrir le panier"
+  title: "Mon panier"
+  empty: "Votre panier est vide"
+  total: "Total"
+  checkout: "Proceder au paiement ->"
+
+home:
+  meta:
+    title: "Advisora | Conseil financier intelligent"
+
+  common:
+    learn_more: "En savoir plus →"
+
+  hero:
+    badge: "Conseil financier nouvelle génération"
+    title: "Des décisions éclairées pour une croissance durable"
+    description: "Alliez la puissance de l'IA à l'expertise humaine pour transformer vos données en opportunités concrètes."
+    cta: "Découvrir nos solutions"
+    image_alt: "Analyse financière"
+    floating_card: "Performance +32% en moyenne"
+    stats:
+      assets: "Actifs sous conseil"
+      clients: "Clients satisfaits"
+      awards: "Prix d'excellence"
+
+  about:
+    title: "Qui sommes-nous ?"
+    intro: "Nous sommes là pour vous guider et réaliser vos objectifs financiers avec excellence et intégrité."
+    description: "Fondé en 2012, Advisora est un cabinet de conseil financier nouvelle génération qui allie technologie de pointe et expertise humaine. Notre mission : démocratiser l'accès à des conseils financiers de qualité supérieure, grâce à l'intelligence artificielle et à l'analyse prédictive."
+    commitment_title: "Notre engagement"
+    commitment_text: "Accompagner chaque client avec transparence, innovation et résultats mesurables."
+    image_alt: "Notre équipe"
+    badge: "+42% ROI moyen client"
+    stats:
+      experience: "années d'expertise"
+      companies: "entreprises accompagnées"
+      rating: "note moyenne clients"
+
+  solutions:
+    title_before: "Solutions intelligentes pour la"
+    title_highlight: "croissance"
+    subtitle: "De la modélisation prédictive à la gestion des risques — nous vous aidons à réussir."
+    cards:
+      analytics:
+        title: "Analyses intelligentes"
+        text: "Tableaux de bord interactifs avec suivi des KPI en temps réel et signaux de marché."
+      ai:
+        title: "Moteur de stratégie IA"
+        text: "Stratégies d'investissement sur mesure utilisant l'apprentissage automatique."
+      risk:
+        title: "Risque & conformité"
+        text: "Évaluation proactive des risques + outils de conformité réglementaire automatisés."
+      wealth:
+        title: "Accélération de patrimoine"
+        text: "Optimisation de portefeuille pour haute valeur nette avec modèles fiscaux efficaces."
+
+  whyus:
+    title_before: "Pourquoi"
+    title_highlight: "nous choisir ?"
+    subtitle: "Découvrez l'impact mesurable de notre accompagnement sur votre performance financière."
+    cards:
+      performance:
+        title: "Performance prouvée"
+        text: "Nos clients constatent en moyenne une amélioration de <strong>+42%</strong> de leur rentabilité dans les 12 premiers mois."
+      time:
+        title: "Gain de temps précieux"
+        text: "Automatisation des analyses qui réduit de <strong>70%</strong> le temps consacré aux rapports financiers."
+      security:
+        title: "Sécurité maximale"
+        text: "Protection des données de niveau bancaire et conformité RGPD certifiée."
+    charts:
+      roi:
+        title: "Croissance projetée du ROI"
+        note: "Avec Advisora vs stratégie traditionnelle - Projection sur 5 ans"
+      risk:
+        title: "Réduction des risques"
+        note: "Diminution de la volatilité du portefeuille après accompagnement"
+    predictions:
+      roi: "Retour sur investissement moyen"
+      success: "Taux de réussite stratégique"
+      recommend: "Clients qui recommandent"
+
+  reviews:
+    title_before: "Ce que nos"
+    title_highlight: "clients disent"
+    subtitle: "Des retours authentiques de dirigeants qui nous ont fait confiance."
+    cards:
+      elena:
+        quote: "“Advisora a transformé notre allocation d'actifs. Les alertes en temps réel et les insights IA nous ont donné un avantage concurrentiel indéniable.”"
+        role: "CFO, FinCore"
+      james:
+        quote: "“Des outils stratégiques exceptionnels. Notre ROI a augmenté de 27% en 6 mois grâce à leur tableau de bord et à leurs recommandations personnalisées.”"
+        role: "Directeur stratégie"
+      priya:
+        quote: "“Moderne, élégant et incroyablement perspicace. L'analytique prédictive nous a évité des pertes majeures et optimisé nos investissements.”"
+        role: "Directrice d'investissement"
+
+  cta:
+    title: "Prêt à transformer votre approche financière ?"
+    text: "Rejoignez les entreprises qui font confiance à Advisora pour une croissance durable et performante."
+    button: "Planifier une démo →"

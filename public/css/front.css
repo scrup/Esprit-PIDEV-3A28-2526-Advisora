@@ -1224,3 +1224,45 @@ footer {
     text-align: center;
   }
 }
+
+
+/* Language Switcher */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #fcfaf6;
+  border-radius: 999px;
+  border: 1px solid #efe3d5;
+}
+
+.lang-option {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #6B5A48;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.lang-option:hover {
+  background: #f7f1e8;
+  color: var(--primary-terracotta);
+}
+
+.lang-option.active {
+  background: var(--primary-terracotta);
+  color: white;
+  box-shadow: 0 2px 6px rgba(195, 125, 93, 0.25);
+}
+
+.lang-divider {
+  color: #d6c2ad;
+  font-weight: 300;
+  user-select: none;
+}

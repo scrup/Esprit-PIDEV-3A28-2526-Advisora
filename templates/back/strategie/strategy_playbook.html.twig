@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ document_language|default('fr') }}">
 <head>
     <meta charset="UTF-8">
-    <title>Playbook Strategie</title>
+    <title>{{ labels.document_title|default('Playbook Strategie') }}</title>
     <style>
         body {
             margin: 0;
@@ -320,65 +320,69 @@
     </style>
 </head>
 <body>
-    {% set strategyOwner = strategy.user ? (strategy.user.prenomUser ~ ' ' ~ strategy.user.nomUser)|trim : 'Non defini' %}
-    {% set projectOwner = project and project.user ? (project.user.prenomUser ~ ' ' ~ project.user.nomUser)|trim : 'Non defini' %}
-    {% set projectProgress = project and project.avancementProj is not null ? project.avancementProj|number_format(0, ',', ' ') ~ '%' : 'Non defini' %}
-    {% set projectStatus = project ? project.statusLabel : 'Non defini' %}
-    {% set hasProjectContext = project and project.descriptionProj %}
-    {% set hasStrategyContext = strategy.news or strategy.justification %}
+    {% set localizedStrategy = playbook_strategy|default({}) %}
+    {% set localizedProject = playbook_project|default(null) %}
+    {% set localizedObjectives = playbook_objectives|default([]) %}
+    {% set projectProgress = project and project.avancementProj is not null ? project.avancementProj|number_format(0, ',', ' ') ~ '%' : labels.undefined %}
+    {% set projectStatus = localizedProject ? localizedProject.status_label : labels.undefined %}
+    {% set strategyOwner = localizedStrategy.owner|default(labels.undefined) %}
+    {% set projectOwner = localizedProject ? localizedProject.owner : labels.undefined %}
+    {% set durationLabel = strategy.DureeTerme is not null ? strategy.DureeTerme ~ ' ' ~ labels.duration_unit : labels.undefined %}
+    {% set hasProjectContext = localizedProject and localizedProject.description %}
+    {% set hasStrategyContext = localizedStrategy.news|default('') or localizedStrategy.justification|default('') %}
 
     <div class="page">
         <section class="hero">
-            <p class="eyebrow">Playbook strategie</p>
-            <h1>{{ strategy.nomStrategie ?: 'Strategie sans nom' }}</h1>
+            <p class="eyebrow">{{ labels.eyebrow }}</p>
+            <h1>{{ localizedStrategy.name|default(labels.strategy_without_name) }}</h1>
             <p class="hero-summary">{{ content.executive_summary }}</p>
-            <div class="status">{{ strategy.statusLabel }}</div>
+            <div class="status">{{ localizedStrategy.status_label|default(labels.undefined) }}</div>
         </section>
 
         <table class="meta-grid" role="presentation">
             <tr>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Projet associe</div>
-                        <div class="meta-value">{{ project ? (project.titleProj ?: 'Projet #' ~ project.idProj) : 'Aucun projet' }}</div>
-                        <div class="meta-detail">Statut: {{ projectStatus }}</div>
+                        <div class="meta-label">{{ labels.associated_project }}</div>
+                        <div class="meta-value">{{ localizedProject ? localizedProject.title : labels.no_project }}</div>
+                        <div class="meta-detail">{{ labels.status }}: {{ projectStatus }}</div>
                     </div>
                 </td>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Budget strategie</div>
-                        <div class="meta-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</div>
-                        <div class="meta-detail">Budget projet: {{ project and project.budgetProj is not null ? project.budgetProj|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</div>
+                        <div class="meta-label">{{ labels.strategy_budget }}</div>
+                        <div class="meta-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : labels.undefined }}</div>
+                        <div class="meta-detail">{{ labels.project_budget }}: {{ project and project.budgetProj is not null ? project.budgetProj|number_format(0, ',', ' ') ~ ' DT' : labels.undefined }}</div>
                     </div>
                 </td>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Gain estime</div>
-                        <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non defini' }}</div>
-                        <div class="meta-detail">Avancement projet: {{ projectProgress }}</div>
+                        <div class="meta-label">{{ labels.estimated_gain }}</div>
+                        <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : labels.undefined }}</div>
+                        <div class="meta-detail">{{ labels.project_progress }}: {{ projectProgress }}</div>
                     </div>
                 </td>
             </tr>
             <tr>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Duree cible</div>
-                        <div class="meta-value">{{ strategy.DureeTerme ?: 'Non definie' }} mois</div>
-                        <div class="meta-detail">Type: {{ strategy.type ?: 'Non defini' }}</div>
+                        <div class="meta-label">{{ labels.target_duration }}</div>
+                        <div class="meta-value">{{ durationLabel }}</div>
+                        <div class="meta-detail">{{ labels.type }}: {{ localizedStrategy.type|default(labels.undefined) }}</div>
                     </div>
                 </td>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Responsable strategie</div>
-                        <div class="meta-value">{{ strategyOwner ?: 'Non defini' }}</div>
-                        <div class="meta-detail">Client projet: {{ projectOwner ?: 'Non defini' }}</div>
+                        <div class="meta-label">{{ labels.strategy_owner }}</div>
+                        <div class="meta-value">{{ strategyOwner }}</div>
+                        <div class="meta-detail">{{ labels.project_client }}: {{ projectOwner }}</div>
                     </div>
                 </td>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Objectifs relies</div>
+                        <div class="meta-label">{{ labels.linked_objectives_count }}</div>
                         <div class="meta-value">{{ strategy.objectives|length }}</div>
-                        <div class="meta-detail">Document genere le {{ "now"|date("d/m/Y H:i") }}</div>
+                        <div class="meta-detail">{{ labels.generated_on }} {{ "now"|date("d/m/Y H:i") }}</div>
                     </div>
                 </td>
             </tr>
@@ -386,28 +390,28 @@
 
         {% if hasProjectContext or hasStrategyContext %}
             <section class="section">
-                <h2>Contexte et signaux</h2>
+                <h2>{{ labels.context_and_signals }}</h2>
                 <table class="dual-grid" role="presentation">
                     <tr>
                         <td>
                             <div class="section-box">
-                                <h3 class="note-title">Contexte projet</h3>
+                                <h3 class="note-title">{{ labels.project_context }}</h3>
                                 <p class="note-copy">
-                                    {{ hasProjectContext ? project.descriptionProj : 'Aucune description projet disponible.' }}
+                                    {{ hasProjectContext ? localizedProject.description : labels.no_project_description }}
                                 </p>
                             </div>
                         </td>
                         <td>
                             <div class="section-box">
-                                <h3 class="note-title">Contexte strategique</h3>
-                                {% if strategy.news %}
-                                    <p class="note-copy"><strong>Actualites :</strong> {{ strategy.news }}</p>
+                                <h3 class="note-title">{{ labels.strategic_context }}</h3>
+                                {% if localizedStrategy.news|default('') %}
+                                    <p class="note-copy"><strong>{{ labels.strategic_context }}:</strong> {{ localizedStrategy.news }}</p>
                                 {% endif %}
-                                {% if strategy.justification %}
-                                    <h3 class="note-title">Justification</h3>
-                                    <p class="note-copy">{{ strategy.justification }}</p>
-                                {% elseif not strategy.news %}
-                                    <p class="note-copy">Aucune note de contexte strategique fournie.</p>
+                                {% if localizedStrategy.justification|default('') %}
+                                    <h3 class="note-title">{{ labels.justification }}</h3>
+                                    <p class="note-copy">{{ localizedStrategy.justification }}</p>
+                                {% elseif not localizedStrategy.news|default('') %}
+                                    <p class="note-copy">{{ labels.no_strategic_context }}</p>
                                 {% endif %}
                             </div>
                         </td>
@@ -417,7 +421,7 @@
         {% endif %}
 
         <section class="section">
-            <h2>Diagnostic strategique</h2>
+            <h2>{{ labels.strategic_diagnosis }}</h2>
             <div class="section-box">
                 <p class="paragraph">{{ content.strategic_diagnosis }}</p>
             </div>
@@ -428,7 +432,7 @@
                 <tr>
                     <td>
                         <div class="section-box">
-                            <h2>Points cles</h2>
+                            <h2>{{ labels.key_points }}</h2>
                             <ul>
                                 {% for item in content.highlights %}
                                     <li>{{ item }}</li>
@@ -438,7 +442,7 @@
                     </td>
                     <td>
                         <div class="section-box">
-                            <h2>Priorites strategiques</h2>
+                            <h2>{{ labels.strategic_priorities }}</h2>
                             <ul>
                                 {% for item in content.strategic_priorities %}
                                     <li>{{ item }}</li>
@@ -450,19 +454,19 @@
             </table>
         </section>
 
-        {% if strategy.objectives|length > 0 %}
+        {% if localizedObjectives|length > 0 %}
             <section class="section">
-                <h2>Objectifs rattaches</h2>
+                <h2>{{ labels.linked_objectives }}</h2>
                 <table class="objective-grid" role="presentation">
-                    {% for row in strategy.objectives|batch(2, null) %}
+                    {% for row in localizedObjectives|batch(2, null) %}
                         <tr>
                             {% for objective in row %}
                                 <td>
                                     {% if objective %}
                                         <div class="card objective-card">
-                                            <div class="pill">Priorite {{ objective.priorityLabel|lower }}</div>
-                                            <h3 class="objective-title">{{ objective.nomObj ?: 'Objectif' }}</h3>
-                                            <p class="objective-copy">{{ objective.descriptionOb ?: 'Aucune description fournie.' }}</p>
+                                            <div class="pill">{{ objective.priority_badge }}</div>
+                                            <h3 class="objective-title">{{ objective.name }}</h3>
+                                            <p class="objective-copy">{{ objective.description }}</p>
                                         </div>
                                     {% endif %}
                                 </td>
@@ -474,7 +478,7 @@
         {% endif %}
 
         <section class="section">
-            <h2>Opportunites et creation de valeur</h2>
+            <h2>{{ labels.opportunities_and_value }}</h2>
             <div class="section-box">
                 <ul>
                     {% for item in content.opportunities %}
@@ -485,7 +489,7 @@
         </section>
 
         <section class="section">
-            <h2>Projection d outcome attendu</h2>
+            <h2>{{ labels.expected_outcome_projection }}</h2>
             <div class="section-box chart-box">
                 <p class="chart-summary">{{ content.expected_outcome_summary }}</p>
                 {% set chart = content.expected_outcome_chart %}
@@ -506,14 +510,14 @@
                     {% endfor %}
                 </svg>
                 <div class="chart-footer">
-                    <span class="chart-footer-left">Depart projete: {{ chart.start_value_label }}</span>
-                    <span class="chart-footer-right">Projection finale: {{ chart.final_value_label }}</span>
+                    <span class="chart-footer-left">{{ labels.projected_start }}: {{ chart.start_value_label }}</span>
+                    <span class="chart-footer-right">{{ labels.final_projection }}: {{ chart.final_value_label }}</span>
                 </div>
             </div>
         </section>
 
         <section class="section">
-            <h2>Feuille de route d execution</h2>
+            <h2>{{ labels.execution_roadmap }}</h2>
             <table class="phase-grid" role="presentation">
                 <tr>
                     {% for phase in content.execution_phases %}
@@ -534,7 +538,7 @@
                 <tr>
                     <td>
                         <div class="section-box">
-                            <h2>Risques et points de vigilance</h2>
+                            <h2>{{ labels.risks_and_watchouts }}</h2>
                             <ul>
                                 {% for item in content.risks %}
                                     <li>{{ item }}</li>
@@ -544,7 +548,7 @@
                     </td>
                     <td>
                         <div class="section-box">
-                            <h2>Contre-mesures recommandees</h2>
+                            <h2>{{ labels.recommended_countermeasures }}</h2>
                             <ul>
                                 {% for item in content.mitigation_actions %}
                                     <li>{{ item }}</li>
@@ -557,7 +561,7 @@
         </section>
 
         <section class="section">
-            <h2>Plan d action recommande</h2>
+            <h2>{{ labels.recommended_action_plan }}</h2>
             <div class="section-box">
                 <ul>
                     {% for item in content.actions %}
@@ -568,7 +572,7 @@
         </section>
 
         <section class="section">
-            <h2>Indicateurs de pilotage</h2>
+            <h2>{{ labels.steering_indicators }}</h2>
             <table class="kpi-grid" role="presentation">
                 {% for row in content.kpis|batch(2, null) %}
                     <tr>
@@ -578,7 +582,7 @@
                                     <div class="card kpi-card">
                                         <h3 class="kpi-name">{{ kpi.name }}</h3>
                                         <p class="kpi-target">{{ kpi.target }}</p>
-                                        <p class="kpi-cadence">Cadence: {{ kpi.cadence }}</p>
+                                        <p class="kpi-cadence">{{ labels.cadence }}: {{ kpi.cadence }}</p>
                                     </div>
                                 {% endif %}
                             </td>
@@ -589,7 +593,7 @@
         </section>
 
         <div class="footer">
-            Document genere le {{ "now"|date("d/m/Y H:i") }} depuis Advisora.
+            {{ labels.generated_on }} {{ "now"|date("d/m/Y H:i") }} {{ labels.generated_from }}
         </div>
     </div>
 </body>

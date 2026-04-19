@@ -1,4 +1,5 @@
-{# Currency ticker #}
+
+    {# Currency ticker #}
 <div class="top-currency-bar">
     <div class="currency-ticker" id="forexTicker">
         <span><i class="fas fa-coins"></i> <span class="ticker-label">TND/USD:</span> <span id="tndusd">0.3215</span> <span id="tndusdChange" class="positive">+0.18%</span></span>
@@ -10,47 +11,93 @@
         <span><i class="fas fa-chart-simple"></i> <span class="ticker-label">TND/CNY:</span> <span id="tndcny">2.3210</span> <span id="tndcnyChange" class="negative">-0.03%</span></span>
     </div>
     <div class="ticker-subtitle">
-        <i class="fas fa-chart-line"></i> Dinar Tunisien (TND) - Taux de change en direct
+        <i class="fas fa-chart-line"></i> {{ 'header.ticker.subtitle'|trans }}
     </div>
 </div>
 
 <header id="header" class="site-header">
     <a href="{{ path('app_home') }}" class="logo header-brand">
-        <img src="{{ asset('assets/logo.png') }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
+        <img src="{{ asset('assets/logo.png') }}" alt="{{ 'header.logo.alt'|trans }}" class="logo-img" onerror="this.style.display='none'">
         <span class="logo-copy">
             <span class="logo-title">Advisora</span>
-            <span class="logo-subtitle">Conseil et suivi strategique</span>
+            <span class="logo-subtitle">{{ 'header.logo.subtitle'|trans }}</span>
         </span>
     </a>
-    <nav class="header-nav" aria-label="Navigation principale">
-        <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">Accueil</a>
-        <a href="{{ path('app_shop') }}" class="nav-link {% if app.request.get('_route') == 'app_shop' %}active{% endif %}">Boutique</a>
-        <a href="{{ path('project_index') }}" class="nav-link {% if app.request.get('_route') starts with 'project_' %}active{% endif %}">Projet</a>
+
+    <nav class="header-nav" aria-label="{{ 'header.nav.aria'|trans }}">
+        <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">
+            {{ 'header.nav.home'|trans }}
+        </a>
+        <a href="{{ path('app_shop') }}" class="nav-link {% if app.request.get('_route') == 'app_shop' %}active{% endif %}">
+            {{ 'header.nav.shop'|trans }}
+        </a>
+        <a href="{{ path('project_index') }}" class="nav-link {% if app.request.get('_route') starts with 'project_' %}active{% endif %}">
+            {{ 'header.nav.project'|trans }}
+        </a>
+
         {% if app.user and app.user.getRoleUser() == 'client' %}
-            <a href="{{ path('investment_index') }}" class="nav-link {% if app.request.get('_route') starts with 'investment_' or app.request.get('_route') starts with 'transaction_' %}active{% endif %}">Investissements</a>
+            <a href="{{ path('investment_index') }}" class="nav-link {% if app.request.get('_route') starts with 'investment_' or app.request.get('_route') starts with 'transaction_' %}active{% endif %}">
+                {{ 'header.nav.investments'|trans }}
+            </a>
         {% endif %}
-        <a href="{{ path('event_index') }}" class="nav-link {% if app.request.get('_route') starts with 'event_' %}active{% endif %}">Evenements</a>
-        <a href="{{ path('resource_index') }}" class="nav-link {% if app.request.get('_route') starts with 'resource_' %}active{% endif %}">Ressources</a>
-        <a href="#solutions" class="nav-link">Solutions</a>
-        <a href="#whyus" class="nav-link">Pourquoi nous choisir ?</a>
-        <a href="#reviews" class="nav-link">Temoignages</a>
+
+        <a href="{{ path('event_index') }}" class="nav-link {% if app.request.get('_route') starts with 'event_' %}active{% endif %}">
+            {{ 'header.nav.events'|trans }}
+        </a>
+        <a href="{{ path('resource_index') }}" class="nav-link {% if app.request.get('_route') starts with 'resource_' %}active{% endif %}">
+            {{ 'header.nav.resources'|trans }}
+        </a>
+        <a href="#solutions" class="nav-link">{{ 'header.nav.solutions'|trans }}</a>
+        <a href="#whyus" class="nav-link">{{ 'header.nav.why_us'|trans }}</a>
+        <a href="#reviews" class="nav-link">{{ 'header.nav.reviews'|trans }}</a>
     </nav>
+
     <div class="header-actions">
         <div class="header-primary-actions">
             {% if app.user %}
                 <form method="post" action="{{ path('app_logout') }}" class="header-auth-form">
-                    <button class="btn btn-outline" type="submit"><i class="fas fa-right-from-bracket"></i> Deconnexion</button>
+                    <button class="btn btn-outline" type="submit">
+                        <i class="fas fa-right-from-bracket"></i> {{ 'header.auth.logout'|trans }}
+                    </button>
                 </form>
             {% else %}
-                <a class="btn btn-outline" id="loginBtn" href="{{ path('app_login') }}"><i class="far fa-user"></i> Connexion</a>
+                <a class="btn btn-outline" id="loginBtn" href="{{ path('app_login') }}">
+                    <i class="far fa-user"></i> {{ 'header.auth.login'|trans }}
+                </a>
             {% endif %}
-            <button class="btn btn-primary" id="getStartedBtn">Commencer</button>
+
+            <button class="btn btn-primary" id="getStartedBtn">
+                {{ 'header.auth.get_started'|trans }}
+            </button>
         </div>
+
         <div class="header-utility-actions">
             {% if app.user and app.user.getRoleUser() in ['admin', 'gerant'] %}
                 {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'front'} %}
             {% endif %}
-            <button class="cart-btn" id="cartBtn" type="button" aria-label="Ouvrir le panier">
+
+            <div class="lang-switcher">
+                {% set current_route = app.request.attributes.get('_route') %}
+                {% set route_params = app.request.attributes.get('_route_params', {}) %}
+                {% set query_params = app.request.query.all() %}
+
+                {% set fr_params = route_params|merge(query_params)|merge({'_locale': 'fr'}) %}
+                {% set en_params = route_params|merge(query_params)|merge({'_locale': 'en'}) %}
+
+                <a href="{{ path(current_route, fr_params) }}"
+                   class="lang-option {{ app.request.locale == 'fr' ? 'active' : '' }}"
+                   aria-label="{{ 'header.lang.fr'|trans }}">
+                    FR
+                </a>
+                <span class="lang-divider">|</span>
+                <a href="{{ path(current_route, en_params) }}"
+                   class="lang-option {{ app.request.locale == 'en' ? 'active' : '' }}"
+                   aria-label="{{ 'header.lang.en'|trans }}">
+                    EN
+                </a>
+            </div>
+
+            <button class="cart-btn" id="cartBtn" type="button" aria-label="{{ 'cart.open'|trans }}">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count" id="cartCount">0</span>
             </button>
@@ -58,24 +105,27 @@
     </div>
 </header>
 
-<!-- CART SIDEBAR - MOVED OUTSIDE HEADER -->
 <div class="cart-overlay" id="cartOverlay"></div>
 <div class="cart-sidebar" id="cartSidebar">
     <div class="cart-header">
-        <h3><i class="fas fa-shopping-cart"></i> Mon panier</h3>
+        <h3><i class="fas fa-shopping-cart"></i> {{ 'cart.title'|trans }}</h3>
         <button class="close-cart" id="closeCartBtn"><i class="fas fa-times"></i></button>
     </div>
+
     <div class="cart-items" id="cartItems">
         <div class="empty-cart">
             <i class="fas fa-shopping-bag"></i>
-            <p>Votre panier est vide</p>
+            <p>{{ 'cart.empty'|trans }}</p>
         </div>
     </div>
+
     <div class="cart-footer">
         <div class="cart-total">
-            <span>Total</span>
+            <span>{{ 'cart.total'|trans }}</span>
             <span class="total-amount" id="cartTotal">0.00 EUR</span>
         </div>
-        <button class="btn btn-primary checkout-btn" id="checkoutBtn">Proceder au paiement -></button>
+        <button class="btn btn-primary checkout-btn" id="checkoutBtn">
+            {{ 'cart.checkout'|trans }}
+        </button>
     </div>
 </div>

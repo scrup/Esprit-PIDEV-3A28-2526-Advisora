@@ -7,6 +7,9 @@ use App\Entity\Strategie;
 
 class GeminiPdfContentGenerator
 {
+    private const MAX_TRANSIENT_RETRY_ATTEMPTS = 3;
+    private const TRANSIENT_RETRY_DELAYS_MS = [800, 1500];
+
     private bool $lastGenerationUsedAi = false;
     private ?string $lastGenerationWarning = null;
 
@@ -77,7 +80,7 @@ class GeminiPdfContentGenerator
         ];
     }
 
-    private function sendJsonRequest(string $url, array $headers, array $payload): array
+    protected function sendJsonRequest(string $url, array $headers, array $payload): array
     {
         $encodedPayload = json_encode($payload, JSON_THROW_ON_ERROR);
         $curl = curl_init($url);
@@ -113,6 +116,13 @@ class GeminiPdfContentGenerator
         ];
     }
 
+    protected function pauseBeforeRetry(int $milliseconds): void
+    {
+        if ($milliseconds > 0) {
+            usleep($milliseconds * 1000);
+        }
+    }
+
     private function requestGeneratedContent(string $prompt, bool $withResponseSchema): array
     {
         $generationConfig = [
@@ -124,7 +134,7 @@ class GeminiPdfContentGenerator
             $generationConfig['responseJsonSchema'] = $this->getResponseSchema();
         }
 
-        $response = $this->sendJsonRequest(
+        $response = $this->executeJsonRequestWithRetry(
             sprintf('%s/models/%s:generateContent', $this->baseUrl, rawurlencode((string) $this->model)),
             [
                 'Content-Type: application/json',
@@ -144,12 +154,11 @@ class GeminiPdfContentGenerator
             ]
         );
 
-        $payload = $this->decodeApiPayload($response['body']);
         if ($response['status'] >= 400) {
-            $errorMessage = $payload['error']['message'] ?? 'La requete Gemini a echoue.';
-
-            throw new \RuntimeException(sprintf('Gemini API error (%d): %s', $response['status'], $errorMessage));
+            throw $this->buildApiErrorException($response);
         }
+
+        $payload = $this->decodeApiPayload($response['body']);
 
         if (isset($payload['promptFeedback']['blockReason'])) {
             throw new \RuntimeException(sprintf(
@@ -181,6 +190,31 @@ class GeminiPdfContentGenerator
         return $decoded;
     }
 
+    private function executeJsonRequestWithRetry(string $url, array $headers, array $payload): array
+    {
+        for ($attempt = 1; $attempt <= self::MAX_TRANSIENT_RETRY_ATTEMPTS; ++$attempt) {
+            try {
+                $response = $this->sendJsonRequest($url, $headers, $payload);
+            } catch (\Throwable $exception) {
+                if (!$this->shouldRetryRequestException($exception) || $attempt >= self::MAX_TRANSIENT_RETRY_ATTEMPTS) {
+                    throw $exception;
+                }
+
+                $this->pauseBeforeRetry($this->getRetryDelayMilliseconds($attempt));
+
+                continue;
+            }
+
+            if (!$this->isTransientHttpStatus((int) $response['status']) || $attempt >= self::MAX_TRANSIENT_RETRY_ATTEMPTS) {
+                return $response;
+            }
+
+            $this->pauseBeforeRetry($this->getRetryDelayMilliseconds($attempt));
+        }
+
+        throw new \RuntimeException('La requete Gemini a echoue apres plusieurs tentatives.');
+    }
+
     private function decodeApiPayload(string $rawPayload): array
     {
         try {
@@ -194,6 +228,40 @@ class GeminiPdfContentGenerator
         }
 
         return $decoded;
+    }
+
+    private function buildApiErrorException(array $response): \RuntimeException
+    {
+        $status = (int) ($response['status'] ?? 0);
+
+        return new \RuntimeException(sprintf(
+            'Gemini API error (%d): %s',
+            $status,
+            $this->extractApiErrorMessage((string) ($response['body'] ?? ''), $status)
+        ));
+    }
+
+    private function extractApiErrorMessage(string $rawPayload, int $status): string
+    {
+        $rawPayload = trim($rawPayload);
+
+        if ($rawPayload !== '') {
+            try {
+                $payload = $this->decodeApiPayload($rawPayload);
+                $message = $payload['error']['message'] ?? null;
+
+                if (is_string($message) && trim($message) !== '') {
+                    return trim($message);
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        if ($this->isTransientHttpStatus($status)) {
+            return 'Service temporairement indisponible.';
+        }
+
+        return 'La requete Gemini a echoue.';
     }
 
     private function buildPrompt(Strategie $strategy, ?Project $project): string
@@ -1154,6 +1222,10 @@ class GeminiPdfContentGenerator
 
     private function buildGenerationWarning(\Throwable $exception): string
     {
+        if ($this->isTemporaryGeminiFailure($exception)) {
+            return 'Gemini est temporairement indisponible. Le playbook de secours a ete utilise automatiquement. Vous pouvez relancer la generation dans quelques instants.';
+        }
+
         $message = trim(preg_replace('/\s+/', ' ', $exception->getMessage()) ?? '');
         if ($message === '') {
             return 'La generation IA Gemini a echoue. Le playbook de secours a ete utilise.';
@@ -1173,6 +1245,48 @@ class GeminiPdfContentGenerator
             || str_contains($message, 'json valide')
             || str_contains($message, 'schema attendu')
             || str_contains($message, 'vide ou invalide');
+    }
+
+    private function shouldRetryRequestException(\Throwable $exception): bool
+    {
+        $message = strtolower($exception->getMessage());
+
+        return str_contains($message, 'timed out')
+            || str_contains($message, 'timeout')
+            || str_contains($message, 'temporary failure')
+            || str_contains($message, 'temporarily unavailable')
+            || str_contains($message, 'failed to connect')
+            || str_contains($message, 'could not resolve')
+            || str_contains($message, 'couldn\'t connect')
+            || str_contains($message, 'connection reset')
+            || str_contains($message, 'empty reply')
+            || str_contains($message, 'recv failure');
+    }
+
+    private function isTransientHttpStatus(int $status): bool
+    {
+        return in_array($status, [429, 500, 502, 503, 504], true);
+    }
+
+    private function getRetryDelayMilliseconds(int $attempt): int
+    {
+        $delays = self::TRANSIENT_RETRY_DELAYS_MS;
+
+        return $delays[$attempt - 1] ?? ($delays[array_key_last($delays)] ?? 0);
+    }
+
+    private function isTemporaryGeminiFailure(\Throwable $exception): bool
+    {
+        $message = $exception->getMessage();
+        if (preg_match('/gemini api error \((\d+)\)/i', $message, $matches) === 1) {
+            return $this->isTransientHttpStatus((int) $matches[1]);
+        }
+
+        $message = strtolower($message);
+
+        return str_contains($message, 'high demand')
+            || str_contains($message, 'try again later')
+            || $this->shouldRetryRequestException($exception);
     }
 
     private function resolveFirstNonEmpty(?string ...$values): ?string

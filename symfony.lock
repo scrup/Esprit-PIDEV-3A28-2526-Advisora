@@ -49,6 +49,21 @@
             "./tests/bootstrap.php"
         ]
     },
+    "stof/doctrine-extensions-bundle": {
+        "version": "1.15",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.2",
+            "ref": "e805aba9eff5372e2d149a9ff56566769e22819d"
+        },
+        "files": [
+            "./config/packages/stof_doctrine_extensions.yaml"
+        ]
+    },
+    "survos/libre-translate-bundle": {
+        "version": "1.5.395"
+    },
     "symfony/console": {
         "version": "7.4",
         "recipe": {
@@ -178,6 +193,19 @@
             "./assets/controllers/csrf_protection_controller.js",
             "./assets/controllers/hello_controller.js",
             "./assets/stimulus_bootstrap.js"
+        ]
+    },
+    "symfony/translation": {
+        "version": "6.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "6.3",
+            "ref": "620a1b84865ceb2ba304c8f8bf2a185fbf32a843"
+        },
+        "files": [
+            "./config/packages/translation.yaml",
+            "./translations/.gitignore"
         ]
     },
     "symfony/twig-bundle": {

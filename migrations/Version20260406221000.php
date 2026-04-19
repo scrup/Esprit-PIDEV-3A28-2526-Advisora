@@ -17,7 +17,10 @@ final class Version20260406221000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->skipIf(!$this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform, 'Cette migration est prévue pour MySQL.');
+        $this->skipIf(
+            !$this->connection->getDatabasePlatform() instanceof AbstractMySQLPlatform,
+            'Cette migration est prévue pour MySQL.'
+        );
 
         $this->restoreLegacyProjectsColumns();
         $this->restoreLegacyDecisionsColumns();
@@ -73,25 +76,21 @@ final class Version20260406221000 extends AbstractMigration
         $this->addSql('ALTER TABLE projects CHANGE updatedAtProj updatedAtProj DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP');
         $this->addSql('ALTER TABLE projects CHANGE avancementProj avancementProj DOUBLE NOT NULL DEFAULT 0');
 
-        if ($this->foreignKeyExists('projects', 'FK_5C93B3A4A455ACCF')) {
-            $this->addSql('ALTER TABLE projects DROP FOREIGN KEY FK_5C93B3A4A455ACCF');
-        }
+        $this->dropForeignKeyIfExists('projects', 'FK_5C93B3A4A455ACCF');
+        $this->dropForeignKeyIfExists('projects', 'fk_projects_client');
 
-        if ($this->indexExists('projects', 'IDX_5C93B3A4A455ACCF')) {
-            $this->addSql('ALTER TABLE projects DROP INDEX IDX_5C93B3A4A455ACCF');
-        }
+        $this->dropIndexIfExists('projects', 'IDX_5C93B3A4A455ACCF');
+        $this->dropIndexIfExists('projects', 'fk_projects_client');
 
-        if ($this->indexExists('projects', 'fk_projects_client')) {
-            $this->addSql('ALTER TABLE projects ADD INDEX IDX_5C93B3A4A455ACCF (idClient), DROP INDEX fk_projects_client');
-        }
-
-        if (!$this->indexExists('projects', 'IDX_5C93B3A4A455ACCF')) {
-            $this->addSql('ALTER TABLE projects ADD INDEX IDX_5C93B3A4A455ACCF (idClient)');
-        }
-
-        if (!$this->foreignKeyExists('projects', 'fk_projects_client')) {
-            $this->addSql('ALTER TABLE projects ADD CONSTRAINT fk_projects_client FOREIGN KEY (idClient) REFERENCES user (idUser) ON DELETE CASCADE');
-        }
+        $this->ensureIndex('projects', 'IDX_5C93B3A4A455ACCF', 'idClient');
+        $this->ensureForeignKey(
+            'projects',
+            'fk_projects_client',
+            'idClient',
+            'user',
+            'idUser',
+            'ON DELETE CASCADE'
+        );
     }
 
     private function restoreLegacyDecisionsColumns(): void
@@ -121,45 +120,36 @@ final class Version20260406221000 extends AbstractMigration
         $this->addSql('ALTER TABLE decisions CHANGE descriptionD descriptionD LONGTEXT DEFAULT NULL');
         $this->addSql('ALTER TABLE decisions CHANGE dateDecision dateDecision DATE NOT NULL');
 
-        if ($this->foreignKeyExists('decisions', 'FK_638DAA1721F1620E')) {
-            $this->addSql('ALTER TABLE decisions DROP FOREIGN KEY FK_638DAA1721F1620E');
-        }
+        $this->dropForeignKeyIfExists('decisions', 'FK_638DAA1721F1620E');
+        $this->dropForeignKeyIfExists('decisions', 'fk_decisions_project');
+        $this->dropForeignKeyIfExists('decisions', 'FK_638DAA17FE6E88D7');
+        $this->dropForeignKeyIfExists('decisions', 'fk_decisions_user');
 
-        if ($this->foreignKeyExists('decisions', 'FK_638DAA17FE6E88D7')) {
-            $this->addSql('ALTER TABLE decisions DROP FOREIGN KEY FK_638DAA17FE6E88D7');
-        }
+        $this->dropIndexIfExists('decisions', 'IDX_638DAA1721F1620E');
+        $this->dropIndexIfExists('decisions', 'fk_decisions_project');
+        $this->dropIndexIfExists('decisions', 'IDX_638DAA17FE6E88D7');
+        $this->dropIndexIfExists('decisions', 'fk_decisions_user');
 
-        if ($this->indexExists('decisions', 'IDX_638DAA1721F1620E')) {
-            $this->addSql('ALTER TABLE decisions DROP INDEX IDX_638DAA1721F1620E');
-        }
+        $this->ensureIndex('decisions', 'IDX_638DAA1721F1620E', 'idProj');
+        $this->ensureIndex('decisions', 'IDX_638DAA17FE6E88D7', 'idUser');
 
-        if ($this->indexExists('decisions', 'IDX_638DAA17FE6E88D7')) {
-            $this->addSql('ALTER TABLE decisions DROP INDEX IDX_638DAA17FE6E88D7');
-        }
+        $this->ensureForeignKey(
+            'decisions',
+            'fk_decisions_project',
+            'idProj',
+            'projects',
+            'idProj',
+            'ON DELETE CASCADE'
+        );
 
-        if ($this->indexExists('decisions', 'fk_decisions_project')) {
-            $this->addSql('ALTER TABLE decisions ADD INDEX IDX_638DAA1721F1620E (idProj), DROP INDEX fk_decisions_project');
-        }
-
-        if (!$this->indexExists('decisions', 'IDX_638DAA1721F1620E')) {
-            $this->addSql('ALTER TABLE decisions ADD INDEX IDX_638DAA1721F1620E (idProj)');
-        }
-
-        if ($this->indexExists('decisions', 'fk_decisions_user')) {
-            $this->addSql('ALTER TABLE decisions ADD INDEX IDX_638DAA17FE6E88D7 (idUser), DROP INDEX fk_decisions_user');
-        }
-
-        if (!$this->indexExists('decisions', 'IDX_638DAA17FE6E88D7')) {
-            $this->addSql('ALTER TABLE decisions ADD INDEX IDX_638DAA17FE6E88D7 (idUser)');
-        }
-
-        if (!$this->foreignKeyExists('decisions', 'fk_decisions_project')) {
-            $this->addSql('ALTER TABLE decisions ADD CONSTRAINT fk_decisions_project FOREIGN KEY (idProj) REFERENCES projects (idProj) ON DELETE CASCADE');
-        }
-
-        if (!$this->foreignKeyExists('decisions', 'fk_decisions_user')) {
-            $this->addSql('ALTER TABLE decisions ADD CONSTRAINT fk_decisions_user FOREIGN KEY (idUser) REFERENCES user (idUser)');
-        }
+        $this->ensureForeignKey(
+            'decisions',
+            'fk_decisions_user',
+            'idUser',
+            'user',
+            'idUser',
+            null
+        );
     }
 
     private function cleanupProjectResourcesPivot(): void
@@ -168,32 +158,84 @@ final class Version20260406221000 extends AbstractMigration
             $this->addSql('ALTER TABLE project_resources DROP COLUMN qtyAllocated');
         }
 
-        if ($this->foreignKeyExists('project_resources', 'FK_FE5AAE7921F1620E')) {
-            $this->addSql('ALTER TABLE project_resources DROP FOREIGN KEY FK_FE5AAE7921F1620E');
+        $this->dropForeignKeyIfExists('project_resources', 'FK_FE5AAE7921F1620E');
+        $this->dropForeignKeyIfExists('project_resources', 'fk_prjres_project');
+        $this->dropForeignKeyIfExists('project_resources', 'FK_FE5AAE7969351B39');
+        $this->dropForeignKeyIfExists('project_resources', 'fk_prjres_resource');
+
+        $this->dropIndexIfExists('project_resources', 'IDX_FE5AAE7921F1620E');
+        $this->dropIndexIfExists('project_resources', 'fk_prjres_project');
+        $this->dropIndexIfExists('project_resources', 'IDX_FE5AAE7969351B39');
+        $this->dropIndexIfExists('project_resources', 'fk_prjres_resource');
+
+        $this->ensureIndex('project_resources', 'IDX_FE5AAE7921F1620E', 'idProj');
+        $this->ensureIndex('project_resources', 'IDX_FE5AAE7969351B39', 'idRs');
+
+        $this->ensureForeignKey(
+            'project_resources',
+            'fk_prjres_project',
+            'idProj',
+            'projects',
+            'idProj',
+            'ON DELETE CASCADE'
+        );
+
+        $this->ensureForeignKey(
+            'project_resources',
+            'fk_prjres_resource',
+            'idRs',
+            'resources',
+            'idRs',
+            'ON DELETE CASCADE'
+        );
+    }
+
+    private function ensureIndex(string $table, string $index, string $column): void
+    {
+        if (!$this->indexExists($table, $index)) {
+            $this->addSql(sprintf('ALTER TABLE %s ADD INDEX %s (%s)', $table, $index, $column));
+        }
+    }
+
+    private function ensureForeignKey(
+        string $table,
+        string $foreignKey,
+        string $column,
+        string $referencedTable,
+        string $referencedColumn,
+        ?string $onDelete
+    ): void {
+        if ($this->foreignKeyExists($table, $foreignKey)) {
+            return;
         }
 
-        if ($this->foreignKeyExists('project_resources', 'FK_FE5AAE7969351B39')) {
-            $this->addSql('ALTER TABLE project_resources DROP FOREIGN KEY FK_FE5AAE7969351B39');
+        $sql = sprintf(
+            'ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)',
+            $table,
+            $foreignKey,
+            $column,
+            $referencedTable,
+            $referencedColumn
+        );
+
+        if ($onDelete) {
+            $sql .= ' ' . $onDelete;
         }
 
-        if ($this->indexExists('project_resources', 'IDX_FE5AAE7969351B39')) {
-            $this->addSql('ALTER TABLE project_resources DROP INDEX IDX_FE5AAE7969351B39');
-        }
+        $this->addSql($sql);
+    }
 
-        if ($this->indexExists('project_resources', 'fk_prjres_resource')) {
-            $this->addSql('ALTER TABLE project_resources ADD INDEX IDX_FE5AAE7969351B39 (idRs), DROP INDEX fk_prjres_resource');
+    private function dropIndexIfExists(string $table, string $index): void
+    {
+        if ($this->indexExists($table, $index)) {
+            $this->addSql(sprintf('ALTER TABLE %s DROP INDEX %s', $table, $index));
         }
+    }
 
-        if (!$this->indexExists('project_resources', 'IDX_FE5AAE7969351B39')) {
-            $this->addSql('ALTER TABLE project_resources ADD INDEX IDX_FE5AAE7969351B39 (idRs)');
-        }
-
-        if (!$this->foreignKeyExists('project_resources', 'fk_prjres_project')) {
-            $this->addSql('ALTER TABLE project_resources ADD CONSTRAINT fk_prjres_project FOREIGN KEY (idProj) REFERENCES projects (idProj) ON DELETE CASCADE');
-        }
-
-        if (!$this->foreignKeyExists('project_resources', 'fk_prjres_resource')) {
-            $this->addSql('ALTER TABLE project_resources ADD CONSTRAINT fk_prjres_resource FOREIGN KEY (idRs) REFERENCES resources (idRs) ON DELETE CASCADE');
+    private function dropForeignKeyIfExists(string $table, string $foreignKey): void
+    {
+        if ($this->foreignKeyExists($table, $foreignKey)) {
+            $this->addSql(sprintf('ALTER TABLE %s DROP FOREIGN KEY %s', $table, $foreignKey));
         }
     }
 

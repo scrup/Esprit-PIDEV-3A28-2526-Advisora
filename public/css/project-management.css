@@ -954,6 +954,65 @@ body {
     line-height: 1.5;
 }
 
+.pm-strategy-pdf-action {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.pm-strategy-pdf-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.pm-strategy-pdf-language {
+    color: var(--pm-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.pm-playbook-language-select {
+    min-height: 44px;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--pm-border-strong);
+    border-radius: 999px;
+    background: #fffdf9;
+    color: var(--pm-umber);
+    font-size: 0.9rem;
+}
+
+.pm-playbook-language-select:focus {
+    outline: none;
+    border-color: var(--pm-terracotta);
+    box-shadow: 0 0 0 4px rgba(195, 125, 93, 0.14);
+}
+
+.pdf-progress-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.progress-circle {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--pm-border-strong);
+    border-top-color: var(--pm-terracotta);
+    border-radius: 50%;
+    animation: pm-spin 0.9s linear infinite;
+}
+
+@keyframes pm-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .pm-strategy-actions {
     display: flex;
     gap: 0.75rem;

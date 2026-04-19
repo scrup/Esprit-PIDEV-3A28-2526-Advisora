@@ -81,6 +81,23 @@
             </div>
 
            <div class="back-topbar-actions">
+           {# file: templates/back/base.html.twig (or wherever your back layout is) #}
+<div class="back-lang-switcher">
+    {% set current_route = app.request.attributes.get('_route') %}
+    {% set route_params = app.request.attributes.get('_route_params', {}) %}
+    {% set query_params = app.request.query.all() %}
+    
+    {% set fr_params = route_params|merge(query_params)|merge({'_locale': 'fr'}) %}
+    {% set en_params = route_params|merge(query_params)|merge({'_locale': 'en'}) %}
+    
+    <a href="{{ path(current_route, fr_params) }}" 
+       class="back-lang-option {{ app.request.locale == 'fr' ? 'active' : '' }}" 
+       aria-label="Français">FR</a>
+    <span class="back-lang-divider">|</span>
+    <a href="{{ path(current_route, en_params) }}" 
+       class="back-lang-option {{ app.request.locale == 'en' ? 'active' : '' }}" 
+       aria-label="English">EN</a>
+</div>
     {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
 
     <a href="{{ path('back_user_profile') }}" class="back-user-chip">
