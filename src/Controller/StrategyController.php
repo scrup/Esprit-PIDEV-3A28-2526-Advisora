@@ -8,6 +8,7 @@ use App\Entity\Strategie;
 use App\Entity\User;
 use App\Form\StrategyType;
 use App\Repository\StrategieRepository;
+use App\Repository\ProjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +21,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\LibreTranslateService;
 use App\Service\StrategyPlaybookLocalizationService;
 use Gedmo\Translatable\Entity\Translation;
+use App\Repository\ProjetRepository;
+use App\Service\PythonRecommendationService;
+
+
 final class StrategyController extends AbstractController
 {
     public function __construct(
@@ -1000,5 +1005,69 @@ private function saveRejectedJustificationWithTranslation(
 
 
 
-}
+ #[Route('/recommandation/project/{id}', name: 'strategie_recommandation')]
+    public function recommander(
+        int $id,
+        ProjectRepository $projetRepository,
+        PythonRecommendationService $pythonService,
+        EntityManagerInterface $em
+    ): Response {
+        $projet = $projetRepository->find($id);
 
+        if (!$projet) {
+            throw $this->createNotFoundException('Projet introuvable.');
+        }
+
+        $data = [
+            'titleProj' => $projet->getTitleProj(),
+            'descriptionProj' => $projet->getDescriptionProj(),
+            'budgetProj' => $projet->getBudgetProj(),
+            'typeProj' => $projet->getTypeProj(),
+            'stateProj' => $projet->getStateProj(),
+            'avancementProj' => $projet->getAvancementProj(),
+        ];
+
+        try {
+            $recommendation = $pythonService->recommend($data);
+
+            if (!$recommendation) {
+                throw new \RuntimeException('Recommendation vide ou JSON invalide.');
+            }
+
+            if (($recommendation['error'] ?? false) === true) {
+                $message = trim((string) ($recommendation['message'] ?? 'Erreur inconnue dans le moteur de recommandation.'));
+                throw new \RuntimeException($message !== '' ? $message : 'Erreur inconnue dans le moteur de recommandation.');
+            }
+
+            $strategie = new Strategie();
+            $strategie->setNomStrategie($recommendation['nomStrategie'] ?? 'Stratégie par défaut');
+            $strategie->setType($recommendation['type'] ?? null);
+            $strategie->setBudgetTotal($recommendation['budgetTotal'] ?? null);
+            $strategie->setGainEstime($recommendation['gainEstime'] ?? null);
+            $strategie->setDureeTerme($recommendation['DureeTerme'] ?? null);
+            $strategie->setStatusStrategie($recommendation['statusStrategie'] ?? 'En_attente');
+            $strategie->setCreatedAtS(new \DateTime());
+            $strategie->setProject($projet);
+
+            // si user connecté
+            if ($this->getUser()) {
+                $strategie->setUser($this->getUser());
+            }
+
+            $em->persist($strategie);
+            $em->flush();
+
+            return $this->render('back/strategie/recommendation.html.twig', [
+                'projet' => $projet,
+                'strategie' => $strategie,
+                'recommendation' => $recommendation,
+            ]);
+
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
+            return $this->redirectToRoute('project_show', ['id' => $id]);
+        }
+    }
+
+
+}

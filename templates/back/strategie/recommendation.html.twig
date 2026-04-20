@@ -1,0 +1,124 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Recommendation de strategie{% endblock %}
+
+{% block body %}
+<section class="recommendation-page">
+    <div class="recommendation-shell">
+        <div class="recommendation-head">
+            <p class="recommendation-eyebrow">Strategie intelligente</p>
+            <h1>Recommendation de strategie</h1>
+            <p class="recommendation-project">
+                Projet cible:
+                <strong>{{ projet.titleProj ?? 'Projet sans titre' }}</strong>
+            </p>
+        </div>
+
+        <article class="recommendation-highlight card">
+            <h2>{{ strategie.nomStrategie ?? 'Strategie recommandee' }}</h2>
+            <p class="recommendation-type">
+                Type:
+                <span>{{ strategie.type ?? 'Non defini' }}</span>
+            </p>
+
+            <div class="recommendation-kpis">
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">Budget total</span>
+                    <strong>{{ (strategie.budgetTotal ?? 0)|number_format(2, '.', ' ') }}</strong>
+                </div>
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">Gain estime</span>
+                    <strong>{{ (strategie.gainEstime ?? 0)|number_format(2, '.', ' ') }}%</strong>
+                </div>
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">Duree</span>
+                    <strong>{{ strategie.dureeTerme ?? 0 }} mois</strong>
+                </div>
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">Statut</span>
+                    <strong>{{ strategie.statusStrategie ?? 'En_attente' }}</strong>
+                </div>
+            </div>
+
+            {% set approved_status = constant('App\\Entity\\Strategie::STATUS_APPROVED') %}
+            {% set rejected_status = constant('App\\Entity\\Strategie::STATUS_REJECTED') %}
+            {% set is_final_status = strategie.statusStrategie in [approved_status, rejected_status] %}
+            {% set can_client_decide = app.user and app.user.roleUser == 'client' and projet.user is not null and projet.user.idUser == app.user.idUser %}
+
+            <section class="recommendation-decision">
+                <h3>Confirmer cette strategie</h3>
+
+                {% if is_final_status %}
+                    <p class="recommendation-decision-state">
+                        Decision enregistree:
+                        <strong>{{ strategie.statusStrategie }}</strong>
+                    </p>
+                    {% if strategie.statusStrategie == rejected_status and strategie.justification %}
+                        <p class="recommendation-refusal-reason">
+                            <strong>Motif du refus:</strong> {{ strategie.justification }}
+                        </p>
+                    {% endif %}
+                {% elseif not can_client_decide %}
+                    <p class="recommendation-decision-hint">
+                        Cette strategie est en attente de validation par le client proprietaire du projet.
+                    </p>
+                {% else %}
+                    <p class="recommendation-decision-hint">
+                        Validez cette recommandation ou refusez-la avec une justification.
+                    </p>
+
+                    <div class="recommendation-decision-actions">
+                        <form method="post" action="{{ path('project_strategy_decision', {'id': strategie.idStrategie}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategie.idStrategie) }}">
+                            <input type="hidden" name="status" value="{{ approved_status }}">
+                            <button type="submit" class="recommendation-btn recommendation-btn-accept">
+                                Accepter la strategie
+                            </button>
+                        </form>
+
+                        <details class="recommendation-refuse-box">
+                            <summary class="recommendation-btn recommendation-btn-refuse">Refuser la strategie</summary>
+                            <form method="post" action="{{ path('project_strategy_decision', {'id': strategie.idStrategie}) }}" class="recommendation-refuse-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategie.idStrategie) }}">
+                                <input type="hidden" name="status" value="{{ rejected_status }}">
+                                <label for="justification_{{ strategie.idStrategie }}">Justification du refus</label>
+                                <textarea
+                                    id="justification_{{ strategie.idStrategie }}"
+                                    name="justification"
+                                    rows="4"
+                                    minlength="10"
+                                    maxlength="255"
+                                    required
+                                    placeholder="Expliquez pourquoi vous refusez cette strategie (10 a 255 caracteres)."
+                                ></textarea>
+                                <button type="submit" class="recommendation-btn recommendation-btn-refuse-submit">
+                                    Confirmer le refus
+                                </button>
+                            </form>
+                        </details>
+                    </div>
+                {% endif %}
+            </section>
+        </article>
+
+        {% if recommendation.top_3 is defined and recommendation.top_3 is not empty %}
+            <section class="recommendation-top card">
+                <h3>Top suggestions</h3>
+                <ul>
+                    {% for candidate in recommendation.top_3 %}
+                        <li>
+                            <div>
+                                <strong>{{ candidate.label ?? 'Strategie' }}</strong>
+                                <span>{{ candidate.type ?? 'Type inconnu' }}</span>
+                            </div>
+                            <span class="recommendation-score">
+                                {{ ((candidate.score ?? 0) * 100)|number_format(1, '.', ' ') }}%
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,135 @@
+{
+  "Agilité et réactivité": {
+    "precision": 0.8,
+    "recall": 0.8,
+    "f1-score": 0.8,
+    "support": 5.0
+  },
+  "Conformité et risques": {
+    "precision": 0.6363636363636364,
+    "recall": 1.0,
+    "f1-score": 0.7777777777777778,
+    "support": 7.0
+  },
+  "Diversification horizontale": {
+    "precision": 0.8,
+    "recall": 0.8,
+    "f1-score": 0.8,
+    "support": 5.0
+  },
+  "Durabilité et RSE": {
+    "precision": 1.0,
+    "recall": 0.8,
+    "f1-score": 0.8888888888888888,
+    "support": 5.0
+  },
+  "Développement de produit": {
+    "precision": 0.7777777777777778,
+    "recall": 0.7,
+    "f1-score": 0.7368421052631579,
+    "support": 10.0
+  },
+  "Excellence opérationnelle": {
+    "precision": 0.8,
+    "recall": 0.5714285714285714,
+    "f1-score": 0.6666666666666666,
+    "support": 7.0
+  },
+  "Expansion géographique": {
+    "precision": 0.8333333333333334,
+    "recall": 0.8333333333333334,
+    "f1-score": 0.8333333333333334,
+    "support": 6.0
+  },
+  "Expérience utilisateur premium": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 4.0
+  },
+  "Externalisation stratégique": {
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1-score": 0.8,
+    "support": 4.0
+  },
+  "Fidélisation client": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 6.0
+  },
+  "Fidélisation client (B2B)": {
+    "precision": 0.1111111111111111,
+    "recall": 1.0,
+    "f1-score": 0.2,
+    "support": 1.0
+  },
+  "Intégration verticale": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 3.0
+  },
+  "Low-cost / domination par les coûts": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 4.0
+  },
+  "Optimisation opérationnelle": {
+    "precision": 1.0,
+    "recall": 0.8571428571428571,
+    "f1-score": 0.9230769230769231,
+    "support": 7.0
+  },
+  "Partenariat et alliance": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 7.0
+  },
+  "Pénétration de marché": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 6.0
+  },
+  "Recentrage sur le cœur de métier": {
+    "precision": 0.6,
+    "recall": 1.0,
+    "f1-score": 0.75,
+    "support": 3.0
+  },
+  "Réduction des coûts": {
+    "precision": 1.0,
+    "recall": 0.2,
+    "f1-score": 0.3333333333333333,
+    "support": 10.0
+  },
+  "Stratégie océan bleu": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 3.0
+  },
+  "Transformation digitale": {
+    "precision": 1.0,
+    "recall": 0.7,
+    "f1-score": 0.8235294117647058,
+    "support": 10.0
+  },
+  "accuracy": 0.8053097345132744,
+  "macro avg": {
+    "precision": 0.8512626262626263,
+    "recall": 0.8630952380952381,
+    "f1-score": 0.8166724220052393,
+    "support": 113.0
+  },
+  "weighted avg": {
+    "precision": 0.8885849646911593,
+    "recall": 0.8053097345132744,
+    "f1-score": 0.8106561285018228,
+    "support": 113.0
+  }
+}

@@ -93,11 +93,14 @@
                 <div class="pm-meta-list">
                     <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} {{ 'project.card.decisions'|trans }}</span>
                 </div>
+                 <a href="{{ path('strategie_recommandation', {'id': project.id}) }}" class="pm-btn pm-btn-primary">
+    Générer une stratégie recommandée
+</a>
 
                 {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
                     {% include 'shared/project_acceptance_estimate.html.twig' with { estimate: estimate } only %}
                 {% endif %}
-
+              
                 {% if project.strategies|length > 0 %}
                     <div class="pm-project-strategies pm-project-strategies-inline">
                         <div class="pm-section-head">
@@ -109,8 +112,10 @@
                         </div>
 
                         <div class="pm-strategy-list pm-strategy-list-inline">
+                        
                             {% for strategy in project.strategies %}
                                 <section class="pm-strategy-card pm-strategy-card-inline">
+                               
                                     {% if strategy.statusStrategie == strategy_statuses.approved %}
                                         <div class="pm-strategy-pdf-action" data-strategy-id="{{ strategy.idStrategie }}">
                                             <div class="pm-strategy-pdf-controls">
