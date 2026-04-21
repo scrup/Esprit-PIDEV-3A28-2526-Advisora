@@ -31,16 +31,26 @@
                     <span><i class="fas fa-tasks"></i> Taches : {{ task_board.total }}</span>
                     <span><i class="fas fa-chart-line"></i> Avancement : {{ task_board.progress|number_format(2, '.', ' ') }}%</span>
                 </div>
-                {% if can_manage_project or can_manage_decisions %}
-                    <div class="pm-card-actions">
+                <div class="pm-card-actions">
+                    <button class="pm-btn pm-btn-secondary" type="button" data-tts-play data-audio-url="{{ path('project_speech', {id: project.id, scenario: 'summary'}) }}">
+                        <i class="fas fa-volume-up"></i>
+                        <span>Lire</span>
+                    </button>
+                    {% if app.user and app.user.getRoleUser() == 'client' and project.user and project.user.idUser == app.user.idUser and latest_decision and latest_decision.getDecisionTitle() == constant('App\\Entity\\Decision::STATUS_REFUSED') and latest_decision.description %}
+                        <button class="pm-btn pm-btn-secondary" type="button" data-tts-play data-audio-url="{{ path('project_speech', {id: project.id, scenario: 'refusal-reason'}) }}">
+                            <i class="fas fa-headphones"></i>
+                            <span>Pourquoi refuse ?</span>
+                        </button>
+                    {% endif %}
+                    {% if can_manage_project or can_manage_decisions %}
                         <a class="pm-btn pm-btn-primary" href="{{ use_back_manage ? path('project_back_manage', {id: project.id}) : path('project_manage', {id: project.id}) }}">
                             {{ use_back_manage ? 'Traiter ce projet' : 'Gerer ce projet' }}
                         </a>
                         {% if app.user and app.user.getRoleUser() == 'client' %}
                             <a class="pm-btn pm-btn-secondary" href="{{ path('investment_new', {id: project.id}) }}">Investir sur ce projet</a>
                         {% endif %}
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
 
             <div class="pm-card pm-card-large pm-task-summary-card">

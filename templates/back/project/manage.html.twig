@@ -27,6 +27,10 @@
                 </p>
             </div>
             <div class="pm-card-actions">
+                <button class="pm-btn pm-btn-secondary" type="button" data-tts-play data-audio-url="{{ path('project_speech', {id: project.id, scenario: 'summary'}) }}">
+                    <i class="fas fa-volume-up"></i>
+                    <span>Lire</span>
+                </button>
                 <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">Retour a la liste</a>
                 <a class="pm-btn pm-btn-secondary" href="{{ path('project_show', {id: project.id}) }}">Voir en front</a>
                 {% if can_edit_project %}

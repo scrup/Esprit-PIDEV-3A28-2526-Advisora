@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Boutique{% endblock %}
+
+{# Add shop-specific CSS #}
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
+{% endblock %}
+
+{% block body %}
+    <!-- HERO SECTION SHOP -->
+    <section class="hero shop-hero">
+        <div class="hero-text">
+            <span class="badge"><i class="fas fa-store"></i> Boutique Advisora</span>
+            <h1>Des outils financiers <span style="color:#C37D5D;">sur mesure</span></h1>
+            <p>Découvrez notre sélection de produits et services pour optimiser vos investissements et piloter votre croissance.</p>
+        </div>
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format" alt="Shopping experience">
+            <div class="floating-card">
+                <i class="fas fa-gem"></i> <span>Livraison immédiate</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SHOP SECTION WITH PRODUCTS -->
+    <section id="shop" class="shop-section">
+        <h2 class="section-title">Nos <span style="color:#C37D5D;">produits</span></h2>
+        <p class="section-sub">Des solutions conçues pour répondre à vos besoins financiers</p>
+        
+        <div class="product-filters">
+            <button class="filter-btn active" data-filter="all">Tous</button>
+            <button class="filter-btn" data-filter="analytics">Analyses</button>
+            <button class="filter-btn" data-filter="strategy">Stratégies</button>
+            <button class="filter-btn" data-filter="training">Formations</button>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be populated by JavaScript -->
+        </div>
+    </section>
+
+    <!-- CART SIDEBAR -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> Mon panier</h3>
+            <button class="close-cart" id="closeCartBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-bag"></i>
+                <p>Votre panier est vide</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <span class="total-amount" id="cartTotal">0.00 €</span>
+            </div>
+            <button class="btn btn-primary checkout-btn" id="checkoutBtn">Procéder au paiement →</button>
+        </div>
+    </div>
+{% endblock %}
+
+{# Add shop-specific JavaScript #}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/shop.js') }}"></script>
+{% endblock %}

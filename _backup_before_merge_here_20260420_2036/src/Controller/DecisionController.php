@@ -1,0 +1,210 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Decision;
+use App\Entity\Project;
+use App\Entity\User;
+use App\Form\DecisionType;
+use App\Repository\DecisionRepository;
+use App\Repository\ProjectRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class DecisionController extends AbstractController
+{
+    #[Route('/back/projects/{projectId}/decisions/new', name: 'decision_new', methods: ['GET', 'POST'], requirements: ['projectId' => '\d+'])]
+    public function new(int $projectId, Request $request, EntityManagerInterface $entityManager, ProjectRepository $projectRepository): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->canManageDecisions($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas créer de décision.');
+        }
+
+        $project = $projectRepository->findOneVisibleWithDecisions($projectId, $user, true);
+        if (!$project instanceof Project) {
+            throw $this->createNotFoundException('Projet introuvable.');
+        }
+
+        $decision = new Decision();
+        $decision->setProject($project);
+        $decision->setUser($user ?? $project->getUser());
+        $decision->setDecisionDate(new \DateTime('today'));
+        $decision->setDecisionTitle(Decision::STATUS_PENDING);
+
+        $form = $this->createForm(DecisionType::class, $decision, [
+            'submit_label' => 'Ajouter la décision',
+            'project' => $project,
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->syncProjectStatusFromDecision($project, $decision);
+            $entityManager->persist($decision);
+            $this->ensureProjectDefaults($project);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'La décision a été ajoutée avec succès.');
+            $this->addFlash('info', 'Statut courant du projet : ' . $project->getStatusLabel());
+
+            return $this->redirectToRoute('project_back_manage', ['id' => $project->getId()]);
+        }
+
+        return $this->render('back/decision/form.html.twig', [
+            'decision' => $decision,
+            'project' => $project,
+            'form' => $form->createView(),
+            'page_title' => 'Ajouter une décision',
+            'form_badge' => 'Nouvelle décision',
+            'form_message' => 'Cette décision sera ajoutée à l historique du projet et mettra à jour son statut courant.',
+        ]);
+    }
+
+    #[Route('/back/decisions/{id}/edit', name: 'decision_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    public function edit(int $id, Request $request, EntityManagerInterface $entityManager, DecisionRepository $decisionRepository): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->canManageDecisions($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette décision.');
+        }
+
+        $sourceDecision = $decisionRepository->find($id);
+        if (!$sourceDecision instanceof Decision) {
+            throw $this->createNotFoundException('Décision introuvable.');
+        }
+
+        $decision = (new Decision())
+            ->setProject($sourceDecision->getProject())
+            ->setUser($user ?? $sourceDecision->getUser())
+            ->setDecisionTitle((string) $sourceDecision->getDecisionTitle())
+            ->setDescription($sourceDecision->getDescription())
+            ->setDecisionDate(new \DateTime('today'));
+
+        $form = $this->createForm(DecisionType::class, $decision, [
+            'submit_label' => 'Ajouter cette nouvelle version',
+            'project' => $sourceDecision->getProject(),
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->syncProjectStatusFromDecision($decision->getProject(), $decision);
+            $entityManager->persist($decision);
+            $this->ensureProjectDefaults($decision->getProject());
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Une nouvelle version de la décision a été ajoutée avec succès.');
+            $this->addFlash('info', 'Statut courant du projet : ' . $decision->getProject()?->getStatusLabel());
+
+            return $this->redirectToRoute('project_back_manage', ['id' => $sourceDecision->getProject()?->getId()]);
+        }
+
+        return $this->render('back/decision/form.html.twig', [
+            'decision' => $decision,
+            'project' => $sourceDecision->getProject(),
+            'form' => $form->createView(),
+            'page_title' => 'Nouvelle version de décision',
+            'form_badge' => 'Historique conservé',
+            'form_message' => 'La décision existante reste visible dans l historique. Cette action ajoute une nouvelle version qui devient la décision courante du projet.',
+            'source_decision' => $sourceDecision,
+        ]);
+    }
+
+    #[Route('/back/decisions/{id}/delete', name: 'decision_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function delete(int $id, Request $request, EntityManagerInterface $entityManager, DecisionRepository $decisionRepository): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->canManageDecisions($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette décision.');
+        }
+
+        $decision = $decisionRepository->find($id);
+        if (!$decision instanceof Decision) {
+            throw $this->createNotFoundException('Décision introuvable.');
+        }
+
+        $projectId = $decision->getProject()?->getId();
+
+        if ($this->isCsrfTokenValid('delete_decision_'.$decision->getId(), (string) $request->request->get('_token'))) {
+            $project = $decision->getProject();
+            $entityManager->remove($decision);
+            $entityManager->flush();
+            $this->recalculateProjectStatus($project, $entityManager);
+            $this->addFlash('success', 'La décision a été supprimée avec succès.');
+        }
+
+        return $this->redirectToRoute('project_back_manage', ['id' => $projectId]);
+    }
+
+    private function syncProjectStatusFromDecision(?Project $project, Decision $decision): void
+    {
+        if (!$project instanceof Project) {
+            return;
+        }
+
+        $project->setStatus(match ($decision->getDecisionTitle()) {
+            Decision::STATUS_ACTIVE => Project::STATUS_ACCEPTED,
+            Decision::STATUS_REFUSED => Project::STATUS_REFUSED,
+            default => Project::STATUS_PENDING,
+        });
+    }
+
+    private function ensureProjectDefaults(?Project $project): void
+    {
+        if (!$project instanceof Project) {
+            return;
+        }
+
+        if ($project->getStartDate() === null) {
+            $project->setStartDate(new \DateTime('today'));
+        }
+
+        if ($project->getAvancementProj() === null) {
+            $project->setAvancementProj(0.0);
+        }
+
+        if ($project->getStatus() === null || $project->getStatus() === '') {
+            $project->setStatus(Project::STATUS_PENDING);
+        }
+    }
+
+    private function recalculateProjectStatus(?Project $project, EntityManagerInterface $entityManager): void
+    {
+        if (!$project instanceof Project) {
+            return;
+        }
+
+        $latestDecision = $entityManager->getRepository(Decision::class)
+            ->createQueryBuilder('d')
+            ->andWhere('d.project = :project')
+            ->setParameter('project', $project)
+            ->orderBy('d.dateDecision', 'DESC')
+            ->addOrderBy('d.idD', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($latestDecision instanceof Decision) {
+            $this->syncProjectStatusFromDecision($project, $latestDecision);
+        } else {
+            $project->setStatus(Project::STATUS_PENDING);
+        }
+
+        $this->ensureProjectDefaults($project);
+        $entityManager->flush();
+    }
+
+    private function getCurrentUser(): ?User
+    {
+        $user = $this->getUser();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    private function canManageDecisions(?User $user): bool
+    {
+        return $user instanceof User && in_array($user->getRoleUser(), ['admin', 'gerant'], true);
+    }
+}

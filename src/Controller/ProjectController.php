@@ -182,6 +182,9 @@ final class ProjectController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Le projet a ete cree avec succes.');
+            if ($user->getRoleUser() === 'client') {
+                $this->addFlash('tts_event', 'submission-confirmation');
+            }
 
             return $this->redirectToRoute($this->isBackOfficeProjectUser($user) ? 'project_back_manage' : 'project_manage', ['id' => $project->getId()]);
         }

@@ -3,7 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Project;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,59 +18,15 @@ class ProjectRepository extends ServiceEntityRepository
         parent::__construct($registry, Project::class);
     }
 
-    public function findFrontProjects(array $filters = [], ?\App\Entity\User $user = null, bool $canSeeAll = false): array
+    public function findFrontProjects(array $filters = [], ?User $user = null, bool $canSeeAll = false): array
     {
         if (!$canSeeAll && !$user) {
             return [];
         }
 
-        $qb = $this->createQueryBuilder('p')
-            ->distinct()
-            ->leftJoin('p.user', 'u')
-            ->addSelect('u')
-            ->leftJoin('p.strategies', 's')
-            ->addSelect('s')
-            ->orderBy('p.createdAtProj', 'DESC')
-            ->addOrderBy('p.idProj', 'DESC');
+        $projectIds = $this->findFrontProjectIdsBySql($filters, $user, $canSeeAll);
 
-        if (!$canSeeAll && $user) {
-            $qb->andWhere('p.user = :user')
-                ->setParameter('user', $user);
-        }
-
-        if (!empty($filters['q'])) {
-            $search = '%' . mb_strtolower(trim((string) $filters['q'])) . '%';
-            $qb->andWhere('
-                LOWER(p.titleProj) LIKE :q
-                OR LOWER(COALESCE(p.descriptionProj, \'\')) LIKE :q
-                OR LOWER(COALESCE(p.typeProj, \'\')) LIKE :q
-                OR LOWER(COALESCE(p.stateProj, \'\')) LIKE :q
-                OR CONCAT(\'\', p.idProj) LIKE :q
-            ')
-                ->setParameter('q', $search);
-        }
-
-        if (!empty($filters['status'])) {
-            $qb->andWhere('p.stateProj = :status')
-                ->setParameter('status', trim((string) $filters['status']));
-        }
-
-        if (!empty($filters['type'])) {
-            $qb->andWhere('LOWER(COALESCE(p.typeProj, \'\')) = :type')
-                ->setParameter('type', mb_strtolower(trim((string) $filters['type'])));
-        }
-
-        if ($filters['min_price'] !== null && $filters['min_price'] !== '') {
-            $qb->andWhere('p.budgetProj >= :min')
-                ->setParameter('min', (float) $filters['min_price']);
-        }
-
-        if ($filters['max_price'] !== null && $filters['max_price'] !== '') {
-            $qb->andWhere('p.budgetProj <= :max')
-                ->setParameter('max', (float) $filters['max_price']);
-        }
-
-        return $qb->getQuery()->getResult();
+        return $this->loadProjectsByIds($projectIds, true);
     }
 
     public function findDistinctFrontTypes(?\App\Entity\User $user = null, bool $canSeeAll = false): array
@@ -119,40 +77,155 @@ class ProjectRepository extends ServiceEntityRepository
 
     public function findBackOfficeProjects(array $filters = []): array
     {
-        $qb = $this->createQueryBuilder('p')
-            ->leftJoin('p.user', 'u')
-            ->addSelect('u')
-            ->orderBy('p.createdAtProj', 'DESC')
-            ->addOrderBy('p.idProj', 'DESC');
+        $projectIds = $this->findBackOfficeProjectIdsBySql($filters);
+
+        return $this->loadProjectsByIds($projectIds);
+    }
+
+    private function findFrontProjectIdsBySql(array $filters, ?User $user, bool $canSeeAll): array
+    {
+        $sql = <<<'SQL'
+SELECT p.idProj
+FROM projects p
+WHERE 1 = 1
+SQL;
+        $params = [];
+        $types = [];
+
+        if (!$canSeeAll && $user instanceof User) {
+            $sql .= ' AND p.idClient = :userId';
+            $params['userId'] = $user->getIdUser();
+        }
 
         if (!empty($filters['q'])) {
-            $search = '%' . mb_strtolower(trim((string) $filters['q'])) . '%';
-            $qb->andWhere('
-                LOWER(p.titleProj) LIKE :q
-                OR LOWER(COALESCE(p.descriptionProj, \'\')) LIKE :q
-                OR LOWER(COALESCE(p.typeProj, \'\')) LIKE :q
-                OR LOWER(COALESCE(p.stateProj, \'\')) LIKE :q
-                OR CONCAT(\'\', p.idProj) LIKE :q
-            ')
-                ->setParameter('q', $search);
+            $sql .= "
+ AND (
+    LOWER(p.titleProj) LIKE :q
+    OR LOWER(COALESCE(p.descriptionProj, '')) LIKE :q
+    OR LOWER(COALESCE(p.typeProj, '')) LIKE :q
+    OR LOWER(COALESCE(p.stateProj, '')) LIKE :q
+    OR CAST(p.idProj AS CHAR) LIKE :q
+ )";
+            $params['q'] = $this->buildSearchPattern($filters['q']);
         }
 
         if (!empty($filters['status'])) {
-            $qb->andWhere('p.stateProj = :status')
-                ->setParameter('status', trim((string) $filters['status']));
+            $sql .= ' AND p.stateProj = :status';
+            $params['status'] = trim((string) $filters['status']);
+        }
+
+        if (!empty($filters['type'])) {
+            $sql .= " AND LOWER(COALESCE(p.typeProj, '')) = :type";
+            $params['type'] = mb_strtolower(trim((string) $filters['type']));
+        }
+
+        if (($filters['min_price'] ?? null) !== null && ($filters['min_price'] ?? '') !== '') {
+            $sql .= ' AND p.budgetProj >= :min';
+            $params['min'] = (float) $filters['min_price'];
+        }
+
+        if (($filters['max_price'] ?? null) !== null && ($filters['max_price'] ?? '') !== '') {
+            $sql .= ' AND p.budgetProj <= :max';
+            $params['max'] = (float) $filters['max_price'];
+        }
+
+        $sql .= ' ORDER BY p.createdAtProj DESC, p.idProj DESC';
+
+        return $this->fetchProjectIds($sql, $params, $types);
+    }
+
+    private function findBackOfficeProjectIdsBySql(array $filters): array
+    {
+        $sql = <<<'SQL'
+SELECT p.idProj
+FROM projects p
+LEFT JOIN user u ON u.idUser = p.idClient
+WHERE 1 = 1
+SQL;
+        $params = [];
+        $types = [];
+
+        if (!empty($filters['q'])) {
+            $sql .= "
+ AND (
+    LOWER(p.titleProj) LIKE :q
+    OR LOWER(COALESCE(p.descriptionProj, '')) LIKE :q
+    OR LOWER(COALESCE(p.typeProj, '')) LIKE :q
+    OR LOWER(COALESCE(p.stateProj, '')) LIKE :q
+    OR CAST(p.idProj AS CHAR) LIKE :q
+ )";
+            $params['q'] = $this->buildSearchPattern($filters['q']);
+        }
+
+        if (!empty($filters['status'])) {
+            $sql .= ' AND p.stateProj = :status';
+            $params['status'] = trim((string) $filters['status']);
         }
 
         if (!empty($filters['owner'])) {
-            $owner = '%' . mb_strtolower(trim((string) $filters['owner'])) . '%';
-            $qb->andWhere('
-                LOWER(COALESCE(u.nomUser, \'\')) LIKE :owner
-                OR LOWER(COALESCE(u.PrenomUser, \'\')) LIKE :owner
-                OR LOWER(COALESCE(u.EmailUser, \'\')) LIKE :owner
-            ')
-                ->setParameter('owner', $owner);
+            $sql .= "
+ AND (
+    LOWER(COALESCE(u.nomUser, '')) LIKE :owner
+    OR LOWER(COALESCE(u.PrenomUser, '')) LIKE :owner
+    OR LOWER(COALESCE(u.EmailUser, '')) LIKE :owner
+ )";
+            $params['owner'] = $this->buildSearchPattern($filters['owner']);
         }
 
-        return $qb->getQuery()->getResult();
+        $sql .= ' ORDER BY p.createdAtProj DESC, p.idProj DESC';
+
+        return $this->fetchProjectIds($sql, $params, $types);
+    }
+
+    private function fetchProjectIds(string $sql, array $params = [], array $types = []): array
+    {
+        $ids = $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($sql, $params, $types)
+            ->fetchFirstColumn();
+
+        return array_values(array_map('intval', $ids));
+    }
+
+    private function loadProjectsByIds(array $projectIds, bool $includeStrategies = false): array
+    {
+        if ($projectIds === []) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.user', 'u')
+            ->addSelect('u')
+            ->andWhere('p.idProj IN (:ids)')
+            ->setParameter('ids', $projectIds, ArrayParameterType::INTEGER);
+
+        if ($includeStrategies) {
+            $qb->leftJoin('p.strategies', 's')
+                ->addSelect('s');
+        }
+
+        $projects = $qb->getQuery()->getResult();
+        $projectsById = [];
+
+        foreach ($projects as $project) {
+            if ($project instanceof Project && $project->getId() !== null) {
+                $projectsById[$project->getId()] = $project;
+            }
+        }
+
+        $orderedProjects = [];
+        foreach ($projectIds as $projectId) {
+            if (isset($projectsById[$projectId])) {
+                $orderedProjects[] = $projectsById[$projectId];
+            }
+        }
+
+        return $orderedProjects;
+    }
+
+    private function buildSearchPattern(mixed $value): string
+    {
+        return '%' . mb_strtolower(trim((string) $value)) . '%';
     }
 
     public function findOneVisibleWithDecisions(int $id, ?\App\Entity\User $user = null, bool $canSeeAll = false): ?Project
@@ -210,6 +283,21 @@ class ProjectRepository extends ServiceEntityRepository
             ->addSelect('u')
             ->orderBy('p.createdAtProj', 'DESC')
             ->addOrderBy('p.idProj', 'DESC')
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findClientProjectsCreatedAfterId(int $afterProjectId, int $limit = 5): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.user', 'u')
+            ->addSelect('u')
+            ->andWhere('p.idProj > :afterProjectId')
+            ->andWhere('u.roleUser = :role')
+            ->setParameter('afterProjectId', max(0, $afterProjectId))
+            ->setParameter('role', 'client')
+            ->orderBy('p.idProj', 'ASC')
             ->setMaxResults(max(1, $limit))
             ->getQuery()
             ->getResult();

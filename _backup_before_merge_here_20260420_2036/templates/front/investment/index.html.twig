@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Mes investissements{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Investissements</span>
+            <h1>Mes investissements</h1>
+            <p>Retrouvez ici tous vos investissements et l etat de la transaction associee.</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-primary" href="{{ path('investment_create') }}">Ajouter un investissement</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Ouvrir mes projets</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('transaction_index') }}">Voir mes transactions</a>
+        </div>
+    </section>
+
+    {% include 'front/investment/_module_nav.html.twig' %}
+
+    <section class="pm-hero">
+        <form method="get" action="{{ path('investment_index') }}" class="pm-form-card">
+            <div class="pm-filter-grid">
+                <div class="pm-field">
+                    <label for="filter_q">Recherche</label>
+                    <input id="filter_q" type="search" name="q" placeholder="Commentaire, devise, projet, ID..." value="{{ filters.q|default('') }}">
+                </div>
+                <div class="pm-field">
+                    <label for="filter_status">Statut transaction</label>
+                    <select id="filter_status" name="status">
+                        <option value="">Tous</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status is defined and filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('investment_index') }}">Reinitialiser</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="pm-grid">
+        {% for investment in investments %}
+            {% set latestTransaction = investment.latestTransaction %}
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ latestTransaction ? latestTransaction.statusCssClass : 'pending' }}">
+                        {{ latestTransaction ? latestTransaction.statusLabel : 'Sans transaction' }}
+                    </span>
+                    <span class="pm-meta">Investissement #{{ investment.id }}</span>
+                </div>
+                <h2>{{ investment.project ? investment.project.title : 'Projet indisponible' }}</h2>
+                <p>{{ investment.commentaireInv ?: 'Aucun commentaire fourni.' }}</p>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Projet :</strong> #{{ investment.project ? investment.project.id : 'N/A' }}</span>
+                    <span><strong>Fourchette :</strong> {{ investment.budgetRangeLabel }}</span>
+                    <span><strong>Duree :</strong> {{ investment.durationEstimateDisplay }}</span>
+                    {% if latestTransaction %}
+                        <span><strong>Montant transaction :</strong> {{ latestTransaction.MontantTransac|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</span>
+                    {% endif %}
+                </div>
+                <div class="pm-card-actions">
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('investment_manage', {id: investment.id}) }}">Gerer</a>
+                    {% if latestTransaction is null %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('transaction_new', {id: investment.id}) }}">Ajouter la transaction</a>
+                    {% elseif latestTransaction.isPending %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('transaction_edit', {id: latestTransaction.id}) }}">Modifier la transaction</a>
+                    {% else %}
+                        <span class="pm-empty-text">Investissement en lecture seule.</span>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>Aucun investissement enregistre</h2>
+                <p>Ouvrez un projet et ajoutez votre premier investissement.</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

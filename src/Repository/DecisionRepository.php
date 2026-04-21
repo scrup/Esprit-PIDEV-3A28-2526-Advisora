@@ -40,6 +40,20 @@ class DecisionRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findLatestAnnounceableForProject(\App\Entity\Project $project): ?Decision
+    {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.project = :project')
+            ->andWhere('d.StatutD IN (:statuses)')
+            ->setParameter('project', $project)
+            ->setParameter('statuses', [Decision::STATUS_ACTIVE, Decision::STATUS_REFUSED])
+            ->orderBy('d.dateDecision', 'DESC')
+            ->addOrderBy('d.idD', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     //    /**
     //     * @return Decision[] Returns an array of Decision objects
     //     */

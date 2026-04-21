@@ -1,0 +1,88 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des projets{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Back office</span>
+                <h1>Gestion des projets</h1>
+                <p>Consultez tous les projets du module, appliquez des filtres et ouvrez leur dossier pour traitement.</p>
+            </div>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">Retour au tableau de bord</a>
+        </div>
+
+        <div class="pm-form-card pm-filter-card">
+            <form method="get" class="pm-filter-grid">
+                <div>
+                    <label for="q">Recherche</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre du projet">
+                </div>
+                <div>
+                    <label for="status">Statut</label>
+                    <select id="status" name="status">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="owner">Porteur</label>
+                    <input id="owner" type="text" name="owner" value="{{ filters.owner }}" placeholder="Nom du client">
+                </div>
+                <div class="pm-filter-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">Réinitialiser</a>
+                </div>
+            </form>
+        </div>
+
+        <section class="pm-grid">
+            {% for project in projects %}
+                <article class="pm-card">
+                    {% set estimate = project_acceptance_estimates[project.id]|default(null) %}
+                    <div class="pm-card-head">
+                        <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
+                        <span class="pm-meta">Projet #{{ project.id }}</span>
+                    </div>
+                    <h2>{{ project.title }}</h2>
+                    <p>{{ project.description ?: 'Aucune description disponible.' }}</p>
+                    <div class="pm-meta-list pm-meta-list-vertical">
+                        <span><strong>Type :</strong> {{ project.legacyType ?: 'Non précisé' }}</span>
+                        <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
+                        <span><strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
+                        <span><strong>Porteur :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</span>
+                        <span><strong>Historique des décisions :</strong> {{ project.decisions|length }}</span>
+                    </div>
+                    {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
+                        {% include 'shared/project_acceptance_estimate.html.twig' with { estimate: estimate, variant: 'compact' } only %}
+                    {% endif %}
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
+                        {% if can_edit_any_project %}
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('project_edit', {id: project.id}) }}">Modifier le projet</a>
+                        {% endif %}
+                        {% if can_delete_any_project %}
+                            <form method="post" action="{{ path('project_delete', {id: project.id}) }}" onsubmit="return confirm('Supprimer ce projet ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_project_' ~ project.id) }}">
+                                <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <div class="pm-empty">
+                    <h2>Aucun projet ne correspond aux filtres</h2>
+                    <p>Essayez de modifier la recherche ou de réinitialiser les filtres.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </section>
+{% endblock %}

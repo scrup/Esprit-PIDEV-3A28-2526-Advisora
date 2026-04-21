@@ -1,0 +1,350 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des Strategies{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}?v=20260412-objectives-v1">
+{% endblock %}
+
+{% block body %}
+<div class="strategy-container">
+    <main class="strategy-main">
+        <div class="strategy-grid">
+            <section class="strategies-section">
+                <div class="strategies-header">
+                    <div class="header-title-row">
+                        <h1>Gestion des Strategies</h1>
+                        <a href="{{ path('app_back_strategies_new') }}" class="btn-new-strategy">
+                            <span class="material-symbols-outlined">add</span>
+                            Nouvelle Strategie
+                        </a>
+                    </div>
+                    <div class="header-subtitle">
+                        <p>Analysez, completez et structurez les objectifs de chaque strategie depuis un seul ecran.</p>
+                    </div>
+                </div>
+
+                {% for type, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="flash-message flash-{{ type }}">
+                            <span class="material-symbols-outlined">
+                                {% if type == 'success' %}check_circle{% elseif type == 'error' %}error{% else %}info{% endif %}
+                            </span>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+
+                {% set totalStrategies = strategies|length %}
+                {% set pendingStrategies = strategies|filter(s => s.statusStrategie == constant('App\\Entity\\Strategie::STATUS_PENDING'))|length %}
+                {% set approvedStrategies = strategies|filter(s => s.statusStrategie == constant('App\\Entity\\Strategie::STATUS_APPROVED'))|length %}
+                {% set rejectedStrategies = strategies|filter(s => s.statusStrategie == constant('App\\Entity\\Strategie::STATUS_REJECTED'))|length %}
+
+                <div class="stats-summary">
+                    <div class="stat-item">
+                        <p class="stat-label">Total</p>
+                        <p class="stat-value">{{ totalStrategies }}</p>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <p class="stat-label">En attente</p>
+                        <p class="stat-value pending">{{ pendingStrategies }}</p>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <p class="stat-label">Approuvees</p>
+                        <p class="stat-value approved">{{ approvedStrategies }}</p>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <p class="stat-label">Refusees</p>
+                        <p class="stat-value rejected">{{ rejectedStrategies }}</p>
+                    </div>
+                </div>
+
+                <div class="strategies-list">
+                    {% for strategy in strategies %}
+                    <article class="strategy-card"
+                             data-id="{{ strategy.idStrategie }}"
+                             data-status="{{ strategy.statusCssClass }}"
+                             data-type="{{ strategy.type ? strategy.type|lower : '' }}">
+                        <div class="strategy-card-main">
+                            <div class="strategy-identity">
+                                <div class="strategy-icon">
+                                    <span class="material-symbols-outlined">
+                                        {% if strategy.type == 'expansion' %}public
+                                        {% elseif strategy.type == 'optimisation' %}currency_bitcoin
+                                        {% else %}energy_savings_leaf{% endif %}
+                                    </span>
+                                </div>
+                                <div class="strategy-info">
+                                    <div class="strategy-title">
+                                        <h3>{{ strategy.nomStrategie }}</h3>
+                                        <span class="strategy-badge">{{ strategy.DureeTerme }} mois</span>
+                                        <span class="status-badge {{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
+                                    </div>
+                                    <div class="strategy-tags">
+                                        <div class="budget-badge">
+                                            <span class="material-symbols-outlined">payments</span>
+                                            Budget: {{ strategy.budgetTotal|number_format(0, ',', ' ') }} DT
+                                        </div>
+                                        <div class="roi-badge {{ strategy.gainEstime < 0 ? 'negative' : '' }}">
+                                            <span class="material-symbols-outlined">{{ strategy.gainEstime >= 0 ? 'trending_up' : 'trending_down' }}</span>
+                                            Gain estime: {{ strategy.gainEstime >= 0 ? '+' : '' }}{{ strategy.gainEstime }}%
+                                        </div>
+                                        {% if strategy.type %}
+                                            <span class="tag">{{ strategy.type|replace({'_': ' '}) }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="strategy-toolbar">
+                                <button class="btn-attribuer-objectif" data-id="{{ strategy.idStrategie }}" data-name="{{ strategy.nomStrategie }}">
+                                    <span class="material-symbols-outlined">assignment_add</span>
+                                    Attribuer Objectif
+                                </button>
+                                <div class="strategy-actions">
+                                    <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="action-icon" title="Modifier">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </a>
+                                    <form method="post" action="{{ path('app_back_strategies_delete', {id: strategy.idStrategie}) }}" data-confirm-message="Supprimer cette strategie ?" style="display: inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ strategy.idStrategie) }}">
+                                        <button type="submit" class="action-icon delete" title="Supprimer">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-objectives-panel">
+                            <div class="panel-heading">
+                                <div class="panel-heading-copy">
+                                    <p class="panel-eyebrow">Objectifs associes</p>
+                                    <div class="panel-heading-main">
+                                        <h4>{{ strategy.objectives|length }} objectif{{ strategy.objectives|length > 1 ? 's' : '' }}</h4>
+                                        <span class="objective-count-badge">
+                                            {{ strategy.objectives|length }} item{{ strategy.objectives|length > 1 ? 's' : '' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="panel-note">Ajoutez et suivez les priorites directement depuis cette carte.</span>
+                            </div>
+
+                            {% if strategy.objectives|length > 0 %}
+                                <div class="objective-list">
+                                    {% for objective in strategy.objectives %}
+                                        <div class="objective-item">
+                                            <div class="objective-main">
+                                                <div class="objective-copy">
+                                                    <div class="objective-title-row">
+                                                        <span class="objective-dot">{{ loop.index }}</span>
+                                                        <strong>{{ objective.nomObj ?: 'Objectif sans nom' }}</strong>
+                                                    </div>
+                                                    <p class="objective-description">{{ objective.descriptionOb ?: 'Aucune description fournie.' }}</p>
+                                                </div>
+                                                <div class="objective-side">
+                                                    <span class="objective-priority {{ objective.priorityCssClass }}">{{ objective.priorityLabel }}</span>
+                                                    <div class="objective-actions">
+                                                        <button
+                                                            type="button"
+                                                            class="action-icon btn-edit-objective"
+                                                            title="Modifier l objectif"
+                                                            data-id="{{ objective.idOb }}"
+                                                            data-strategy-id="{{ strategy.idStrategie }}"
+                                                            data-strategy-name="{{ strategy.nomStrategie|e('html_attr') }}"
+                                                            data-name="{{ (objective.nomObj ?: '')|e('html_attr') }}"
+                                                            data-description="{{ (objective.descriptionOb ?: '')|e('html_attr') }}"
+                                                            data-priority="{{ objective.priorityCssClass in ['low', 'medium', 'high', 'urgent'] ? objective.priorityCssClass : 'medium' }}"
+                                                            data-action="{{ path('app_back_strategies_objective_edit', {id: objective.idOb}) }}"
+                                                            data-token="{{ csrf_token('edit_objective_' ~ objective.idOb) }}"
+                                                        >
+                                                            <span class="material-symbols-outlined">edit</span>
+                                                        </button>
+                                                        <form
+                                                            method="post"
+                                                            action="{{ path('app_back_strategies_objective_delete', {id: objective.idOb}) }}"
+                                                            class="objective-action-form"
+                                                            data-confirm-message="Supprimer cet objectif ?"
+                                                        >
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_objective_' ~ objective.idOb) }}">
+                                                            <button type="submit" class="action-icon delete" title="Supprimer l objectif">
+                                                                <span class="material-symbols-outlined">delete</span>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="objectives-empty">
+                                    <span class="material-symbols-outlined">target</span>
+                                    <div>
+                                        <strong>Aucun objectif pour le moment</strong>
+                                        <p>Utilisez le bouton "Attribuer Objectif" pour relier une cible claire a cette strategie.</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% else %}
+                        <div class="empty-state">
+                            <span class="material-symbols-outlined">inbox</span>
+                            <p>Aucune strategie pour le moment</p>
+                            <a href="{{ path('app_back_strategies_new') }}" class="btn-new-strategy">Creer la premiere strategie</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <aside class="strategies-sidebar">
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <h2>Filtres</h2>
+                        <button class="reset-btn" id="resetFiltersBtn">Reset</button>
+                    </div>
+                    <div class="filters-content">
+                        <div class="filter-group">
+                            <label class="filter-label">Statut</label>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="all">Tous</option>
+                                <option value="pending">En attente</option>
+                                <option value="approved">Approuvees</option>
+                                <option value="rejected">Refusees</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Type</label>
+                            <select id="typeFilter" class="filter-select">
+                                <option value="all">Tous</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h2>Repartition par Type</h2>
+                    <div class="donut-container">
+                        <div class="donut-chart">
+                            <canvas id="strategyTypeDonutChart" width="160" height="160"></canvas>
+                            <div class="donut-center">
+                                <span class="donut-total" id="typeDonutTotal">{{ strategies|length }}</span>
+                                <span class="donut-label">Total</span>
+                            </div>
+                        </div>
+                        <div class="donut-legend" id="typeLegend"></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h2>Budget total alloue</h2>
+                    <div class="budget-summary">
+                        <div class="budget-amount">
+                            {{ strategies|reduce((carry, s) => carry + (s.budgetTotal ?? 0), 0)|number_format(0, ',', ' ') }} DT
+                        </div>
+                        <p>Budget total des strategies</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="objectifModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>
+                <span class="material-symbols-outlined">assignment_add</span>
+                <span id="objectifModalTitle">Attribuer un objectif</span>
+            </h2>
+            <button class="modal-close" id="closeModalBtn" type="button">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-content">
+            <div class="modal-info">
+                <span class="info-badge">
+                    <span class="material-symbols-outlined">info</span>
+                    Strategie: <strong id="selectedStrategyName">-</strong>
+                </span>
+            </div>
+
+            <form
+                id="objectifForm"
+                class="modal-form"
+                method="post"
+                action="{{ path('app_back_strategies_objective_new') }}"
+                data-create-action="{{ path('app_back_strategies_objective_new') }}"
+                data-create-token="{{ csrf_token('create_objective') }}"
+            >
+                <input type="hidden" id="strategyId" name="strategyId">
+                <input type="hidden" id="objectifToken" name="_token" value="{{ csrf_token('create_objective') }}">
+
+                <div class="form-group">
+                    <label for="objectifName">Nom de l'objectif <span class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">target</span>
+                        <input type="text" id="objectifName" name="objectifName" class="form-input" placeholder="Ex: Augmenter la part de marche de 20%" required>
+                    </div>
+                    <div class="form-helper">Donnez un nom court, concret et mesurable.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="objectifDescription">Description</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon material-symbols-outlined">description</span>
+                        <textarea id="objectifDescription" name="objectifDescription" class="form-textarea" rows="3" placeholder="Decrivez ce qui doit etre atteint, dans quel delai et avec quel resultat attendu."></textarea>
+                    </div>
+                    <div class="form-helper">Ajoutez le contexte ou laissez vide pour reutiliser le nom de l'objectif.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="objectifPriority">Priorite <span class="required">*</span></label>
+                    <div class="priority-buttons">
+                        <button type="button" class="priority-btn" data-priority="low">
+                            <span class="material-symbols-outlined">flag</span>
+                            Basse
+                        </button>
+                        <button type="button" class="priority-btn active" data-priority="medium">
+                            <span class="material-symbols-outlined">flag</span>
+                            Moyenne
+                        </button>
+                        <button type="button" class="priority-btn" data-priority="high">
+                            <span class="material-symbols-outlined">flag</span>
+                            Haute
+                        </button>
+                        <button type="button" class="priority-btn" data-priority="urgent">
+                            <span class="material-symbols-outlined">priority_high</span>
+                            Urgente
+                        </button>
+                    </div>
+                    <input type="hidden" id="objectifPriority" name="objectifPriority" value="medium">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="cancelModalBtn">
+                        <span class="material-symbols-outlined">close</span>
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn-submit">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span id="objectifSubmitText">Attribuer l'objectif</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/back-strategy.js') }}"></script>
+{% endblock %}

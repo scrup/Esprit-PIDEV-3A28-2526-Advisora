@@ -20,6 +20,13 @@
     <!-- Header included here -->
     {% include 'front/header.html.twig' %}
 
+    <div class="pm-tts-toolbar">
+        <button class="pm-btn pm-btn-secondary" type="button" data-tts-toggle>
+            <i class="fas fa-volume-up"></i>
+            <span data-tts-toggle-label>Activer les annonces vocales</span>
+        </button>
+    </div>
+
     {% for message in app.flashes('success') %}
         <div class="flash-message flash-success">{{ message }}</div>
     {% endfor %}
@@ -41,6 +48,7 @@
     <!-- Global JavaScript -->
     <script src="{{ asset('js/main.js') }}"></script>
     <script src="{{ asset('js/interface-toggle.js') }}"></script>
+    <script src="{{ asset('js/project-tts.js') }}"></script>
     
     <!-- Page specific JavaScript -->
     {% block javascripts %}{% endblock %}

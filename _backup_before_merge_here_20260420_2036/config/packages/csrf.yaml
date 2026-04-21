@@ -1,0 +1,8 @@
+# Symfony 6.4 compatible CSRF configuration
+framework:
+    csrf_protection: true
+
+    form:
+        csrf_protection:
+            enabled: true
+            field_name: _token
