@@ -11,12 +11,12 @@
     <section class="pm-hero">
         <div>
             <span class="pm-badge">Project Management</span>
-            <h1>Suivez les projets stratégiques d'Advisora</h1>
+            <h1>Suivez les projets strategiques d'Advisora</h1>
             <p>
                 {% if app.user and not can_see_all_projects %}
-                    Consultez uniquement vos projets et les décisions prises sur vos initiatives.
+                    Consultez uniquement vos projets et les decisions prises sur vos initiatives.
                 {% else %}
-                    Consultez l'état des projets et les décisions prises pour chaque initiative.
+                    Consultez l'etat des projets et les decisions prises pour chaque initiative.
                 {% endif %}
             </p>
         </div>
@@ -24,7 +24,7 @@
             {% if app.user and can_manage_projects %}
                 <a class="pm-btn pm-btn-primary" href="{{ path('project_new') }}">Ajouter un projet</a>
             {% elseif not app.user %}
-                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gérer</a>
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gerer</a>
             {% endif %}
         </div>
     </section>
@@ -70,7 +70,7 @@
 
             <div class="pm-filter-actions">
                 <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
-                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Réinitialiser</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Reinitialiser</a>
             </div>
         </form>
     </section>
@@ -78,6 +78,7 @@
     <section class="pm-grid">
         {% for project in projects %}
             <article class="pm-card">
+                {% set estimate = project_acceptance_estimates[project.id]|default(null) %}
                 <div class="pm-card-head">
                     <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
                     <span class="pm-meta">Projet #{{ project.id }}</span>
@@ -85,17 +86,119 @@
                 <h2>{{ project.title }}</h2>
                 <p>{{ project.description ?: 'Aucune description pour ce projet.' }}</p>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non précisé' }}</span>
-                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
-                    <span><i class="fas fa-calendar-plus"></i> Création : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
+                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non precise' }}</span>
+                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><i class="fas fa-calendar-plus"></i> Creation : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
                 </div>
                 <div class="pm-meta-list">
-                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} décision(s)</span>
+                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} decision(s)</span>
                 </div>
+
+                {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
+                    {% include 'shared/project_acceptance_estimate.html.twig' with { estimate: estimate } only %}
+                {% endif %}
+
+                {% if project.strategies|length > 0 %}
+                    <div class="pm-project-strategies pm-project-strategies-inline">
+                        <div class="pm-section-head">
+                            <div>
+                                <span class="pm-badge">Strategies proposees</span>
+                                <p class="pm-section-text">Consultez les strategies rattachees a ce projet et, pour le client proprietaire, choisissez de les accepter ou de les refuser.</p>
+                            </div>
+                            <span class="pm-history-count">{{ project.strategies|length }}</span>
+                        </div>
+
+                        <div class="pm-strategy-list pm-strategy-list-inline">
+                            {% for strategy in project.strategies %}
+                                <section class="pm-strategy-card pm-strategy-card-inline">
+                                {# Inside the loop for project.strategies, after strategy status check #}
+{% if strategy.statusStrategie == strategy_statuses.approved %}
+    <div class="pm-strategy-pdf-action" data-strategy-id="{{ strategy.idStrategie }}">
+        <button class="pm-btn pm-btn-primary pdf-generate-btn" type="button" data-strategy-id="{{ strategy.idStrategie }}" data-generate-url="{{ path('strategy_generate_pdf', {id: strategy.idStrategie}) }}">
+            <i class="fas fa-file-pdf"></i> Télécharger le playbook
+        </button>
+        <div class="pdf-progress-container" style="display: none;">
+            <div class="progress-circle"></div>
+            <span class="progress-text">Génération en cours...</span>
+        </div>
+        <div class="pdf-download-link" style="display: none;">
+            <a href="#" class="pm-btn pm-btn-secondary" target="_blank">
+                <i class="fas fa-download"></i> Télécharger
+            </a>
+        </div>
+    </div>
+{% endif %}
+                                    {% set strategy_decision_taken = strategy.statusStrategie in [strategy_statuses.approved, strategy_statuses.rejected] %}
+                                    <div class="pm-strategy-main">
+                                        <div>
+                                            <div class="pm-strategy-topline">
+                                                <h3>{{ strategy.nomStrategie }}</h3>
+                                                <span class="pm-status pm-status-{{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
+                                            </div>
+                                            <p class="pm-strategy-description">
+                                                {% if strategy.statusStrategie == strategy_statuses.rejected and strategy.justification %}
+                                                    Motif du refus : {{ strategy.justification }}
+                                                {% elseif strategy.statusStrategie == strategy_statuses.rejected %}
+                                                    Cette strategie a ete refusee par le client.
+                                                {% elseif strategy.statusStrategie == strategy_statuses.approved %}
+                                                    Cette strategie a ete acceptee par le client.
+                                                {% elseif strategy.justification %}
+                                                    {{ strategy.justification }}
+                                                {% else %}
+                                                    En attente de la decision du client.
+                                                {% endif %}
+                                            </p>
+                                        </div>
+
+                                        {% if can_client_decide_strategies and app.user and project.user and project.user.idUser == app.user.idUser %}
+                                            {% if strategy_decision_taken %}
+                                                <div class="pm-strategy-decision-state">
+                                                    <strong>Decision confirmee.</strong>
+                                                    Votre choix a deja ete enregistre pour cette strategie.
+                                                </div>
+                                            {% else %}
+                                                <div class="pm-strategy-actions">
+                                                    <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" onsubmit="return confirm('Confirmer l acceptation de cette strategie ? Cette decision sera definitive.');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
+                                                        <input type="hidden" name="status" value="{{ strategy_statuses.approved }}">
+                                                        <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                                                    </form>
+
+                                                    <details class="pm-strategy-reject-panel">
+                                                        <summary class="pm-btn pm-btn-danger pm-strategy-reject-summary">Refuser</summary>
+                                                        <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" class="pm-strategy-reject-form" novalidate onsubmit="return confirm('Confirmer le refus de cette strategie ? Cette decision sera definitive.');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
+                                                            <input type="hidden" name="status" value="{{ strategy_statuses.rejected }}">
+                                                            <label for="strategy_reject_{{ strategy.idStrategie }}">Justification obligatoire</label>
+                                                            <textarea id="strategy_reject_{{ strategy.idStrategie }}" name="justification" rows="4" placeholder="Expliquez pourquoi cette strategie doit etre refusee."></textarea>
+                                                            <p class="pm-field-help">Le refus doit etre motive entre 10 et 255 caracteres.</p>
+                                                            <div class="pm-strategy-reject-actions">
+                                                                <button class="pm-btn pm-btn-danger" type="submit">Confirmer le refus</button>
+                                                            </div>
+                                                        </form>
+                                                    </details>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="pm-strategy-meta">
+                                        <span><strong>Type :</strong> {{ strategy.type ?: 'Non precise' }}</span>
+                                        <span><strong>Duree :</strong> {{ strategy.DureeTerme }} mois</span>
+                                        <span><strong>Budget :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                                        <span><strong>Gain estime :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non precise' }}</span>
+                                        <span><strong>Objectifs :</strong> {{ strategy.objectives|length }}</span>
+                                    </div>
+                                </section>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
                 <div class="pm-card-actions">
-                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le détail</a>
+                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
                     {% if app.user and project.user and project.user.idUser == app.user.idUser %}
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gérer</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gerer</a>
                     {% elseif app.user and can_see_all_projects %}
                         <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
                     {% endif %}
@@ -104,8 +207,113 @@
         {% else %}
             <div class="pm-empty">
                 <h2>Aucun projet pour le moment</h2>
-                <p>Commencez par créer un premier projet stratégique depuis l espace projets.</p>
+                <p>Commencez par creer un premier projet strategique depuis l espace projets.</p>
             </div>
         {% endfor %}
     </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const extractServerError = (html) => {
+                if (!html || typeof html !== 'string') {
+                    return '';
+                }
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const title = doc.querySelector('title')?.textContent?.trim();
+                const heading = doc.querySelector('h1')?.textContent?.trim();
+                const bodyText = doc.body?.textContent?.replace(/\s+/g, ' ').trim() || '';
+
+                return title || heading || bodyText.slice(0, 220);
+            };
+
+            document.querySelectorAll('.pdf-generate-btn').forEach((button) => {
+                button.addEventListener('click', async (event) => {
+                    event.preventDefault();
+
+                    const container = button.closest('.pm-strategy-pdf-action');
+                    if (!container) {
+                        return;
+                    }
+
+                    const progressDiv = container.querySelector('.pdf-progress-container');
+                    const downloadDiv = container.querySelector('.pdf-download-link');
+                    const downloadLink = downloadDiv ? downloadDiv.querySelector('a') : null;
+                    const generateUrl = button.dataset.generateUrl;
+
+                    if (!progressDiv || !downloadDiv || !downloadLink || !generateUrl) {
+                        return;
+                    }
+
+                    button.style.display = 'none';
+                    progressDiv.style.display = 'flex';
+                    downloadDiv.style.display = 'none';
+
+                    const showDownload = (url, label = 'Ouvrir') => {
+                        progressDiv.style.display = 'none';
+                        downloadDiv.style.display = 'block';
+                        downloadLink.href = url;
+                        downloadLink.innerHTML = `<i class="fas fa-download"></i> ${label}`;
+                    };
+
+                    const resetState = () => {
+                        progressDiv.style.display = 'none';
+                        button.style.display = 'inline-flex';
+                    };
+
+                    try {
+                        const response = await fetch(generateUrl, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        const responseText = await response.text();
+                        let data = null;
+
+                        if (responseText.trim() !== '') {
+                            try {
+                                data = JSON.parse(responseText);
+                            } catch (parseError) {
+                                throw new Error(
+                                    extractServerError(responseText)
+                                    || `Le serveur a renvoye une reponse non JSON (${response.status}).`
+                                );
+                            }
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(data?.error || `Impossible de lancer la generation du PDF (${response.status}).`);
+                        }
+
+                        if (data?.status === 'failed') {
+                            throw new Error(data.error || 'La generation du PDF a echoue.');
+                        }
+
+                        if (data?.status === 'completed' && data.url) {
+                            const isHtmlFallback = data.format === 'html';
+                            showDownload(data.url, isHtmlFallback ? 'Ouvrir la version imprimable' : 'Telecharger le PDF');
+
+                            if (data.message) {
+                                alert(data.message);
+                            }
+
+                            return;
+                        }
+
+                        throw new Error('Reponse PDF inattendue.');
+                    } catch (error) {
+                        resetState();
+                        alert('Erreur: ' + error.message);
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

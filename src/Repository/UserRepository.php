@@ -6,9 +6,6 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<User>
- */
 class UserRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +13,38 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findBySearchAndSort(?string $search, string $sortBy, string $direction): array
+    {
+        $qb = $this->createQueryBuilder('u');
 
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if ($search !== null && trim($search) !== '') {
+            $search = trim($search);
+
+            $qb->andWhere(
+                'u.nomUser LIKE :search
+                 OR u.PrenomUser LIKE :search
+                 OR CONCAT(u.PrenomUser, \' \', u.nomUser) LIKE :search
+                 OR CONCAT(u.nomUser, \' \', u.PrenomUser) LIKE :search
+                 OR u.EmailUser LIKE :search
+                 OR u.NumTelUser LIKE :search
+                 OR u.cin LIKE :search
+                 OR u.roleUser LIKE :search'
+            )
+            ->setParameter('search', '%' . $search . '%');
+        }
+
+        $qb->orderBy('u.' . $sortBy, $direction);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findOneByEmailInsensitive(string $email): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('LOWER(TRIM(u.EmailUser)) = :email')
+            ->setParameter('email', mb_strtolower(trim($email)))
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

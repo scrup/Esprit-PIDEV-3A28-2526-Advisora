@@ -1,0 +1,8 @@
+<div class="pm-card pm-card-actions" style="margin-top: 1.5rem;">
+    <a class="pm-btn {% if app.request.get('_route') starts with 'back_investment' %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_investment_index') }}">
+        Investissements
+    </a>
+    <a class="pm-btn {% if app.request.get('_route') starts with 'back_transaction' %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_transaction_index') }}">
+        Transactions
+    </a>
+</div>

@@ -5,53 +5,107 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260417-rs-v29">
 {% endblock %}
 
 {% block body %}
-    <section class="pm-admin-shell">
-        <div class="pm-admin-header">
-            <div>
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+        <div class="pm-admin-header rs-header">
+            <div class="rs-header-copy back-users-title">
                 <span class="pm-badge">Back office</span>
                 <h1>Gestion des ressources</h1>
-                <p>Consultez les liaisons Ressource/Projet du module avec un rendu visuel coherent avec Gestion Projet.</p>
-            </div>
-            <div class="pm-card-actions">
-                <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">Retour au tableau de bord</a>
+                <p>Vue de synthese pour suivre rapidement l etat du stock et les ressources deja affectees aux projets.</p>
             </div>
         </div>
 
         {% include 'back/resource/_module_nav.html.twig' %}
 
-        <section class="pm-grid">
-            {% for resource in linked_resources %}
-                <article class="pm-card">
-                    <div class="pm-card-head">
-                        <span class="pm-status pm-status-reserved">Liaison active</span>
-                        <span class="pm-meta">Ressource #{{ resource.id }}</span>
-                    </div>
-                    <h2>{{ resource.name }}</h2>
-                    <p>Suivi des liaisons Ressource/Projet en provenance de <strong>project_resources</strong>.</p>
-                    <div class="pm-meta-list pm-meta-list-vertical">
-                        <span><strong>Fournisseur :</strong> {{ resource.getSupplierDisplayName() }}</span>
-                        <span><strong>Reservations liees :</strong> {{ resource.projects|length }}</span>
-                    </div>
-                    <div class="pm-project-chip-list">
-                        {% for project in resource.projects|slice(0, 3) %}
-                            <span class="pm-project-chip">{{ project.title }}</span>
-                        {% else %}
-                            <span class="pm-project-chip pm-project-chip-empty">Aucune reservation rattachee</span>
-                        {% endfor %}
-                    </div>
-                    <div class="pm-card-actions">
-                        <a class="pm-btn pm-btn-primary" href="{{ path('resource_back_manage', {id: resource.id}) }}">Traiter</a>
-                    </div>
-                </article>
+        <section class="users-overview-grid rs-stat-grid">
+            <article class="users-stat-card rs-stat-box">
+                <span>Total ressources</span>
+                <strong>{{ metrics.total_resources }}</strong>
+            </article>
+            <article class="users-stat-card rs-stat-box">
+                <span>Disponibles</span>
+                <strong>{{ metrics.available_resources }}</strong>
+            </article>
+            <article class="users-stat-card rs-stat-box">
+                <span>Stock disponible</span>
+                <strong>{{ metrics.stock_available }}</strong>
+            </article>
+            <article class="users-stat-card rs-stat-box">
+                <span>Reservations</span>
+                <strong>{{ metrics.total_reservations }}</strong>
+            </article>
+        </section>
+
+        <section class="pm-card rs-panel rs-list-panel">
+            <div class="pm-card-head rs-panel-head">
+                <div>
+                    <h2>Ressources actuellement affectees</h2>
+                    <p>Elements avec reservation(s) active(s)</p>
+                </div>
+            </div>
+
+            {% if linked_resources is not empty %}
+                <div class="back-user-table-shell rs-table-wrap">
+                    <table class="back-user-table rs-table rs-list-table">
+                        <thead>
+                            <tr>
+                                <th>Ressource</th>
+                                <th>Fournisseur</th>
+                                <th class="rs-col-number">Stock disponible</th>
+                                <th class="rs-col-number">Reservations</th>
+                                <th>Projets lies</th>
+                                <th class="rs-actions-col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resource in linked_resources %}
+                                {% set stock = stock_snapshots[resource.id] ?? {'reserved': 0, 'available': resource.quantity ?? 0} %}
+                                <tr class="back-user-row">
+                                    <td>
+                                        <div class="rs-resource-cell">
+                                            <a class="rs-thumb" href="{{ path('resource_back_manage', {id: resource.id}) }}">
+                                                {% if resource.primaryImageUrl %}
+                                                    <img src="{{ resource.primaryImageUrl }}" alt="{{ resource.name }}">
+                                                {% else %}
+                                                    <i class="fas fa-box-open"></i>
+                                                {% endif %}
+                                            </a>
+                                            <div class="rs-resource-copy">
+                                                <a class="rs-primary-link" href="{{ path('resource_back_manage', {id: resource.id}) }}">{{ resource.name }}</a>
+                                                <span class="rs-secondary-text">#{{ resource.id }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ resource.getSupplierDisplayName() }}</td>
+                                    <td class="rs-cell-number">{{ stock.available }}</td>
+                                    <td class="rs-cell-number">{{ resource.projects|length }}</td>
+                                    <td>
+                                        <div class="rs-project-tags">
+                                            {% for project in resource.projects|slice(0, 3) %}
+                                                <span class="rs-project-tag">{{ project.title }}</span>
+                                            {% else %}
+                                                <span class="rs-secondary-text">Aucun projet</span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td class="back-user-table-actions rs-row-actions rs-cell-actions">
+                                        <a class="pm-btn pm-btn-primary rs-table-btn" href="{{ path('resource_back_manage', {id: resource.id}) }}">Traiter</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
-                <div class="pm-empty">
+                <div class="pm-empty rs-empty">
                     <h2>Aucune liaison ressource/projet</h2>
                     <p>Les reservations client visibles dans <strong>project_resources</strong> apparaitront ici.</p>
                 </div>
-            {% endfor %}
+            {% endif %}
         </section>
     </section>
 {% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des evenements{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Back office</span>
+                <h1>Gestion des evenements</h1>
+                <p>Administrez les evenements relies au schema reel de la table `events`.</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-primary" href="{{ path('event_new') }}">Ajouter un evenement</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">Retour au tableau de bord</a>
+            </div>
+        </div>
+
+        {% include 'back/event/_module_nav.html.twig' %}
+
+        <div class="pm-form-card pm-filter-card">
+            <form method="get" class="pm-filter-grid">
+                <div>
+                    <label for="q">Recherche</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre, organisateur, lieu...">
+                </div>
+                <div>
+                    <label for="manager">Gerant</label>
+                    <input id="manager" type="text" name="manager" value="{{ filters.manager }}" placeholder="Nom ou email">
+                </div>
+                <div class="pm-filter-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_index') }}">Reinitialiser</a>
+                </div>
+            </form>
+        </div>
+
+        <section class="pm-grid">
+            {% for event in events %}
+                <article class="pm-card">
+                    <div class="pm-card-head">
+                        <span class="pm-status pm-status-{{ event.getTimelineStatus() }}">{{ event.getTimelineLabel() }}</span>
+                        <span class="pm-meta">Evenement #{{ event.id }}</span>
+                    </div>
+                    <h2>{{ event.title }}</h2>
+                    <p>{{ event.description ?: 'Aucune description disponible.' }}</p>
+                    <div class="pm-meta-list pm-meta-list-vertical">
+                        <span><strong>Organisateur :</strong> {{ event.organizerName ?: 'Non renseigne' }}</span>
+                        <span><strong>Lieu :</strong> {{ event.location ?: 'Non renseigne' }}</span>
+                        <span><strong>Debut :</strong> {{ event.startDate ? event.startDate|date('d/m/Y H:i') : 'Non renseigne' }}</span>
+                        <span><strong>Fin :</strong> {{ event.endDate ? event.endDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
+                        <span><strong>Gerant :</strong> {{ event.getManagerDisplayName() }}</span>
+                        <span><strong>Tickets reserves :</strong> {{ event.reservedTickets }}</span>
+                    </div>
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('event_back_manage', {id: event.id}) }}">Gerer</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_edit', {id: event.id}) }}">Modifier</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: event.id}) }}">Voir en front</a>
+                        <form method="post" action="{{ path('event_delete', {id: event.id}) }}" onsubmit="return confirm('Supprimer cet evenement ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
+                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <div class="pm-empty">
+                    <h2>Aucun evenement ne correspond aux filtres</h2>
+                    <p>Ajoutez un evenement ou modifiez votre recherche.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </section>
+{% endblock %}

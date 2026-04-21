@@ -100,11 +100,8 @@
                 </div>
                 <div class="pm-card-actions">
                     <a class="pm-btn pm-btn-primary" href="{{ path('resource_show', {id: resource.id}) }}">Voir le detail</a>
-                    {% if app.user and can_reserve_resource %}
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('resource_show', {id: resource.id}) }}">Reserver</a>
-                    {% endif %}
                     {% if app.user and can_manage_resources %}
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('resource_back_manage', {id: resource.id}) }}">Gerer</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('resource_back_manage', {id: resource.id}) }}">Back office</a>
                     {% endif %}
                 </div>
             </article>

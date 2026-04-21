@@ -2,8 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\Event;
+use App\Entity\Investment;
+use App\Entity\Project;
+use App\Entity\Resource;
 use App\Repository\DecisionRepository;
+use App\Repository\EventRepository;
+use App\Repository\InvestmentRepository;
 use App\Repository\ProjectRepository;
+use App\Repository\ResourceRepository;
+use App\Repository\StrategieRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -11,19 +19,121 @@ use Symfony\Component\Routing\Attribute\Route;
 final class BackController extends AbstractController
 {
     #[Route('/back', name: 'app_back')]
-    public function index(ProjectRepository $projectRepository, DecisionRepository $decisionRepository): Response
-    {
+    public function index(
+        ProjectRepository $projectRepository,
+        DecisionRepository $decisionRepository,
+        StrategieRepository $strategieRepository,
+        EventRepository $eventRepository,
+        ResourceRepository $resourceRepository,
+        InvestmentRepository $investmentRepository
+    ): Response {
         $statusCounters = $projectRepository->getStatusCounters();
+        $strategyAcceptanceTimeline = $strategieRepository->getAcceptanceTimeline();
+        $latestProjects = $projectRepository->findLatestProjects(6);
+        $latestDecisions = $decisionRepository->findLatestGlobal(6);
+        $resources = $resourceRepository->findBackOfficeResources([]);
+        $investments = $investmentRepository->findBackOfficeInvestments([]);
+        $upcomingEvents = $this->getUpcomingEvents($eventRepository->findFrontEvents());
+
+        $acceptedProjects = $statusCounters[Project::STATUS_ACCEPTED] ?? 0;
+        $pendingProjects = $statusCounters[Project::STATUS_PENDING] ?? 0;
+        $refusedProjects = $statusCounters[Project::STATUS_REFUSED] ?? 0;
+        $totalProjects = array_sum($statusCounters);
 
         return $this->render('back/back.html.twig', [
             'user' => $this->getUser(),
-            'total_projects' => array_sum($statusCounters),
-            'pending_projects' => $statusCounters['PENDING'] ?? 0,
-            'accepted_projects' => $statusCounters['ACCEPTED'] ?? 0,
-            'refused_projects' => $statusCounters['REFUSED'] ?? 0,
+            'total_projects' => $totalProjects,
+            'pending_projects' => $pendingProjects,
+            'accepted_projects' => $acceptedProjects,
+            'refused_projects' => $refusedProjects,
             'total_decisions' => $decisionRepository->count([]),
-            'latest_projects' => $projectRepository->findLatestProjects(6),
-            'latest_decisions' => $decisionRepository->findLatestGlobal(6),
+            'latest_projects' => $latestProjects,
+            'latest_decisions' => $latestDecisions,
+            'strategy_acceptance_timeline' => $strategyAcceptanceTimeline,
+            'upcoming_events' => $upcomingEvents,
+            'upcoming_events_count' => count($upcomingEvents),
+            'recent_resources' => array_slice($resources, 0, 5),
+            'resource_metrics' => $this->buildResourceMetrics($resources),
+            'investment_metrics' => $this->buildInvestmentMetrics($investments),
         ]);
+    }
+
+    /**
+     * @param Event[] $events
+     * @return Event[]
+     */
+    private function getUpcomingEvents(array $events): array
+    {
+        $now = new \DateTimeImmutable();
+        $upcoming = array_values(array_filter(
+            $events,
+            static fn (Event $event): bool => $event->getStartDate() instanceof \DateTimeInterface && $event->getStartDate() >= $now
+        ));
+
+        return array_slice($upcoming, 0, 4);
+    }
+
+    /**
+     * @param Resource[] $resources
+     * @return array{total:int,available:int,linked:int}
+     */
+    private function buildResourceMetrics(array $resources): array
+    {
+        $available = 0;
+        $linked = 0;
+
+        foreach ($resources as $resource) {
+            if (($resource->getQuantity() ?? 0) > 0 && $resource->getStatus() !== Resource::STATUS_UNAVAILABLE) {
+                ++$available;
+            }
+
+            if ($resource->getProjects()->count() > 0) {
+                ++$linked;
+            }
+        }
+
+        return [
+            'total' => count($resources),
+            'available' => $available,
+            'linked' => $linked,
+        ];
+    }
+
+    /**
+     * @param Investment[] $investments
+     * @return array{count:int,total_amount:float,largest_ticket:float,distribution:array<int,array{label:string,value:float}>}
+     */
+    private function buildInvestmentMetrics(array $investments): array
+    {
+        $distribution = [];
+        $totalAmount = 0.0;
+        $largestTicket = 0.0;
+
+        foreach ($investments as $investment) {
+            $amount = (($investment->getBudMinInv() ?? 0.0) + ($investment->getBudMaxInv() ?? 0.0)) / 2;
+            $label = strtoupper(trim((string) ($investment->getCurrencyInv() ?? 'TND')));
+            $label = $label !== '' ? $label : 'TND';
+
+            $totalAmount += $amount;
+            $largestTicket = max($largestTicket, $amount);
+            $distribution[$label] = ($distribution[$label] ?? 0.0) + $amount;
+        }
+
+        arsort($distribution);
+
+        $topSlices = [];
+        foreach (array_slice($distribution, 0, 4, true) as $label => $value) {
+            $topSlices[] = [
+                'label' => $label,
+                'value' => round($value, 2),
+            ];
+        }
+
+        return [
+            'count' => count($investments),
+            'total_amount' => round($totalAmount, 2),
+            'largest_ticket' => round($largestTicket, 2),
+            'distribution' => $topSlices,
+        ];
     }
 }

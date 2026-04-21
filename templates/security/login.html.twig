@@ -8,26 +8,38 @@
 {% endblock %}
 
 {% block body %}
-    <section class="pm-login-shell">
-        <div class="pm-login-card">
-            <span class="pm-badge">Authentification</span>
-            <h1>Connexion au back office</h1>
+<section class="pm-login-shell">
+    <div class="pm-login-card">
+        <span class="pm-badge">Authentification</span>
+        <h1>Connexion au back office</h1>
 
-            {% if error %}
-                <div class="flash-message flash-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-            {% endif %}
+        {% for message in app.flashes('success') %}
+            <div class="flash-message flash-success">{{ message }}</div>
+        {% endfor %}
 
-            <form method="post" action="{{ path('app_login') }}" class="pm-login-form">
-                <label for="username">Email ou identifiant</label>
-                <input type="text" id="username" name="_username" value="{{ last_username }}" autocomplete="username" required>
+        {% for message in app.flashes('error') %}
+            <div class="flash-message flash-error">{{ message }}</div>
+        {% endfor %}
 
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" name="_password" autocomplete="current-password" required>
+        {% if error %}
+            <div class="flash-message flash-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
 
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <form method="post" action="{{ path('app_login') }}" class="pm-login-form" novalidate>
+            <label for="username">Email ou identifiant</label>
+            <input type="text" id="username" name="_username" value="{{ last_username }}" autocomplete="username">
 
-                <button id="loginBtn" class="pm-btn pm-btn-primary pm-btn-block" type="submit">Se connecter</button>
-            </form>
-        </div>
-    </section>
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="_password" autocomplete="current-password">
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button id="loginBtn" class="pm-btn pm-btn-primary pm-btn-block" type="submit">Se connecter</button>
+
+            <div style="margin-top: 12px; text-align: center;">
+                <a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
+            </div>
+        </form>
+    </div>
+</section>
 {% endblock %}

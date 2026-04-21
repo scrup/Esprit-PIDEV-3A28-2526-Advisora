@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ event.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-detail-shell">
+        <div class="pm-detail-main">
+            <a class="pm-back-link" href="{{ path('event_index') }}">← Retour a la liste des evenements</a>
+            <div class="pm-card pm-card-large">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ event.getTimelineStatus() }}">{{ event.getTimelineLabel() }}</span>
+                    <span class="pm-meta">Evenement #{{ event.id }}</span>
+                </div>
+                <h1>{{ event.title }}</h1>
+                <p>{{ event.description ?: 'Aucune description disponible.' }}</p>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-user-tie"></i> Organisateur : {{ event.organizerName ?: 'Non renseigne' }}</span>
+                    <span><i class="fas fa-location-dot"></i> Lieu : {{ event.location ?: 'Non renseigne' }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-calendar-plus"></i> Debut : {{ event.startDate ? event.startDate|date('d/m/Y H:i') : 'Non renseigne' }}</span>
+                    <span><i class="fas fa-calendar-check"></i> Fin : {{ event.endDate ? event.endDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-users"></i> Capacite : {{ event.capacity }}</span>
+                    <span><i class="fas fa-ticket"></i> Tickets reserves : {{ event.reservedTickets }}</span>
+                    <span><i class="fas fa-chair"></i> Places restantes : {{ event.remainingTickets }}</span>
+                </div>
+                {% if can_manage_events %}
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('event_back_manage', {id: event.id}) }}">Gerer cet evenement</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <aside class="pm-detail-side">
+            <div class="pm-card">
+                <div class="pm-current-decision">
+                    <span class="pm-badge">Gestion</span>
+                    <strong>Gerant rattache</strong>
+                    <span>{{ event.getManagerDisplayName() }}</span>
+                </div>
+
+                {% if app.user and can_book_events %}
+                    <div class="pm-form-card pm-reservation-box" style="margin-top: 1.25rem;">
+                        <div class="pm-current-decision pm-reservation-intro">
+                            <span class="pm-badge">Inscription client</span>
+                            {% if existing_booking %}
+                                <strong>Vous etes deja inscrit</strong>
+                                <p>Statut actuel : <span class="pm-status pm-status-{{ existing_booking.workflowStatusCssClass }}">{{ existing_booking.workflowStatusLabel }}</span></p>
+                            {% else %}
+                                <strong>Inscription ouverte</strong>
+                                <p>Votre reservation utilise la table `bookings` sans modifier la base.</p>
+                            {% endif %}
+                        </div>
+                        <div class="pm-card-actions">
+                            {% if existing_booking %}
+                                <a class="pm-btn pm-btn-primary" href="{{ path('event_booking_edit', {id: existing_booking.id}) }}">
+                                    {{ existing_booking.isPending ? 'Modifier mon inscription' : 'Consulter mon inscription' }}
+                                </a>
+                            {% elseif event.remainingTickets > 0 %}
+                                <a class="pm-btn pm-btn-primary" href="{{ path('event_book', {id: event.id}) }}">S inscrire maintenant</a>
+                            {% else %}
+                                <span class="pm-empty-text">Complet pour le moment.</span>
+                            {% endif %}
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_my_bookings') }}">Mes inscriptions</a>
+                        </div>
+                    </div>
+                {% elseif not app.user %}
+                    <div class="pm-form-card" style="margin-top: 1.25rem;">
+                        <div class="pm-current-decision">
+                            <span class="pm-badge">Connexion requise</span>
+                            <strong>Connectez-vous pour vous inscrire</strong>
+                            <p>Les clients authentifies peuvent reserver des tickets sur cet evenement.</p>
+                        </div>
+                        <div class="pm-card-actions">
+                            <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+    </section>
+{% endblock %}

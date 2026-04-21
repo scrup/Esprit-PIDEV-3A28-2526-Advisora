@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,8 +10,19 @@ use App\Repository\TaskRepository;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\Table(name: 'task')]
+#[ORM\HasLifecycleCallbacks]
 class Task
 {
+    public const STATUS_TODO = 'TODO';
+    public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
+    public const STATUS_DONE = 'DONE';
+
+    public const STATUSES = [
+        self::STATUS_TODO => 'A faire',
+        self::STATUS_IN_PROGRESS => 'En cours',
+        self::STATUS_DONE => 'Terminee',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -68,7 +78,7 @@ class Task
 
     public function setStatus(string $status): self
     {
-        $this->status = $status;
+        $this->status = self::normalizeStatus($status);
         return $this;
     }
 
@@ -128,40 +138,63 @@ class Task
         return $this;
     }
 
-    public function getDurationDays(): ?int
+    #[ORM\PrePersist]
+    public function initializeDefaults(): void
     {
-        return $this->duration_days;
+        if ($this->status === null || $this->status === '') {
+            $this->status = self::STATUS_TODO;
+        } else {
+            $this->status = self::normalizeStatus($this->status);
+        }
+
+        if ($this->weight === null) {
+            $this->weight = 1;
+        }
+
+        if ($this->duration_days === null || $this->duration_days < 1) {
+            $this->duration_days = 1;
+        }
+
+        if ($this->created_at === null) {
+            $this->created_at = new \DateTime();
+        }
     }
 
-    public function setDurationDays(int $duration_days): static
+    public function getStatusLabel(): string
     {
-        $this->duration_days = $duration_days;
-
-        return $this;
+        return self::STATUSES[$this->getNormalizedStatus()] ?? 'Statut inconnu';
     }
 
-    public function getLastWarningDate(): ?\DateTime
+    public function getStatusCssClass(): string
     {
-        return $this->last_warning_date;
+        return match ($this->getNormalizedStatus()) {
+            self::STATUS_TODO => 'todo',
+            self::STATUS_IN_PROGRESS => 'in_progress',
+            self::STATUS_DONE => 'done',
+            default => 'unknown',
+        };
     }
 
-    public function setLastWarningDate(?\DateTime $last_warning_date): static
+    public function getNormalizedStatus(): string
     {
-        $this->last_warning_date = $last_warning_date;
-
-        return $this;
+        return self::normalizeStatus($this->status);
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function isCompleted(): bool
     {
-        return $this->created_at;
+        return $this->getNormalizedStatus() === self::STATUS_DONE;
     }
 
-    public function setCreatedAt(\DateTime $created_at): static
+    public static function normalizeStatus(?string $status): string
     {
-        $this->created_at = $created_at;
+        $normalized = strtoupper(trim((string) $status));
 
-        return $this;
+        return match ($normalized) {
+            'TODO', 'A_FAIRE', 'A FAIRE', 'AFaire', 'AFAIRE', 'TO_DO' => self::STATUS_TODO,
+            'IN_PROGRESS', 'EN_COURS', 'EN COURS', 'INPROGRESS', 'IN-PROGRESS' => self::STATUS_IN_PROGRESS,
+            'DONE', 'TERMINEE', 'TERMINE', 'TERMINATED', 'COMPLETED' => self::STATUS_DONE,
+            default => self::STATUS_TODO,
+        };
     }
 
 }
