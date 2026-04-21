@@ -120,12 +120,13 @@ class StrategieRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array<int, array{nomStrategie: string, type: ?string, gainEstime: ?float, DureeTerme: ?int}>
+     * @return array<int, array{idStrategie: int, nomStrategie: string, type: ?string, gainEstime: ?float, DureeTerme: ?int}>
      */
     public function findRecommendationCandidates(): array
     {
         $rows = $this->createQueryBuilder('s')
             ->select(
+                's.idStrategie AS idStrategie',
                 's.nomStrategie AS nomStrategie',
                 's.type AS type',
                 's.gainEstime AS gainEstime',
@@ -133,6 +134,7 @@ class StrategieRepository extends ServiceEntityRepository
                 's.CreatedAtS AS createdAtS'
             )
             ->andWhere('s.nomStrategie IS NOT NULL')
+            ->andWhere('s.project IS NULL')
             ->orderBy('s.CreatedAtS', 'DESC')
             ->addOrderBy('s.idStrategie', 'DESC')
             ->getQuery()
@@ -149,6 +151,7 @@ class StrategieRepository extends ServiceEntityRepository
             $key = mb_strtolower($name);
             if (!isset($candidatesByKey[$key])) {
                 $candidatesByKey[$key] = [
+                    'idStrategie' => (int) ($row['idStrategie'] ?? 0),
                     'nomStrategie' => $name,
                     'type' => $this->normalizeNullableString($row['type'] ?? null),
                     'gainEstime' => $this->toNullableFloat($row['gainEstime'] ?? null),
@@ -171,6 +174,31 @@ class StrategieRepository extends ServiceEntityRepository
         }
 
         return array_values($candidatesByKey);
+    }
+
+    public function findAssignedDuplicateByName(string $name, ?int $excludeStrategyId = null): ?Strategie
+    {
+        $normalizedName = mb_strtolower(trim($name));
+        if ($normalizedName === '') {
+            return null;
+        }
+
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.project', 'p')
+            ->addSelect('p')
+            ->andWhere('LOWER(s.nomStrategie) = :normalizedName')
+            ->andWhere('s.project IS NOT NULL')
+            ->setParameter('normalizedName', $normalizedName)
+            ->orderBy('s.idStrategie', 'DESC')
+            ->setMaxResults(1);
+
+        if ($excludeStrategyId !== null && $excludeStrategyId > 0) {
+            $qb
+                ->andWhere('s.idStrategie != :excludeStrategyId')
+                ->setParameter('excludeStrategyId', $excludeStrategyId);
+        }
+
+        return $qb->getQuery()->getOneOrNullResult();
     }
 
     private function formatDateLabel(\DateTimeImmutable $date): string

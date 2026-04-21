@@ -27,6 +27,8 @@ use App\Service\PythonRecommendationService;
 
 final class StrategyController extends AbstractController
 {
+    private const RECOMMENDATION_SESSION_KEY = 'strategy_pending_recommendations';
+
     public function __construct(
         private LibreTranslateService $translator // ← Inject the service
     ) {}
@@ -1008,10 +1010,15 @@ private function saveRejectedJustificationWithTranslation(
  #[Route('/recommandation/project/{id}', name: 'strategie_recommandation')]
     public function recommander(
         int $id,
+        Request $request,
         ProjectRepository $projetRepository,
-        PythonRecommendationService $pythonService,
-        EntityManagerInterface $em
+        PythonRecommendationService $pythonService
     ): Response {
+        $user = $this->getCurrentUser();
+        if (!$this->canBackOfficeRecommendStrategy($user)) {
+            throw $this->createAccessDeniedException('Seul un gerant ou un administrateur peut recommander une strategie.');
+        }
+
         $projet = $projetRepository->find($id);
 
         if (!$projet) {
@@ -1039,34 +1046,256 @@ private function saveRejectedJustificationWithTranslation(
                 throw new \RuntimeException($message !== '' ? $message : 'Erreur inconnue dans le moteur de recommandation.');
             }
 
-            $strategie = new Strategie();
-            $strategie->setNomStrategie($recommendation['nomStrategie'] ?? 'Stratégie par défaut');
-            $strategie->setType($recommendation['type'] ?? null);
-            $strategie->setBudgetTotal($recommendation['budgetTotal'] ?? null);
-            $strategie->setGainEstime($recommendation['gainEstime'] ?? null);
-            $strategie->setDureeTerme($recommendation['DureeTerme'] ?? null);
-            $strategie->setStatusStrategie($recommendation['statusStrategie'] ?? 'En_attente');
-            $strategie->setCreatedAtS(new \DateTime());
-            $strategie->setProject($projet);
-
-            // si user connecté
-            if ($this->getUser()) {
-                $strategie->setUser($this->getUser());
-            }
-
-            $em->persist($strategie);
-            $em->flush();
+            $normalizedRecommendation = $this->normalizeRecommendationPayload($recommendation);
+            $this->storePendingRecommendation($request, $projet->getIdProj(), $user, $normalizedRecommendation);
+            $strategie = $this->createStrategyFromRecommendation($normalizedRecommendation, $projet, $user);
 
             return $this->render('back/strategie/recommendation.html.twig', [
                 'projet' => $projet,
                 'strategie' => $strategie,
-                'recommendation' => $recommendation,
+                'recommendation' => [
+                    'top_3' => $normalizedRecommendation['top_3'],
+                ],
+                'is_preview' => true,
+                'can_recommendation_decide' => true,
             ]);
 
         } catch (\Throwable $e) {
             $this->addFlash('error', 'Erreur : ' . $e->getMessage());
             return $this->redirectToRoute('project_show', ['id' => $id]);
         }
+    }
+
+    #[Route('/recommandation/project/{id}/decision', name: 'strategie_recommandation_decision', methods: ['POST'])]
+    public function recommendationDecision(
+        int $id,
+        Request $request,
+        ProjectRepository $projetRepository,
+        StrategieRepository $strategieRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getCurrentUser();
+        if (!$this->canBackOfficeRecommendStrategy($user)) {
+            throw $this->createAccessDeniedException('Seul un gerant ou un administrateur peut valider cette recommandation.');
+        }
+
+        $projet = $projetRepository->find($id);
+        if (!$projet) {
+            throw $this->createNotFoundException('Projet introuvable.');
+        }
+
+        if (!$this->isCsrfTokenValid('recommendation_decision_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide. Decision impossible.');
+
+            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+        }
+
+        $decision = trim((string) $request->request->get('decision'));
+        if (!in_array($decision, ['accept', 'reject'], true)) {
+            $this->addFlash('error', 'Decision invalide.');
+
+            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+        }
+
+        $pendingRecommendation = $this->getPendingRecommendation($request, $id, $user);
+        if ($pendingRecommendation === null) {
+            $this->addFlash('error', 'Aucune recommandation en attente de confirmation pour ce projet.');
+
+            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+        }
+
+        if ($decision === 'reject') {
+            $this->clearPendingRecommendation($request, $id, $user);
+            $this->addFlash('info', 'Recommandation refusee. Aucune strategie n a ete enregistree.');
+
+            return $this->redirectToRoute('project_back_manage', ['id' => $id]);
+        }
+
+        $recommendedStrategyId = $this->extractRecommendationStrategyId($pendingRecommendation);
+        if ($recommendedStrategyId !== null) {
+            $strategie = $strategieRepository->find($recommendedStrategyId);
+            if (!$strategie instanceof Strategie) {
+                $this->addFlash('error', 'La strategie recommandee est introuvable en base.');
+
+                return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+            }
+
+            $assignedProject = $strategie->getProject();
+            if ($assignedProject !== null && $assignedProject->getIdProj() !== $projet->getIdProj()) {
+                $this->addFlash('error', 'Cette strategie est deja attribuee a un autre projet.');
+
+                return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+            }
+
+            $nameConflict = $strategieRepository->findAssignedDuplicateByName(
+                (string) $strategie->getNomStrategie(),
+                $strategie->getIdStrategie()
+            );
+            if ($nameConflict instanceof Strategie) {
+                $conflictProjectId = $nameConflict->getProject()?->getIdProj();
+                if ($conflictProjectId !== null && $conflictProjectId !== $projet->getIdProj()) {
+                    $this->addFlash('error', 'Cette strategie est deja verrouillee sur un autre projet et ne peut pas etre reutilisee.');
+
+                    return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+                }
+            }
+
+            $this->applyRecommendationToExistingStrategy($strategie, $projet, $user);
+            $entityManager->flush();
+
+            $this->clearPendingRecommendation($request, $id, $user);
+            $this->addFlash('success', 'Strategie attribuee au projet et mise en cours.');
+
+            return $this->redirectToRoute('project_back_manage', ['id' => $id]);
+        }
+
+        $nameConflict = $strategieRepository->findAssignedDuplicateByName((string) ($pendingRecommendation['nomStrategie'] ?? ''));
+        if ($nameConflict instanceof Strategie) {
+            $conflictProjectId = $nameConflict->getProject()?->getIdProj();
+            if ($conflictProjectId === $projet->getIdProj()) {
+                $this->applyRecommendationToExistingStrategy($nameConflict, $projet, $user);
+                $entityManager->flush();
+
+                $this->clearPendingRecommendation($request, $id, $user);
+                $this->addFlash('success', 'Cette strategie est deja liee a ce projet et reste en cours.');
+
+                return $this->redirectToRoute('project_back_manage', ['id' => $id]);
+            }
+
+            $this->addFlash('error', 'Cette strategie est deja verrouillee sur un autre projet et ne peut pas etre reutilisee.');
+
+            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+        }
+
+        $strategie = $this->createStrategyFromRecommendation($pendingRecommendation, $projet, $user);
+        $strategie->setStatusStrategie(Strategie::STATUS_IN_PROGRESS);
+        $entityManager->persist($strategie);
+        $entityManager->flush();
+        $this->syncEnglishStrategyTranslations($entityManager, $strategie);
+        $entityManager->flush();
+
+        $this->clearPendingRecommendation($request, $id, $user);
+        $this->addFlash('success', 'Strategie enregistree et mise en cours.');
+
+        return $this->redirectToRoute('project_back_manage', ['id' => $id]);
+    }
+
+    private function canBackOfficeRecommendStrategy(?User $user): bool
+    {
+        return $user instanceof User && in_array($user->getRoleUser(), ['admin', 'gerant'], true);
+    }
+
+    private function normalizeRecommendationPayload(array $recommendation): array
+    {
+        $allowedStatuses = [
+            Strategie::STATUS_PENDING,
+            Strategie::STATUS_IN_PROGRESS,
+            Strategie::STATUS_APPROVED,
+            Strategie::STATUS_REJECTED,
+            Strategie::STATUS_UNASSIGNED,
+        ];
+
+        $status = trim((string) ($recommendation['statusStrategie'] ?? Strategie::STATUS_PENDING));
+        if (!in_array($status, $allowedStatuses, true)) {
+            $status = Strategie::STATUS_PENDING;
+        }
+
+        $name = trim((string) ($recommendation['nomStrategie'] ?? ''));
+        $name = $name !== '' ? $name : 'Strategie recommandee';
+
+        $type = trim((string) ($recommendation['type'] ?? ''));
+        $topCandidates = $recommendation['top_3'] ?? [];
+
+        return [
+            'idStrategie' => $this->extractRecommendationStrategyId($recommendation),
+            'nomStrategie' => $name,
+            'type' => $type !== '' ? $type : null,
+            'budgetTotal' => is_numeric($recommendation['budgetTotal'] ?? null) ? (float) $recommendation['budgetTotal'] : null,
+            'gainEstime' => is_numeric($recommendation['gainEstime'] ?? null) ? (float) $recommendation['gainEstime'] : null,
+            'DureeTerme' => is_numeric($recommendation['DureeTerme'] ?? null) ? (int) $recommendation['DureeTerme'] : null,
+            'statusStrategie' => $status,
+            'top_3' => is_array($topCandidates) ? $topCandidates : [],
+        ];
+    }
+
+    private function createStrategyFromRecommendation(array $recommendation, Project $projet, ?User $user): Strategie
+    {
+        $payload = $this->normalizeRecommendationPayload($recommendation);
+
+        $strategie = new Strategie();
+        $strategie->setNomStrategie($payload['nomStrategie']);
+        $strategie->setType($payload['type']);
+        $strategie->setBudgetTotal($payload['budgetTotal']);
+        $strategie->setGainEstime($payload['gainEstime']);
+        $strategie->setDureeTerme($payload['DureeTerme']);
+        $strategie->setStatusStrategie($payload['statusStrategie']);
+        $strategie->setCreatedAtS(new \DateTime());
+        $strategie->setProject($projet);
+
+        if ($user instanceof User) {
+            $strategie->setUser($user);
+        }
+
+        return $strategie;
+    }
+
+    private function extractRecommendationStrategyId(array $recommendation): ?int
+    {
+        $strategyId = $recommendation['idStrategie'] ?? null;
+        if (!is_numeric($strategyId)) {
+            return null;
+        }
+
+        $normalizedId = (int) $strategyId;
+
+        return $normalizedId > 0 ? $normalizedId : null;
+    }
+
+    private function applyRecommendationToExistingStrategy(Strategie $strategie, Project $projet, ?User $user): void
+    {
+        $strategie->setProject($projet);
+        $strategie->setStatusStrategie(Strategie::STATUS_IN_PROGRESS);
+        $strategie->setLockedAt(null);
+
+        if ($strategie->getCreatedAtS() === null) {
+            $strategie->setCreatedAtS(new \DateTime());
+        }
+
+        if ($strategie->getUser() === null && $user instanceof User) {
+            $strategie->setUser($user);
+        }
+    }
+
+    private function storePendingRecommendation(Request $request, int $projectId, User $user, array $recommendation): void
+    {
+        $session = $request->getSession();
+        $pendingRecommendations = (array) $session->get(self::RECOMMENDATION_SESSION_KEY, []);
+        $pendingRecommendations[$this->getRecommendationSessionKey($projectId, $user->getIdUser())] = $this->normalizeRecommendationPayload($recommendation);
+
+        $session->set(self::RECOMMENDATION_SESSION_KEY, $pendingRecommendations);
+    }
+
+    private function getPendingRecommendation(Request $request, int $projectId, User $user): ?array
+    {
+        $session = $request->getSession();
+        $pendingRecommendations = (array) $session->get(self::RECOMMENDATION_SESSION_KEY, []);
+        $pendingRecommendation = $pendingRecommendations[$this->getRecommendationSessionKey($projectId, $user->getIdUser())] ?? null;
+
+        return is_array($pendingRecommendation) ? $pendingRecommendation : null;
+    }
+
+    private function clearPendingRecommendation(Request $request, int $projectId, User $user): void
+    {
+        $session = $request->getSession();
+        $pendingRecommendations = (array) $session->get(self::RECOMMENDATION_SESSION_KEY, []);
+
+        unset($pendingRecommendations[$this->getRecommendationSessionKey($projectId, $user->getIdUser())]);
+        $session->set(self::RECOMMENDATION_SESSION_KEY, $pendingRecommendations);
+    }
+
+    private function getRecommendationSessionKey(int $projectId, int $userId): string
+    {
+        return sprintf('%d:%d', $projectId, $userId);
     }
 
 

@@ -40,62 +40,36 @@
                 </div>
             </div>
 
-            {% set approved_status = constant('App\\Entity\\Strategie::STATUS_APPROVED') %}
-            {% set rejected_status = constant('App\\Entity\\Strategie::STATUS_REJECTED') %}
-            {% set is_final_status = strategie.statusStrategie in [approved_status, rejected_status] %}
-            {% set can_client_decide = app.user and app.user.roleUser == 'client' and projet.user is not null and projet.user.idUser == app.user.idUser %}
+            {% set can_recommendation_decide = can_recommendation_decide|default(app.user and app.user.roleUser in ['admin', 'gerant']) %}
 
             <section class="recommendation-decision">
                 <h3>Confirmer cette strategie</h3>
 
-                {% if is_final_status %}
-                    <p class="recommendation-decision-state">
-                        Decision enregistree:
-                        <strong>{{ strategie.statusStrategie }}</strong>
-                    </p>
-                    {% if strategie.statusStrategie == rejected_status and strategie.justification %}
-                        <p class="recommendation-refusal-reason">
-                            <strong>Motif du refus:</strong> {{ strategie.justification }}
-                        </p>
-                    {% endif %}
-                {% elseif not can_client_decide %}
+                {% if not can_recommendation_decide %}
                     <p class="recommendation-decision-hint">
-                        Cette strategie est en attente de validation par le client proprietaire du projet.
+                        Seul un gerant ou un administrateur peut confirmer cette recommandation.
                     </p>
                 {% else %}
                     <p class="recommendation-decision-hint">
-                        Validez cette recommandation ou refusez-la avec une justification.
+                        Cette strategie est seulement en apercu. Elle ne sera enregistree qu apres confirmation et passera en statut "En_cours" lors de l acceptation.
                     </p>
 
                     <div class="recommendation-decision-actions">
-                        <form method="post" action="{{ path('project_strategy_decision', {'id': strategie.idStrategie}) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategie.idStrategie) }}">
-                            <input type="hidden" name="status" value="{{ approved_status }}">
+                        <form method="post" action="{{ path('strategie_recommandation_decision', {'id': projet.id}) }}" onsubmit="return confirm('Confirmer et enregistrer cette strategie ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('recommendation_decision_' ~ projet.id) }}">
+                            <input type="hidden" name="decision" value="accept">
                             <button type="submit" class="recommendation-btn recommendation-btn-accept">
-                                Accepter la strategie
+                                Confirmer et enregistrer
                             </button>
                         </form>
 
-                        <details class="recommendation-refuse-box">
-                            <summary class="recommendation-btn recommendation-btn-refuse">Refuser la strategie</summary>
-                            <form method="post" action="{{ path('project_strategy_decision', {'id': strategie.idStrategie}) }}" class="recommendation-refuse-form">
-                                <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategie.idStrategie) }}">
-                                <input type="hidden" name="status" value="{{ rejected_status }}">
-                                <label for="justification_{{ strategie.idStrategie }}">Justification du refus</label>
-                                <textarea
-                                    id="justification_{{ strategie.idStrategie }}"
-                                    name="justification"
-                                    rows="4"
-                                    minlength="10"
-                                    maxlength="255"
-                                    required
-                                    placeholder="Expliquez pourquoi vous refusez cette strategie (10 a 255 caracteres)."
-                                ></textarea>
-                                <button type="submit" class="recommendation-btn recommendation-btn-refuse-submit">
-                                    Confirmer le refus
-                                </button>
-                            </form>
-                        </details>
+                        <form method="post" action="{{ path('strategie_recommandation_decision', {'id': projet.id}) }}" onsubmit="return confirm('Refuser cette recommandation ? Aucune strategie ne sera enregistree.');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('recommendation_decision_' ~ projet.id) }}">
+                            <input type="hidden" name="decision" value="reject">
+                            <button type="submit" class="recommendation-btn recommendation-btn-refuse">
+                                Rejeter la recommandation
+                            </button>
+                        </form>
                     </div>
                 {% endif %}
             </section>

@@ -352,6 +352,7 @@ def normalize_db_strategies(raw_candidates: Any) -> list[dict[str, Any]]:
 
         normalized_candidates.append(
             {
+                "idStrategie": to_nullable_int(raw_candidate.get("idStrategie")),
                 "nomStrategie": strategy_name,
                 "type": str(raw_candidate.get("type", "") or "").strip() or None,
                 "gainEstime": to_nullable_float(raw_candidate.get("gainEstime")),
@@ -386,6 +387,7 @@ def compute_db_strategy_scores(
 
         scored_db_candidates.append(
             {
+                "strategy_id": candidate.get("idStrategie"),
                 "strategy_name": strategy_name,
                 "score": final_score,
                 "type": candidate.get("type"),
@@ -414,6 +416,7 @@ def recommend_strategy(data: dict[str, Any]) -> dict[str, Any]:
     description_proj = str(data.get("descriptionProj", "") or "").strip()
 
     predicted_strategy = best["strategy_name"]
+    predicted_strategy_id = best.get("strategy_id")
     predicted_type = (
         str(best.get("type", "") or "").strip()
         or infer_strategy_type(predicted_strategy, description_proj, type_proj_raw)
@@ -441,6 +444,7 @@ def recommend_strategy(data: dict[str, Any]) -> dict[str, Any]:
         )
         top_3.append(
             {
+                "idStrategie": candidate.get("strategy_id"),
                 "label": label,
                 "score": round(float(probability), 4),
                 "type": inferred_type,
@@ -448,6 +452,7 @@ def recommend_strategy(data: dict[str, Any]) -> dict[str, Any]:
         )
 
     return {
+        "idStrategie": predicted_strategy_id,
         "nomStrategie": predicted_strategy,
         "type": predicted_type,
         "budgetTotal": round(budget, 2),
