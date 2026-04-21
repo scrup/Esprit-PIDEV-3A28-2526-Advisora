@@ -202,6 +202,13 @@
                                         <span><strong>{{ 'project.strategy.budget'|trans }} :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
                                         <span><strong>{{ 'project.strategy.estimated_gain'|trans }} :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : ('project.card.not_specified'|trans) }}</span>
                                         <span><strong>{{ 'project.strategy.objectives'|trans }} :</strong> {{ strategy.objectives|length }}</span>
+                                        {% if strategy.lockedAt and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
+                                            {% set strategy_deadline = strategy.lockedAt|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
+                                            <span class="pm-countdown" data-strategy-countdown data-end-at="{{ strategy_deadline|date('c') }}">
+                                                <strong>Fin de periode dans :</strong>
+                                                <span class="pm-countdown-value" data-countdown-value>--:--:--</span>
+                                            </span>
+                                        {% endif %}
                                     </div>
                                 </section>
                             {% endfor %}
@@ -229,6 +236,7 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="{{ asset('js/strategy-countdown.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const i18n = {

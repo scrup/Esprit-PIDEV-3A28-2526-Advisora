@@ -30,8 +30,9 @@ final class StrategyController extends AbstractController
     private const RECOMMENDATION_SESSION_KEY = 'strategy_pending_recommendations';
 
     public function __construct(
-        private LibreTranslateService $translator // ← Inject the service
+        private LibreTranslateService $translator
     ) {}
+
     private const OBJECTIVE_PRIORITY_MAP = [
         'low' => Objective::PRIORITY_LOW,
         'medium' => Objective::PRIORITY_MEDIUM,
@@ -983,15 +984,10 @@ private function saveEnglishTranslation(
     /** @var \Gedmo\Translatable\Entity\Repository\TranslationRepository $translationRepo */
     $translationRepo = $entityManager->getRepository(Translation::class);
 
-    try {
-        $englishValue = $this->translator->translate($frenchValue, 'en', 'fr');
-    } catch (\Throwable $e) {
-        $englishValue = $frenchValue;
-        $this->addFlash('warning', sprintf(
-            'La traduction automatique du champ "%s" a échoué. La valeur française a été gardée en secours.',
-            $field
-        ));
-    }
+    $englishValue = $frenchValue;
+    // LibreTranslate disabled for teammate environments without the service.
+    // Uncomment when translation service is available again:
+    // $englishValue = $this->translator->translate($frenchValue, 'en', 'fr');
 
     $translationRepo->translate($strategy, $field, 'en', $englishValue);
 }

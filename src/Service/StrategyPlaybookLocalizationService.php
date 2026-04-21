@@ -375,7 +375,10 @@ class StrategyPlaybookLocalizationService
             return $trimmed;
         }
 
-        return $this->translator->translate($trimmed, 'en', 'fr');
+        // LibreTranslate disabled for teammate environments without the service.
+        // Uncomment when translation service is available again:
+        // return $this->translator->translate($trimmed, 'en', 'fr');
+        return $trimmed;
     }
 
     private function firstNonEmpty(?string $value, string $fallback): string

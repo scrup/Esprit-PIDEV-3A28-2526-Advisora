@@ -258,6 +258,28 @@
 .strategy-summary-value.positive { color: var(--sage-green); }
 .strategy-summary-value.negative { color: #d68b6e; }
 
+.strategy-countdown {
+    background: rgba(126, 139, 99, 0.08);
+    border: 1px solid rgba(126, 139, 99, 0.2);
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.strategy-countdown::before {
+    width: 0;
+    height: 0;
+}
+
+.strategy-countdown-value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    letter-spacing: 0.05em;
+}
+
+.strategy-countdown.is-expired {
+    background: rgba(214, 139, 110, 0.12);
+    border-color: rgba(214, 139, 110, 0.35);
+}
+
 .strategy-summary-helper {
     font-size: 0.7rem;
     color: var(--back-text-soft);
