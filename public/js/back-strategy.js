@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCharts();
     initEventListeners();
     updateTypeDistribution();
+    initScrollTopButton();
     initObjectiveModal();
 });
 
@@ -85,6 +86,23 @@ function initCharts() {
 }
 
 function updateTypeDistribution() {
+    const datasetEntries = getTypeDistributionFromDataset();
+    if (datasetEntries.length > 0) {
+        const distributionMeta = document.getElementById('strategyTypeDistributionData');
+        const totalFromDataset = Number(distributionMeta?.dataset?.total ?? 0);
+        const total = Number.isFinite(totalFromDataset) && totalFromDataset > 0
+            ? totalFromDataset
+            : datasetEntries.reduce((sum, [, count]) => sum + count, 0);
+
+        if (typeDonutTotal) {
+            typeDonutTotal.textContent = String(total);
+        }
+
+        renderTypeLegend(datasetEntries);
+        updateTypeDonutChart(datasetEntries);
+        return;
+    }
+
     const cards = getStrategyCards();
     const counts = new Map();
 
@@ -101,6 +119,29 @@ function updateTypeDistribution() {
 
     renderTypeLegend(entries);
     updateTypeDonutChart(entries);
+}
+
+function getTypeDistributionFromDataset() {
+    const node = document.getElementById('strategyTypeDistributionData');
+    const rawJson = node?.dataset?.typeDistribution;
+
+    if (!rawJson) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(rawJson);
+        if (!parsed || typeof parsed !== 'object') {
+            return [];
+        }
+
+        return Object.entries(parsed)
+            .map(([type, count]) => [String(type), Number(count)])
+            .filter(([, count]) => Number.isFinite(count) && count > 0)
+            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    } catch (error) {
+        return [];
+    }
 }
 
 function renderTypeLegend(entries) {
@@ -177,6 +218,31 @@ function initEventListeners() {
                 e.preventDefault();
             }
         });
+    });
+}
+
+function initScrollTopButton() {
+    const button = document.getElementById('strategyScrollTopBtn');
+    if (!button) {
+        return;
+    }
+
+    const toggleVisibility = () => {
+        const shouldShow = window.scrollY > 320;
+        button.classList.toggle('is-visible', shouldShow);
+    };
+
+    toggleVisibility();
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
+
+    button.addEventListener('click', () => {
+        const topAnchor = document.getElementById('strategiesTop');
+        if (topAnchor) {
+            topAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 }
 

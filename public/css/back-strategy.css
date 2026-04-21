@@ -12,6 +12,7 @@
     --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.4);
     --transition: all 0.2s ease;
+    --strategy-sticky-top-offset: 92px;
 }
 
 /* Container & Layout */
@@ -1470,4 +1471,141 @@
 .objective-item:hover {
     border-color: var(--primary-terracotta);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Pagination */
+.strategy-pagination {
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-radius: 16px;
+    border: 1px solid var(--back-border-strong);
+    background:
+        linear-gradient(145deg, rgba(32, 40, 44, 0.96), rgba(20, 25, 27, 0.96)),
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.14), transparent 40%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(4px);
+}
+
+.strategy-pagination-top {
+    position: sticky;
+    top: var(--strategy-sticky-top-offset);
+    z-index: 12;
+}
+
+.strategy-pagination-meta {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--back-text-soft);
+    white-space: nowrap;
+}
+
+.strategy-pagination .pagination {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.strategy-pagination .pagination li {
+    margin: 0;
+}
+
+.strategy-pagination .pagination a,
+.strategy-pagination .pagination span {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid var(--back-border-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--deep-umber);
+    text-decoration: none;
+    background: var(--back-surface);
+    transition: var(--transition);
+}
+
+.strategy-pagination .pagination .current,
+.strategy-pagination .pagination .active span {
+    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
+    color: #fff;
+    border-color: transparent;
+}
+
+.strategy-pagination .pagination a:hover {
+    border-color: var(--primary-terracotta);
+    color: var(--primary-terracotta);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+.strategy-pagination .pagination .disabled span {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+    .strategy-pagination-top {
+        position: static;
+        top: auto;
+        box-shadow: none;
+    }
+}
+
+/* Scroll To Top */
+.strategy-scroll-top {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(14px) scale(0.92);
+    transition: opacity 0.2s ease, transform 0.25s ease, visibility 0.2s ease;
+    z-index: 34;
+}
+
+.strategy-scroll-top .material-symbols-outlined {
+    font-size: 1.35rem;
+}
+
+.strategy-scroll-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    animation: strategy-scroll-float 1.8s ease-in-out infinite;
+}
+
+.strategy-scroll-top:hover {
+    filter: brightness(1.06);
+}
+
+@keyframes strategy-scroll-float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
 }

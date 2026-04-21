@@ -53,18 +53,18 @@ class Strategie
 
     public function getStatusStrategie(): ?string
     {
-        return $this->statusStrategie;
+        return $this->normalizeStatusValue($this->statusStrategie) ?? $this->inferStatusFromContext();
     }
 
     public function setStatusStrategie(string $statusStrategie): self
     {
-        $this->statusStrategie = $statusStrategie;
+        $this->statusStrategie = $this->normalizeStatusValue($statusStrategie) ?? trim($statusStrategie);
         return $this;
     }
 
     public function getStatusLabel(): string
     {
-        return match ($this->statusStrategie) {
+        return match ($this->getStatusStrategie()) {
             self::STATUS_PENDING => 'En attente',
             self::STATUS_APPROVED => 'Acceptée',
             self::STATUS_REJECTED => 'Refusée',
@@ -76,7 +76,7 @@ class Strategie
 
     public function getStatusCssClass(): string
     {
-        return match ($this->statusStrategie) {
+        return match ($this->getStatusStrategie()) {
             self::STATUS_PENDING => 'pending',
             self::STATUS_APPROVED => 'approved',
             self::STATUS_REJECTED => 'rejected',
@@ -301,10 +301,73 @@ public function setDureeTerme(?int $DureeTerme): self
         $this->locale = $locale;
         return $this;
     }
+    private function inferStatusFromContext(): string
+    {
+        if ($this->lockedAt !== null) {
+            return self::STATUS_APPROVED;
+        }
 
+        if ($this->project !== null) {
+            return self::STATUS_IN_PROGRESS;
+        }
+
+        return self::STATUS_PENDING;
+    }
+
+    private function normalizeStatusValue(?string $status): ?string
+    {
+        $raw = trim((string) $status);
+        if ($raw === '') {
+            return null;
+        }
+
+        $normalized = mb_strtolower($raw);
+        $normalized = strtr($normalized, [
+            'é' => 'e',
+            'è' => 'e',
+            'ê' => 'e',
+            'ë' => 'e',
+            'à' => 'a',
+            'â' => 'a',
+            'î' => 'i',
+            'ï' => 'i',
+            'ô' => 'o',
+            'ù' => 'u',
+            'û' => 'u',
+            'ü' => 'u',
+            'ç' => 'c',
+            'ã©' => 'e',
+        ]);
+        $normalized = str_replace(['_', '-'], ' ', $normalized);
+        $normalized = preg_replace('/\s+/', ' ', $normalized) ?? $normalized;
+        $normalized = trim($normalized);
+
+        if (in_array($normalized, ['en attente', 'pending'], true)) {
+            return self::STATUS_PENDING;
+        }
+
+        if (in_array($normalized, ['acceptee', 'accepted', 'accept'], true)) {
+            return self::STATUS_APPROVED;
+        }
+
+        if (in_array($normalized, ['refusee', 'rejected', 'reject'], true)) {
+            return self::STATUS_REJECTED;
+        }
+
+        if (in_array($normalized, ['en cours', 'in progress', 'inprogress'], true)) {
+            return self::STATUS_IN_PROGRESS;
+        }
+
+        if (in_array($normalized, ['non affectee', 'unassigned'], true)) {
+            return self::STATUS_UNASSIGNED;
+        }
+
+        return $raw;
+    }
     public function getTranslatableLocale(): ?string
     {
         return $this->locale;
     }
 
 }
+

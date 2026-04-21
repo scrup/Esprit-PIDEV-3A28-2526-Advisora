@@ -5,7 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}?v=20260412-objectives-v1">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}?v=20260421-pagination-v4">
     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
@@ -13,7 +13,7 @@
 <div class="strategy-container">
     <main class="strategy-main">
         <div class="strategy-grid">
-            <section class="strategies-section">
+            <section class="strategies-section" id="strategiesTop">
                 <div class="strategies-header">
                     <div class="header-title-row">
                         <h1>Gestion des Strategies</h1>
@@ -67,8 +67,22 @@
                     </div>
                 </div>
 
+                {% if pagination is defined and pagination.pageCount > 1 %}
+                    <div class="strategy-pagination strategy-pagination-top">
+                        <p class="strategy-pagination-meta">Page {{ pagination.currentPageNumber }} / {{ pagination.pageCount }}</p>
+                        {{ knp_pagination_render(pagination) }}
+                    </div>
+                {% endif %}
+
+                <div
+                    id="strategyTypeDistributionData"
+                    data-type-distribution="{{ typeDistribution|default({})|json_encode|e('html_attr') }}"
+                    data-total="{{ filteredStrategiesCount|default(strategies|length) }}"
+                    hidden
+                ></div>
+
                 <div class="strategies-list">
-                    {% for strategy in strategies %}
+                    {% for strategy in pagination %}
                     {% set strategyOwner = strategy.user ? ((strategy.user.prenomUser ?: '') ~ ' ' ~ (strategy.user.nomUser ?: ''))|trim : '' %}
                     {% set budgetLabel = strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' %}
                     {% set gainLabel = strategy.gainEstime is not null ? ((strategy.gainEstime >= 0 ? '+' : '') ~ strategy.gainEstime ~ '%') : 'Non defini' %}
@@ -253,6 +267,7 @@
                         </div>
                     {% endfor %}
                 </div>
+
             </section>
 
             <aside class="strategies-sidebar">
@@ -362,6 +377,10 @@
         </div>
     </main>
 </div>
+
+<button type="button" class="strategy-scroll-top" id="strategyScrollTopBtn" aria-label="Retour en haut">
+    <span class="material-symbols-outlined">north</span>
+</button>
 
 <div class="modal-overlay" id="objectifModal">
     <div class="modal-container">

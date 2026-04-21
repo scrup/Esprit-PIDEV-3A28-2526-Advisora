@@ -23,6 +23,7 @@ use App\Service\StrategyPlaybookLocalizationService;
 use Gedmo\Translatable\Entity\Translation;
 use App\Repository\ProjetRepository;
 use App\Service\PythonRecommendationService;
+use Knp\Component\Pager\PaginatorInterface;
 
 
 final class StrategyController extends AbstractController
@@ -98,7 +99,11 @@ final class StrategyController extends AbstractController
     ];
 
     #[Route('/back/strategies', name: 'app_back_strategies', methods: ['GET'])]
-    public function index(Request $request, StrategieRepository $strategieRepository): Response
+    public function index(
+        Request $request,
+        StrategieRepository $strategieRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
         $searchQuery = trim((string) $request->query->get('q', ''));
         $statusKey = (string) $request->query->get('status', 'all');
@@ -131,6 +136,12 @@ final class StrategyController extends AbstractController
         $sortOptions = $this->getStrategySortLabels();
         $statusOptions = $this->getStrategyStatusLabels();
         $strategies = $strategieRepository->findBackOfficeStrategies($filters, $sortBy, $direction);
+        $pagination = $paginator->paginate(
+            $strategies,
+            $request->query->getInt('page', 1),
+            5
+        );
+
         $activeCriteria = $this->buildActiveStrategyCriteria(
             $searchQuery,
             $statusKey,
@@ -141,6 +152,8 @@ final class StrategyController extends AbstractController
 
         return $this->render('back/strategie/strategie.html.twig', [
             'strategies' => $strategies,
+            'pagination' => $pagination,
+            'typeDistribution' => $this->buildStrategyTypeDistribution($strategies),
             'sortOptions' => $sortOptions,
             'statusOptions' => $statusOptions,
             'typeOptions' => $typeOptions,
@@ -923,6 +936,28 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
         }
 
         return $options;
+    }
+
+    private function buildStrategyTypeDistribution(array $strategies): array
+    {
+        $distribution = [];
+
+        foreach ($strategies as $strategy) {
+            if (!$strategy instanceof Strategie) {
+                continue;
+            }
+
+            $type = mb_strtolower(trim((string) $strategy->getType()));
+            if ($type === '') {
+                $type = 'non-defini';
+            }
+
+            $distribution[$type] = ($distribution[$type] ?? 0) + 1;
+        }
+
+        arsort($distribution);
+
+        return $distribution;
     }
 
     private function formatStrategyTypeLabel(string $type): string

@@ -93,7 +93,7 @@
                 <div class="pm-meta-list">
                     <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} {{ 'project.card.decisions'|trans }}</span>
                 </div>
-                {% if can_see_all_projects %}
+                {% if can_see_all_projects and project.status == constant('App\\Entity\\Project::STATUS_ACCEPTED') %}
                     <a href="{{ path('strategie_recommandation', {'id': project.id}) }}" class="pm-btn pm-btn-primary">
                         Generer une strategie recommandee
                     </a>
