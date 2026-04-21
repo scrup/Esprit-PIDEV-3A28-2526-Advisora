@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Analyse Ressources</title>
+    <style>
+        body {
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            color: #1f1f1f;
+            margin: 24px;
+            line-height: 1.45;
+            font-size: 12px;
+        }
+        h1, h2, h3 {
+            margin: 0 0 8px;
+            color: #2a1f14;
+        }
+        .meta {
+            margin-bottom: 18px;
+            padding: 10px 12px;
+            border: 1px solid #dcc9ad;
+            background: #fbf6ef;
+            border-radius: 8px;
+        }
+        .kpi-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+            margin-bottom: 16px;
+        }
+        .kpi-cell {
+            border: 1px solid #e5d6c1;
+            background: #fffdf8;
+            border-radius: 8px;
+            padding: 10px 12px;
+            width: 25%;
+            vertical-align: top;
+        }
+        .kpi-label {
+            display: block;
+            color: #6d5842;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 6px;
+        }
+        .kpi-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2a1f14;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #e8dcca;
+            padding: 7px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #f4eadb;
+            color: #3f2e20;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .tag {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .tag-haute { background: #f8d6d2; color: #7d2c24; }
+        .tag-moyenne { background: #f7ebcc; color: #7a5a17; }
+        .tag-basse { background: #dcefdc; color: #2e6130; }
+        .small {
+            color: #7a6b5b;
+            font-size: 11px;
+        }
+        .summary {
+            margin: 12px 0 16px;
+            padding: 10px 12px;
+            border-left: 4px solid #b58d65;
+            background: #fbf7f1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rapport metier - Analyse Ressources Back Office</h1>
+    <div class="meta">
+        <div><strong>Genere le:</strong> 21/04/2026 22:58:13</div>
+        <div><strong>Moteur:</strong> resource_actions_v1</div>
+        <div>
+            <strong>Filtres appliques:</strong>
+            priorite=toutes,
+            action=toutes
+        </div>
+    </div>
+
+    <table class="kpi-grid">
+        <tr>
+            <td class="kpi-cell">
+                <span class="kpi-label">Stock critique</span>
+                <span class="kpi-value">4</span>
+            </td>
+            <td class="kpi-cell">
+                <span class="kpi-label">Surstock</span>
+                <span class="kpi-value">20</span>
+            </td>
+            <td class="kpi-cell">
+                <span class="kpi-label">Prix anormal</span>
+                <span class="kpi-value">18</span>
+            </td>
+            <td class="kpi-cell">
+                <span class="kpi-label">Fournisseurs a risque</span>
+                <span class="kpi-value">2</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="summary">
+        <div><strong>44 action(s) recommandee(s), dont 15 en priorite haute.</strong></div>
+        <div class="small">Analyse sur 24 ressources: 4 stock critique, 20 surstock, 18 prix anormal, 2 fournisseur a risque.</div>
+    </div>
+
+    <h2>Actions recommandees</h2>
+    <div class="small">Total lignes exportees: 44</div>
+    <table>
+        <thead>
+        <tr>
+            <th>Priorite</th>
+            <th>Code</th>
+            <th>Ressource</th>
+            <th>Fournisseur</th>
+            <th>Impact metier</th>
+            <th>Justification</th>
+            <th>Confiance</th>
+            <th>Delai</th>
+        </tr>
+        </thead>
+        <tbody>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>STOCK_CRITIQUE_REAPPRO</td>
+                <td>
+                    Meeting Room
+                                            <div class="small">#3</div>
+                                    </td>
+                <td>Beta Supplies</td>
+                <td>Risque de rupture et blocage des engagements projets.</td>
+                <td>Stock total=2, reserve=13, disponible=0, seuil=2, statut=RESERVED.</td>
+                <td>96%</td>
+                <td>immediat</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>STOCK_CRITIQUE_REAPPRO</td>
+                <td>
+                    3D Printer
+                                            <div class="small">#4</div>
+                                    </td>
+                <td>Beta Supplies</td>
+                <td>Risque de rupture et blocage des engagements projets.</td>
+                <td>Stock total=0, reserve=1, disponible=0, seuil=2, statut=UNAVAILABLE.</td>
+                <td>96%</td>
+                <td>immediat</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>FOURNISSEUR_RISQUE_DIVERSIFIER</td>
+                <td>
+                    Portefeuille fournisseur
+                                    </td>
+                <td>Beta Supplies</td>
+                <td>Dependance fournisseur pouvant affecter plusieurs ressources.</td>
+                <td>Fournisseur=Beta Supplies, ressources=2, critiques=2, indisponibles=1, surstock=0.</td>
+                <td>95%</td>
+                <td>3 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    montre casio
+                                            <div class="small">#9</div>
+                                    </td>
+                <td>bois</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=23222222.000, mediane=3377.500, ecart=687456.5%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    leau
+                                            <div class="small">#12</div>
+                                    </td>
+                <td>MONTRE</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=21321.000, mediane=3377.500, ecart=531.3%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    meuble
+                                            <div class="small">#15</div>
+                                    </td>
+                <td>Aaa</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=12323.000, mediane=3377.500, ecart=264.9%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    montre swatch
+                                            <div class="small">#18</div>
+                                    </td>
+                <td>bois</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=33232.000, mediane=3377.500, ecart=883.9%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    bois
+                                            <div class="small">#19</div>
+                                    </td>
+                <td>swatch</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=232332.000, mediane=3377.500, ecart=6778.8%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    montre
+                                            <div class="small">#21</div>
+                                    </td>
+                <td>meuble</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=21123.000, mediane=3377.500, ecart=525.4%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    boite de leau
+                                            <div class="small">#22</div>
+                                    </td>
+                <td>meuble</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=31331.000, mediane=3377.500, ecart=827.6%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    boite de leau
+                                            <div class="small">#23</div>
+                                    </td>
+                <td>leau</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=21122.000, mediane=3377.500, ecart=525.4%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    voiture
+                                            <div class="small">#25</div>
+                                    </td>
+                <td>voiture</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=21213.000, mediane=3377.500, ecart=528.1%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    charbon
+                                            <div class="small">#28</div>
+                                    </td>
+                <td>charbon</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=21132.000, mediane=3377.500, ecart=525.7%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    dfsfsdf
+                                            <div class="small">#33</div>
+                                    </td>
+                <td>Alpha Supplies</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=42242.000, mediane=3377.500, ecart=1150.7%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-haute">haute</span></td>
+                <td>FOURNISSEUR_RISQUE_DIVERSIFIER</td>
+                <td>
+                    Portefeuille fournisseur
+                                    </td>
+                <td>Alpha Supplies</td>
+                <td>Dependance fournisseur pouvant affecter plusieurs ressources.</td>
+                <td>Fournisseur=Alpha Supplies, ressources=3, critiques=2, indisponibles=0, surstock=1.</td>
+                <td>91%</td>
+                <td>3 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    meuble bois
+                                            <div class="small">#20</div>
+                                    </td>
+                <td>meuble</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=211.000, mediane=3377.500, ecart=93.8%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    leau
+                                            <div class="small">#26</div>
+                                    </td>
+                <td>MONTRE</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=21.000, mediane=3377.500, ecart=99.4%.</td>
+                <td>93%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    Meeting Room
+                                            <div class="small">#3</div>
+                                    </td>
+                <td>Beta Supplies</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=300.000, mediane=3377.500, ecart=91.1%.</td>
+                <td>92%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    lava
+                                            <div class="small">#29</div>
+                                    </td>
+                <td>Aaa</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=313.000, mediane=3377.500, ecart=90.7%.</td>
+                <td>92%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    Projector
+                                            <div class="small">#2</div>
+                                    </td>
+                <td>Alpha Supplies</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=800.000, mediane=3377.500, ecart=76.3%.</td>
+                <td>88%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    bois
+                                            <div class="small">#7</div>
+                                    </td>
+                <td>bois</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=3000 sur 3000 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    montre casio
+                                            <div class="small">#9</div>
+                                    </td>
+                <td>bois</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=2121 sur 2121 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    montre swatch
+                                            <div class="small">#11</div>
+                                    </td>
+                <td>bois</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=2223 sur 2223 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    leau
+                                            <div class="small">#12</div>
+                                    </td>
+                <td>MONTRE</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=21312 sur 21312 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    meuble
+                                            <div class="small">#15</div>
+                                    </td>
+                <td>Aaa</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=33223 sur 33223 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    swatch
+                                            <div class="small">#17</div>
+                                    </td>
+                <td>MONTRE</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=1121 sur 1121 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    montre swatch
+                                            <div class="small">#18</div>
+                                    </td>
+                <td>bois</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=2332 sur 2332 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    bois
+                                            <div class="small">#19</div>
+                                    </td>
+                <td>swatch</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=121221 sur 121221 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    meuble bois
+                                            <div class="small">#20</div>
+                                    </td>
+                <td>meuble</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=1231 sur 1231 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    montre
+                                            <div class="small">#21</div>
+                                    </td>
+                <td>meuble</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=12321 sur 12321 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    boite de leau
+                                            <div class="small">#22</div>
+                                    </td>
+                <td>meuble</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=2120 sur 2121 avec reserve faible (1).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    boite de leau
+                                            <div class="small">#23</div>
+                                    </td>
+                <td>leau</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=121212 sur 121212 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    montre
+                                            <div class="small">#24</div>
+                                    </td>
+                <td>leau</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=12122 sur 12123 avec reserve faible (1).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    voiture
+                                            <div class="small">#25</div>
+                                    </td>
+                <td>voiture</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=12300 sur 12312 avec reserve faible (12).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    leau
+                                            <div class="small">#26</div>
+                                    </td>
+                <td>MONTRE</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=12122 sur 12123 avec reserve faible (1).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    MONTRE
+                                            <div class="small">#27</div>
+                                    </td>
+                <td>leau</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=3443 sur 3443 avec reserve faible (0).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    charbon
+                                            <div class="small">#28</div>
+                                    </td>
+                <td>charbon</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=12310 sur 12312 avec reserve faible (2).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    gold
+                                            <div class="small">#30</div>
+                                    </td>
+                <td>charbon</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=1309 sur 1312 avec reserve faible (3).</td>
+                <td>88%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    lava
+                                            <div class="small">#29</div>
+                                    </td>
+                <td>Aaa</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=116 sur 121 avec reserve faible (5).</td>
+                <td>87%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    Laptop
+                                            <div class="small">#1</div>
+                                    </td>
+                <td>Alpha Supplies</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=1200.000, mediane=3377.500, ecart=64.5%.</td>
+                <td>85%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>PRIX_ANORMAL_AUDITER</td>
+                <td>
+                    swatch
+                                            <div class="small">#17</div>
+                                    </td>
+                <td>MONTRE</td>
+                <td>Risque de marge non maitrisee ou de perte de competitivite.</td>
+                <td>Prix=1312.000, mediane=3377.500, ecart=61.2%.</td>
+                <td>85%</td>
+                <td>48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>SURSTOCK_REEQUILIBRER</td>
+                <td>
+                    Laptop
+                                            <div class="small">#1</div>
+                                    </td>
+                <td>Alpha Supplies</td>
+                <td>Capital immobilise et rotation stock insuffisante.</td>
+                <td>Disponible=8 sur 10 avec reserve faible (2).</td>
+                <td>84%</td>
+                <td>7 jours</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>STOCK_CRITIQUE_REAPPRO</td>
+                <td>
+                    dfsfsdf
+                                            <div class="small">#33</div>
+                                    </td>
+                <td>Alpha Supplies</td>
+                <td>Risque de rupture et blocage des engagements projets.</td>
+                <td>Stock total=1, reserve=0, disponible=1, seuil=2, statut=AVAILABLE.</td>
+                <td>80%</td>
+                <td>24h-48h</td>
+            </tr>
+                                <tr>
+                <td><span class="tag tag-moyenne">moyenne</span></td>
+                <td>STOCK_CRITIQUE_REAPPRO</td>
+                <td>
+                    Projector
+                                            <div class="small">#2</div>
+                                    </td>
+                <td>Alpha Supplies</td>
+                <td>Risque de rupture et blocage des engagements projets.</td>
+                <td>Stock total=5, reserve=3, disponible=2, seuil=2, statut=AVAILABLE.</td>
+                <td>76%</td>
+                <td>24h-48h</td>
+            </tr>
+                </tbody>
+    </table>
+</body>
+</html>
+

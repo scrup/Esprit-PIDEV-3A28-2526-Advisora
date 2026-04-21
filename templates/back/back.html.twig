@@ -1,6 +1,6 @@
 {% extends 'base_back.html.twig' %}
 
-{% block title %}{{ 'back.dashboard.meta.title'|trans }}{% endblock %}
+{% block title %}Advisora | Tableau de bord{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -11,27 +11,27 @@
 <section class="dashboard-shell">
     <header class="dashboard-hero">
         <div class="dashboard-hero-copy">
-            <span class="dashboard-eyebrow">{{ 'back.dashboard.hero.eyebrow'|trans }}</span>
-            <h1>{{ 'back.dashboard.hero.title'|trans }}</h1>
-            <p>{{ 'back.dashboard.hero.description'|trans }}</p>
+            <span class="dashboard-eyebrow">Tableau de bord executif</span>
+            <h1>Centre de pilotage du back office</h1>
+            <p>Suivez les projets, les strategies, les evenements, les ressources et les investissements depuis une seule vue de controle.</p>
         </div>
 
         <div class="dashboard-hero-side">
-            <label class="dashboard-search" aria-label="{{ 'back.dashboard.search.aria'|trans }}">
+            <label class="dashboard-search" aria-label="Recherche">
                 <i class="fas fa-search"></i>
-                <input type="search" placeholder="{{ 'back.dashboard.search.placeholder'|trans }}" />
+                <input type="search" placeholder="Rechercher un module ou un indicateur" />
             </label>
 
             <div class="dashboard-hero-meta">
                 <div class="dashboard-date-card">
-                    <span>{{ 'back.dashboard.today'|trans }}</span>
+                    <span>Aujourd hui</span>
                     <strong id="currentDate"></strong>
                 </div>
                 <div class="dashboard-user-card">
                     <span class="dashboard-user-avatar">{{ app.user ? app.user.getPrenomUser()|slice(0, 1)|upper : 'A' }}</span>
                     <div>
                         <strong>{{ app.user ? app.user.getPrenomUser() : 'Equipe' }}</strong>
-                        <span>{{ 'back.dashboard.user_area'|trans }}</span>
+                        <span>Back office</span>
                     </div>
                 </div>
             </div>
@@ -42,36 +42,36 @@
         <article class="executive-card">
             <span class="executive-icon"><i class="fas fa-briefcase"></i></span>
             <div class="executive-copy">
-                <span class="executive-label">{{ 'back.dashboard.cards.active_projects.label'|trans }}</span>
+                <span class="executive-label">Projets actifs</span>
                 <strong>{{ total_projects }}</strong>
-                <span class="executive-meta">{{ accepted_projects }} {{ 'back.dashboard.cards.active_projects.meta'|trans }}</span>
+                <span class="executive-meta">{{ accepted_projects }} acceptes</span>
             </div>
         </article>
 
         <article class="executive-card">
             <span class="executive-icon executive-icon-warm"><i class="fas fa-hourglass-half"></i></span>
             <div class="executive-copy">
-                <span class="executive-label">{{ 'back.dashboard.cards.pending_projects.label'|trans }}</span>
+                <span class="executive-label">Projets en attente</span>
                 <strong>{{ pending_projects }}</strong>
-                <span class="executive-meta">{{ refused_projects }} {{ 'back.dashboard.cards.pending_projects.meta'|trans }}</span>
+                <span class="executive-meta">{{ refused_projects }} refuses</span>
             </div>
         </article>
 
         <article class="executive-card">
             <span class="executive-icon executive-icon-cool"><i class="fas fa-gavel"></i></span>
             <div class="executive-copy">
-                <span class="executive-label">{{ 'back.dashboard.cards.decisions.label'|trans }}</span>
+                <span class="executive-label">Decisions prises</span>
                 <strong>{{ total_decisions }}</strong>
-                <span class="executive-meta">{{ 'back.dashboard.cards.decisions.meta'|trans }}</span>
+                <span class="executive-meta">Historique global</span>
             </div>
         </article>
 
         <article class="executive-card">
             <span class="executive-icon executive-icon-emerald"><i class="fas fa-wallet"></i></span>
             <div class="executive-copy">
-                <span class="executive-label">{{ 'back.dashboard.cards.volume.label'|trans }}</span>
+                <span class="executive-label">Volume engage</span>
                 <strong>{{ investment_metrics.total_amount|number_format(0, '.', ' ') }} DT</strong>
-                <span class="executive-meta">{{ investment_metrics.count }} {{ 'back.dashboard.cards.volume.meta'|trans }}</span>
+                <span class="executive-meta">{{ investment_metrics.count }} investissement(s)</span>
             </div>
         </article>
     </div>
@@ -80,14 +80,14 @@
         <article class="dashboard-panel dashboard-panel-main">
             <div class="panel-header">
                 <div>
-                    <span class="panel-eyebrow">{{ 'back.dashboard.strategy_analysis.eyebrow'|trans }}</span>
-                    <h2>{{ 'back.dashboard.strategy_analysis.title'|trans }}</h2>
-                    <p>{{ 'back.dashboard.strategy_analysis.description'|trans }}</p>
+                    <span class="panel-eyebrow">Analyse strategique</span>
+                    <h2>Performance strategique</h2>
+                    <p>Visualisation des strategies acceptees et du taux de reussite consolide.</p>
                 </div>
                 <div class="panel-badges">
-                    <span>{{ strategy_acceptance_timeline.accepted_total }} {{ 'back.dashboard.strategy_analysis.accepted'|trans }}</span>
-                    <span>{{ strategy_acceptance_timeline.refused_total }} {{ 'back.dashboard.strategy_analysis.refused'|trans }}</span>
-                    <span class="panel-badge-strong">{{ strategy_acceptance_timeline.latest_success_rate|number_format(1, '.', ' ') }}% {{ 'back.dashboard.strategy_analysis.success'|trans }}</span>
+                    <span>{{ strategy_acceptance_timeline.accepted_total }} acceptees</span>
+                    <span>{{ strategy_acceptance_timeline.refused_total }} refusees</span>
+                    <span class="panel-badge-strong">{{ strategy_acceptance_timeline.latest_success_rate|number_format(1, '.', ' ') }}% succes</span>
                 </div>
             </div>
 
@@ -103,8 +103,8 @@
                 <div class="dashboard-empty-state">
                     <i class="fas fa-chart-line"></i>
                     <div>
-                        <strong>{{ 'back.dashboard.strategy_analysis.empty_title'|trans }}</strong>
-                        <p>{{ 'back.dashboard.strategy_analysis.empty_text'|trans }}</p>
+                        <strong>Aucune serie disponible</strong>
+                        <p>Le graphique apparaitra des qu une strategie acceptee aura une date de validation exploitable.</p>
                     </div>
                 </div>
             {% endif %}
@@ -114,29 +114,29 @@
             <article class="dashboard-panel">
                 <div class="panel-header panel-header-compact">
                     <div>
-                        <span class="panel-eyebrow">{{ 'back.dashboard.investment_summary.eyebrow'|trans }}</span>
-                        <h2>{{ 'back.dashboard.investment_summary.title'|trans }}</h2>
+                        <span class="panel-eyebrow">Synthese investissement</span>
+                        <h2>Portefeuille engage</h2>
                     </div>
-                    <span class="panel-inline-indicator">{{ investment_metrics.largest_ticket|number_format(0, '.', ' ') }} DT {{ 'back.dashboard.investment_summary.max'|trans }}</span>
+                    <span class="panel-inline-indicator">{{ investment_metrics.largest_ticket|number_format(0, '.', ' ') }} DT max</span>
                 </div>
 
                 <div class="balance-value">{{ investment_metrics.total_amount|number_format(0, '.', ' ') }} DT</div>
 
                 <div class="balance-grid">
                     <div class="balance-tile">
-                        <span>{{ 'back.dashboard.investment_summary.tiles.investments'|trans }}</span>
+                        <span>Investissements</span>
                         <strong>{{ investment_metrics.count }}</strong>
                     </div>
                     <div class="balance-tile">
-                        <span>{{ 'back.dashboard.investment_summary.tiles.events'|trans }}</span>
+                        <span>Evenements a venir</span>
                         <strong>{{ upcoming_events_count }}</strong>
                     </div>
                     <div class="balance-tile">
-                        <span>{{ 'back.dashboard.investment_summary.tiles.resources_available'|trans }}</span>
+                        <span>Ressources disponibles</span>
                         <strong>{{ resource_metrics.available }}</strong>
                     </div>
                     <div class="balance-tile">
-                        <span>{{ 'back.dashboard.investment_summary.tiles.resources_linked'|trans }}</span>
+                        <span>Ressources liees</span>
                         <strong>{{ resource_metrics.linked }}</strong>
                     </div>
                 </div>
@@ -145,8 +145,8 @@
             <article class="dashboard-panel">
                 <div class="panel-header panel-header-compact">
                     <div>
-                        <span class="panel-eyebrow">{{ 'back.dashboard.allocation.eyebrow'|trans }}</span>
-                        <h2>{{ 'back.dashboard.allocation.title'|trans }}</h2>
+                        <span class="panel-eyebrow">Repartition</span>
+                        <h2>Allocation des investissements</h2>
                     </div>
                 </div>
 
@@ -166,7 +166,7 @@
                         </div>
                     </div>
                 {% else %}
-                    <p class="dashboard-empty-copy">{{ 'back.dashboard.allocation.empty'|trans }}</p>
+                    <p class="dashboard-empty-copy">Aucune donnee d investissement disponible.</p>
                 {% endif %}
             </article>
         </div>
@@ -176,10 +176,10 @@
         <article class="dashboard-panel">
             <div class="panel-header panel-header-compact">
                 <div>
-                    <span class="panel-eyebrow">{{ 'back.dashboard.projects.eyebrow'|trans }}</span>
-                    <h2>{{ 'back.dashboard.projects.title'|trans }}</h2>
+                    <span class="panel-eyebrow">Projets</span>
+                    <h2>Projets recents</h2>
                 </div>
-                <a href="{{ path('back_project_index') }}" class="panel-link">{{ 'back.dashboard.projects.link'|trans }}</a>
+                <a href="{{ path('back_project_index') }}" class="panel-link">Voir tout</a>
             </div>
 
             {% if latest_projects is not empty %}
@@ -191,24 +191,24 @@
                                 <span>{{ project.legacyType ?: 'Type non precise' }} - {{ project.statusLabel }}</span>
                             </div>
                             <div class="stack-metric">
-                                <span>{{ 'back.dashboard.projects.progress'|trans }}</span>
+                                <span>Avancement</span>
                                 <strong>{{ project.avancementProj|default(0)|number_format(0, '.', ' ') }}%</strong>
                             </div>
                         </a>
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="dashboard-empty-copy">{{ 'back.dashboard.projects.empty'|trans }}</p>
+                <p class="dashboard-empty-copy">Aucun projet recent.</p>
             {% endif %}
         </article>
 
         <article class="dashboard-panel">
             <div class="panel-header panel-header-compact">
                 <div>
-                    <span class="panel-eyebrow">{{ 'back.dashboard.decisions.eyebrow'|trans }}</span>
-                    <h2>{{ 'back.dashboard.decisions.title'|trans }}</h2>
+                    <span class="panel-eyebrow">Decisions</span>
+                    <h2>Dernieres decisions</h2>
                 </div>
-                <a href="{{ path('back_project_overview') }}" class="panel-link">{{ 'back.dashboard.decisions.link'|trans }}</a>
+                <a href="{{ path('back_project_overview') }}" class="panel-link">Historique</a>
             </div>
 
             {% if latest_decisions is not empty %}
@@ -224,17 +224,17 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="dashboard-empty-copy">{{ 'back.dashboard.decisions.empty'|trans }}</p>
+                <p class="dashboard-empty-copy">Aucune decision recente.</p>
             {% endif %}
         </article>
 
         <article class="dashboard-panel">
             <div class="panel-header panel-header-compact">
                 <div>
-                    <span class="panel-eyebrow">{{ 'back.dashboard.events.eyebrow'|trans }}</span>
-                    <h2>{{ 'back.dashboard.events.title'|trans }}</h2>
+                    <span class="panel-eyebrow">Evenements</span>
+                    <h2>Evenements a venir</h2>
                 </div>
-                <a href="{{ path('back_event_index') }}" class="panel-link">{{ 'back.dashboard.events.link'|trans }}</a>
+                <a href="{{ path('back_event_index') }}" class="panel-link">Calendrier</a>
             </div>
 
             {% if upcoming_events is not empty %}
@@ -246,24 +246,24 @@
                                 <span>{{ event.location ?: 'Lieu non precise' }} - {{ event.timelineLabel }}</span>
                             </div>
                             <div class="stack-metric">
-                                <span>{{ 'back.dashboard.events.start'|trans }}</span>
+                                <span>Debut</span>
                                 <strong>{{ event.startDate ? event.startDate|date('d M H:i') : '--' }}</strong>
                             </div>
                         </a>
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="dashboard-empty-copy">{{ 'back.dashboard.events.empty'|trans }}</p>
+                <p class="dashboard-empty-copy">Aucun evenement planifie.</p>
             {% endif %}
         </article>
 
         <article class="dashboard-panel">
             <div class="panel-header panel-header-compact">
                 <div>
-                    <span class="panel-eyebrow">{{ 'back.dashboard.resources.eyebrow'|trans }}</span>
-                    <h2>{{ 'back.dashboard.resources.title'|trans }}</h2>
+                    <span class="panel-eyebrow">Ressources</span>
+                    <h2>Ressources recentes</h2>
                 </div>
-                <a href="{{ path('back_resource_dashboard') }}" class="panel-link">{{ 'back.dashboard.resources.link'|trans }}</a>
+                <a href="{{ path('back_resource_dashboard') }}" class="panel-link">Ouvrir</a>
             </div>
 
             {% if recent_resources is not empty %}
@@ -275,14 +275,14 @@
                                 <span>{{ resource.statusLabel }} - {{ resource.getSupplierDisplayName() }}</span>
                             </div>
                             <div class="stack-metric">
-                                <span>{{ 'back.dashboard.resources.stock'|trans }}</span>
+                                <span>Stock</span>
                                 <strong>{{ resource.quantity ?? 0 }}</strong>
                             </div>
                         </a>
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="dashboard-empty-copy">{{ 'back.dashboard.resources.empty'|trans }}</p>
+                <p class="dashboard-empty-copy">Aucune ressource recente.</p>
             {% endif %}
         </article>
     </div>

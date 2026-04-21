@@ -10,7 +10,6 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('js/strategy-countdown.js') }}"></script>
     <script src="{{ asset('js/project-task-board.js') }}"></script>
 {% endblock %}
 
@@ -151,13 +150,6 @@
                             <span><strong>Budget :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
                             <span><strong>Gain estime :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non precise' }}</span>
                             <span><strong>Objectifs :</strong> {{ strategy.objectives|length }}</span>
-                            {% if strategy.lockedAt and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
-                                {% set strategy_deadline = strategy.lockedAt|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
-                                <span class="pm-countdown" data-strategy-countdown data-end-at="{{ strategy_deadline|date('c') }}">
-                                    <strong>Fin de periode dans :</strong>
-                                    <span class="pm-countdown-value" data-countdown-value>--:--:--</span>
-                                </span>
-                            {% endif %}
                         </div>
                     </section>
                 {% else %}

@@ -1,35 +1,28 @@
 <footer id="contact">
     <div class="footer-grid">
-        <div class="footer-col">
-            <h3>
-                <img src="/assets/logo.png" alt="{{ 'footer.logo_alt'|trans }}" class="logo-img" onerror="this.style.display='none'">
-                Advisora
-            </h3>
-            <p>{{ 'footer.brand_text'|trans|raw }}</p>
-            <div class="social-icons">
-                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            </div>
-        </div>
-
-        <div class="footer-col">
-            <h4>{{ 'footer.platform.title'|trans }}</h4>
-            <p>{{ 'footer.platform.links'|trans|raw }}</p>
-        </div>
-
-        <div class="footer-col">
-            <h4>{{ 'footer.resources.title'|trans }}</h4>
-            <p>{{ 'footer.resources.links'|trans|raw }}</p>
-        </div>
-
-        <div class="footer-col newsletter">
-            <h4>{{ 'footer.newsletter.title'|trans }}</h4>
-            <input type="email" id="newsEmail" placeholder="{{ 'footer.newsletter.placeholder'|trans }}">
-            <button class="btn btn-primary" id="newsSignupBtn">
-                {{ 'footer.newsletter.button'|trans }} <i class="fas fa-paper-plane"></i>
-            </button>
-            <p>{{ 'footer.newsletter.note'|trans }}</p>
-        </div>
+    <div class="footer-col">
+      <h3> <img src="{{ app.request.basePath ~ '/assets/logo.png' }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
+    Advisora</h3>
+      <p>Écosystème financier intelligent<br>© 2026 Tous droits réservés</p>
+      <div class="social-icons">
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      </div>
     </div>
+    <div class="footer-col">
+      <h4>Plateforme</h4>
+      <p>Analytique<br>Stratégies<br>Accès API<br>Tarifs</p>
+    </div>
+    <div class="footer-col">
+      <h4>Ressources</h4>
+      <p>Blog<br>Études de cas<br>Webinaires<br>Documentation</p>
+    </div>
+    <div class="footer-col newsletter">
+      <h4>Lettre d'information</h4>
+      <input type="email" id="newsEmail" placeholder="Votre email professionnel">
+      <button class="btn btn-primary" id="newsSignupBtn">S'abonner <i class="fas fa-paper-plane"></i></button>
+      <p>Recevez nos insights hebdomadaires, sans spam.</p>
+    </div>
+  </div>
 </footer>

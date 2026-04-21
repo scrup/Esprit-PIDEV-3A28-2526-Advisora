@@ -6,19 +6,19 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
      <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260417-rs-v29">
 {% endblock %}
 
 {% block body %}
-    <section class="pm-admin-shell">
-        <div class="pm-admin-header">
-            <div>
-                <span class="pm-badge">Gestion fournisseur</span>
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+        <div class="pm-admin-header rs-header">
+            <div class="rs-header-copy back-users-title">
+                <span class="pm-badge">Back office</span>
                 <h1>{{ supplier.nomFr }}</h1>
-                <p>Consultez la fiche fournisseur, ses coordonnees et ses ressources rattachees avant toute action CRUD.</p>
+                <p>Consultation detaillee du fournisseur, de ses coordonnees de contact et des ressources actuellement rattachees.</p>
             </div>
-            <div class="pm-card-actions">
-                <a class="pm-btn pm-btn-secondary" href="{{ path('back_supplier_index') }}">Retour a la liste</a>
-                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_index') }}">Voir les ressources</a>
+            <div class="pm-card-actions rs-header-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_supplier_index') }}">Retour</a>
                 {% if can_edit_supplier %}
                     <a class="pm-btn pm-btn-primary" href="{{ path('supplier_edit', {id: supplier.id}) }}">Modifier le fournisseur</a>
                 {% endif %}
@@ -27,53 +27,133 @@
 
         {% include 'back/resource/_module_nav.html.twig' %}
 
-        <div class="pm-admin-grid">
-            <article class="pm-card">
-                <h2>Informations du fournisseur</h2>
-                <div class="pm-meta-list pm-meta-list-vertical">
-                    <span><strong>Statut :</strong> {{ supplier.getStatusLabel() }}</span>
-                    <span><strong>Societe :</strong> {{ supplier.fournisseur }}</span>
-                    <span><strong>Email :</strong> {{ supplier.emailFr }}</span>
-                    <span><strong>Telephone :</strong> {{ supplier.numTelFr }}</span>
-                    <span><strong>Localisation :</strong> {{ supplier.localisationFr }}</span>
-                    <span><strong>Quantite produit :</strong> {{ supplier.quantite }}</span>
-                    <span><strong>Ressources rattachees :</strong> {{ linked_resources_count }}</span>
+        <div class="rs-detail-grid">
+            <section class="pm-card rs-panel rs-preview-panel">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Synthese</h2>
+                        <p>Apercu fonctionnel</p>
+                    </div>
+                </div>
+                <div class="rs-preview-frame rs-preview-frame-neutral">
+                    <div class="rs-preview-placeholder rs-preview-placeholder-large">
+                        <i class="fas fa-truck-loading"></i>
+                    </div>
+                </div>
+                <div class="rs-mini-metrics">
+                    <div class="rs-mini-metric">
+                        <span>Statut</span>
+                        <strong>{{ supplier.getStatusLabel() }}</strong>
+                    </div>
+                    <div class="rs-mini-metric">
+                        <span>Quantite</span>
+                        <strong>{{ supplier.quantite }}</strong>
+                    </div>
+                    <div class="rs-mini-metric">
+                        <span>Ressources</span>
+                        <strong>{{ linked_resources_count }}</strong>
+                    </div>
+                    <div class="rs-mini-metric">
+                        <span>Societe</span>
+                        <strong>{{ supplier.fournisseur ?: 'Non precisee' }}</strong>
+                    </div>
                 </div>
                 {% if can_delete_supplier %}
-                    <form method="post" action="{{ path('supplier_delete', {id: supplier.id}) }}" onsubmit="return confirm('Supprimer ce fournisseur ?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete_supplier_' ~ supplier.id) }}">
-                        <button class="pm-btn pm-btn-danger" type="submit">Supprimer le fournisseur</button>
-                    </form>
+                    <div class="rs-panel-actions">
+                        <form method="post" action="{{ path('supplier_delete', {id: supplier.id}) }}" onsubmit="return confirm('Supprimer ce fournisseur ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_supplier_' ~ supplier.id) }}">
+                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                        </form>
+                    </div>
                 {% endif %}
-            </article>
+            </section>
 
-            <article class="pm-card">
-                <div class="pm-current-decision">
-                    <span class="pm-badge">Etat actuel</span>
-                    <strong>{{ supplier.getStatusLabel() }}</strong>
-                    <span>{{ linked_resources_count }} ressource(s) associee(s)</span>
-                    <p>Le fournisseur {{ supplier.getDisplayName() }} est integre au module Ressource Symfony avec la meme logique de validation que dans l application Java.</p>
-                </div>
+            <div class="rs-detail-stack">
+                <section class="pm-card rs-panel">
+                    <div class="pm-card-head rs-panel-head">
+                        <div>
+                            <h2>Informations generales</h2>
+                            <p>Coordonnees et statut du fournisseur</p>
+                        </div>
+                    </div>
+                    <div class="back-user-table-shell rs-table-wrap">
+                        <table class="back-user-table rs-table rs-kv-table">
+                            <tbody>
+                                <tr>
+                                    <th>Statut</th>
+                                    <td><span class="rs-state rs-state-{{ supplier.getStatus() }}">{{ supplier.getStatusLabel() }}</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Societe</th>
+                                    <td>{{ supplier.fournisseur }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td>{{ supplier.emailFr }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Telephone</th>
+                                    <td>{{ supplier.numTelFr }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Localisation</th>
+                                    <td>{{ supplier.localisationFr }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Quantite produit</th>
+                                    <td>{{ supplier.quantite }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Ressources rattachees</th>
+                                    <td>{{ linked_resources_count }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
 
-                <div class="pm-section-head">
-                    <h2>Ressources rattachees</h2>
-                </div>
+                <section class="pm-card rs-panel">
+                    <div class="pm-card-head rs-panel-head">
+                        <div>
+                            <h2>Ressources rattachees</h2>
+                            <p>{{ linked_resources_count }} ressource(s) associee(s)</p>
+                        </div>
+                    </div>
 
-                <div class="pm-decision-list">
-                    {% for resource in supplier.resources %}
-                        <div class="pm-decision-item">
-                            <strong>{{ resource.name }}</strong>
-                            <div class="pm-decision-meta">
-                                <span>Statut : {{ resource.getStatusLabel() }}</span>
-                                <span>Quantite : {{ resource.quantity }}</span>
-                                <span>Prix : {{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                            </div>
+                    {% if supplier.resources is not empty %}
+                        <div class="back-user-table-shell rs-table-wrap">
+                            <table class="back-user-table rs-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ressource</th>
+                                        <th>Statut</th>
+                                        <th>Quantite</th>
+                                        <th>Prix</th>
+                                        <th class="rs-actions-col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for resource in supplier.resources %}
+                                        <tr class="back-user-row">
+                                            <td>{{ resource.name }}</td>
+                                            <td><span class="rs-state rs-state-{{ resource.status|default('')|lower }}">{{ resource.getStatusLabel() }}</span></td>
+                                            <td>{{ resource.quantity }}</td>
+                                            <td>{{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</td>
+                                            <td class="back-user-table-actions rs-row-actions">
+                                                <a class="pm-btn pm-btn-primary rs-table-btn" href="{{ path('resource_back_manage', {id: resource.id}) }}">Traiter</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     {% else %}
-                        <p class="pm-empty-text">Aucune ressource n est encore rattachee a ce fournisseur.</p>
-                    {% endfor %}
-                </div>
-            </article>
+                        <div class="pm-empty rs-empty rs-empty-inline">
+                            <p>Aucune ressource n est encore rattachee a ce fournisseur.</p>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
         </div>
     </section>
 {% endblock %}

@@ -8,7 +8,6 @@ use App\Entity\Strategie;
 use App\Entity\User;
 use App\Form\StrategyType;
 use App\Repository\StrategieRepository;
-use App\Repository\ProjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,22 +17,9 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\GeminiPdfContentGenerator;
 use App\Service\PdfGeneratorService;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Service\LibreTranslateService;
-use App\Service\StrategyPlaybookLocalizationService;
-use Gedmo\Translatable\Entity\Translation;
-use App\Repository\ProjetRepository;
-use App\Service\PythonRecommendationService;
-use Knp\Component\Pager\PaginatorInterface;
-
 
 final class StrategyController extends AbstractController
 {
-    private const RECOMMENDATION_SESSION_KEY = 'strategy_pending_recommendations';
-
-    public function __construct(
-        private LibreTranslateService $translator
-    ) {}
-
     private const OBJECTIVE_PRIORITY_MAP = [
         'low' => Objective::PRIORITY_LOW,
         'medium' => Objective::PRIORITY_MEDIUM,
@@ -99,11 +85,7 @@ final class StrategyController extends AbstractController
     ];
 
     #[Route('/back/strategies', name: 'app_back_strategies', methods: ['GET'])]
-    public function index(
-        Request $request,
-        StrategieRepository $strategieRepository,
-        PaginatorInterface $paginator
-    ): Response
+    public function index(Request $request, StrategieRepository $strategieRepository): Response
     {
         $searchQuery = trim((string) $request->query->get('q', ''));
         $statusKey = (string) $request->query->get('status', 'all');
@@ -136,12 +118,6 @@ final class StrategyController extends AbstractController
         $sortOptions = $this->getStrategySortLabels();
         $statusOptions = $this->getStrategyStatusLabels();
         $strategies = $strategieRepository->findBackOfficeStrategies($filters, $sortBy, $direction);
-        $pagination = $paginator->paginate(
-            $strategies,
-            $request->query->getInt('page', 1),
-            5
-        );
-
         $activeCriteria = $this->buildActiveStrategyCriteria(
             $searchQuery,
             $statusKey,
@@ -152,8 +128,6 @@ final class StrategyController extends AbstractController
 
         return $this->render('back/strategie/strategie.html.twig', [
             'strategies' => $strategies,
-            'pagination' => $pagination,
-            'typeDistribution' => $this->buildStrategyTypeDistribution($strategies),
             'sortOptions' => $sortOptions,
             'statusOptions' => $statusOptions,
             'typeOptions' => $typeOptions,
@@ -170,87 +144,71 @@ final class StrategyController extends AbstractController
         ]);
     }
 
-     #[Route('/back/strategies/nouvelle', name: 'app_back_strategies_new', methods: ['GET', 'POST'])]
-public function new(Request $request, EntityManagerInterface $entityManager): Response
-{
-    $strategy = new Strategie();
-    $currentUser = $this->getCurrentUser();
+    #[Route('/back/strategies/nouvelle', name: 'app_back_strategies_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $strategy = new Strategie();
+        $currentUser = $this->getCurrentUser();
 
-    if ($currentUser instanceof User) {
-        $strategy->setUser($currentUser);
-    }
-
-    $strategy->setStatusStrategie(Strategie::STATUS_UNASSIGNED);
-    $form = $this->createForm(StrategyType::class, $strategy);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        if (!$strategy->getCreatedAtS()) {
-            $strategy->setCreatedAtS(new \DateTime());
+        if ($currentUser instanceof User) {
+            $strategy->setUser($currentUser);
         }
 
-        $this->applyAutomaticStatusRules($strategy);
-        $this->syncLockedAtWithStatus($strategy);
+        $strategy->setStatusStrategie(Strategie::STATUS_UNASSIGNED);
+        $form = $this->createForm(StrategyType::class, $strategy);
+        $form->handleRequest($request);
 
-        // Base locale = français
-        $strategy->setTranslatableLocale('fr');
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (!$strategy->getCreatedAtS()) {
+                $strategy->setCreatedAtS(new \DateTime());
+            }
 
-        $entityManager->persist($strategy);
-        $entityManager->flush();
+            $this->applyAutomaticStatusRules($strategy);
+            $this->syncLockedAtWithStatus($strategy);
+            $entityManager->persist($strategy);
+            $entityManager->flush();
 
-        // Traductions anglaises
-        $this->syncEnglishStrategyTranslations($entityManager, $strategy);
-        $entityManager->flush();
+            $this->addFlash('success', 'Strategie creee avec succes.');
 
-        $this->addFlash('success', 'Strategie creee avec succes.');
+            return $this->redirectToRoute('app_back_strategies');
+        }
 
-        return $this->redirectToRoute('app_back_strategies');
+        return $this->render('back/strategie/strategy-form.html.twig', [
+            'form' => $form->createView(),
+            'strategy' => $strategy,
+        ]);
     }
 
-    return $this->render('back/strategie/strategy-form.html.twig', [
-        'form' => $form->createView(),
-        'strategy' => $strategy,
-    ]);
-}
+    #[Route('/back/strategies/{id}/edit', name: 'app_back_strategies_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
+    {
+        $previousStatus = $strategy->getStatusStrategie();
+        $previousProject = $strategy->getProject();
+        $currentUser = $this->getCurrentUser();
 
+        if ($strategy->getUser() === null && $currentUser instanceof User) {
+            $strategy->setUser($currentUser);
+        }
 
-   #[Route('/back/strategies/{id}/edit', name: 'app_back_strategies_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
-{
-    $previousStatus = $strategy->getStatusStrategie();
-    $previousProject = $strategy->getProject();
-    $currentUser = $this->getCurrentUser();
+        $form = $this->createForm(StrategyType::class, $strategy);
+        $form->handleRequest($request);
 
-    if ($strategy->getUser() === null && $currentUser instanceof User) {
-        $strategy->setUser($currentUser);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $projectChanged = $this->hasStrategyProjectChanged($previousProject, $strategy->getProject());
+            $this->applyAutomaticStatusRules($strategy, $previousStatus, $projectChanged);
+            $this->syncLockedAtWithStatus($strategy, $previousStatus);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Strategie modifiee avec succes.');
+
+            return $this->redirectToRoute('app_back_strategies');
+        }
+
+        return $this->render('back/strategie/strategy-form.html.twig', [
+            'form' => $form->createView(),
+            'strategy' => $strategy,
+        ]);
     }
-
-    $form = $this->createForm(StrategyType::class, $strategy);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $projectChanged = $this->hasStrategyProjectChanged($previousProject, $strategy->getProject());
-        $this->applyAutomaticStatusRules($strategy, $previousStatus, $projectChanged);
-        $this->syncLockedAtWithStatus($strategy, $previousStatus);
-
-        // On sauvegarde d'abord la version FR
-        $strategy->setTranslatableLocale('fr');
-        $entityManager->flush();
-
-        // Puis on met à jour les traductions EN
-        $this->syncEnglishStrategyTranslations($entityManager, $strategy);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Strategie modifiee avec succes.');
-
-        return $this->redirectToRoute('app_back_strategies');
-    }
-
-    return $this->render('back/strategie/strategy-form.html.twig', [
-        'form' => $form->createView(),
-        'strategy' => $strategy,
-    ]);
-}
 
     #[Route('/back/strategies/{id}/delete', name: 'app_back_strategies_delete', methods: ['POST'])]
     public function delete(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
@@ -267,85 +225,72 @@ public function edit(Request $request, Strategie $strategy, EntityManagerInterfa
     }
 
     #[Route('/back/strategies/{id}/show', name: 'app_back_strategies_show', methods: ['GET'])]
-public function show(Strategie $strategy, EntityManagerInterface $entityManager, Request $request): Response
-{
-    // Determine the user's locale (e.g., from session, user preference, or request)
-    $locale = $request->getLocale(); // Defaults to 'fr' if not set
-    
-    // Or, if you store locale in the User entity:
-    // $user = $this->getCurrentUser();
-    // $locale = $user?->getPreferredLocale() ?? $request->getLocale();
+    public function show(Strategie $strategy): Response
+    {
+        return $this->render('back/strategie/show.html.twig', [
+            'strategy' => $strategy,
+        ]);
+    }
 
-    // Tell Gedmo which language to load
-    $strategy->setTranslatableLocale($locale);
-    
-    // Reload the entity to apply the translation
-    $entityManager->refresh($strategy);
-
-    return $this->render('back/strategie/show.html.twig', [
-        'strategy' => $strategy,
-    ]);
-}
     #[Route('/back/strategies/{id}/decision', name: 'app_back_strategies_decision', methods: ['POST'])]
-public function adminDecision(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
-{
-    $user = $this->getCurrentUser();
+    public function adminDecision(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->isAdminUser($user)) {
+            throw $this->createAccessDeniedException('Seul un administrateur peut decider du statut de cette strategie.');
+        }
 
-    if (!$this->isAdminUser($user)) {
-        throw $this->createAccessDeniedException('Seul un administrateur peut decider du statut de cette strategie.');
-    }
+        if (!$this->isCsrfTokenValid('admin_strategy_decision_' . $strategy->getIdStrategie(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide. Decision administrateur impossible.');
 
-    if (!$this->isCsrfTokenValid(
-        'admin_strategy_decision_' . $strategy->getIdStrategie(),
-        (string) $request->request->get('_token')
-    )) {
-        $this->addFlash('error', 'Token invalide. Decision administrateur impossible.');
-        return $this->redirectToStrategyReferer($request);
-    }
-
-    if (!$this->canAdminDecideStrategy($strategy, $user)) {
-        $this->addFlash('error', 'Seules les strategies en attente peuvent etre traitees par l administrateur.');
-        return $this->redirectToStrategyReferer($request);
-    }
-
-    $status = trim((string) $request->request->get('status'));
-    $allowedStatuses = [
-        Strategie::STATUS_APPROVED,
-        Strategie::STATUS_REJECTED,
-    ];
-    $justification = $this->normalizeStrategyDecisionJustification($request->request->get('justification'));
-
-    if (!in_array($status, $allowedStatuses, true)) {
-        $this->addFlash('error', 'Statut de decision administrateur invalide.');
-        return $this->redirectToStrategyReferer($request);
-    }
-
-    if ($status === Strategie::STATUS_REJECTED) {
-        $justificationError = $this->validateRejectedStrategyJustification($justification);
-        if ($justificationError !== null) {
-            $this->addFlash('error', $justificationError);
             return $this->redirectToStrategyReferer($request);
         }
 
-        $strategy->setTranslatableLocale('fr');
-        $this->saveRejectedJustificationWithTranslation($entityManager, $strategy, $justification);
+        if (!$this->canAdminDecideStrategy($strategy, $user)) {
+            $this->addFlash('error', 'Seules les strategies en attente peuvent etre traitees par l administrateur.');
+
+            return $this->redirectToStrategyReferer($request);
+        }
+
+        $status = trim((string) $request->request->get('status'));
+        $allowedStatuses = [
+            Strategie::STATUS_APPROVED,
+            Strategie::STATUS_REJECTED,
+        ];
+        $justification = $this->normalizeStrategyDecisionJustification($request->request->get('justification'));
+
+        if (!in_array($status, $allowedStatuses, true)) {
+            $this->addFlash('error', 'Statut de decision administrateur invalide.');
+
+            return $this->redirectToStrategyReferer($request);
+        }
+
+        if ($status === Strategie::STATUS_REJECTED) {
+            $justificationError = $this->validateRejectedStrategyJustification($justification);
+            if ($justificationError !== null) {
+                $this->addFlash('error', $justificationError);
+
+                return $this->redirectToStrategyReferer($request);
+            }
+
+            $strategy->setJustification($justification);
+        }
+
+        $previousStatus = $strategy->getStatusStrategie();
+        $strategy->setStatusStrategie($status);
+        $this->syncLockedAtWithStatus($strategy, $previousStatus);
+        $entityManager->flush();
+
+        $this->addFlash(
+            'success',
+            $status === Strategie::STATUS_APPROVED
+                ? 'Strategie acceptee par l administrateur.'
+                : 'Strategie refusee par l administrateur.'
+        );
+
+        return $this->redirectToStrategyReferer($request);
     }
 
-    $previousStatus = $strategy->getStatusStrategie();
-    $strategy->setStatusStrategie($status);
-    $this->syncLockedAtWithStatus($strategy, $previousStatus);
-
-    $entityManager->flush();
-
-    $this->addFlash(
-        'success',
-        $status === Strategie::STATUS_APPROVED
-            ? 'Decision administrateur enregistree : strategie approuvee.'
-            : 'Decision administrateur enregistree : strategie refusee.'
-    );
-
-    return $this->redirectToStrategyReferer($request);
-}
     #[Route('/projects/strategies/{id}/decision', name: 'project_strategy_decision', methods: ['POST'])]
     public function updateStatus(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
     {
@@ -387,17 +332,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
                 return $this->redirectToStrategyReferer($request);
             }
 
-            if ($status === Strategie::STATUS_REJECTED) {
-    $justificationError = $this->validateRejectedStrategyJustification($justification);
-    if ($justificationError !== null) {
-        $this->addFlash('error', $justificationError);
-
-        return $this->redirectToStrategyReferer($request);
-    }
-
-    $strategy->setTranslatableLocale('fr');
-    $this->saveRejectedJustificationWithTranslation($entityManager, $strategy, $justification);
-}
+            $strategy->setJustification($justification);
         }
 
         $previousStatus = $strategy->getStatusStrategie();
@@ -524,107 +459,66 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
     }
     #[Route('/strategies/{id}/generate-pdf', name: 'strategy_generate_pdf', methods: ['POST'])]
     public function generatePdf(
-        Request $request,
         Strategie $strategy,
         GeminiPdfContentGenerator $contentGenerator,
-        PdfGeneratorService $pdfGenerator,
-        StrategyPlaybookLocalizationService $playbookLocalizer
+        PdfGeneratorService $pdfGenerator
     ): JsonResponse {
-        $language = $playbookLocalizer->normalizeLanguage((string) $request->request->get('lang', 'fr'));
-        $labels = $playbookLocalizer->getLabels($language);
         $user = $this->getCurrentUser();
 
         if (!$this->canGenerateStrategyPdf($strategy, $user)) {
             return $this->json([
                 'status' => 'failed',
-                'error' => $labels['messages']['forbidden'],
+                'error' => 'Vous ne pouvez pas generer le PDF de cette strategie.',
             ], Response::HTTP_FORBIDDEN);
         }
 
         if ($strategy->getStatusStrategie() !== Strategie::STATUS_APPROVED) {
             return $this->json([
                 'status' => 'failed',
-                'error' => $labels['messages']['only_approved'],
+                'error' => 'Seules les strategies acceptees peuvent etre exportees en PDF.',
             ], Response::HTTP_BAD_REQUEST);
         }
 
         try {
             $project = $strategy->getProject();
             $content = $contentGenerator->generate($strategy, $project);
-            $generationMeta = $contentGenerator->getLastGenerationMeta();
-            $messages = [];
-
-            if (($generationMeta['used_ai'] ?? false) !== true && is_string($generationMeta['warning'] ?? null)) {
-                $warning = trim((string) $generationMeta['warning']);
-                if ($warning !== '') {
-                    $messages[] = $warning;
-                }
-            }
-
-            $playbookViewModel = $playbookLocalizer->buildViewModel($language, $strategy, $project, $content, $messages);
-            $messages = $playbookViewModel['messages'];
-            $labels = $playbookViewModel['labels'];
-
             $html = $pdfGenerator->renderHtml('back/strategie/strategy_playbook.html.twig', [
                 'strategy' => $strategy,
                 'project' => $project,
-                'content' => $playbookViewModel['content'],
-                'document_language' => $playbookViewModel['language'],
-                'labels' => $labels,
-                'playbook_strategy' => $playbookViewModel['strategy'],
-                'playbook_project' => $playbookViewModel['project'],
-                'playbook_objectives' => $playbookViewModel['objectives'],
+                'content' => $content,
             ]);
-            $baseFilename = sprintf('strategy_%d_%s_%s', (int) $strategy->getIdStrategie(), date('YmdHis'), $language);
+            $baseFilename = sprintf('strategy_%d_%s', (int) $strategy->getIdStrategie(), date('YmdHis'));
             $pdfFilename = $baseFilename . '.pdf';
 
             if (!$pdfGenerator->supportsPdfGeneration()) {
                 $htmlFilename = $baseFilename . '.html';
                 $pdfGenerator->saveHtml($html, $htmlFilename, 'uploads/strategies');
 
-                $messages[] = $labels['messages']['pdf_disabled'];
-
-                $payload = [
+                return $this->json([
                     'status' => 'completed',
                     'format' => 'html',
                     'url' => '/uploads/strategies/' . $htmlFilename,
-                    'lang' => $language,
-                ];
-
-                if ($messages !== []) {
-                    $payload['message'] = implode(' ', $messages);
-                }
-
-                return $this->json($payload);
+                    'message' => 'La generation PDF est desactivee. Une version imprimable a ete preparee. Ouvrez-la puis utilisez Imprimer > Enregistrer en PDF.',
+                ]);
             }
 
             try {
                 $pdfGenerator->generate($html, $pdfFilename, 'uploads/strategies');
 
-                $payload = [
+                return $this->json([
                     'status' => 'completed',
                     'format' => 'pdf',
                     'url' => '/uploads/strategies/' . $pdfFilename,
-                    'lang' => $language,
-                ];
-
-                if ($messages !== []) {
-                    $payload['message'] = implode(' ', $messages);
-                }
-
-                return $this->json($payload);
+                ]);
             } catch (\Throwable $pdfException) {
                 $htmlFilename = $baseFilename . '.html';
                 $pdfGenerator->saveHtml($html, $htmlFilename, 'uploads/strategies');
-
-                $messages[] = $labels['messages']['pdf_unavailable'];
 
                 return $this->json([
                     'status' => 'completed',
                     'format' => 'html',
                     'url' => '/uploads/strategies/' . $htmlFilename,
-                    'lang' => $language,
-                    'message' => implode(' ', $messages),
+                    'message' => 'Le service PDF est indisponible. Une version imprimable a ete preparee. Ouvrez-la puis utilisez Imprimer > Enregistrer en PDF.',
                 ]);
             }
         } catch (\Throwable $exception) {
@@ -938,28 +832,6 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
         return $options;
     }
 
-    private function buildStrategyTypeDistribution(array $strategies): array
-    {
-        $distribution = [];
-
-        foreach ($strategies as $strategy) {
-            if (!$strategy instanceof Strategie) {
-                continue;
-            }
-
-            $type = mb_strtolower(trim((string) $strategy->getType()));
-            if ($type === '') {
-                $type = 'non-defini';
-            }
-
-            $distribution[$type] = ($distribution[$type] ?? 0) + 1;
-        }
-
-        arsort($distribution);
-
-        return $distribution;
-    }
-
     private function formatStrategyTypeLabel(string $type): string
     {
         $words = explode('_', $type);
@@ -994,340 +866,4 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
 
         return $criteria;
     }
-
-
-
-private function syncEnglishStrategyTranslations(EntityManagerInterface $entityManager, Strategie $strategy): void
-{
-    $this->saveEnglishTranslation($entityManager, $strategy, 'nomStrategie', $strategy->getNomStrategie());
-    $this->saveEnglishTranslation($entityManager, $strategy, 'justification', $strategy->getJustification());
-    $this->saveEnglishTranslation($entityManager, $strategy, 'type', $strategy->getType());
-}
-
-private function saveEnglishTranslation(
-    EntityManagerInterface $entityManager,
-    Strategie $strategy,
-    string $field,
-    ?string $frenchValue
-): void {
-    $frenchValue = trim((string) $frenchValue);
-
-    if ($frenchValue === '') {
-        return;
-    }
-
-    /** @var \Gedmo\Translatable\Entity\Repository\TranslationRepository $translationRepo */
-    $translationRepo = $entityManager->getRepository(Translation::class);
-
-    $englishValue = $frenchValue;
-    // LibreTranslate disabled for teammate environments without the service.
-    // Uncomment when translation service is available again:
-    // $englishValue = $this->translator->translate($frenchValue, 'en', 'fr');
-
-    $translationRepo->translate($strategy, $field, 'en', $englishValue);
-}
-
-private function saveRejectedJustificationWithTranslation(
-    EntityManagerInterface $entityManager,
-    Strategie $strategy,
-    string $justification
-): void {
-    $strategy->setJustification($justification);
-    $this->saveEnglishTranslation($entityManager, $strategy, 'justification', $justification);
-}
-
-
-
- #[Route('/recommandation/project/{id}', name: 'strategie_recommandation')]
-    public function recommander(
-        int $id,
-        Request $request,
-        ProjectRepository $projetRepository,
-        PythonRecommendationService $pythonService
-    ): Response {
-        $user = $this->getCurrentUser();
-        if (!$this->canBackOfficeRecommendStrategy($user)) {
-            throw $this->createAccessDeniedException('Seul un gerant ou un administrateur peut recommander une strategie.');
-        }
-
-        $projet = $projetRepository->find($id);
-
-        if (!$projet) {
-            throw $this->createNotFoundException('Projet introuvable.');
-        }
-
-        $data = [
-            'titleProj' => $projet->getTitleProj(),
-            'descriptionProj' => $projet->getDescriptionProj(),
-            'budgetProj' => $projet->getBudgetProj(),
-            'typeProj' => $projet->getTypeProj(),
-            'stateProj' => $projet->getStateProj(),
-            'avancementProj' => $projet->getAvancementProj(),
-        ];
-
-        try {
-            $recommendation = $pythonService->recommend($data);
-
-            if (!$recommendation) {
-                throw new \RuntimeException('Recommendation vide ou JSON invalide.');
-            }
-
-            if (($recommendation['error'] ?? false) === true) {
-                $message = trim((string) ($recommendation['message'] ?? 'Erreur inconnue dans le moteur de recommandation.'));
-                throw new \RuntimeException($message !== '' ? $message : 'Erreur inconnue dans le moteur de recommandation.');
-            }
-
-            $normalizedRecommendation = $this->normalizeRecommendationPayload($recommendation);
-            $this->storePendingRecommendation($request, $projet->getIdProj(), $user, $normalizedRecommendation);
-            $strategie = $this->createStrategyFromRecommendation($normalizedRecommendation, $projet, $user);
-
-            return $this->render('back/strategie/recommendation.html.twig', [
-                'projet' => $projet,
-                'strategie' => $strategie,
-                'recommendation' => [
-                    'top_3' => $normalizedRecommendation['top_3'],
-                ],
-                'is_preview' => true,
-                'can_recommendation_decide' => true,
-            ]);
-
-        } catch (\Throwable $e) {
-            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
-            return $this->redirectToRoute('project_show', ['id' => $id]);
-        }
-    }
-
-    #[Route('/recommandation/project/{id}/decision', name: 'strategie_recommandation_decision', methods: ['POST'])]
-    public function recommendationDecision(
-        int $id,
-        Request $request,
-        ProjectRepository $projetRepository,
-        StrategieRepository $strategieRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $user = $this->getCurrentUser();
-        if (!$this->canBackOfficeRecommendStrategy($user)) {
-            throw $this->createAccessDeniedException('Seul un gerant ou un administrateur peut valider cette recommandation.');
-        }
-
-        $projet = $projetRepository->find($id);
-        if (!$projet) {
-            throw $this->createNotFoundException('Projet introuvable.');
-        }
-
-        if (!$this->isCsrfTokenValid('recommendation_decision_' . $id, (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token invalide. Decision impossible.');
-
-            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
-        }
-
-        $decision = trim((string) $request->request->get('decision'));
-        if (!in_array($decision, ['accept', 'reject'], true)) {
-            $this->addFlash('error', 'Decision invalide.');
-
-            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
-        }
-
-        $pendingRecommendation = $this->getPendingRecommendation($request, $id, $user);
-        if ($pendingRecommendation === null) {
-            $this->addFlash('error', 'Aucune recommandation en attente de confirmation pour ce projet.');
-
-            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
-        }
-
-        if ($decision === 'reject') {
-            $this->clearPendingRecommendation($request, $id, $user);
-            $this->addFlash('info', 'Recommandation refusee. Aucune strategie n a ete enregistree.');
-
-            return $this->redirectToRoute('project_back_manage', ['id' => $id]);
-        }
-
-        $recommendedStrategyId = $this->extractRecommendationStrategyId($pendingRecommendation);
-        if ($recommendedStrategyId !== null) {
-            $strategie = $strategieRepository->find($recommendedStrategyId);
-            if (!$strategie instanceof Strategie) {
-                $this->addFlash('error', 'La strategie recommandee est introuvable en base.');
-
-                return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
-            }
-
-            $assignedProject = $strategie->getProject();
-            if ($assignedProject !== null && $assignedProject->getIdProj() !== $projet->getIdProj()) {
-                $this->addFlash('error', 'Cette strategie est deja attribuee a un autre projet.');
-
-                return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
-            }
-
-            $nameConflict = $strategieRepository->findAssignedDuplicateByName(
-                (string) $strategie->getNomStrategie(),
-                $strategie->getIdStrategie()
-            );
-            if ($nameConflict instanceof Strategie) {
-                $conflictProjectId = $nameConflict->getProject()?->getIdProj();
-                if ($conflictProjectId !== null && $conflictProjectId !== $projet->getIdProj()) {
-                    $this->addFlash('error', 'Cette strategie est deja verrouillee sur un autre projet et ne peut pas etre reutilisee.');
-
-                    return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
-                }
-            }
-
-            $this->applyRecommendationToExistingStrategy($strategie, $projet, $user);
-            $entityManager->flush();
-
-            $this->clearPendingRecommendation($request, $id, $user);
-            $this->addFlash('success', 'Strategie attribuee au projet et mise en cours.');
-
-            return $this->redirectToRoute('project_back_manage', ['id' => $id]);
-        }
-
-        $nameConflict = $strategieRepository->findAssignedDuplicateByName((string) ($pendingRecommendation['nomStrategie'] ?? ''));
-        if ($nameConflict instanceof Strategie) {
-            $conflictProjectId = $nameConflict->getProject()?->getIdProj();
-            if ($conflictProjectId === $projet->getIdProj()) {
-                $this->applyRecommendationToExistingStrategy($nameConflict, $projet, $user);
-                $entityManager->flush();
-
-                $this->clearPendingRecommendation($request, $id, $user);
-                $this->addFlash('success', 'Cette strategie est deja liee a ce projet et reste en cours.');
-
-                return $this->redirectToRoute('project_back_manage', ['id' => $id]);
-            }
-
-            $this->addFlash('error', 'Cette strategie est deja verrouillee sur un autre projet et ne peut pas etre reutilisee.');
-
-            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
-        }
-
-        $strategie = $this->createStrategyFromRecommendation($pendingRecommendation, $projet, $user);
-        $strategie->setStatusStrategie(Strategie::STATUS_IN_PROGRESS);
-        $entityManager->persist($strategie);
-        $entityManager->flush();
-        $this->syncEnglishStrategyTranslations($entityManager, $strategie);
-        $entityManager->flush();
-
-        $this->clearPendingRecommendation($request, $id, $user);
-        $this->addFlash('success', 'Strategie enregistree et mise en cours.');
-
-        return $this->redirectToRoute('project_back_manage', ['id' => $id]);
-    }
-
-    private function canBackOfficeRecommendStrategy(?User $user): bool
-    {
-        return $user instanceof User && in_array($user->getRoleUser(), ['admin', 'gerant'], true);
-    }
-
-    private function normalizeRecommendationPayload(array $recommendation): array
-    {
-        $allowedStatuses = [
-            Strategie::STATUS_PENDING,
-            Strategie::STATUS_IN_PROGRESS,
-            Strategie::STATUS_APPROVED,
-            Strategie::STATUS_REJECTED,
-            Strategie::STATUS_UNASSIGNED,
-        ];
-
-        $status = trim((string) ($recommendation['statusStrategie'] ?? Strategie::STATUS_PENDING));
-        if (!in_array($status, $allowedStatuses, true)) {
-            $status = Strategie::STATUS_PENDING;
-        }
-
-        $name = trim((string) ($recommendation['nomStrategie'] ?? ''));
-        $name = $name !== '' ? $name : 'Strategie recommandee';
-
-        $type = trim((string) ($recommendation['type'] ?? ''));
-        $topCandidates = $recommendation['top_3'] ?? [];
-
-        return [
-            'idStrategie' => $this->extractRecommendationStrategyId($recommendation),
-            'nomStrategie' => $name,
-            'type' => $type !== '' ? $type : null,
-            'budgetTotal' => is_numeric($recommendation['budgetTotal'] ?? null) ? (float) $recommendation['budgetTotal'] : null,
-            'gainEstime' => is_numeric($recommendation['gainEstime'] ?? null) ? (float) $recommendation['gainEstime'] : null,
-            'DureeTerme' => is_numeric($recommendation['DureeTerme'] ?? null) ? (int) $recommendation['DureeTerme'] : null,
-            'statusStrategie' => $status,
-            'top_3' => is_array($topCandidates) ? $topCandidates : [],
-        ];
-    }
-
-    private function createStrategyFromRecommendation(array $recommendation, Project $projet, ?User $user): Strategie
-    {
-        $payload = $this->normalizeRecommendationPayload($recommendation);
-
-        $strategie = new Strategie();
-        $strategie->setNomStrategie($payload['nomStrategie']);
-        $strategie->setType($payload['type']);
-        $strategie->setBudgetTotal($payload['budgetTotal']);
-        $strategie->setGainEstime($payload['gainEstime']);
-        $strategie->setDureeTerme($payload['DureeTerme']);
-        $strategie->setStatusStrategie($payload['statusStrategie']);
-        $strategie->setCreatedAtS(new \DateTime());
-        $strategie->setProject($projet);
-
-        if ($user instanceof User) {
-            $strategie->setUser($user);
-        }
-
-        return $strategie;
-    }
-
-    private function extractRecommendationStrategyId(array $recommendation): ?int
-    {
-        $strategyId = $recommendation['idStrategie'] ?? null;
-        if (!is_numeric($strategyId)) {
-            return null;
-        }
-
-        $normalizedId = (int) $strategyId;
-
-        return $normalizedId > 0 ? $normalizedId : null;
-    }
-
-    private function applyRecommendationToExistingStrategy(Strategie $strategie, Project $projet, ?User $user): void
-    {
-        $strategie->setProject($projet);
-        $strategie->setStatusStrategie(Strategie::STATUS_IN_PROGRESS);
-        $strategie->setLockedAt(null);
-
-        if ($strategie->getCreatedAtS() === null) {
-            $strategie->setCreatedAtS(new \DateTime());
-        }
-
-        if ($strategie->getUser() === null && $user instanceof User) {
-            $strategie->setUser($user);
-        }
-    }
-
-    private function storePendingRecommendation(Request $request, int $projectId, User $user, array $recommendation): void
-    {
-        $session = $request->getSession();
-        $pendingRecommendations = (array) $session->get(self::RECOMMENDATION_SESSION_KEY, []);
-        $pendingRecommendations[$this->getRecommendationSessionKey($projectId, $user->getIdUser())] = $this->normalizeRecommendationPayload($recommendation);
-
-        $session->set(self::RECOMMENDATION_SESSION_KEY, $pendingRecommendations);
-    }
-
-    private function getPendingRecommendation(Request $request, int $projectId, User $user): ?array
-    {
-        $session = $request->getSession();
-        $pendingRecommendations = (array) $session->get(self::RECOMMENDATION_SESSION_KEY, []);
-        $pendingRecommendation = $pendingRecommendations[$this->getRecommendationSessionKey($projectId, $user->getIdUser())] ?? null;
-
-        return is_array($pendingRecommendation) ? $pendingRecommendation : null;
-    }
-
-    private function clearPendingRecommendation(Request $request, int $projectId, User $user): void
-    {
-        $session = $request->getSession();
-        $pendingRecommendations = (array) $session->get(self::RECOMMENDATION_SESSION_KEY, []);
-
-        unset($pendingRecommendations[$this->getRecommendationSessionKey($projectId, $user->getIdUser())]);
-        $session->set(self::RECOMMENDATION_SESSION_KEY, $pendingRecommendations);
-    }
-
-    private function getRecommendationSessionKey(int $projectId, int $userId): string
-    {
-        return sprintf('%d:%d', $projectId, $userId);
-    }
-
-
 }

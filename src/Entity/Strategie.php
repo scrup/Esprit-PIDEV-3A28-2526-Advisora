@@ -5,20 +5,13 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Gedmo\Mapping\Annotation as Gedmo;
+
 use App\Repository\StrategieRepository;
 
 #[ORM\Entity(repositoryClass: StrategieRepository::class)]
 #[ORM\Table(name: 'strategies')]
-
 class Strategie
 {
-    public function __construct()
-    {
-        $this->objectives = new ArrayCollection();
-        $this->swotItems = new ArrayCollection();
-    }
-
     public const STATUS_PENDING = 'En_attente';
     public const STATUS_APPROVED = 'Acceptée';
     public const STATUS_REJECTED = 'Refusée';
@@ -41,30 +34,23 @@ class Strategie
         return $this;
     }
 
-      /**
-     * This non-persisted property tells Gedmo which locale to use
-     * when saving or loading translations.
-     */
-    #[Gedmo\Locale]
-    private ?string $locale = null;
-
     #[ORM\Column(type: 'string', nullable: false)]
     private ?string $statusStrategie = null;
 
     public function getStatusStrategie(): ?string
     {
-        return $this->normalizeStatusValue($this->statusStrategie) ?? $this->inferStatusFromContext();
+        return $this->statusStrategie;
     }
 
     public function setStatusStrategie(string $statusStrategie): self
     {
-        $this->statusStrategie = $this->normalizeStatusValue($statusStrategie) ?? trim($statusStrategie);
+        $this->statusStrategie = $statusStrategie;
         return $this;
     }
 
     public function getStatusLabel(): string
     {
-        return match ($this->getStatusStrategie()) {
+        return match ($this->statusStrategie) {
             self::STATUS_PENDING => 'En attente',
             self::STATUS_APPROVED => 'Acceptée',
             self::STATUS_REJECTED => 'Refusée',
@@ -76,7 +62,7 @@ class Strategie
 
     public function getStatusCssClass(): string
     {
-        return match ($this->getStatusStrategie()) {
+        return match ($this->statusStrategie) {
             self::STATUS_PENDING => 'pending',
             self::STATUS_APPROVED => 'approved',
             self::STATUS_REJECTED => 'rejected',
@@ -114,7 +100,19 @@ class Strategie
         return $this;
     }
 
-    
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $news = null;
+
+    public function getNews(): ?string
+    {
+        return $this->news;
+    }
+
+    public function setNews(?string $news): self
+    {
+        $this->news = $news;
+        return $this;
+    }
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'strategies')]
     #[ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj')]
@@ -147,8 +145,6 @@ class Strategie
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
-    #[Gedmo\Translatable] // <-- This field will be translatable
-
     private ?string $nomStrategie = null;
 
     public function getNomStrategie(): ?string
@@ -163,8 +159,6 @@ class Strategie
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
-    #[Gedmo\Translatable] // <-- This field will be translatable
-
     private ?string $justification = null;
 
     public function getJustification(): ?string
@@ -179,8 +173,6 @@ class Strategie
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
-    #[Gedmo\Translatable] // <-- This field will be translatable
-
     private ?string $type = null;
 
     public function getType(): ?string
@@ -294,80 +286,4 @@ public function setDureeTerme(?int $DureeTerme): self
         return $this;
     }
 
-      /* Setter for the temporary locale
-     */
-    public function setTranslatableLocale(string $locale): self
-    {
-        $this->locale = $locale;
-        return $this;
-    }
-    private function inferStatusFromContext(): string
-    {
-        if ($this->lockedAt !== null) {
-            return self::STATUS_APPROVED;
-        }
-
-        if ($this->project !== null) {
-            return self::STATUS_IN_PROGRESS;
-        }
-
-        return self::STATUS_PENDING;
-    }
-
-    private function normalizeStatusValue(?string $status): ?string
-    {
-        $raw = trim((string) $status);
-        if ($raw === '') {
-            return null;
-        }
-
-        $normalized = mb_strtolower($raw);
-        $normalized = strtr($normalized, [
-            'é' => 'e',
-            'è' => 'e',
-            'ê' => 'e',
-            'ë' => 'e',
-            'à' => 'a',
-            'â' => 'a',
-            'î' => 'i',
-            'ï' => 'i',
-            'ô' => 'o',
-            'ù' => 'u',
-            'û' => 'u',
-            'ü' => 'u',
-            'ç' => 'c',
-            'ã©' => 'e',
-        ]);
-        $normalized = str_replace(['_', '-'], ' ', $normalized);
-        $normalized = preg_replace('/\s+/', ' ', $normalized) ?? $normalized;
-        $normalized = trim($normalized);
-
-        if (in_array($normalized, ['en attente', 'pending'], true)) {
-            return self::STATUS_PENDING;
-        }
-
-        if (in_array($normalized, ['acceptee', 'accepted', 'accept'], true)) {
-            return self::STATUS_APPROVED;
-        }
-
-        if (in_array($normalized, ['refusee', 'rejected', 'reject'], true)) {
-            return self::STATUS_REJECTED;
-        }
-
-        if (in_array($normalized, ['en cours', 'in progress', 'inprogress'], true)) {
-            return self::STATUS_IN_PROGRESS;
-        }
-
-        if (in_array($normalized, ['non affectee', 'unassigned'], true)) {
-            return self::STATUS_UNASSIGNED;
-        }
-
-        return $raw;
-    }
-    public function getTranslatableLocale(): ?string
-    {
-        return $this->locale;
-    }
-
 }
-
