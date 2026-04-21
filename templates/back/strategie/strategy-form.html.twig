@@ -124,7 +124,7 @@
                             <p>Sans projet: Non affectee. </p>
                             <p>Avec projet sans risque: En cours. </p>
                             <p>Si un risque est detecte, la strategie passe en attente, meme si un projet est attribue.</p>
-                            <p>Un risque signifie ici que le gain estime en montant calcule a partir du budget et du pourcentage ne couvre pas le budget, ou que le budget de la strategie depasse celui du projet.</p>
+                            <p>Un risque signifie ici que le gain estime (montant) ne couvre pas le budget, ou que le budget de la strategie depasse celui du projet.</p>
                         </div>
                     </div>
                     <div class="form-helper">Le statut est determine au moment de l enregistrement.</div>
@@ -154,18 +154,18 @@
                     </div>
                 </div>
                 <div class="form-group {% if form.gainEstime.vars.errors|length > 0 %}form-group-error{% endif %}">
-                    {{ form_label(form.gainEstime, 'Gain estime (%)', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_label(form.gainEstime, 'Gain estime (montant)', {'label_attr': {'class': 'form-label'}}) }}
                     <div class="input-wrapper">
                         <span class="input-icon material-symbols-outlined">trending_up</span>
                         {{ form_widget(form.gainEstime, {'attr': {
                             'class': 'form-input',
-                            'placeholder': 'Gain estime en %',
+                            'placeholder': 'Gain estime en TND',
                             'step': '0.01',
                             'min': 0,
                             'inputmode': 'decimal'
                         }}) }}
                     </div>
-                    <div class="form-helper">Retour sur investissement attendu</div>
+                    <div class="form-helper">Montant de gain attendu. Le ROI sera calcule automatiquement en pourcentage.</div>
                     <div class="field-errors">
                         {{ form_errors(form.gainEstime) }}
                     </div>

@@ -87,12 +87,18 @@
                 <div class="info-list">
                     <div class="info-item">
                         <span class="info-label">Budget total</span>
-                        <span class="info-value">{{ strategy.budgetTotal|number_format(0, ',', ' ') }} EUR</span>
+                        <span class="info-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Gain estime</span>
-                        <span class="info-value {{ strategy.gainEstime >= 0 ? 'positive' : 'negative' }}">
-                            {{ strategy.gainEstime >= 0 ? '+' : '' }}{{ strategy.gainEstime }}%
+                        <span class="info-value {{ strategy.gainEstime is not null and strategy.gainEstime >= 0 ? 'positive' : 'negative' }}">
+                            {{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ROI estime</span>
+                        <span class="info-value {{ strategy.estimatedRoiPercent is not null and strategy.estimatedRoiPercent >= 0 ? 'positive' : 'negative' }}">
+                            {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, ',', ' ') ~ '%' : 'Non defini' }}
                         </span>
                     </div>
                 </div>

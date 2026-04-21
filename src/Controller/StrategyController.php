@@ -20,6 +20,7 @@ use App\Service\PdfGeneratorService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\LibreTranslateService;
 use App\Service\StrategyPlaybookLocalizationService;
+use App\Service\GeminiStrategyGeneratorService;
 use Gedmo\Translatable\Entity\Translation;
 use App\Repository\ProjetRepository;
 use App\Service\PythonRecommendationService;
@@ -781,14 +782,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
 
     private function calculateEstimatedGainAmount(Strategie $strategy): ?float
     {
-        $budget = $strategy->getBudgetTotal();
-        $estimatedGainRate = $strategy->getGainEstime();
-
-        if ($budget === null || $estimatedGainRate === null) {
-            return null;
-        }
-
-        return $budget * ($estimatedGainRate / 100);
+        return $strategy->getGainEstime();
     }
 
     private function getCurrentUser(): ?User
@@ -1211,6 +1205,75 @@ private function saveRejectedJustificationWithTranslation(
         return $this->redirectToRoute('project_back_manage', ['id' => $id]);
     }
 
+    #[Route('/recommandation/project/{id}/auto-generate', name: 'strategie_recommandation_auto_generate', methods: ['POST'])]
+    public function autoGenerateRecommendation(
+        int $id,
+        Request $request,
+        ProjectRepository $projetRepository,
+        StrategieRepository $strategieRepository,
+        GeminiStrategyGeneratorService $geminiStrategyGenerator
+    ): Response {
+        $user = $this->getCurrentUser();
+        if (!$this->canBackOfficeRecommendStrategy($user)) {
+            throw $this->createAccessDeniedException('Seul un gerant ou un administrateur peut generer une strategie IA.');
+        }
+
+        $projet = $projetRepository->find($id);
+        if (!$projet) {
+            throw $this->createNotFoundException('Projet introuvable.');
+        }
+
+        if (!$this->isCsrfTokenValid('recommendation_auto_generate_' . $id, (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide. Generation automatique impossible.');
+
+            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+        }
+
+        try {
+            $generatedPayload = $geminiStrategyGenerator->generate($projet);
+            $normalizedRecommendation = $this->normalizeRecommendationPayload($generatedPayload);
+            $normalizedRecommendation['idStrategie'] = null;
+            $normalizedRecommendation['statusStrategie'] = Strategie::STATUS_PENDING;
+            $normalizedRecommendation['nomStrategie'] = $this->buildUniqueGeneratedStrategyName(
+                (string) ($normalizedRecommendation['nomStrategie'] ?? ''),
+                $projet,
+                $strategieRepository
+            );
+
+            $strategie = $this->createStrategyFromRecommendation($normalizedRecommendation, $projet, $user);
+            $strategie->setTranslatableLocale('fr');
+            $strategie->setStatusStrategie(Strategie::STATUS_PENDING);
+            $strategie->setLockedAt(null);
+            $this->storePendingRecommendation($request, $projet->getIdProj(), $user, $normalizedRecommendation);
+
+            $generationMeta = $geminiStrategyGenerator->getLastGenerationMeta();
+            if (($generationMeta['used_ai'] ?? false) === true) {
+                $this->addFlash('success', 'Nouvelle strategie generee par Gemini. Verifiez l apercu puis confirmez pour l enregistrer.');
+            } else {
+                $this->addFlash('success', 'Nouvelle strategie generee (mode de secours). Verifiez l apercu puis confirmez pour l enregistrer.');
+            }
+
+            $warning = trim((string) ($generationMeta['warning'] ?? ''));
+            if ($warning !== '') {
+                $this->addFlash('info', $warning);
+            }
+
+            return $this->render('back/strategie/recommendation.html.twig', [
+                'projet' => $projet,
+                'strategie' => $strategie,
+                'recommendation' => [
+                    'top_3' => [],
+                ],
+                'is_preview' => true,
+                'can_recommendation_decide' => true,
+            ]);
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', 'Generation automatique echouee: ' . $exception->getMessage());
+
+            return $this->redirectToRoute('strategie_recommandation', ['id' => $id]);
+        }
+    }
+
     private function canBackOfficeRecommendStrategy(?User $user): bool
     {
         return $user instanceof User && in_array($user->getRoleUser(), ['admin', 'gerant'], true);
@@ -1235,6 +1298,7 @@ private function saveRejectedJustificationWithTranslation(
         $name = $name !== '' ? $name : 'Strategie recommandee';
 
         $type = trim((string) ($recommendation['type'] ?? ''));
+        $justification = trim((string) ($recommendation['justification'] ?? ''));
         $topCandidates = $recommendation['top_3'] ?? [];
 
         return [
@@ -1245,6 +1309,7 @@ private function saveRejectedJustificationWithTranslation(
             'gainEstime' => is_numeric($recommendation['gainEstime'] ?? null) ? (float) $recommendation['gainEstime'] : null,
             'DureeTerme' => is_numeric($recommendation['DureeTerme'] ?? null) ? (int) $recommendation['DureeTerme'] : null,
             'statusStrategie' => $status,
+            'justification' => $justification !== '' ? $justification : null,
             'top_3' => is_array($topCandidates) ? $topCandidates : [],
         ];
     }
@@ -1259,6 +1324,7 @@ private function saveRejectedJustificationWithTranslation(
         $strategie->setBudgetTotal($payload['budgetTotal']);
         $strategie->setGainEstime($payload['gainEstime']);
         $strategie->setDureeTerme($payload['DureeTerme']);
+        $strategie->setJustification($payload['justification'] ?? null);
         $strategie->setStatusStrategie($payload['statusStrategie']);
         $strategie->setCreatedAtS(new \DateTime());
         $strategie->setProject($projet);
@@ -1294,6 +1360,41 @@ private function saveRejectedJustificationWithTranslation(
 
         if ($strategie->getUser() === null && $user instanceof User) {
             $strategie->setUser($user);
+        }
+    }
+
+    private function buildUniqueGeneratedStrategyName(
+        string $proposedName,
+        Project $project,
+        StrategieRepository $strategieRepository
+    ): string {
+        $baseName = trim($proposedName);
+        if ($baseName !== '') {
+            $baseName = preg_replace('/^strategie\s+ia\s*[-:–]?\s*/iu', '', $baseName) ?? $baseName;
+            $baseName = trim($baseName);
+        }
+        if ($baseName === '') {
+            $projectTitle = trim((string) $project->getTitleProj());
+            $baseName = $projectTitle !== '' ? 'Strategie ' . $projectTitle : 'Strategie recommandee';
+        }
+
+        $candidate = $baseName;
+        $suffix = 1;
+
+        while (true) {
+            $conflict = $strategieRepository->findAssignedDuplicateByName($candidate);
+            if (!$conflict instanceof Strategie) {
+                return $candidate;
+            }
+
+            $conflictProjectId = $conflict->getProject()?->getIdProj();
+            if ($conflictProjectId === null || $conflictProjectId === $project->getIdProj()) {
+                return $candidate;
+            }
+
+            ++$suffix;
+            $projectId = $project->getIdProj() ?? 0;
+            $candidate = sprintf('%s - P%d-%d', $baseName, $projectId, $suffix);
         }
     }
 

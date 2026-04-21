@@ -259,26 +259,129 @@
 .strategy-summary-value.positive { color: var(--sage-green); }
 .strategy-summary-value.negative { color: #d68b6e; }
 
-.strategy-countdown {
-    background: rgba(126, 139, 99, 0.08);
-    border: 1px solid rgba(126, 139, 99, 0.2);
-    border-radius: 14px;
-    padding: 12px;
+.strategy-countdown-card {
+    background: linear-gradient(135deg, rgba(126, 139, 99, 0.08) 0%, rgba(126, 139, 99, 0.02) 100%);
+    backdrop-filter: blur(2px);
+    border-radius: 18px;
+    border: 1px solid rgba(126, 139, 99, 0.25);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 0.85rem 1rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: fit-content;
+    max-width: 200%;
+    justify-self: start;
+    transition: all 0.2s ease;
 }
 
-.strategy-countdown::before {
-    width: 0;
-    height: 0;
+.strategy-countdown-card:hover {
+    border-color: rgba(126, 139, 99, 0.45);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
 }
 
-.strategy-countdown-value {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+.countdown-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+
+.countdown-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #7e8b63;
+    stroke-width: 1.75;
+}
+
+.countdown-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5a6546;
+}
+
+.countdown-value {
+    font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #2d3a1f;
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.countdown-units {
+    display: grid;
+    grid-template-columns: repeat(4, max-content);
+    gap: 0.7rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.62rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #7c8a6a;
     letter-spacing: 0.05em;
 }
 
-.strategy-countdown.is-expired {
-    background: rgba(214, 139, 110, 0.12);
-    border-color: rgba(214, 139, 110, 0.35);
+.countdown-units span {
+    text-align: left;
+}
+
+.countdown-progress {
+    background: rgba(126, 139, 99, 0.15);
+    border-radius: 100px;
+    height: 3px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #7e8b63, #a3b386);
+    height: 100%;
+    width: 0%;
+    border-radius: 100px;
+    transition: width 0.3s ease-out;
+}
+
+/* Expired state */
+.strategy-countdown-card.is-expired {
+    background: rgba(214, 139, 110, 0.08);
+    border-color: rgba(214, 139, 110, 0.3);
+}
+
+.strategy-countdown-card.is-expired .countdown-icon {
+    color: #d68b6e;
+}
+
+.strategy-countdown-card.is-expired .countdown-value {
+    color: #b45a3b;
+}
+
+.strategy-countdown-card.is-expired .progress-bar {
+    background: linear-gradient(90deg, #d68b6e, #e4a48a);
+}
+
+/* Small screens */
+@media (max-width: 540px) {
+    .strategy-countdown-card {
+        width: 100%;
+        padding: 0.75rem 0.85rem;
+        align-items: stretch;
+    }
+    .countdown-value {
+        font-size: 1.25rem;
+        letter-spacing: 0.03em;
+    }
+    .countdown-units {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.35rem;
+        font-size: 0.58rem;
+    }
+    .countdown-units span {
+        text-align: center;
+    }
 }
 
 .strategy-summary-helper {

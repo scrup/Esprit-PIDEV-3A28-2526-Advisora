@@ -1434,6 +1434,17 @@ footer {
   box-shadow: 0 10px 20px rgba(97, 115, 84, 0.36);
 }
 
+.recommendation-btn-gemini {
+  background: linear-gradient(135deg, #c37d5d, #a56143);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(165, 97, 67, 0.3);
+}
+
+.recommendation-btn-gemini:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(165, 97, 67, 0.38);
+}
+
 .recommendation-refuse-box {
   position: relative;
 }

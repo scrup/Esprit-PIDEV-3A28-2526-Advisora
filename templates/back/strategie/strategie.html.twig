@@ -85,7 +85,8 @@
                     {% for strategy in pagination %}
                     {% set strategyOwner = strategy.user ? ((strategy.user.prenomUser ?: '') ~ ' ' ~ (strategy.user.nomUser ?: ''))|trim : '' %}
                     {% set budgetLabel = strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' %}
-                    {% set gainLabel = strategy.gainEstime is not null ? ((strategy.gainEstime >= 0 ? '+' : '') ~ strategy.gainEstime ~ '%') : 'Non defini' %}
+                    {% set gainLabel = strategy.gainEstime is not null ? strategy.gainEstime|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' %}
+                    {% set roiLabel = strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, ',', ' ') ~ '%' : 'Non defini' %}
                     <article class="strategy-card"
                              data-id="{{ strategy.idStrategie }}"
                              data-status="{{ strategy.statusCssClass }}"
@@ -126,6 +127,10 @@
                                                 <span class="strategy-summary-label">Gain estime</span>
                                                 <strong class="strategy-summary-value {{ strategy.gainEstime is not null and strategy.gainEstime < 0 ? 'negative' : 'positive' }}">{{ gainLabel }}</strong>
                                             </div>
+                                            <div class="strategy-summary-item">
+                                                <span class="strategy-summary-label">ROI estime</span>
+                                                <strong class="strategy-summary-value {{ strategy.estimatedRoiPercent is not null and strategy.estimatedRoiPercent < 0 ? 'negative' : 'positive' }}">{{ roiLabel }}</strong>
+                                            </div>
                                             
                                             <div class="strategy-summary-item">
                                                 <span class="strategy-summary-label">Responsable</span>
@@ -133,12 +138,31 @@
                                             </div>
 
                                             {% if strategy.lockedAt and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
-                                                {% set strategy_deadline = strategy.lockedAt|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
-                                                <div class="strategy-summary-item strategy-countdown" data-strategy-countdown data-end-at="{{ strategy_deadline|date('c') }}">
-                                                    <span class="strategy-summary-label">Fin de periode dans</span>
-                                                    <strong class="strategy-summary-value strategy-countdown-value" data-countdown-value>--:--:--</strong>
-                                                </div>
-                                            {% endif %}
+    {% set strategy_deadline = strategy.lockedAt|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
+    <div class="strategy-countdown-card" 
+         data-strategy-countdown 
+         data-end-at="{{ strategy_deadline|date('c') }}"
+         role="timer"
+         aria-live="polite">
+        <div class="countdown-header">
+            <svg class="countdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span class="countdown-label">Fin de période dans</span>
+        </div>
+        <div class="countdown-value" data-countdown-display>-- -- -- --</div>
+        <div class="countdown-units">
+            <span>Jours</span>
+            <span>Heures</span>
+            <span>Minutes</span>
+            <span>Secondes</span>
+        </div>
+        <div class="countdown-progress">
+            <div class="progress-bar" data-progress-bar style="width: 0%"></div>
+        </div>
+    </div>
+{% endif %}
                                         </div>
 
                                         <div class="strategy-tags">

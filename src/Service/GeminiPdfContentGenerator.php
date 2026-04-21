@@ -298,6 +298,7 @@ class GeminiPdfContentGenerator
         }
 
         $estimatedGainAmount = $this->calculateEstimatedGainAmount($strategy);
+        $estimatedRoiPercent = $this->calculateEstimatedRoiPercent($strategy);
 
         return implode("\n", [
             'Tu es un conseiller strategique senior pour startups et PME innovantes.',
@@ -332,10 +333,13 @@ class GeminiPdfContentGenerator
                 '- Budget strategie : %s',
                 $strategy->getBudgetTotal() !== null ? $this->formatAmount($strategy->getBudgetTotal()) . ' DT' : 'Non defini'
             ),
-            sprintf('- Gain estime : %s', $strategy->getGainEstime() !== null ? $strategy->getGainEstime() . '%' : 'Non defini'),
             sprintf(
-                '- Gain estime en montant : %s',
+                '- Gain estime (montant) : %s',
                 $estimatedGainAmount !== null ? $this->formatAmount($estimatedGainAmount) . ' DT' : 'Non defini'
+            ),
+            sprintf(
+                '- ROI estime : %s',
+                $estimatedRoiPercent !== null ? number_format($estimatedRoiPercent, 2, ',', ' ') . '%' : 'Non defini'
             ),
             sprintf('- Actualites / contexte : %s', $strategy->getNews() ?: 'Aucune actualite fournie'),
             sprintf('- Justification : %s', $strategy->getJustification() ?: 'Aucune justification fournie'),
@@ -362,7 +366,7 @@ class GeminiPdfContentGenerator
             '- Appuie-toi sur les donnees fournies et sur des deductions plausibles, sans inventer de faits externes.',
             '- Les risques et les contre-mesures doivent mentionner les contraintes budgetaires, de gouvernance ou d execution quand elles sont pertinentes.',
             '- Chaque element doit etre specifique au contexte du projet et de la strategie.',
-            '- La courbe expected_outcome_curve doit etre progressive, credible et se terminer proche du gain estime lorsqu il est disponible.',
+            '- La courbe expected_outcome_curve doit etre progressive, credible et se terminer proche du ROI estime lorsqu il est disponible.',
         ]);
     }
 
@@ -630,6 +634,7 @@ class GeminiPdfContentGenerator
     private function buildFallbackContent(Strategie $strategy, ?Project $project): array
     {
         $estimatedGainAmount = $this->calculateEstimatedGainAmount($strategy);
+        $estimatedRoiPercent = $this->calculateEstimatedRoiPercent($strategy);
         $projectBudget = $project?->getBudgetProj();
         $projectTitle = $project?->getTitleProj() ?: 'Aucun projet associe';
         $projectStatus = $project?->getStatusLabel() ?? 'Non defini';
@@ -693,12 +698,13 @@ class GeminiPdfContentGenerator
 
         return [
             'executive_summary' => sprintf(
-                'La strategie "%s" vise une execution sur %d mois avec un budget de %s DT. Elle est rattachee au projet "%s" et affiche un gain estime de %s. Sa reussite depend d un pilotage serre, d un scope maitrise et d une mise en oeuvre progressive.',
+                'La strategie "%s" vise une execution sur %d mois avec un budget de %s DT. Elle est rattachee au projet "%s" et affiche un gain estime de %s (ROI: %s). Sa reussite depend d un pilotage serre, d un scope maitrise et d une mise en oeuvre progressive.',
                 (string) ($strategy->getNomStrategie() ?: 'Strategie sans nom'),
                 (int) ($strategy->getDureeTerme() ?? 0),
                 $this->formatAmount($strategy->getBudgetTotal()),
                 $projectTitle,
-                $strategy->getGainEstime() !== null ? $strategy->getGainEstime() . '%' : 'Non defini'
+                $estimatedGainAmount !== null ? $this->formatAmount($estimatedGainAmount) . ' DT' : 'Non defini',
+                $estimatedRoiPercent !== null ? number_format($estimatedRoiPercent, 2, ',', ' ') . '%' : 'Non defini'
             ),
             'strategic_diagnosis' => sprintf(
                 'Le point de depart montre une strategie de type %s portee par %s, avec un horizon de %s mois et un budget de %s DT. Le projet support "%s" se situe actuellement a %s d avancement avec un statut "%s". La dynamique semble favorable si les priorites sont resserrees, les hypotheses budgetaires confirmees et les objectifs traduits en jalons operationnels suivis dans le temps.',
@@ -825,6 +831,8 @@ class GeminiPdfContentGenerator
     private function buildFallbackKpis(Strategie $strategy, ?Project $project): array
     {
         $objectiveCount = max(1, $strategy->getObjectives()->count());
+        $estimatedGainAmount = $this->calculateEstimatedGainAmount($strategy);
+        $estimatedRoiPercent = $this->calculateEstimatedRoiPercent($strategy);
         $projectProgressLabel = $project?->getAvancementProj() !== null
             ? number_format((float) $project->getAvancementProj(), 0, ',', ' ') . '%'
             : 'progression definie a chaque revue';
@@ -851,8 +859,12 @@ class GeminiPdfContentGenerator
             ],
             [
                 'name' => 'Creation de valeur',
-                'target' => $strategy->getGainEstime() !== null
-                    ? 'Tendre vers +' . $strategy->getGainEstime() . '% a horizon strategie'
+                'target' => $estimatedGainAmount !== null
+                    ? sprintf(
+                        'Tendre vers %s DT de gain (ROI cible: %s)',
+                        $this->formatAmount($estimatedGainAmount),
+                        $estimatedRoiPercent !== null ? number_format($estimatedRoiPercent, 2, ',', ' ') . '%' : 'Non defini'
+                    )
                     : 'Benefices documentes par trimestre',
                 'cadence' => 'Trimestrielle',
             ],
@@ -917,10 +929,10 @@ class GeminiPdfContentGenerator
 
     private function determineOutcomeFinalValue(Strategie $strategy): float
     {
-        $gainEstime = $strategy->getGainEstime();
+        $estimatedRoiPercent = $this->calculateEstimatedRoiPercent($strategy);
 
-        if ($gainEstime !== null && $gainEstime > 0) {
-            return round($gainEstime, 1);
+        if ($estimatedRoiPercent !== null && $estimatedRoiPercent > 0) {
+            return round($estimatedRoiPercent, 1);
         }
 
         $objectiveFactor = max(0, $strategy->getObjectives()->count() - 1) * 8;
@@ -939,7 +951,7 @@ class GeminiPdfContentGenerator
         $durationText = $strategy->getDureeTerme() !== null
             ? sprintf('sur %d mois', (int) $strategy->getDureeTerme())
             : 'sur l horizon defini';
-        $metricLabel = $strategy->getGainEstime() !== null ? 'de gain projete' : 'de resultat cible';
+        $metricLabel = $this->calculateEstimatedRoiPercent($strategy) !== null ? 'de ROI projete' : 'de resultat cible';
 
         return sprintf(
             'La trajectoire attendue projette une progression graduelle %s, avec une acceleration visible autour de %s (%s) avant une cible finale a %s (%s).',
@@ -1190,11 +1202,19 @@ class GeminiPdfContentGenerator
 
     private function calculateEstimatedGainAmount(Strategie $strategy): ?float
     {
-        if ($strategy->getBudgetTotal() === null || $strategy->getGainEstime() === null) {
+        return $strategy->getGainEstime();
+    }
+
+    private function calculateEstimatedRoiPercent(Strategie $strategy): ?float
+    {
+        $budget = $strategy->getBudgetTotal();
+        $gainAmount = $this->calculateEstimatedGainAmount($strategy);
+
+        if ($budget === null || $budget <= 0 || $gainAmount === null) {
             return null;
         }
 
-        return $strategy->getBudgetTotal() * ($strategy->getGainEstime() / 100);
+        return ($gainAmount / $budget) * 100;
     }
 
     private function formatAmount(?float $amount): string
