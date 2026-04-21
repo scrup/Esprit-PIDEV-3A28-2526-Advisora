@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+{# Page portefeuille: visualisation solde coins et creation de recharges wallet. #}
+
+{% block title %}Advisora | Portefeuille{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260421-23' }}">
+{% endblock %}
+
+{% block body %}
+    {% set pending_market_buy = pending_buy|default(null) %}
+    {% set pending_is_cart = pending_market_buy and ((pending_market_buy.mode|default('')) == 'cart' or pending_market_buy.cart_items is defined) %}
+    {% set wallet_balance = marketplace.wallet.balance|default(0) %}
+    {% set pending_missing = pending_market_buy.missing_coins|default(0) %}
+
+    <div class="mini-shop-shell is-market-view" id="shop-wallet-page">
+        <section class="mini-shop-hero">
+            <div class="mini-shop-hero-copy mini-shop-wallet-hero-copy">
+                <span class="mini-shop-kicker"><i class="fas fa-wallet"></i> Portefeuille</span>
+                <h1>Portefeuille client</h1>
+                <p>Un espace premium pour voir votre solde, relancer un checkout en attente et crediter votre compte en coins.</p>
+                <div class="mini-shop-hero-actions">
+                    <a href="{{ path('app_shop') }}#shop-marketplace" class="shop-btn shop-btn-secondary">
+                        <i class="fas fa-store"></i>
+                        Retour boutique
+                    </a>
+                </div>
+                <div class="mini-shop-wallet-hero-balance">
+                    <span>Solde disponible</span>
+                    <strong>{{ wallet_balance|number_format(3, '.', ' ') }} coins</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="mini-shop-marketplace-layout" id="shop-wallet">
+            <article class="mini-shop-panel mini-shop-wallet-panel">
+                {% if pending_market_buy %}
+                    <section class="mini-shop-wallet-alert">
+                        <h2><i class="fas fa-circle-exclamation"></i> Checkout en attente</h2>
+                        <p>
+                            {% if pending_is_cart %}
+                                Panier C2C en attente: {{ pending_market_buy.cart_lines|default(0) }} annonce(s), {{ pending_market_buy.cart_units|default(0) }} unite(s).
+                            {% else %}
+                                Checkout en attente: {{ pending_market_buy.quantity }} unite(s) sur annonce #{{ pending_market_buy.listing_id }}.
+                            {% endif %}
+                            Solde actuel {{ pending_market_buy.current_balance|number_format(3, '.', ' ') }} coins, requis {{ pending_market_buy.required_coins|number_format(3, '.', ' ') }} coins,
+                            manque {{ pending_market_buy.missing_coins|number_format(3, '.', ' ') }} coins ({{ pending_market_buy.missing_money|default(0)|number_format(3, '.', ' ') }} money).
+                        </p>
+                    </section>
+                {% endif %}
+
+                <div class="mini-shop-wallet-grid">
+                    <section class="mini-shop-wallet-insights">
+                        <article class="mini-shop-wallet-metric is-gold">
+                            <span>Solde</span>
+                            <strong>{{ wallet_balance|number_format(3, '.', ' ') }} coins</strong>
+                            <small>Disponible pour vos achats C2C</small>
+                        </article>
+                        <article class="mini-shop-wallet-metric is-ink">
+                            <span>Checkout attente</span>
+                            <strong>{{ pending_market_buy ? 'Oui' : 'Non' }}</strong>
+                            <small>{{ pending_is_cart ? 'Panier multi-annonces' : 'Annonce unique' }}</small>
+                        </article>
+                        <article class="mini-shop-wallet-metric is-light">
+                            <span>Taux coins</span>
+                            <strong>{{ marketplace.wallet.coin_rate|default(10)|number_format(3, '.', ' ') }} / 1 money</strong>
+                            <small>Conversion monetaire appliquee</small>
+                        </article>
+                        <article class="mini-shop-wallet-metric is-light">
+                            <span>Coins manquants</span>
+                            <strong>{{ pending_missing|number_format(3, '.', ' ') }}</strong>
+                            <small>0.000 signifie que vous pouvez acheter immediatement</small>
+                        </article>
+                    </section>
+
+                    <section class="mini-shop-wallet-topup">
+                        <div class="mini-shop-panel-head">
+                            <div>
+                                <span class="mini-panel-tag">Recharge wallet</span>
+                                <h2>Crediter votre compte</h2>
+                                <p>Entrez un montant et choisissez un fournisseur pour alimenter votre portefeuille.</p>
+                            </div>
+                        </div>
+
+                        <form method="post" action="{{ path('app_shop_wallet_topup') }}" class="mini-shop-form mini-shop-grid" novalidate>
+                            <input type="hidden" name="_token" value="{{ csrf_token('shop_wallet_topup') }}">
+                            <input type="hidden" name="_redirect_page" value="wallet">
+                            <input type="hidden" name="_redirect_fragment" value="shop-wallet">
+
+                            <div class="mini-shop-field-group">
+                                <label for="topup_amount_money">Montant recharge</label>
+                                <input
+                                    id="topup_amount_money"
+                                    type="number"
+                                    name="amount_money"
+                                    value="{{ pending_market_buy ? pending_market_buy.missing_money|default(1) : 1 }}"
+                                >
+                            </div>
+
+                            <div class="mini-shop-field-group">
+                                <label for="topup_provider">Fournisseur</label>
+                                <select id="topup_provider" name="provider">
+                                    {% set active_topup_provider = pending_market_buy.topup_provider|default('STRIPE') %}
+                                    <option value="STRIPE" {{ active_topup_provider == 'STRIPE' ? 'selected' : '' }}>STRIPE</option>
+                                    <option value="FLOUCI" {{ active_topup_provider == 'FLOUCI' ? 'selected' : '' }}>FLOUCI</option>
+                                    <option value="D17" {{ active_topup_provider == 'D17' ? 'selected' : '' }}>D17</option>
+                                    <option value="MANUAL" {{ active_topup_provider == 'MANUAL' ? 'selected' : '' }}>MANUAL</option>
+                                </select>
+                            </div>
+
+                            <div class="mini-shop-form-actions">
+                                <button type="submit" class="shop-btn shop-btn-primary">
+                                    <i class="fas fa-wallet"></i>
+                                    Creer recharge
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            </article>
+        </section>
+    </div>
+{% endblock %}

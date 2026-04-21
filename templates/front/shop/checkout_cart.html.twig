@@ -1,0 +1,191 @@
+{% extends 'base.html.twig' %}
+{# Checkout panier C2C global: paiement unique pour plusieurs annonces du panier. #}
+
+{% block title %}Advisora | Checkout Panier{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260421-23' }}">
+{% endblock %}
+
+{% block body %}
+    {% set cart_items = checkout_cart_items|default([]) %}
+    {% set cart_stats = checkout_cart_stats|default({'items_count': 0, 'units_count': 0, 'subtotal': 0}) %}
+    {% set subtotal = cart_stats.subtotal|default(0) %}
+    {% set wallet_balance = wallet.balance|default(0) %}
+    {% set balance_after = wallet_balance - subtotal %}
+
+    <div class="mini-shop-shell is-market-view mini-shop-checkout-page">
+        <section class="mini-shop-hero">
+            <div class="mini-shop-hero-copy">
+                <span class="mini-shop-kicker"><i class="fas fa-credit-card"></i> Checkout panier C2C</span>
+                <h1>Payer toutes les annonces en une seule fois</h1>
+                <p>Validation serveur Symfony: total du panier, wallet, commandes, livraisons et synchronisation Fiabilo.</p>
+                <div class="mini-shop-hero-actions">
+                    <a href="{{ path('app_shop') }}#shop-cart-drawer" class="shop-btn shop-btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour panier
+                    </a>
+                    <a href="{{ path('app_shop') }}#shop-marketplace" class="shop-btn shop-btn-ghost">
+                        <i class="fas fa-store"></i>
+                        Retour boutique
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="mini-shop-marketplace-layout mini-shop-checkout-layout">
+            <article class="mini-shop-panel mini-shop-checkout-summary-card">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Panier C2C</span>
+                        <h2>Recapitulatif global</h2>
+                        <p>{{ cart_stats.items_count|default(0) }} ligne(s), {{ cart_stats.units_count|default(0) }} unite(s).</p>
+                    </div>
+                    <div class="mini-shop-panel-chip">
+                        <span>Total panier</span>
+                        <strong>{{ subtotal|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-cart-item-facts">
+                    <div>
+                        <span>Lignes</span>
+                        <strong>{{ cart_stats.items_count|default(0) }}</strong>
+                    </div>
+                    <div>
+                        <span>Unites</span>
+                        <strong>{{ cart_stats.units_count|default(0) }}</strong>
+                    </div>
+                    <div>
+                        <span>Solde wallet</span>
+                        <strong>{{ wallet_balance|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                    <div>
+                        <span>Apres achat</span>
+                        <strong>{{ balance_after|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                    <div>
+                        <span>Taux coins</span>
+                        <strong>{{ wallet.coin_rate|default(10)|number_format(3, '.', ' ') }} / 1 money</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-cart-list">
+                    {% for item in cart_items %}
+                        <article class="mini-shop-c2c-cart-card">
+                            <div class="mini-shop-cart-item-head">
+                                <div>
+                                    <span class="mini-panel-tag">Annonce #{{ item.listing_id }}</span>
+                                    <h3>{{ item.resource_name }}</h3>
+                                </div>
+                                <span class="shop-status-badge is-available">LISTED</span>
+                            </div>
+
+                            <div class="mini-shop-cart-item-meta">
+                                <span>{{ item.supplier_name }}</span>
+                                <span>Vendeur: {{ item.seller_name }}</span>
+                            </div>
+
+                            <div class="mini-shop-cart-item-facts">
+                                <div>
+                                    <span>Prix unit.</span>
+                                    <strong>{{ item.unit_price|number_format(3, '.', ' ') }} coins</strong>
+                                </div>
+                                <div>
+                                    <span>Quantite</span>
+                                    <strong>{{ item.quantity }}</strong>
+                                </div>
+                                <div>
+                                    <span>Disponible</span>
+                                    <strong>{{ item.available }}</strong>
+                                </div>
+                                <div>
+                                    <span>Total</span>
+                                    <strong>{{ item.line_total|number_format(3, '.', ' ') }} coins</strong>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="mini-shop-panel mini-shop-checkout-form-card">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Livraison Fiabilo</span>
+                        <h2>Confirmer le paiement global</h2>
+                        <p>Un seul checkout pour toutes les lignes du panier C2C.</p>
+                    </div>
+                </div>
+
+                <form method="post" action="{{ path('app_shop_market_buy_cart') }}" class="mini-shop-form mini-shop-grid mini-shop-checkout-form" novalidate>
+                    <input type="hidden" name="_token" value="{{ csrf_token('shop_market_buy_cart') }}">
+                    <input type="hidden" name="_redirect_page" value="checkout_cart">
+
+                    <div class="mini-shop-grid mini-shop-grid-two">
+                        <div class="mini-shop-field-group">
+                            <label for="checkout_cart_project_id">Projet cible</label>
+                            <select id="checkout_cart_project_id" name="project_id">
+                                <option value="">Dernier projet ou creation auto</option>
+                                {% for project in projects %}
+                                    <option value="{{ project.idProj }}">{{ project.titleProj }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mini-shop-field-group">
+                            <label for="checkout_cart_topup_provider">Fournisseur recharge auto</label>
+                            <select id="checkout_cart_topup_provider" name="topup_provider">
+                                <option value="STRIPE">STRIPE</option>
+                                <option value="FLOUCI">FLOUCI</option>
+                                <option value="D17">D17</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mini-shop-grid mini-shop-grid-three mini-shop-checkout-grid">
+                        <div class="mini-shop-field-group">
+                            <label for="checkout_cart_recipient">Destinataire</label>
+                            <input id="checkout_cart_recipient" type="text" name="recipient_name" placeholder="Nom complet">
+                        </div>
+                        <div class="mini-shop-field-group">
+                            <label for="checkout_cart_governorate">Gouvernorat</label>
+                            <input id="checkout_cart_governorate" type="text" name="governorate" placeholder="Tunis">
+                        </div>
+                        <div class="mini-shop-field-group">
+                            <label for="checkout_cart_city">Ville</label>
+                            <input id="checkout_cart_city" type="text" name="city" placeholder="Ville">
+                        </div>
+                        <div class="mini-shop-field-group">
+                            <label for="checkout_cart_cp">Code postal</label>
+                            <input id="checkout_cart_cp" type="text" name="postal_code" placeholder="1000">
+                        </div>
+                        <div class="mini-shop-field-group">
+                            <label for="checkout_cart_phone">Telephone</label>
+                            <input id="checkout_cart_phone" type="text" name="phone" placeholder="Numero principal">
+                        </div>
+                        <div class="mini-shop-field-group">
+                            <label for="checkout_cart_phone2">Telephone 2</label>
+                            <input id="checkout_cart_phone2" type="text" name="phone2" placeholder="Numero secondaire">
+                        </div>
+                        <div class="mini-shop-field-group mini-shop-field-span-2">
+                            <label for="checkout_cart_address">Adresse</label>
+                            <input id="checkout_cart_address" type="text" name="address_line" placeholder="Adresse complete">
+                        </div>
+                        <div class="mini-shop-field-group mini-shop-field-span-3">
+                            <label for="checkout_cart_note">Message livraison</label>
+                            <input id="checkout_cart_note" type="text" name="delivery_note" placeholder="Ex: Appeler avant livraison">
+                        </div>
+                    </div>
+
+                    <div class="mini-shop-form-actions">
+                        <button type="submit" class="shop-btn shop-btn-primary">
+                            <i class="fas fa-check-circle"></i>
+                            Payer tout le panier ({{ subtotal|number_format(3, '.', ' ') }} coins)
+                        </button>
+                    </div>
+                </form>
+            </article>
+        </section>
+    </div>
+{% endblock %}

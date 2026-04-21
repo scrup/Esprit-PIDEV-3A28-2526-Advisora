@@ -10,12 +10,20 @@ use App\Form\ResourceType;
 use App\Repository\CataloguefournisseurRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\ResourceRepository;
+use App\Service\ResourceActionAnalysisService;
+use App\Service\ResourceAnalysisChatService;
+use App\Service\ResourceAnalysisPdfReportService;
+use App\Service\ResourceAnalysisResultStore;
 use App\Service\ResourceReservationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ResourceController extends AbstractController
 {
@@ -48,6 +56,7 @@ final class ResourceController extends AbstractController
         return $this->render('back/resource/dashboard.html.twig', [
             'metrics' => $metrics,
             'linked_resources' => array_slice($linkedResources, 0, 8),
+            'stock_snapshots' => $this->buildStockSnapshots($linkedResources, $reservationService),
         ]);
     }
 
@@ -100,7 +109,204 @@ final class ResourceController extends AbstractController
             'can_edit_any_resource' => true,
             'can_delete_any_resource' => true,
             'metrics' => $metrics,
+            'stock_snapshots' => $this->buildStockSnapshots($resources, $reservationService),
         ]);
+    }
+
+    #[Route('/back/resources/analysis', name: 'back_resource_analysis', methods: ['GET'])]
+    public function backAnalysis(Request $request, ResourceAnalysisResultStore $analysisStore): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->canManageResources($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas consulter l analyse ressources.');
+        }
+
+        // Le controller ne recalcule rien ici: il lit le dernier snapshot deja produit.
+        $analysis = $analysisStore->loadLatest();
+        $priorityFilter = $this->normalizeActionPriority((string) $request->query->get('priority', ''));
+        $actionCodeFilter = strtoupper(trim((string) $request->query->get('action_code', '')));
+        $actions = is_array($analysis['actions'] ?? null) ? $analysis['actions'] : [];
+        $filteredActions = $this->filterActionsForView($actions, $priorityFilter, $actionCodeFilter);
+        $availableCodes = $this->collectActionCodes($actions);
+
+        $chatResult = null;
+        if ($request->hasSession()) {
+            $storedChat = $request->getSession()->get('resource_analysis_chat');
+            if (is_array($storedChat)) {
+                $chatResult = $storedChat;
+            }
+        }
+
+        return $this->render('back/resource/analysis.html.twig', [
+            'analysis' => $analysis,
+            'is_running' => $analysisStore->isRunning(),
+            'analysis_error' => $analysisStore->loadError(),
+            'filtered_actions' => $filteredActions,
+            'priority_filter' => $priorityFilter,
+            'action_code_filter' => $actionCodeFilter,
+            'available_action_codes' => $availableCodes,
+            'chat_result' => $chatResult,
+        ]);
+    }
+
+    #[Route('/back/resources/analysis/run', name: 'back_resource_analysis_run', methods: ['POST'])]
+    public function runBackAnalysis(
+        Request $request,
+        ResourceAnalysisResultStore $analysisStore,
+        ResourceActionAnalysisService $analysisService
+    ): Response {
+        $user = $this->getCurrentUser();
+        if (!$this->canManageResources($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas lancer l analyse ressources.');
+        }
+
+        if (!$this->isCsrfTokenValid('run_resource_analysis', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Le jeton de securite de lancement est invalide.');
+
+            return $this->redirectToRoute('back_resource_analysis');
+        }
+
+        if ($analysisStore->isRunning()) {
+            $this->addFlash('success', 'Une analyse est deja en cours. Actualisez la page dans quelques secondes.');
+
+            return $this->redirectToRoute('back_resource_analysis');
+        }
+
+        // On efface l etat d erreur precedent avant un nouveau run.
+        $analysisStore->clearError();
+        $analysisStore->markRunning();
+
+        try {
+            // Lancement async via commande console pour ne pas bloquer l utilisateur.
+            $projectDir = (string) $this->getParameter('kernel.project_dir');
+            $process = new Process(
+                [PHP_BINARY, 'bin/console', 'app:resource:analysis:run', '--no-interaction'],
+                $projectDir
+            );
+            $process->disableOutput();
+            $process->start();
+            $this->addFlash('success', 'Analyse lancee en arriere-plan. Le resultat apparaitra automatiquement.');
+        } catch (\Throwable) {
+            // Fallback: si le process async n est pas possible, on calcule tout de suite.
+            $analysisStore->saveResult($analysisService->analyze());
+            $this->addFlash('success', 'Analyse calculee immediatement (mode fallback).');
+        }
+
+        return $this->redirectToRoute('back_resource_analysis');
+    }
+
+    #[Route('/back/resources/analysis/export.csv', name: 'back_resource_analysis_export_csv', methods: ['GET'])]
+    public function exportBackAnalysisCsv(Request $request, ResourceAnalysisResultStore $analysisStore): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->canManageResources($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas exporter l analyse ressources.');
+        }
+
+        $analysis = $analysisStore->loadLatest();
+        if (!is_array($analysis)) {
+            $this->addFlash('error', 'Aucune analyse disponible a exporter.');
+
+            return $this->redirectToRoute('back_resource_analysis');
+        }
+
+        $priorityFilter = $this->normalizeActionPriority((string) $request->query->get('priority', ''));
+        $actionCodeFilter = strtoupper(trim((string) $request->query->get('action_code', '')));
+        $actions = is_array($analysis['actions'] ?? null) ? $analysis['actions'] : [];
+        $filteredActions = $this->filterActionsForView($actions, $priorityFilter, $actionCodeFilter);
+
+        // Export uniquement des lignes visibles apres filtres pour coller a l UX.
+        $filename = 'resource-analysis-' . (new \DateTimeImmutable())->format('Ymd-His') . '.csv';
+        $csv = $this->buildActionsCsv($filteredActions);
+
+        return new Response($csv, Response::HTTP_OK, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    #[Route('/back/resources/analysis/export.pdf', name: 'back_resource_analysis_export_pdf', methods: ['GET'])]
+    public function exportBackAnalysisPdf(
+        Request $request,
+        ResourceAnalysisResultStore $analysisStore,
+        ResourceAnalysisPdfReportService $pdfReportService
+    ): Response {
+        $user = $this->getCurrentUser();
+        if (!$this->canManageResources($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas exporter le rapport PDF ressources.');
+        }
+
+        $analysis = $analysisStore->loadLatest();
+        if (!is_array($analysis)) {
+            $this->addFlash('error', 'Aucune analyse disponible a exporter en PDF.');
+
+            return $this->redirectToRoute('back_resource_analysis');
+        }
+
+        // On reapplique exactement les memes filtres que la vue CSV/UI
+        // pour garantir la coherence des exports.
+        $priorityFilter = $this->normalizeActionPriority((string) $request->query->get('priority', ''));
+        $actionCodeFilter = strtoupper(trim((string) $request->query->get('action_code', '')));
+        $actions = is_array($analysis['actions'] ?? null) ? $analysis['actions'] : [];
+        $filteredActions = $this->filterActionsForView($actions, $priorityFilter, $actionCodeFilter);
+
+        try {
+            $report = $pdfReportService->generateReport($analysis, $filteredActions, $priorityFilter, $actionCodeFilter);
+            if (($report['warning'] ?? null) !== null) {
+                $this->addFlash('error', (string) $report['warning']);
+            }
+
+            return $this->file((string) $report['path'], (string) $report['download_name']);
+        } catch (\Throwable $throwable) {
+            $this->addFlash('error', 'Echec export PDF: ' . $throwable->getMessage());
+
+            return $this->redirectToRoute('back_resource_analysis', $this->extractAnalysisFilterParams($request));
+        }
+    }
+
+    #[Route('/back/resources/analysis/chat', name: 'back_resource_analysis_chat', methods: ['POST'])]
+    public function backAnalysisChat(
+        Request $request,
+        ResourceAnalysisResultStore $analysisStore,
+        ResourceAnalysisChatService $chatService
+    ): Response {
+        $user = $this->getCurrentUser();
+        if (!$this->canManageResources($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas utiliser le chat d analyse ressources.');
+        }
+
+        if (!$this->isCsrfTokenValid('resource_analysis_chat', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Le jeton de securite du chat est invalide.');
+
+            return $this->redirectToRoute('back_resource_analysis', $this->extractAnalysisFilterParams($request));
+        }
+
+        $question = trim((string) $request->request->get('question', ''));
+        if ($question === '') {
+            $this->addFlash('error', 'La question du chat est vide.');
+
+            return $this->redirectToRoute('back_resource_analysis', $this->extractAnalysisFilterParams($request));
+        }
+
+        $analysis = $analysisStore->loadLatest();
+        if (!is_array($analysis)) {
+            $this->addFlash('error', 'Aucune analyse disponible. Lancez d abord une analyse.');
+
+            return $this->redirectToRoute('back_resource_analysis', $this->extractAnalysisFilterParams($request));
+        }
+
+        // Le chat ne remplace pas le moteur deterministic:
+        // il explique les resultats deja calcules.
+        $answer = $chatService->answer($analysis, $question);
+        if ($request->hasSession()) {
+            $request->getSession()->set('resource_analysis_chat', [
+                'question' => $question,
+                'answer' => $answer,
+                'at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            ]);
+        }
+
+        return $this->redirectToRoute('back_resource_analysis', $this->extractAnalysisFilterParams($request));
     }
 
     #[Route('/resources/{id}', name: 'resource_show', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -149,7 +355,8 @@ final class ResourceController extends AbstractController
         int $resourceId,
         Request $request,
         ProjectRepository $projectRepository,
-        ResourceReservationService $reservationService
+        ResourceReservationService $reservationService,
+        ValidatorInterface $validator
     ): Response {
         $user = $this->getCurrentUser();
         if (!$this->canReserveResources($user)) {
@@ -168,12 +375,29 @@ final class ResourceController extends AbstractController
                 return $this->redirectToRoute('resource_reservation_edit', ['projectId' => $projectId, 'resourceId' => $resourceId]);
             }
 
-            $quantity = max(0, (int) $request->request->get('quantity', 1));
-            $targetProjectId = $request->request->get('project_id');
-            $targetProjectId = ($targetProjectId === null || $targetProjectId === '') ? null : (int) $targetProjectId;
+            ['quantity' => $quantity, 'projectId' => $targetProjectId, 'errors' => $errors] = $this->parseReservationPayload($request, $validator);
+
+            if ($errors !== []) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error);
+                }
+
+                if ($targetProjectId !== null && $targetProjectId > 0) {
+                    $reservation['project_id'] = $targetProjectId;
+                }
+
+                if ($quantity !== null) {
+                    $reservation['reserved_qty'] = $quantity;
+                }
+
+                return $this->render('front/resource/reservation_edit.html.twig', [
+                    'reservation' => $reservation,
+                    'projects' => $projectRepository->findByOwnerOrdered($user),
+                ]);
+            }
 
             try {
-                $newProjectId = $reservationService->updateClientReservation($user, $projectId, $resourceId, $quantity, $targetProjectId);
+                $reservationService->updateClientReservation($user, $projectId, $resourceId, $quantity, $targetProjectId);
                 $this->addFlash('success', 'La reservation a ete modifiee avec succes.');
 
                 return $this->redirectToRoute('resource_reservations');
@@ -210,7 +434,8 @@ final class ResourceController extends AbstractController
         int $id,
         Request $request,
         ResourceRepository $resourceRepository,
-        ResourceReservationService $reservationService
+        ResourceReservationService $reservationService,
+        ValidatorInterface $validator
     ): Response {
         $user = $this->getCurrentUser();
         if (!$this->canReserveResources($user)) {
@@ -228,9 +453,15 @@ final class ResourceController extends AbstractController
             return $this->redirectToRoute('resource_show', ['id' => $resource->getId()]);
         }
 
-        $quantity = max(0, (int) $request->request->get('quantity', 1));
-        $projectId = $request->request->get('project_id');
-        $projectId = ($projectId === null || $projectId === '') ? null : (int) $projectId;
+        ['quantity' => $quantity, 'projectId' => $projectId, 'errors' => $errors] = $this->parseReservationPayload($request, $validator);
+
+        if ($errors !== []) {
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error);
+            }
+
+            return $this->redirectToRoute('resource_show', ['id' => $resource->getId()]);
+        }
 
         try {
             $resolvedProjectId = $reservationService->reserveForClient($user, $resource, $quantity, $projectId);
@@ -283,7 +514,8 @@ final class ResourceController extends AbstractController
         int $resourceId,
         Request $request,
         ProjectRepository $projectRepository,
-        ResourceReservationService $reservationService
+        ResourceReservationService $reservationService,
+        ValidatorInterface $validator
     ): Response {
         $user = $this->getCurrentUser();
         if (!$this->canManageResources($user)) {
@@ -302,9 +534,26 @@ final class ResourceController extends AbstractController
                 return $this->redirectToRoute('back_resource_reservation_edit', ['projectId' => $projectId, 'resourceId' => $resourceId]);
             }
 
-            $quantity = max(0, (int) $request->request->get('quantity', 1));
-            $targetProjectId = $request->request->get('project_id');
-            $targetProjectId = ($targetProjectId === null || $targetProjectId === '') ? null : (int) $targetProjectId;
+            ['quantity' => $quantity, 'projectId' => $targetProjectId, 'errors' => $errors] = $this->parseReservationPayload($request, $validator);
+
+            if ($errors !== []) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error);
+                }
+
+                if ($targetProjectId !== null && $targetProjectId > 0) {
+                    $reservation['project_id'] = $targetProjectId;
+                }
+
+                if ($quantity !== null) {
+                    $reservation['reserved_qty'] = $quantity;
+                }
+
+                return $this->render('back/resource/reservation_edit.html.twig', [
+                    'reservation' => $reservation,
+                    'projects' => $projectRepository->findAllOrdered(),
+                ]);
+            }
 
             try {
                 $reservationService->updateReservationForManager($projectId, $resourceId, $quantity, $targetProjectId);
@@ -355,7 +604,12 @@ final class ResourceController extends AbstractController
     }
 
     #[Route('/resources/new', name: 'resource_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, CataloguefournisseurRepository $supplierRepository): Response
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        CataloguefournisseurRepository $supplierRepository,
+        ResourceRepository $resourceRepository
+    ): Response
     {
         $user = $this->getCurrentUser();
         if (!$this->canManageResources($user)) {
@@ -381,12 +635,17 @@ final class ResourceController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->normalizeResourceForPersistence($resource);
-            $entityManager->persist($resource);
-            $entityManager->flush();
 
-            $this->addFlash('success', 'La ressource a ete creee avec succes.');
+            if ($resourceRepository->existsByName((string) $resource->getNomRs())) {
+                $form->get('nomRs')->addError(new FormError('Une ressource avec ce nom existe deja.'));
+            } else {
+                $entityManager->persist($resource);
+                $entityManager->flush();
 
-            return $this->redirectToRoute($this->isBackOfficeResourceUser($user) ? 'resource_back_manage' : 'resource_manage', ['id' => $resource->getId()]);
+                $this->addFlash('success', 'La ressource a ete creee avec succes.');
+
+                return $this->redirectToRoute($this->isBackOfficeResourceUser($user) ? 'resource_back_manage' : 'resource_manage', ['id' => $resource->getId()]);
+            }
         }
 
         return $this->render($this->resolveResourceFormTemplate($user), [
@@ -400,7 +659,7 @@ final class ResourceController extends AbstractController
     }
 
     #[Route('/resources/{id}/manage', name: 'resource_manage', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function manage(int $id, ResourceRepository $resourceRepository, ResourceReservationService $reservationService): Response
+    public function manage(int $id, ResourceRepository $resourceRepository): Response
     {
         $user = $this->getCurrentUser();
         if (!$this->canManageResources($user)) {
@@ -412,14 +671,7 @@ final class ResourceController extends AbstractController
             throw $this->createNotFoundException('Ressource introuvable.');
         }
 
-        return $this->render('front/resource/manage.html.twig', [
-            'resource' => $resource,
-            'can_edit_resource' => true,
-            'can_delete_resource' => true,
-            'assigned_projects_count' => $resource->getProjects()->count(),
-            'reserved_stock' => $reservationService->getReservedStock((int) $resource->getId()),
-            'available_stock' => $reservationService->getAvailableStock($resource),
-        ]);
+        return $this->redirectToRoute('resource_back_manage', ['id' => $resource->getId()]);
     }
 
     #[Route('/back/resources/{id}/manage', name: 'resource_back_manage', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -466,11 +718,16 @@ final class ResourceController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->normalizeResourceForPersistence($resource);
-            $entityManager->flush();
 
-            $this->addFlash('success', 'La ressource a ete modifiee avec succes.');
+            if ($resourceRepository->existsByName((string) $resource->getNomRs(), $resource->getId())) {
+                $form->get('nomRs')->addError(new FormError('Une ressource avec ce nom existe deja.'));
+            } else {
+                $entityManager->flush();
 
-            return $this->redirectToRoute($this->isBackOfficeResourceUser($user) ? 'resource_back_manage' : 'resource_manage', ['id' => $resource->getId()]);
+                $this->addFlash('success', 'La ressource a ete modifiee avec succes.');
+
+                return $this->redirectToRoute($this->isBackOfficeResourceUser($user) ? 'resource_back_manage' : 'resource_manage', ['id' => $resource->getId()]);
+            }
         }
 
         return $this->render($this->resolveResourceFormTemplate($user), [
@@ -514,6 +771,138 @@ final class ResourceController extends AbstractController
         $this->addFlash('success', 'La ressource a ete supprimee avec succes.');
 
         return $this->redirectToRoute('back_resource_index');
+    }
+
+    /**
+     * @param array<int, mixed> $actions
+     * @return array<int, array<string, mixed>>
+     */
+    private function filterActionsForView(array $actions, ?string $priorityFilter, string $actionCodeFilter): array
+    {
+        $normalizedCode = strtoupper(trim($actionCodeFilter));
+        $filtered = [];
+
+        foreach ($actions as $action) {
+            if (!is_array($action)) {
+                continue;
+            }
+
+            $priority = strtolower(trim((string) ($action['priority'] ?? 'basse')));
+            $actionCode = strtoupper(trim((string) ($action['action_code'] ?? '')));
+
+            if ($priorityFilter !== null && $priority !== $priorityFilter) {
+                continue;
+            }
+            if ($normalizedCode !== '' && $actionCode !== $normalizedCode) {
+                continue;
+            }
+
+            $action['priority'] = $priority;
+            $action['action_code'] = $actionCode;
+            $filtered[] = $action;
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * @param array<int, mixed> $actions
+     * @return array<int, string>
+     */
+    private function collectActionCodes(array $actions): array
+    {
+        $codes = [];
+        foreach ($actions as $action) {
+            if (!is_array($action)) {
+                continue;
+            }
+
+            $code = strtoupper(trim((string) ($action['action_code'] ?? '')));
+            if ($code === '') {
+                continue;
+            }
+
+            $codes[] = $code;
+        }
+
+        $codes = array_values(array_unique($codes));
+        sort($codes);
+
+        return $codes;
+    }
+
+    private function normalizeActionPriority(string $priority): ?string
+    {
+        $normalized = strtolower(trim($priority));
+
+        return in_array($normalized, ['haute', 'moyenne', 'basse'], true) ? $normalized : null;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $actions
+     */
+    private function buildActionsCsv(array $actions): string
+    {
+        $handle = fopen('php://temp', 'w+');
+        if ($handle === false) {
+            return '';
+        }
+
+        // BOM UTF-8 pour une ouverture propre sous Excel.
+        fwrite($handle, "\xEF\xBB\xBF");
+        fputcsv($handle, [
+            'priority',
+            'code_action',
+            'resource_id',
+            'resource_name',
+            'supplier_name',
+            'impact_metier',
+            'justification',
+            'confidence_pct',
+            'delay',
+            'signal_type',
+        ], ';');
+
+        foreach ($actions as $action) {
+            fputcsv($handle, [
+                (string) ($action['priority'] ?? ''),
+                (string) ($action['action_code'] ?? ''),
+                (string) ($action['resource_id'] ?? ''),
+                (string) ($action['resource_name'] ?? ''),
+                (string) ($action['supplier_name'] ?? ''),
+                (string) ($action['impact_metier'] ?? ''),
+                (string) ($action['justification'] ?? ''),
+                (string) ($action['confidence_pct'] ?? ''),
+                (string) ($action['delay'] ?? ''),
+                (string) ($action['signal_type'] ?? ''),
+            ], ';');
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return is_string($csv) ? $csv : '';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function extractAnalysisFilterParams(Request $request): array
+    {
+        $priorityRaw = (string) $request->request->get('priority', $request->query->get('priority', ''));
+        $priority = $this->normalizeActionPriority($priorityRaw);
+        $actionCode = strtoupper(trim((string) $request->request->get('action_code', $request->query->get('action_code', ''))));
+
+        $params = [];
+        if ($priority !== null) {
+            $params['priority'] = $priority;
+        }
+        if ($actionCode !== '') {
+            $params['action_code'] = $actionCode;
+        }
+
+        return $params;
     }
 
     private function extractFilters(Request $request, bool $includePriceFilters = true): array
@@ -675,5 +1064,63 @@ final class ResourceController extends AbstractController
         }
 
         return $snapshots;
+    }
+
+    /**
+     * @return array{quantity:?int, projectId:?int, errors:array<int, string>}
+     */
+    private function parseReservationPayload(Request $request, ValidatorInterface $validator): array
+    {
+        $quantityRaw = trim((string) $request->request->get('quantity', ''));
+        $projectIdRaw = trim((string) $request->request->get('project_id', ''));
+
+        $violations = $validator->validate(
+            [
+                'quantity' => $quantityRaw,
+                'project_id' => $projectIdRaw,
+            ],
+            new Assert\Collection([
+                'allowExtraFields' => true,
+                'fields' => [
+                    'quantity' => [
+                        new Assert\NotBlank(['message' => 'La quantite est obligatoire.']),
+                        new Assert\Regex([
+                            'pattern' => '/^\d+$/',
+                            'message' => 'La quantite doit etre un entier positif.',
+                        ]),
+                        new Assert\GreaterThan([
+                            'value' => 0,
+                            'message' => 'La quantite doit etre strictement superieure a 0.',
+                        ]),
+                    ],
+                    'project_id' => new Assert\Optional([
+                        new Assert\Regex([
+                            'pattern' => '/^\d+$/',
+                            'message' => 'Le projet cible est invalide.',
+                        ]),
+                        new Assert\GreaterThan([
+                            'value' => 0,
+                            'message' => 'Le projet cible est invalide.',
+                        ]),
+                    ]),
+                ],
+            ])
+        );
+
+        $errors = [];
+        foreach ($violations as $violation) {
+            $message = trim((string) $violation->getMessage());
+            if ($message === '' || in_array($message, $errors, true)) {
+                continue;
+            }
+
+            $errors[] = $message;
+        }
+
+        return [
+            'quantity' => $quantityRaw !== '' && ctype_digit($quantityRaw) ? (int) $quantityRaw : null,
+            'projectId' => $projectIdRaw !== '' && ctype_digit($projectIdRaw) ? (int) $projectIdRaw : null,
+            'errors' => $errors,
+        ];
     }
 }
