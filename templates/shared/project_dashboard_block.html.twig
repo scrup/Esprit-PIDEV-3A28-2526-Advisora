@@ -1,0 +1,98 @@
+{% set export_url = export_url|default(null) %}
+{% set title = title|default('Pilotage des projets') %}
+{% set description = description|default('Suivez le portefeuille, les tendances et les budgets visibles dans votre scope actuel.') %}
+{% set role_badge = dashboard.export_meta.role_label|default('Projet') %}
+
+<section class="pm-form-card project-dashboard-shell">
+    <div class="project-dashboard-head">
+        <div>
+            <span class="pm-badge">{{ role_badge }}</span>
+            <h2>{{ title }}</h2>
+            <p>{{ description }}</p>
+        </div>
+        <div class="pm-card-actions">
+            {% if dashboard.export_meta.filters is not empty %}
+                <div class="project-dashboard-filters">
+                    {% for filter in dashboard.export_meta.filters %}
+                        <span class="project-dashboard-filter-pill">{{ filter.label }} : {{ filter.value }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if export_url %}
+                <a class="pm-btn pm-btn-primary" href="{{ export_url }}" target="_blank" rel="noopener">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Exporter PDF</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="project-dashboard-summary-grid">
+        <article class="pm-card project-dashboard-summary-card">
+            <span class="project-dashboard-card-label">Projets visibles</span>
+            <strong>{{ dashboard.summary.total_projects }}</strong>
+            <span>{{ dashboard.summary.active_types }} type(s) actif(s)</span>
+        </article>
+        <article class="pm-card project-dashboard-summary-card">
+            <span class="project-dashboard-card-label">En attente</span>
+            <strong>{{ dashboard.summary.pending_projects }}</strong>
+            <span>{{ dashboard.summary.accepted_projects }} acceptes</span>
+        </article>
+        <article class="pm-card project-dashboard-summary-card">
+            <span class="project-dashboard-card-label">Taux d acceptation</span>
+            <strong>{{ dashboard.summary.acceptance_rate|number_format(1, '.', ' ') }}%</strong>
+            <span>{{ dashboard.summary.refused_projects }} refuses</span>
+        </article>
+        <article class="pm-card project-dashboard-summary-card">
+            <span class="project-dashboard-card-label">Budget moyen</span>
+            <strong>{{ dashboard.summary.average_budget|number_format(2, '.', ' ') }} TND</strong>
+            <span>Total : {{ dashboard.summary.total_budget|number_format(2, '.', ' ') }} TND</span>
+        </article>
+    </div>
+
+    <div class="project-dashboard-chart-grid">
+        <article class="pm-card project-dashboard-chart-card" data-project-chart data-chart-kind="doughnut" data-chart='{{ dashboard.charts.status|json_encode|e('html_attr') }}'>
+            <div class="project-dashboard-chart-head">
+                <h3>Repartition par statut</h3>
+                <span>Vue immediate du pipeline</span>
+            </div>
+            <div class="project-dashboard-chart-frame">
+                <canvas aria-label="Repartition par statut" role="img"></canvas>
+            </div>
+            <p class="project-dashboard-chart-empty" data-project-chart-empty hidden>Aucune donnee de statut a afficher.</p>
+        </article>
+
+        <article class="pm-card project-dashboard-chart-card" data-project-chart data-chart-kind="bar" data-chart='{{ dashboard.charts.types|json_encode|e('html_attr') }}'>
+            <div class="project-dashboard-chart-head">
+                <h3>Types de projet</h3>
+                <span>Les categories les plus presentes</span>
+            </div>
+            <div class="project-dashboard-chart-frame">
+                <canvas aria-label="Repartition par type" role="img"></canvas>
+            </div>
+            <p class="project-dashboard-chart-empty" data-project-chart-empty hidden>Aucune typologie exploitable pour le moment.</p>
+        </article>
+
+        <article class="pm-card project-dashboard-chart-card" data-project-chart data-chart-kind="line" data-chart='{{ dashboard.charts.timeline|json_encode|e('html_attr') }}'>
+            <div class="project-dashboard-chart-head">
+                <h3>Evolution mensuelle</h3>
+                <span>Creation des projets sur les derniers mois</span>
+            </div>
+            <div class="project-dashboard-chart-frame">
+                <canvas aria-label="Evolution mensuelle des projets" role="img"></canvas>
+            </div>
+            <p class="project-dashboard-chart-empty" data-project-chart-empty hidden>Aucune serie temporelle disponible.</p>
+        </article>
+
+        <article class="pm-card project-dashboard-chart-card" data-project-chart data-chart-kind="bar-horizontal" data-chart='{{ dashboard.charts.budgets|json_encode|e('html_attr') }}'>
+            <div class="project-dashboard-chart-head">
+                <h3>Budget moyen par statut</h3>
+                <span>Lecture budgetaire sur le scope visible</span>
+            </div>
+            <div class="project-dashboard-chart-frame">
+                <canvas aria-label="Budget moyen par statut" role="img"></canvas>
+            </div>
+            <p class="project-dashboard-chart-empty" data-project-chart-empty hidden>Aucun budget exploitable dans ce scope.</p>
+        </article>
+    </div>
+</section>

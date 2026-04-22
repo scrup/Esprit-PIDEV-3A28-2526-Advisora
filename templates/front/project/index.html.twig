@@ -5,6 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-dashboard.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -26,8 +27,56 @@
             {% elseif not app.user %}
                 <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gerer</a>
             {% endif %}
+            <a class="pm-btn pm-btn-secondary" href="{{ path('project_top10') }}">
+                <i class="fas fa-ranking-star"></i>
+                <span>Top 10 mondiaux</span>
+            </a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('project_estimation') }}">
+                <i class="fas fa-chart-pie"></i>
+                <span>Estimation Tunisie</span>
+            </a>
         </div>
     </section>
+
+    <section class="pm-grid">
+        <article class="pm-card">
+            <div class="pm-card-head">
+                <span class="pm-badge">Outil Advisora</span>
+                <span class="pm-meta"><i class="fas fa-chart-pie"></i> Analyse guidee</span>
+            </div>
+            <h2>Interface d estimation de projet</h2>
+            <p>
+                Lancez une analyse structuree du projet avec vos donnees de marche, vos ressources, votre budget
+                et vos contraintes locales pour obtenir une lecture de viabilite directement dans Advisora.
+            </p>
+            <div class="pm-meta-list">
+                <span><i class="fas fa-list-check"></i> Wizard en 5 etapes</span>
+                <span><i class="fas fa-location-dot"></i> Contexte tunisien</span>
+                <span><i class="fas fa-shield-halved"></i> Secours automatique si un provider tombe</span>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-primary" href="{{ path('project_estimation') }}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Ouvrir l estimation</span>
+                </a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_top10') }}">
+                    <i class="fas fa-ranking-star"></i>
+                    <span>Explorer Top 10</span>
+                </a>
+            </div>
+        </article>
+    </section>
+
+    {% if app.user %}
+        {% include 'shared/project_dashboard_block.html.twig' with {
+            dashboard: project_dashboard,
+            export_url: path('project_export_pdf', app.request.query.all),
+            title: can_see_all_projects ? 'Vue globale des projets' : 'Mon tableau de bord projets',
+            description: can_see_all_projects
+                ? 'Retrouvez la synthese globale du portefeuille visible depuis le front office.'
+                : 'Suivez vos statuts, vos types de projet et vos tendances recentes depuis un seul bloc.'
+        } only %}
+    {% endif %}
 
     <section class="pm-hero">
         <form method="get" action="{{ path('project_index') }}" class="pm-form-card">
@@ -215,6 +264,8 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ asset('js/project-dashboard.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const extractServerError = (html) => {

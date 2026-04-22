@@ -4,8 +4,105 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
-     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}?v=20260422-task-board-contrast-v2">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <style>
+        body.back-mode .pm-task-shell {
+            background: radial-gradient(circle at top left, rgba(229, 220, 201, 0.42), transparent 32%), radial-gradient(circle at top right, rgba(213, 224, 211, 0.3), transparent 26%), linear-gradient(180deg, #fbfaf7 0%, #f4f1ea 100%) !important;
+            border-color: #ded4c5 !important;
+            color: #2b241b !important;
+        }
+
+        body.back-mode .pm-task-shell h2,
+        body.back-mode .pm-task-progress-meta strong,
+        body.back-mode .pm-task-column-head h3,
+        body.back-mode .pm-task-form-head h3,
+        body.back-mode .pm-task-title,
+        body.back-mode .pm-task-stat-value {
+            color: #2f261b !important;
+        }
+
+        body.back-mode .pm-task-shell .pm-section-text,
+        body.back-mode .pm-task-stat-label,
+        body.back-mode .pm-task-stat-note,
+        body.back-mode .pm-task-progress-kicker,
+        body.back-mode .pm-task-progress-caption,
+        body.back-mode .pm-task-counter-row,
+        body.back-mode .pm-task-column-head span,
+        body.back-mode .pm-task-card-meta,
+        body.back-mode .pm-task-drag-hint,
+        body.back-mode .pm-task-form-kicker,
+        body.back-mode .pm-task-form-text,
+        body.back-mode .pm-task-form-panel label,
+        body.back-mode .pm-task-list .pm-empty-text {
+            color: #6d5f4c !important;
+        }
+
+        body.back-mode .pm-task-stat-card,
+        body.back-mode .pm-task-progress-card,
+        body.back-mode .pm-task-form-panel,
+        body.back-mode .pm-task-column {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(249, 246, 240, 0.98) 100%) !important;
+            border-color: #dfd3c2 !important;
+        }
+
+        body.back-mode .pm-task-list {
+            background: rgba(255, 255, 255, 0.24) !important;
+        }
+
+        body.back-mode .pm-task-column-todo {
+            background: linear-gradient(180deg, rgba(255, 250, 242, 0.98) 0%, rgba(247, 236, 214, 0.98) 100%) !important;
+            border-color: #d8c19a !important;
+        }
+
+        body.back-mode .pm-task-column-in_progress {
+            background: linear-gradient(180deg, rgba(246, 250, 244, 0.98) 0%, rgba(227, 237, 224, 0.98) 100%) !important;
+            border-color: #bfd0b8 !important;
+        }
+
+        body.back-mode .pm-task-column-done {
+            background: linear-gradient(180deg, rgba(248, 251, 242, 0.98) 0%, rgba(231, 238, 218, 0.98) 100%) !important;
+            border-color: #c6d4ae !important;
+        }
+
+        body.back-mode .pm-task-card {
+            background: linear-gradient(180deg, #fffefd 0%, #f8f5ef 100%) !important;
+            border-color: #dfd3c2 !important;
+        }
+
+        body.back-mode .pm-task-status-todo {
+            background: #f0debe !important;
+            color: #744d17 !important;
+        }
+
+        body.back-mode .pm-task-status-in_progress {
+            background: #dde7d7 !important;
+            color: #4f6848 !important;
+        }
+
+        body.back-mode .pm-task-status-done {
+            background: #e3ecd6 !important;
+            color: #4d6735 !important;
+        }
+
+        body.back-mode .pm-task-weight {
+            background: #f1eadf !important;
+            color: #6d5a45 !important;
+        }
+
+        body.back-mode .pm-task-form-panel input,
+        body.back-mode .pm-task-form-panel textarea,
+        body.back-mode .pm-task-form-panel select {
+            background: linear-gradient(180deg, #ffffff 0%, #fcfaf6 100%) !important;
+            border-color: #d7c9b4 !important;
+            color: #273126 !important;
+        }
+
+        body.back-mode .pm-task-form-panel input::placeholder,
+        body.back-mode .pm-task-form-panel textarea::placeholder {
+            color: #988975 !important;
+        }
+    </style>
 {% endblock %}
 
 {% block javascripts %}
