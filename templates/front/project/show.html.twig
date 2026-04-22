@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/project-tts.js') }}"></script>
+{% endblock %}
+
 {% block body %}
     <section class="pm-detail-shell">
         <div class="pm-detail-main">
@@ -32,14 +37,14 @@
                     <span><i class="fas fa-chart-line"></i> Avancement : {{ task_board.progress|number_format(2, '.', ' ') }}%</span>
                 </div>
                 <div class="pm-card-actions">
-                    <button class="pm-btn pm-btn-secondary" type="button" data-tts-play data-audio-url="{{ path('project_speech', {id: project.id, scenario: 'summary'}) }}">
+                    <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.summary }}">
                         <i class="fas fa-volume-up"></i>
-                        <span>Lire</span>
+                        <span data-project-tts-label>Ecouter</span>
                     </button>
-                    {% if app.user and app.user.getRoleUser() == 'client' and project.user and project.user.idUser == app.user.idUser and latest_decision and latest_decision.getDecisionTitle() == constant('App\\Entity\\Decision::STATUS_REFUSED') and latest_decision.description %}
-                        <button class="pm-btn pm-btn-secondary" type="button" data-tts-play data-audio-url="{{ path('project_speech', {id: project.id, scenario: 'refusal-reason'}) }}">
+                    {% if tts_messages.refusal_reason is defined %}
+                        <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.refusal_reason }}">
                             <i class="fas fa-headphones"></i>
-                            <span>Pourquoi refuse ?</span>
+                            <span data-project-tts-label>Pourquoi refuse ?</span>
                         </button>
                     {% endif %}
                     {% if can_manage_project or can_manage_decisions %}

@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Form\DecisionType;
 use App\Repository\DecisionRepository;
 use App\Repository\ProjectRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +18,13 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DecisionController extends AbstractController
 {
     #[Route('/back/projects/{projectId}/decisions/new', name: 'decision_new', methods: ['GET', 'POST'], requirements: ['projectId' => '\d+'])]
-    public function new(int $projectId, Request $request, EntityManagerInterface $entityManager, ProjectRepository $projectRepository): Response
+    public function new(
+        int $projectId,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ProjectRepository $projectRepository,
+        NotificationService $notificationService
+    ): Response
     {
         $user = $this->getCurrentUser();
         if (!$this->canManageDecisions($user)) {
@@ -44,6 +51,7 @@ final class DecisionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->syncProjectStatusFromDecision($project, $decision);
             $entityManager->persist($decision);
+            $notificationService->notifyDecisionAdded($project);
             $this->ensureProjectDefaults($project);
             $entityManager->flush();
 
@@ -64,7 +72,13 @@ final class DecisionController extends AbstractController
     }
 
     #[Route('/back/decisions/{id}/edit', name: 'decision_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    public function edit(int $id, Request $request, EntityManagerInterface $entityManager, DecisionRepository $decisionRepository): Response
+    public function edit(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        DecisionRepository $decisionRepository,
+        NotificationService $notificationService
+    ): Response
     {
         $user = $this->getCurrentUser();
         if (!$this->canManageDecisions($user)) {
@@ -92,6 +106,9 @@ final class DecisionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->syncProjectStatusFromDecision($decision->getProject(), $decision);
             $entityManager->persist($decision);
+            if ($decision->getProject() instanceof Project) {
+                $notificationService->notifyDecisionAdded($decision->getProject());
+            }
             $this->ensureProjectDefaults($decision->getProject());
             $entityManager->flush();
 

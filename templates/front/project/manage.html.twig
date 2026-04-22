@@ -10,27 +10,11 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ asset('js/project-task-board.js') }}"></script>
+    <script src="{{ asset('js/project-tts.js') }}"></script>
 {% endblock %}
 
 {% block body %}
-    {% set tts_events = app.flashes('tts_event') %}
     <section class="pm-admin-shell">
-        {% if app.user and app.user.getRoleUser() == 'client' and project.user and project.user.idUser == app.user.idUser %}
-            <div
-                hidden
-                data-project-tts-manage
-                data-project-id="{{ project.id }}"
-                data-feed-url="{{ path('project_speech_feed', {id: project.id}) }}"
-                data-latest-decision-id="{{ latest_decision ? latest_decision.id : 0 }}"
-            ></div>
-            {% if 'submission-confirmation' in tts_events %}
-                <div
-                    hidden
-                    data-project-tts-submission
-                    data-audio-url="{{ path('project_speech', {id: project.id, scenario: 'submission-confirmation'}) }}"
-                ></div>
-            {% endif %}
-        {% endif %}
         <div class="pm-admin-header">
             <div>
                 <span class="pm-badge">Mon projet</span>
@@ -43,9 +27,9 @@
                 </p>
             </div>
             <div class="pm-card-actions">
-                <button class="pm-btn pm-btn-secondary" type="button" data-tts-play data-audio-url="{{ path('project_speech', {id: project.id, scenario: 'summary'}) }}">
+                <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.summary }}">
                     <i class="fas fa-volume-up"></i>
-                    <span>Lire</span>
+                    <span data-project-tts-label>Ecouter</span>
                 </button>
                 <a class="pm-btn pm-btn-secondary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
                 {% if can_edit_project %}
@@ -80,10 +64,10 @@
                         <strong>{{ latest_decision.getDecisionTitleLabel() }}</strong>
                         <span>{{ latest_decision.decisionDate|date('d/m/Y') }}</span>
                         <p>{{ latest_decision.description ?: 'Aucune justification.' }}</p>
-                        {% if app.user and app.user.getRoleUser() == 'client' and project.user and project.user.idUser == app.user.idUser and latest_decision.getDecisionTitle() == constant('App\\Entity\\Decision::STATUS_REFUSED') and latest_decision.description %}
-                            <button class="pm-btn pm-btn-secondary" type="button" data-tts-play data-audio-url="{{ path('project_speech', {id: project.id, scenario: 'refusal-reason'}) }}">
+                        {% if tts_messages.refusal_reason is defined %}
+                            <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.refusal_reason }}">
                                 <i class="fas fa-headphones"></i>
-                                <span>Pourquoi refuse ?</span>
+                                <span data-project-tts-label>Pourquoi refuse ?</span>
                             </button>
                         {% endif %}
                     </div>

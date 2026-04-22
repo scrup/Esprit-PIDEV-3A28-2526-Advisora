@@ -1,31 +1,22 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    {% set public_base = app.request.basePath %}
+    {% set current_route = app.request.get('_route')|default('') %}
+    {% set is_shop_route = current_route starts with 'app_shop' %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Advisora{% endblock %}</title>
-    
-    <!-- Global CSS -->
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/front.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/front-management.css') }}">
+    <link rel="stylesheet" href="{{ public_base ~ '/css/front.css?v=20260421-12' }}">
+    <link rel="stylesheet" href="{{ public_base ~ '/css/notifications.css?v=20260422-01' }}">
 
-    
-    <!-- Page specific CSS -->
     {% block stylesheets %}{% endblock %}
 </head>
-<body class="front-mode">
-
-    <!-- Header included here -->
+<body class="front-mode {{ is_shop_route ? 'shop-route' : '' }}">
     {% include 'front/header.html.twig' %}
-
-    <div class="pm-tts-toolbar">
-        <button class="pm-btn pm-btn-secondary" type="button" data-tts-toggle>
-            <i class="fas fa-volume-up"></i>
-            <span data-tts-toggle-label>Activer les annonces vocales</span>
-        </button>
-    </div>
 
     {% for message in app.flashes('success') %}
         <div class="flash-message flash-success">{{ message }}</div>
@@ -37,20 +28,17 @@
         <div class="flash-message flash-info">{{ message }}</div>
     {% endfor %}
 
-    <!-- Main content block - changes per page -->
     <main>
         {% block body %}{% endblock %}
     </main>
 
-    <!-- Footer included here -->
     {% include 'front/footer.html.twig' %}
 
-    <!-- Global JavaScript -->
-    <script src="{{ asset('js/main.js') }}"></script>
-    <script src="{{ asset('js/interface-toggle.js') }}"></script>
-    <script src="{{ asset('js/project-tts.js') }}"></script>
-    
-    <!-- Page specific JavaScript -->
-    {% block javascripts %}{% endblock %}
+    <script src="{{ public_base ~ '/js/notifications.js' }}"></script>
+    {% if not is_shop_route %}
+        <script src="{{ public_base ~ '/js/main.js' }}"></script>
+        <script src="{{ public_base ~ '/js/interface-toggle.js' }}"></script>
+        {% block javascripts %}{% endblock %}
+    {% endif %}
 </body>
 </html>

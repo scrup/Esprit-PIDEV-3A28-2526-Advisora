@@ -28,22 +28,6 @@ class ProjectSpeechMessageBuilderTest extends TestCase
         self::assertStringContainsString('En attente', $message);
     }
 
-    public function testBuildDecisionAnnouncementForAcceptedProjectCongratulatesClient(): void
-    {
-        $project = new Project();
-        $project->setTitle('Projet Atlas');
-
-        $decision = new Decision();
-        $decision->setDecisionTitle(Decision::STATUS_ACTIVE);
-
-        $builder = new ProjectSpeechMessageBuilder();
-        $message = $builder->buildDecisionAnnouncement($project, $decision);
-
-        self::assertStringContainsString('Felicitations', $message);
-        self::assertStringContainsString('Projet Atlas', $message);
-        self::assertStringContainsString('accepte', strtolower($message));
-    }
-
     public function testBuildRefusalReasonIncludesAdminJustification(): void
     {
         $project = new Project();
@@ -58,6 +42,7 @@ class ProjectSpeechMessageBuilderTest extends TestCase
 
         self::assertStringContainsString('Projet Orion', $message);
         self::assertStringContainsString('Le budget est insuffisant', $message);
+        self::assertStringContainsString('refuse', strtolower($message));
     }
 
     public function testBuildSubmissionConfirmationMentionsValidationWaitingState(): void
@@ -70,5 +55,21 @@ class ProjectSpeechMessageBuilderTest extends TestCase
 
         self::assertStringContainsString('Projet Nova', $message);
         self::assertStringContainsString('en attente de validation', strtolower($message));
+    }
+
+    public function testBuildDecisionAnnouncementMentionsAcceptedStatus(): void
+    {
+        $project = new Project();
+        $project->setTitle('Projet Atlas');
+
+        $decision = new Decision();
+        $decision->setDecisionTitle(Decision::STATUS_ACTIVE);
+
+        $builder = new ProjectSpeechMessageBuilder();
+        $message = $builder->buildDecisionAnnouncement($project, $decision);
+
+        self::assertStringContainsString('Projet Atlas', $message);
+        self::assertStringContainsString('nouvelle decision', strtolower($message));
+        self::assertStringContainsString('accepte', strtolower($message));
     }
 }

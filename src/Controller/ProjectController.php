@@ -12,8 +12,10 @@ use App\Repository\DecisionRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
 use App\Service\PdfGeneratorService;
+use App\Service\NotificationService;
 use App\Service\ProjectDashboardInsightsService;
 use App\Service\ProjectAcceptanceService;
+use App\Service\ProjectSpeechMessageBuilder;
 use App\Service\TaskProgressService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -174,7 +176,8 @@ final class ProjectController extends AbstractController
         ProjectRepository $projectRepository,
         DecisionRepository $decisionRepository,
         TaskRepository $taskRepository,
-        TaskProgressService $taskProgressService
+        TaskProgressService $taskProgressService,
+        ProjectSpeechMessageBuilder $projectSpeechMessageBuilder
     ): Response {
         $user = $this->getCurrentUser();
         $project = $projectRepository->findOneVisibleWithDecisions(
@@ -187,20 +190,27 @@ final class ProjectController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez pas consulter ce projet.');
         }
 
+        $latestDecision = $decisionRepository->findLatestForProject($project);
+
         return $this->render('front/project/show.html.twig', [
             'project' => $project,
-            'latest_decision' => $decisionRepository->findLatestForProject($project),
+            'latest_decision' => $latestDecision,
             'can_manage_project' => $this->canManageProject($project, $user),
             'can_manage_decisions' => $this->canManageDecisions($user),
             'can_manage_tasks' => $this->canManageTaskContent($project, $user),
             'can_access_task_board' => $this->canAccessProjectManagement($project, $user),
             'task_board' => $this->buildTaskBoard($taskRepository->findByProject($project), $taskProgressService),
             'use_back_manage' => $this->isBackOfficeProjectUser($user),
+            'tts_messages' => $this->buildProjectTtsMessages($project, $latestDecision, $user, $projectSpeechMessageBuilder),
         ]);
     }
 
     #[Route('/projects/new', name: 'project_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        NotificationService $notificationService
+    ): Response
     {
         $user = $this->getCurrentUser();
         if (!$user instanceof User) {
@@ -228,6 +238,11 @@ final class ProjectController extends AbstractController
             $this->normalizeProjectForPersistence($project, $user);
             $entityManager->persist($project);
             $entityManager->flush();
+
+            if ($user?->getRoleUser() === 'client') {
+                $notificationService->notifyProjectCreated($project);
+                $entityManager->flush();
+            }
 
             $this->addFlash('success', 'Le projet a ete cree avec succes.');
             if ($user->getRoleUser() === 'client') {
@@ -257,7 +272,8 @@ final class ProjectController extends AbstractController
         DecisionRepository $decisionRepository,
         TaskRepository $taskRepository,
         TaskProgressService $taskProgressService,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        ProjectSpeechMessageBuilder $projectSpeechMessageBuilder
     ): Response {
         $user = $this->getCurrentUser();
         $project = $projectRepository->findOneVisibleWithDecisions(
@@ -288,9 +304,11 @@ final class ProjectController extends AbstractController
             return $taskFormResult;
         }
 
+        $latestDecision = $decisionRepository->findLatestForProject($project);
+
         return $this->render('front/project/manage.html.twig', [
             'project' => $project,
-            'latest_decision' => $decisionRepository->findLatestForProject($project),
+            'latest_decision' => $latestDecision,
             'can_manage_project' => $this->canManageProject($project, $user),
             'can_edit_project' => $this->canEditProject($project, $user),
             'can_delete_project' => $this->canDeleteProject($project, $user),
@@ -301,6 +319,41 @@ final class ProjectController extends AbstractController
             'editing_task' => $editingTask,
             'task_board' => $this->buildTaskBoard($taskRepository->findByProject($project), $taskProgressService),
             'is_project_accepted' => $project->getStatus() === Project::STATUS_ACCEPTED,
+            'tts_messages' => $this->buildProjectTtsMessages($project, $latestDecision, $user, $projectSpeechMessageBuilder),
+        ]);
+    }
+
+    #[Route('/projects/{id}/decision-feed', name: 'project_decision_feed', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function decisionFeed(
+        int $id,
+        ProjectRepository $projectRepository,
+        DecisionRepository $decisionRepository,
+        ProjectSpeechMessageBuilder $projectSpeechMessageBuilder
+    ): JsonResponse {
+        $user = $this->getCurrentUser();
+        $project = $projectRepository->findOneVisibleWithDecisions(
+            $id,
+            $user,
+            $this->canSeeAllProjects($user)
+        );
+
+        if (!$project instanceof Project) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas consulter ce flux de decision.');
+        }
+
+        $latestDecision = $decisionRepository->findLatestForProject($project);
+        if (!$latestDecision instanceof Decision) {
+            return $this->json([
+                'latestDecisionId' => 0,
+                'announcementMessage' => null,
+            ]);
+        }
+
+        $messages = $this->buildProjectTtsMessages($project, $latestDecision, $user, $projectSpeechMessageBuilder);
+
+        return $this->json([
+            'latestDecisionId' => $latestDecision->getId(),
+            'announcementMessage' => $messages['decision_announcement'] ?? null,
         ]);
     }
 
@@ -361,7 +414,13 @@ final class ProjectController extends AbstractController
     }
 
     #[Route('/projects/{id}/edit', name: 'project_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    public function edit(int $id, Request $request, EntityManagerInterface $entityManager, ProjectRepository $projectRepository): Response
+    public function edit(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ProjectRepository $projectRepository,
+        NotificationService $notificationService
+    ): Response
     {
         $user = $this->getCurrentUser();
         $project = $projectRepository->findOneVisibleWithDecisions(
@@ -386,6 +445,11 @@ final class ProjectController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->normalizeProjectForPersistence($project, $user);
+
+            if ($user?->getRoleUser() === 'client' && $project->getUser()?->getIdUser() === $user->getIdUser()) {
+                $notificationService->notifyProjectUpdated($project);
+            }
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Le projet a ete modifie avec succes.');
@@ -409,7 +473,13 @@ final class ProjectController extends AbstractController
     }
 
     #[Route('/projects/{id}/delete', name: 'project_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
-    public function delete(int $id, Request $request, EntityManagerInterface $entityManager, ProjectRepository $projectRepository): Response
+    public function delete(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ProjectRepository $projectRepository,
+        NotificationService $notificationService
+    ): Response
     {
         $user = $this->getCurrentUser();
         $project = $projectRepository->findOneVisibleWithDecisions(
@@ -436,6 +506,10 @@ final class ProjectController extends AbstractController
             $this->addFlash('error', 'Ce projet ne peut pas etre supprime tant qu il possede des investissements, strategies ou taches associees.');
 
             return $this->redirectToRoute($this->getProjectManagementRoute($user), ['id' => $project->getId()]);
+        }
+
+        if ($user?->getRoleUser() === 'client' && $project->getUser()?->getIdUser() === $user->getIdUser()) {
+            $notificationService->notifyProjectDeleted($project);
         }
 
         $this->removeProjectTechnicalDependencies($project, $entityManager);
@@ -908,5 +982,35 @@ final class ProjectController extends AbstractController
                 'export_notice' => 'Le service PDF est temporairement indisponible. Utilisez cette version imprimable pour enregistrer le rapport en PDF.',
             ]));
         }
+    }
+
+    private function buildProjectTtsMessages(
+        Project $project,
+        ?Decision $latestDecision,
+        ?User $user,
+        ProjectSpeechMessageBuilder $projectSpeechMessageBuilder
+    ): array {
+        $messages = [
+            'summary' => $projectSpeechMessageBuilder->buildProjectSummary($project),
+        ];
+
+        $isClientOwner = $user instanceof User
+            && $user->getRoleUser() === 'client'
+            && $project->getUser()?->getIdUser() === $user->getIdUser();
+
+        if ($isClientOwner && $latestDecision instanceof Decision) {
+            $messages['decision_announcement'] = $projectSpeechMessageBuilder->buildDecisionAnnouncement($project, $latestDecision);
+        }
+
+        $canHearRefusalReason = $isClientOwner
+            && $latestDecision instanceof Decision
+            && $latestDecision->getDecisionTitle() === Decision::STATUS_REFUSED
+            && trim((string) $latestDecision->getDescription()) !== '';
+
+        if ($canHearRefusalReason) {
+            $messages['refusal_reason'] = $projectSpeechMessageBuilder->buildRefusalReason($project, $latestDecision);
+        }
+
+        return $messages;
     }
 }

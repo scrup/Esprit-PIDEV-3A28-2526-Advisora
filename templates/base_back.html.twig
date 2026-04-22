@@ -10,14 +10,14 @@
 
     <link rel="stylesheet" href="{{ asset('css/back-base.css') }}?v={{ back_asset_version }}">
     <link rel="stylesheet" href="{{ asset('css/back-management.css') }}?v=20260412-management-v1">
-        <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/notifications.css') }}?v=20260422-01">
 
     {% block stylesheets %}{% endblock %}
 </head>
 <body class="back-mode">
 {% set current_route = app.request.get('_route') %}
 <div class="back-app-shell" data-back-app>
-    <div hidden data-back-project-tts-feed="{{ path('back_project_speech_feed') }}"></div>
     <aside class="back-sidebar" data-back-sidebar>
         <div class="back-sidebar-inner">
             <a href="{{ path('app_back') }}" class="back-brand">
@@ -81,33 +81,31 @@
                 </div>
             </div>
 
-<div class="back-topbar-actions">
-    {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
+            <div class="back-topbar-actions">
+                {% if app.user %}
+                    {% include 'shared/notification_center.html.twig' with {variant: 'back'} %}
+                {% endif %}
+                {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
 
-    <button class="pm-btn pm-btn-secondary" type="button" data-tts-toggle>
-        <i class="fas fa-volume-up"></i>
-        <span data-tts-toggle-label>Activer les annonces vocales</span>
-    </button>
+                <a href="{{ path('back_user_profile') }}" class="back-user-chip">
+                    {% if app.user and app.user.image_path %}
+                        <img src="{{ asset(app.user.image_path) }}" alt="Profil" class="back-user-chip-avatar">
+                    {% else %}
+                        <i class="fas fa-user-circle"></i>
+                    {% endif %}
+                    <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
+                </a>
 
-    <a href="{{ path('back_user_profile') }}" class="back-user-chip">
-        {% if app.user and app.user.image_path %}
-            <img src="{{ asset(app.user.image_path) }}" alt="Profil" class="back-user-chip-avatar">
-        {% else %}
-            <i class="fas fa-user-circle"></i>
-        {% endif %}
-        <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
-    </a>
-
-    {% if app.user %}
-        <form method="post" action="{{ path('app_logout') }}" class="back-logout-form">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-            <button type="submit" class="back-logout-button" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Deconnecter</span>
-            </button>
-        </form>
-    {% endif %}
-</div>
+                {% if app.user %}
+                    <form method="post" action="{{ path('app_logout') }}" class="back-logout-form">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                        <button type="submit" class="back-logout-button" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Deconnecter</span>
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
         </header>
 
         <main class="back-content">
@@ -123,6 +121,7 @@
 </div>
 
 {% block javascripts %}
+    <script src="{{ asset('js/notifications.js') }}?v=20260422-01"></script>
     <script src="{{ asset('js/form-validation.js') }}?v={{ back_asset_version }}"></script>
     <script src="{{ asset('js/interface-toggle.js') }}?v={{ back_asset_version }}"></script>
     <script src="{{ asset('js/back-layout.js') }}?v={{ back_asset_version }}"></script>
