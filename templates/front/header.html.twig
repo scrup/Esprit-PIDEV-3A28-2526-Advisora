@@ -88,6 +88,9 @@
         </div>
 
         <div class="header-utility-actions">
+            {% if app.user %}
+                {% include 'shared/notification_center.html.twig' with {variant: 'front'} %}
+            {% endif %}
             {% if app.user and app.user.getRoleUser() in ['admin', 'gerant'] %}
                 {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'front'} %}
             {% endif %}

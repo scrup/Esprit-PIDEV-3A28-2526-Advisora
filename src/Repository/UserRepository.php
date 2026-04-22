@@ -47,4 +47,17 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * @return list<User>
+     */
+    public function findAdminsAndGerants(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.roleUser IN (:roles)')
+            ->setParameter('roles', ['admin', 'gerant'])
+            ->orderBy('u.idUser', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
