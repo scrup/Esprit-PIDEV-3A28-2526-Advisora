@@ -276,9 +276,15 @@
                 </td>
                 <td>
                     <div class="card meta-card">
+<<<<<<< HEAD
                         <div class="meta-label">Gain estime</div>
                         <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non defini' }}</div>
                         <div class="meta-detail">Avancement projet: {{ projectProgress }}</div>
+=======
+                        <div class="meta-label">{{ labels.estimated_gain }}</div>
+                        <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(0, ',', ' ') ~ ' DT' : labels.undefined }}</div>
+                        <div class="meta-detail">ROI: {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, ',', ' ') ~ '%' : labels.undefined }}</div>
+>>>>>>> gestion_strategies
                     </div>
                 </td>
             </tr>

@@ -183,11 +183,19 @@
                                     </div>
 
                                     <div class="pm-strategy-meta">
-                                        <span><strong>Type :</strong> {{ strategy.type ?: 'Non precise' }}</span>
-                                        <span><strong>Duree :</strong> {{ strategy.DureeTerme }} mois</span>
-                                        <span><strong>Budget :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                                        <span><strong>Gain estime :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non precise' }}</span>
-                                        <span><strong>Objectifs :</strong> {{ strategy.objectives|length }}</span>
+                                        <span><strong>{{ 'project.strategy.type'|trans }} :</strong> {{ strategy.type ?: ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.duration'|trans }} :</strong> {{ strategy.DureeTerme }} {{ 'project.strategy.months'|trans }}</span>
+                                        <span><strong>{{ 'project.strategy.budget'|trans }} :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.estimated_gain'|trans }} :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>ROI :</strong> {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, '.', ' ') ~ '%' : ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.objectives'|trans }} :</strong> {{ strategy.objectives|length }}</span>
+                                        {% if strategy.lockedAt and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
+                                            {% set strategy_deadline = strategy.lockedAt|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
+                                            <span class="pm-countdown" data-strategy-countdown data-end-at="{{ strategy_deadline|date('c') }}">
+                                                <strong>Fin de periode dans :</strong>
+                                                <span class="pm-countdown-value" data-countdown-value>--:--:--</span>
+                                            </span>
+                                        {% endif %}
                                     </div>
                                 </section>
                             {% endfor %}

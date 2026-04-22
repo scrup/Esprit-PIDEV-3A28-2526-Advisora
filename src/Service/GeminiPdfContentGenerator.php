@@ -7,10 +7,16 @@ use App\Entity\Strategie;
 
 class GeminiPdfContentGenerator
 {
+    private const MAX_TRANSIENT_RETRY_ATTEMPTS = 3;
+    private const TRANSIENT_RETRY_DELAYS_MS = [800, 1500];
+
+    private bool $lastGenerationUsedAi = false;
+    private ?string $lastGenerationWarning = null;
+
     public function __construct(
         private ?string $apiKey = null,
-        private string $model = 'gemini-2.5-flash',
-        private string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta'
+        private ?string $model = null,
+        private ?string $baseUrl = null
     ) {
         $this->apiKey = $this->resolveFirstNonEmpty(
             $this->apiKey,
@@ -31,76 +37,50 @@ class GeminiPdfContentGenerator
 
     public function generate(Strategie $strategy, ?Project $project): array
     {
+        $this->resetLastGenerationMeta();
+
         if ($this->apiKey === null || $this->apiKey === '') {
+            $this->lastGenerationWarning = 'La cle API Gemini est absente. Configurez GEMINI_API_KEY ou GOOGLE_API_KEY pour activer la generation IA.';
+
             return $this->buildFallbackContent($strategy, $project);
         }
+
+        $prompt = $this->buildPrompt($strategy, $project);
 
         try {
-            $response = $this->sendJsonRequest(
-                sprintf('%s/models/%s:generateContent', $this->baseUrl, rawurlencode($this->model)),
-                [
-                    'Content-Type: application/json',
-                    'x-goog-api-key: ' . $this->apiKey,
-                ],
-                [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                [
-                                    'text' => $this->buildPrompt($strategy, $project),
-                                ],
-                            ],
-                        ],
-                    ],
-                    'generationConfig' => [
-                        'responseMimeType' => 'application/json',
-                        'responseJsonSchema' => $this->getResponseSchema(),
-                        'temperature' => 0.6,
-                    ],
-                ]
-            );
-
-            $payload = $this->decodeApiPayload($response['body']);
-            if ($response['status'] >= 400) {
-                $errorMessage = $payload['error']['message'] ?? 'La requete Gemini a echoue.';
-
-                throw new \RuntimeException(sprintf('Gemini API error (%d): %s', $response['status'], $errorMessage));
+            $decoded = $this->requestGeneratedContent($prompt, true);
+        } catch (\Throwable $exception) {
+            if ($this->shouldRetryWithoutSchema($exception)) {
+                try {
+                    $decoded = $this->requestGeneratedContent($prompt, false);
+                } catch (\Throwable $fallbackException) {
+                    $exception = $fallbackException;
+                }
             }
 
-            if (isset($payload['promptFeedback']['blockReason'])) {
-                throw new \RuntimeException(sprintf(
-                    'Gemini a bloque la requete: %s',
-                    (string) $payload['promptFeedback']['blockReason']
-                ));
-            }
+            if (!isset($decoded) || !is_array($decoded)) {
+                $this->lastGenerationWarning = $this->buildGenerationWarning($exception);
 
-            $finishReason = $payload['candidates'][0]['finishReason'] ?? null;
-            if (!in_array($finishReason, [null, 'STOP', 'MAX_TOKENS'], true)) {
-                throw new \RuntimeException(sprintf('Generation Gemini interrompue (%s).', (string) $finishReason));
+                return $this->buildFallbackContent($strategy, $project);
             }
-
-            $jsonText = $this->extractCandidateText($payload);
-            if ($jsonText === null) {
-                throw new \RuntimeException('La reponse Gemini est vide ou invalide.');
-            }
-
-            try {
-                $decoded = json_decode($this->extractJsonDocument($jsonText), true, 512, JSON_THROW_ON_ERROR);
-            } catch (\JsonException $exception) {
-                throw new \RuntimeException('La reponse Gemini n est pas un JSON valide.', 0, $exception);
-            }
-
-            if (!is_array($decoded)) {
-                throw new \RuntimeException('La reponse Gemini ne correspond pas au schema attendu.');
-            }
-
-            return $this->normalizeGeneratedContent($decoded, $strategy, $project);
-        } catch (\Throwable) {
-            return $this->buildFallbackContent($strategy, $project);
         }
+
+        $this->lastGenerationUsedAi = true;
+
+        return $this->normalizeGeneratedContent($decoded, $strategy, $project);
     }
 
-    private function sendJsonRequest(string $url, array $headers, array $payload): array
+    public function getLastGenerationMeta(): array
+    {
+        return [
+            'used_ai' => $this->lastGenerationUsedAi,
+            'warning' => $this->lastGenerationWarning,
+            'model' => $this->model,
+            'configured' => $this->apiKey !== null && $this->apiKey !== '',
+        ];
+    }
+
+    protected function sendJsonRequest(string $url, array $headers, array $payload): array
     {
         $encodedPayload = json_encode($payload, JSON_THROW_ON_ERROR);
         $curl = curl_init($url);
@@ -136,6 +116,105 @@ class GeminiPdfContentGenerator
         ];
     }
 
+    protected function pauseBeforeRetry(int $milliseconds): void
+    {
+        if ($milliseconds > 0) {
+            usleep($milliseconds * 1000);
+        }
+    }
+
+    private function requestGeneratedContent(string $prompt, bool $withResponseSchema): array
+    {
+        $generationConfig = [
+            'responseMimeType' => 'application/json',
+            'temperature' => 0.6,
+        ];
+
+        if ($withResponseSchema) {
+            $generationConfig['responseJsonSchema'] = $this->getResponseSchema();
+        }
+
+        $response = $this->executeJsonRequestWithRetry(
+            sprintf('%s/models/%s:generateContent', $this->baseUrl, rawurlencode((string) $this->model)),
+            [
+                'Content-Type: application/json',
+                'x-goog-api-key: ' . $this->apiKey,
+            ],
+            [
+                'contents' => [
+                    [
+                        'parts' => [
+                            [
+                                'text' => $prompt,
+                            ],
+                        ],
+                    ],
+                ],
+                'generationConfig' => $generationConfig,
+            ]
+        );
+
+        if ($response['status'] >= 400) {
+            throw $this->buildApiErrorException($response);
+        }
+
+        $payload = $this->decodeApiPayload($response['body']);
+
+        if (isset($payload['promptFeedback']['blockReason'])) {
+            throw new \RuntimeException(sprintf(
+                'Gemini a bloque la requete: %s',
+                (string) $payload['promptFeedback']['blockReason']
+            ));
+        }
+
+        $finishReason = $payload['candidates'][0]['finishReason'] ?? null;
+        if (!in_array($finishReason, [null, 'STOP', 'MAX_TOKENS'], true)) {
+            throw new \RuntimeException(sprintf('Generation Gemini interrompue (%s).', (string) $finishReason));
+        }
+
+        $jsonText = $this->extractCandidateText($payload);
+        if ($jsonText === null) {
+            throw new \RuntimeException('La reponse Gemini est vide ou invalide.');
+        }
+
+        try {
+            $decoded = json_decode($this->extractJsonDocument($jsonText), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw new \RuntimeException('La reponse Gemini n est pas un JSON valide.', 0, $exception);
+        }
+
+        if (!is_array($decoded)) {
+            throw new \RuntimeException('La reponse Gemini ne correspond pas au schema attendu.');
+        }
+
+        return $decoded;
+    }
+
+    private function executeJsonRequestWithRetry(string $url, array $headers, array $payload): array
+    {
+        for ($attempt = 1; $attempt <= self::MAX_TRANSIENT_RETRY_ATTEMPTS; ++$attempt) {
+            try {
+                $response = $this->sendJsonRequest($url, $headers, $payload);
+            } catch (\Throwable $exception) {
+                if (!$this->shouldRetryRequestException($exception) || $attempt >= self::MAX_TRANSIENT_RETRY_ATTEMPTS) {
+                    throw $exception;
+                }
+
+                $this->pauseBeforeRetry($this->getRetryDelayMilliseconds($attempt));
+
+                continue;
+            }
+
+            if (!$this->isTransientHttpStatus((int) $response['status']) || $attempt >= self::MAX_TRANSIENT_RETRY_ATTEMPTS) {
+                return $response;
+            }
+
+            $this->pauseBeforeRetry($this->getRetryDelayMilliseconds($attempt));
+        }
+
+        throw new \RuntimeException('La requete Gemini a echoue apres plusieurs tentatives.');
+    }
+
     private function decodeApiPayload(string $rawPayload): array
     {
         try {
@@ -149,6 +228,40 @@ class GeminiPdfContentGenerator
         }
 
         return $decoded;
+    }
+
+    private function buildApiErrorException(array $response): \RuntimeException
+    {
+        $status = (int) ($response['status'] ?? 0);
+
+        return new \RuntimeException(sprintf(
+            'Gemini API error (%d): %s',
+            $status,
+            $this->extractApiErrorMessage((string) ($response['body'] ?? ''), $status)
+        ));
+    }
+
+    private function extractApiErrorMessage(string $rawPayload, int $status): string
+    {
+        $rawPayload = trim($rawPayload);
+
+        if ($rawPayload !== '') {
+            try {
+                $payload = $this->decodeApiPayload($rawPayload);
+                $message = $payload['error']['message'] ?? null;
+
+                if (is_string($message) && trim($message) !== '') {
+                    return trim($message);
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        if ($this->isTransientHttpStatus($status)) {
+            return 'Service temporairement indisponible.';
+        }
+
+        return 'La requete Gemini a echoue.';
     }
 
     private function buildPrompt(Strategie $strategy, ?Project $project): string
@@ -185,6 +298,7 @@ class GeminiPdfContentGenerator
         }
 
         $estimatedGainAmount = $this->calculateEstimatedGainAmount($strategy);
+        $estimatedRoiPercent = $this->calculateEstimatedRoiPercent($strategy);
 
         return implode("\n", [
             'Tu es un conseiller strategique senior pour startups et PME innovantes.',
@@ -219,12 +333,14 @@ class GeminiPdfContentGenerator
                 '- Budget strategie : %s',
                 $strategy->getBudgetTotal() !== null ? $this->formatAmount($strategy->getBudgetTotal()) . ' DT' : 'Non defini'
             ),
-            sprintf('- Gain estime : %s', $strategy->getGainEstime() !== null ? $strategy->getGainEstime() . '%' : 'Non defini'),
             sprintf(
-                '- Gain estime en montant : %s',
+                '- Gain estime (montant) : %s',
                 $estimatedGainAmount !== null ? $this->formatAmount($estimatedGainAmount) . ' DT' : 'Non defini'
             ),
-            sprintf('- Actualites / contexte : %s', $strategy->getNews() ?: 'Aucune actualite fournie'),
+            sprintf(
+                '- ROI estime : %s',
+                $estimatedRoiPercent !== null ? number_format($estimatedRoiPercent, 2, ',', ' ') . '%' : 'Non defini'
+            ),
             sprintf('- Justification : %s', $strategy->getJustification() ?: 'Aucune justification fournie'),
             '',
             'Objectifs relies :',
@@ -236,6 +352,7 @@ class GeminiPdfContentGenerator
             '- highlights : 3 a 5 faits marquants tres concrets.',
             '- strategic_priorities : 3 a 5 priorites de pilotage ou de transformation.',
             '- opportunities : 3 a 5 leviers de creation de valeur.',
+            '- expected_outcome_curve : 4 a 8 points chronologiques, chacun avec period et value numerique, pour projeter la progression de l outcome attendu sur la duree.',
             '- execution_phases : exactement 3 phases, chacune avec title, horizon et focus.',
             '- risks : 2 a 5 risques concrets.',
             '- mitigation_actions : 3 a 5 contre-mesures tres pratiques.',
@@ -248,6 +365,7 @@ class GeminiPdfContentGenerator
             '- Appuie-toi sur les donnees fournies et sur des deductions plausibles, sans inventer de faits externes.',
             '- Les risques et les contre-mesures doivent mentionner les contraintes budgetaires, de gouvernance ou d execution quand elles sont pertinentes.',
             '- Chaque element doit etre specifique au contexte du projet et de la strategie.',
+            '- La courbe expected_outcome_curve doit etre progressive, credible et se terminer proche du ROI estime lorsqu il est disponible.',
         ]);
     }
 
@@ -262,6 +380,7 @@ class GeminiPdfContentGenerator
                 'highlights',
                 'strategic_priorities',
                 'opportunities',
+                'expected_outcome_curve',
                 'execution_phases',
                 'risks',
                 'mitigation_actions',
@@ -302,6 +421,32 @@ class GeminiPdfContentGenerator
                     'maxItems' => 5,
                     'items' => [
                         'type' => 'string',
+                    ],
+                ],
+                'expected_outcome_curve' => [
+                    'type' => 'array',
+                    'description' => 'Projection chronologique de l outcome attendu sur la duree de la strategie.',
+                    'minItems' => 4,
+                    'maxItems' => 8,
+                    'items' => [
+                        'type' => 'object',
+                        'additionalProperties' => false,
+                        'propertyOrdering' => [
+                            'period',
+                            'value',
+                        ],
+                        'properties' => [
+                            'period' => [
+                                'type' => 'string',
+                            ],
+                            'value' => [
+                                'type' => 'number',
+                            ],
+                        ],
+                        'required' => [
+                            'period',
+                            'value',
+                        ],
                     ],
                 ],
                 'execution_phases' => [
@@ -400,6 +545,7 @@ class GeminiPdfContentGenerator
                 'highlights',
                 'strategic_priorities',
                 'opportunities',
+                'expected_outcome_curve',
                 'execution_phases',
                 'risks',
                 'mitigation_actions',
@@ -462,6 +608,11 @@ class GeminiPdfContentGenerator
     private function normalizeGeneratedContent(array $decoded, Strategie $strategy, ?Project $project): array
     {
         $fallback = $this->buildFallbackContent($strategy, $project);
+        $expectedOutcomeCurve = $this->normalizeOutcomeCurve(
+            $decoded['expected_outcome_curve'] ?? null,
+            $fallback['expected_outcome_curve'],
+            $strategy
+        );
 
         return [
             'executive_summary' => $this->normalizeText($decoded['executive_summary'] ?? null, $fallback['executive_summary']),
@@ -469,6 +620,8 @@ class GeminiPdfContentGenerator
             'highlights' => $this->normalizeStringList($decoded['highlights'] ?? null, $fallback['highlights']),
             'strategic_priorities' => $this->normalizeStringList($decoded['strategic_priorities'] ?? null, $fallback['strategic_priorities']),
             'opportunities' => $this->normalizeStringList($decoded['opportunities'] ?? null, $fallback['opportunities']),
+            'expected_outcome_summary' => $this->buildOutcomeSummary($expectedOutcomeCurve, $strategy),
+            'expected_outcome_chart' => $this->buildOutcomeChart($expectedOutcomeCurve, $strategy),
             'execution_phases' => $this->normalizeExecutionPhases($decoded['execution_phases'] ?? null, $fallback['execution_phases']),
             'risks' => $this->normalizeStringList($decoded['risks'] ?? null, $fallback['risks']),
             'mitigation_actions' => $this->normalizeStringList($decoded['mitigation_actions'] ?? null, $fallback['mitigation_actions']),
@@ -480,6 +633,7 @@ class GeminiPdfContentGenerator
     private function buildFallbackContent(Strategie $strategy, ?Project $project): array
     {
         $estimatedGainAmount = $this->calculateEstimatedGainAmount($strategy);
+        $estimatedRoiPercent = $this->calculateEstimatedRoiPercent($strategy);
         $projectBudget = $project?->getBudgetProj();
         $projectTitle = $project?->getTitleProj() ?: 'Aucun projet associe';
         $projectStatus = $project?->getStatusLabel() ?? 'Non defini';
@@ -539,15 +693,17 @@ class GeminiPdfContentGenerator
         }
 
         $strategicPriorities = $this->buildStrategicPriorities($strategy);
+        $expectedOutcomeCurve = $this->buildFallbackOutcomeCurve($strategy);
 
         return [
             'executive_summary' => sprintf(
-                'La strategie "%s" vise une execution sur %d mois avec un budget de %s DT. Elle est rattachee au projet "%s" et affiche un gain estime de %s. Sa reussite depend d un pilotage serre, d un scope maitrise et d une mise en oeuvre progressive.',
+                'La strategie "%s" vise une execution sur %d mois avec un budget de %s DT. Elle est rattachee au projet "%s" et affiche un gain estime de %s (ROI: %s). Sa reussite depend d un pilotage serre, d un scope maitrise et d une mise en oeuvre progressive.',
                 (string) ($strategy->getNomStrategie() ?: 'Strategie sans nom'),
                 (int) ($strategy->getDureeTerme() ?? 0),
                 $this->formatAmount($strategy->getBudgetTotal()),
                 $projectTitle,
-                $strategy->getGainEstime() !== null ? $strategy->getGainEstime() . '%' : 'Non defini'
+                $estimatedGainAmount !== null ? $this->formatAmount($estimatedGainAmount) . ' DT' : 'Non defini',
+                $estimatedRoiPercent !== null ? number_format($estimatedRoiPercent, 2, ',', ' ') . '%' : 'Non defini'
             ),
             'strategic_diagnosis' => sprintf(
                 'Le point de depart montre une strategie de type %s portee par %s, avec un horizon de %s mois et un budget de %s DT. Le projet support "%s" se situe actuellement a %s d avancement avec un statut "%s". La dynamique semble favorable si les priorites sont resserrees, les hypotheses budgetaires confirmees et les objectifs traduits en jalons operationnels suivis dans le temps.',
@@ -580,11 +736,12 @@ class GeminiPdfContentGenerator
                         $project->getAvancementProj() !== null ? number_format((float) $project->getAvancementProj(), 0, ',', ' ') : '0'
                     )
                     : 'Associer cette strategie a un projet clarifiera la gouvernance et le suivi.',
-                $strategy->getNews()
-                    ? sprintf('Les actualites fournies ouvrent une fenetre de positionnement: %s', $strategy->getNews())
-                    : 'Les objectifs relies peuvent servir de feuille de route immediate pour le lancement du playbook.',
+                     'Les objectifs relies peuvent servir de feuille de route immediate pour le lancement du playbook.',
                 'Une execution par phases permet de tester rapidement la traction avant de generaliser les investissements.',
             ],
+            'expected_outcome_curve' => $expectedOutcomeCurve,
+            'expected_outcome_summary' => $this->buildOutcomeSummary($expectedOutcomeCurve, $strategy),
+            'expected_outcome_chart' => $this->buildOutcomeChart($expectedOutcomeCurve, $strategy),
             'execution_phases' => $this->buildExecutionPhases($strategy, $project),
             'risks' => $riskMessages,
             'mitigation_actions' => array_slice(array_values(array_unique($mitigationMessages)), 0, 5),
@@ -671,6 +828,8 @@ class GeminiPdfContentGenerator
     private function buildFallbackKpis(Strategie $strategy, ?Project $project): array
     {
         $objectiveCount = max(1, $strategy->getObjectives()->count());
+        $estimatedGainAmount = $this->calculateEstimatedGainAmount($strategy);
+        $estimatedRoiPercent = $this->calculateEstimatedRoiPercent($strategy);
         $projectProgressLabel = $project?->getAvancementProj() !== null
             ? number_format((float) $project->getAvancementProj(), 0, ',', ' ') . '%'
             : 'progression definie a chaque revue';
@@ -697,12 +856,231 @@ class GeminiPdfContentGenerator
             ],
             [
                 'name' => 'Creation de valeur',
-                'target' => $strategy->getGainEstime() !== null
-                    ? 'Tendre vers +' . $strategy->getGainEstime() . '% a horizon strategie'
+                'target' => $estimatedGainAmount !== null
+                    ? sprintf(
+                        'Tendre vers %s DT de gain (ROI cible: %s)',
+                        $this->formatAmount($estimatedGainAmount),
+                        $estimatedRoiPercent !== null ? number_format($estimatedRoiPercent, 2, ',', ' ') . '%' : 'Non defini'
+                    )
                     : 'Benefices documentes par trimestre',
                 'cadence' => 'Trimestrielle',
             ],
         ];
+    }
+
+    private function buildFallbackOutcomeCurve(Strategie $strategy): array
+    {
+        $weights = [0.06, 0.22, 0.48, 0.76, 1.0];
+        $finalValue = $this->determineOutcomeFinalValue($strategy);
+        $labels = $this->buildOutcomePeriodLabels($strategy, count($weights));
+        $curve = [];
+        $lastValue = 0.0;
+
+        foreach ($weights as $index => $weight) {
+            $value = round($finalValue * $weight, 1);
+            $value = max($lastValue, $value);
+
+            if ($index === array_key_last($weights)) {
+                $value = round($finalValue, 1);
+            }
+
+            $curve[] = [
+                'period' => $labels[$index] ?? sprintf('Etape %d', $index + 1),
+                'value' => $value,
+            ];
+
+            $lastValue = $value;
+        }
+
+        return $curve;
+    }
+
+    private function buildOutcomePeriodLabels(Strategie $strategy, int $count): array
+    {
+        $duration = (int) ($strategy->getDureeTerme() ?? 0);
+
+        if ($duration >= $count) {
+            $labels = [];
+            $lastMonth = 0;
+
+            for ($index = 1; $index <= $count; ++$index) {
+                $targetMonth = (int) round(($duration * $index) / $count);
+                $targetMonth = max($targetMonth, $lastMonth + 1);
+                $remaining = $count - $index;
+                $targetMonth = min($targetMonth, $duration - $remaining);
+                $labels[] = 'M' . max(1, $targetMonth);
+                $lastMonth = $targetMonth;
+            }
+
+            return $labels;
+        }
+
+        return [
+            'Demarrage',
+            'Cadrage',
+            'Pilotage',
+            'Acceleration',
+            'Cible',
+        ];
+    }
+
+    private function determineOutcomeFinalValue(Strategie $strategy): float
+    {
+        $estimatedRoiPercent = $this->calculateEstimatedRoiPercent($strategy);
+
+        if ($estimatedRoiPercent !== null && $estimatedRoiPercent > 0) {
+            return round($estimatedRoiPercent, 1);
+        }
+
+        $objectiveFactor = max(0, $strategy->getObjectives()->count() - 1) * 8;
+
+        return (float) min(140, max(45, 70 + $objectiveFactor));
+    }
+
+    private function buildOutcomeSummary(array $curve, Strategie $strategy): string
+    {
+        if ($curve === []) {
+            return 'La trajectoire d outcome attendue sera precisee lors du prochain cadrage.';
+        }
+
+        $midpoint = $curve[(int) floor((count($curve) - 1) / 2)] ?? $curve[0];
+        $lastPoint = $curve[array_key_last($curve)] ?? $curve[0];
+        $durationText = $strategy->getDureeTerme() !== null
+            ? sprintf('sur %d mois', (int) $strategy->getDureeTerme())
+            : 'sur l horizon defini';
+        $metricLabel = $this->calculateEstimatedRoiPercent($strategy) !== null ? 'de ROI projete' : 'de resultat cible';
+
+        return sprintf(
+            'La trajectoire attendue projette une progression graduelle %s, avec une acceleration visible autour de %s (%s) avant une cible finale a %s (%s).',
+            $durationText,
+            $midpoint['period'],
+            $this->formatOutcomeValueWithUnit((float) $midpoint['value']),
+            $lastPoint['period'],
+            $this->formatOutcomeValueWithUnit((float) $lastPoint['value']) . ' ' . $metricLabel
+        );
+    }
+
+    private function buildOutcomeChart(array $curve, Strategie $strategy): array
+    {
+        $width = 640;
+        $height = 260;
+        $plotLeft = 56;
+        $plotRight = $width - 22;
+        $plotTop = 20;
+        $plotBottom = $height - 46;
+        $innerWidth = $plotRight - $plotLeft;
+        $innerHeight = $plotBottom - $plotTop;
+        $tickCount = 5;
+        $values = array_map(static fn (array $point): float => (float) $point['value'], $curve);
+        $dataMax = max($values !== [] ? $values : [0.0]);
+        $maxValue = max(20.0, round($dataMax * 1.15, 1));
+        $pointCount = count($curve);
+        $points = [];
+
+        foreach ($curve as $index => $point) {
+            $x = $pointCount > 1
+                ? $plotLeft + ($innerWidth * $index / ($pointCount - 1))
+                : $plotLeft + ($innerWidth / 2);
+            $ratio = $maxValue > 0 ? ((float) $point['value']) / $maxValue : 0.0;
+            $y = $plotBottom - ($innerHeight * $ratio);
+
+            $points[] = [
+                'period' => $point['period'],
+                'value' => (float) $point['value'],
+                'value_label' => $this->formatOutcomeValueWithUnit((float) $point['value']),
+                'x' => round($x, 1),
+                'y' => round($y, 1),
+                'value_y' => round(max($plotTop + 12, $y - 12), 1),
+            ];
+        }
+
+        $polylinePoints = implode(' ', array_map(
+            static fn (array $point): string => sprintf('%.1f,%.1f', $point['x'], $point['y']),
+            $points
+        ));
+        $areaPoints = sprintf(
+            '%.1f,%.1f %s %.1f,%.1f',
+            $points[0]['x'],
+            $plotBottom,
+            $polylinePoints,
+            $points[array_key_last($points)]['x'],
+            $plotBottom
+        );
+        $yTicks = [];
+
+        for ($tickIndex = 0; $tickIndex < $tickCount; ++$tickIndex) {
+            $ratio = $tickCount > 1 ? $tickIndex / ($tickCount - 1) : 0;
+            $value = $maxValue * (1 - $ratio);
+            $yTicks[] = [
+                'label' => $this->formatOutcomeValueWithUnit($value),
+                'y' => round($plotTop + ($innerHeight * $ratio), 1),
+            ];
+        }
+
+        $firstPoint = $points[0];
+        $lastPoint = $points[array_key_last($points)];
+
+        return [
+            'width' => $width,
+            'height' => $height,
+            'plot_left' => $plotLeft,
+            'plot_right' => $plotRight,
+            'plot_top' => $plotTop,
+            'plot_bottom' => $plotBottom,
+            'x_label_y' => $plotBottom + 24,
+            'y_ticks' => $yTicks,
+            'points' => $points,
+            'polyline_points' => $polylinePoints,
+            'area_points' => $areaPoints,
+            'start_value_label' => $firstPoint['value_label'],
+            'final_value_label' => $lastPoint['value_label'],
+            'aria_label' => sprintf(
+                'Projection d outcome attendu de %s a %s sur %s.',
+                $firstPoint['value_label'],
+                $lastPoint['value_label'],
+                $strategy->getDureeTerme() !== null ? (int) $strategy->getDureeTerme() . ' mois' : 'la periode definie'
+            ),
+        ];
+    }
+
+    private function normalizeOutcomeCurve(mixed $value, array $fallback, Strategie $strategy): array
+    {
+        if (!is_array($value)) {
+            return $fallback;
+        }
+
+        $maxAllowed = max(100.0, $this->determineOutcomeFinalValue($strategy) * 1.5);
+        $normalized = [];
+        $previousValue = 0.0;
+
+        foreach ($value as $index => $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $period = $this->cleanText($item['period'] ?? null);
+            $numericValue = $this->extractNumericValue($item['value'] ?? null);
+
+            if ($period === '' || $numericValue === null) {
+                continue;
+            }
+
+            $numericValue = min($maxAllowed, max(0.0, round($numericValue, 1)));
+            $numericValue = max($previousValue, $numericValue);
+
+            $normalized[] = [
+                'period' => $period,
+                'value' => $numericValue,
+            ];
+
+            $previousValue = $numericValue;
+
+            if (count($normalized) >= 8) {
+                break;
+            }
+        }
+
+        return count($normalized) >= 4 ? $normalized : $fallback;
     }
 
     private function normalizeExecutionPhases(mixed $value, array $fallback): array
@@ -804,18 +1182,128 @@ class GeminiPdfContentGenerator
         return $value !== '' ? $value : $fallback;
     }
 
-    private function calculateEstimatedGainAmount(Strategie $strategy): ?float
+    private function extractNumericValue(mixed $value): ?float
     {
-        if ($strategy->getBudgetTotal() === null || $strategy->getGainEstime() === null) {
+        if (is_int($value) || is_float($value)) {
+            return (float) $value;
+        }
+
+        if (!is_string($value)) {
             return null;
         }
 
-        return $strategy->getBudgetTotal() * ($strategy->getGainEstime() / 100);
+        $normalized = str_replace(',', '.', trim($value));
+
+        return is_numeric($normalized) ? (float) $normalized : null;
+    }
+
+    private function calculateEstimatedGainAmount(Strategie $strategy): ?float
+    {
+        return $strategy->getGainEstime();
+    }
+
+    private function calculateEstimatedRoiPercent(Strategie $strategy): ?float
+    {
+        $budget = $strategy->getBudgetTotal();
+        $gainAmount = $this->calculateEstimatedGainAmount($strategy);
+
+        if ($budget === null || $budget <= 0 || $gainAmount === null) {
+            return null;
+        }
+
+        return ($gainAmount / $budget) * 100;
     }
 
     private function formatAmount(?float $amount): string
     {
         return $amount !== null ? number_format($amount, 0, ',', ' ') : 'Non defini';
+    }
+
+    private function formatOutcomeValueWithUnit(float $value): string
+    {
+        return $this->formatOutcomeValue($value) . ' %';
+    }
+
+    private function formatOutcomeValue(float $value): string
+    {
+        $formatted = number_format($value, 1, ',', ' ');
+
+        return str_ends_with($formatted, ',0') ? substr($formatted, 0, -2) : $formatted;
+    }
+
+    private function resetLastGenerationMeta(): void
+    {
+        $this->lastGenerationUsedAi = false;
+        $this->lastGenerationWarning = null;
+    }
+
+    private function buildGenerationWarning(\Throwable $exception): string
+    {
+        if ($this->isTemporaryGeminiFailure($exception)) {
+            return 'Gemini est temporairement indisponible. Le playbook de secours a ete utilise automatiquement. Vous pouvez relancer la generation dans quelques instants.';
+        }
+
+        $message = trim(preg_replace('/\s+/', ' ', $exception->getMessage()) ?? '');
+        if ($message === '') {
+            return 'La generation IA Gemini a echoue. Le playbook de secours a ete utilise.';
+        }
+
+        return sprintf(
+            'La generation IA Gemini a echoue (%s). Le playbook de secours a ete utilise.',
+            $message
+        );
+    }
+
+    private function shouldRetryWithoutSchema(\Throwable $exception): bool
+    {
+        $message = strtolower($exception->getMessage());
+
+        return str_contains($message, 'gemini api error (400)')
+            || str_contains($message, 'json valide')
+            || str_contains($message, 'schema attendu')
+            || str_contains($message, 'vide ou invalide');
+    }
+
+    private function shouldRetryRequestException(\Throwable $exception): bool
+    {
+        $message = strtolower($exception->getMessage());
+
+        return str_contains($message, 'timed out')
+            || str_contains($message, 'timeout')
+            || str_contains($message, 'temporary failure')
+            || str_contains($message, 'temporarily unavailable')
+            || str_contains($message, 'failed to connect')
+            || str_contains($message, 'could not resolve')
+            || str_contains($message, 'couldn\'t connect')
+            || str_contains($message, 'connection reset')
+            || str_contains($message, 'empty reply')
+            || str_contains($message, 'recv failure');
+    }
+
+    private function isTransientHttpStatus(int $status): bool
+    {
+        return in_array($status, [429, 500, 502, 503, 504], true);
+    }
+
+    private function getRetryDelayMilliseconds(int $attempt): int
+    {
+        $delays = self::TRANSIENT_RETRY_DELAYS_MS;
+
+        return $delays[$attempt - 1] ?? ($delays[array_key_last($delays)] ?? 0);
+    }
+
+    private function isTemporaryGeminiFailure(\Throwable $exception): bool
+    {
+        $message = $exception->getMessage();
+        if (preg_match('/gemini api error \((\d+)\)/i', $message, $matches) === 1) {
+            return $this->isTransientHttpStatus((int) $matches[1]);
+        }
+
+        $message = strtolower($message);
+
+        return str_contains($message, 'high demand')
+            || str_contains($message, 'try again later')
+            || $this->shouldRetryRequestException($exception);
     }
 
     private function resolveFirstNonEmpty(?string ...$values): ?string

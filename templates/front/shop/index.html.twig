@@ -113,6 +113,24 @@
             </div>
         </section>
 
+        <section class="mini-shop-page-actions" aria-label="Actions boutique">
+            <a href="{{ path('app_shop_publish') }}" class="shop-btn shop-btn-primary mini-shop-page-action">
+                <i class="fas fa-upload"></i>
+                Publier une annonce
+            </a>
+            <a href="{{ path('app_shop_my_listings') }}" class="shop-btn shop-btn-secondary mini-shop-page-action">
+                <i class="fas fa-list"></i>
+                Mes annonces
+            </a>
+            <a href="{{ path('app_shop_wallet') }}" class="shop-btn shop-btn-secondary mini-shop-page-action mini-shop-page-action-wallet">
+                <span class="mini-shop-page-action-wallet-copy">
+                    <i class="fas fa-wallet"></i>
+                    Wallet
+                </span>
+                <strong>{{ marketplace.wallet.balance|default(0)|number_format(3, '.', ' ') }} coins</strong>
+            </a>
+        </section>
+
         <section class="mini-shop-marketplace-layout" id="shop-marketplace">
             {% if manage_mode %}
             <article class="mini-shop-panel mini-shop-management-block">
@@ -630,13 +648,6 @@
 
         {% set total_drawer_lines = checkout_cart_stats.items_count|default(0) + cart_stats.items_count|default(0) %}
         {% set total_drawer_units = checkout_cart_stats.units_count|default(0) + cart_stats.units_count|default(0) %}
-        <a href="#shop-cart-drawer" class="mini-shop-cart-fab" aria-label="Ouvrir le panier">
-            <span class="mini-shop-cart-fab-icon"><i class="fas fa-shopping-cart"></i></span>
-            <span class="mini-shop-cart-fab-copy">
-                <strong>Ouvrir le panier</strong>
-                <small>{{ total_drawer_lines }} ligne(s) • {{ total_drawer_units }} article(s)</small>
-            </span>
-        </a>
 
         <aside class="mini-shop-cart-drawer" id="shop-cart-drawer" aria-labelledby="shop-cart-title">
             <div class="mini-shop-cart-drawer-shell">

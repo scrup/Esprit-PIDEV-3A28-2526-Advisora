@@ -417,6 +417,7 @@ def recommend_strategy(data: dict[str, Any]) -> dict[str, Any]:
 
     predicted_strategy = best["strategy_name"]
     predicted_strategy_id = best.get("strategy_id")
+    is_db_candidate = predicted_strategy_id is not None
     predicted_type = (
         str(best.get("type", "") or "").strip()
         or infer_strategy_type(predicted_strategy, description_proj, type_proj_raw)
@@ -424,13 +425,21 @@ def recommend_strategy(data: dict[str, Any]) -> dict[str, Any]:
 
     gain_estime = best.get("gain_estime")
     duree = best.get("duree_terme")
-    if gain_estime is None or duree is None:
-        fallback_gain, fallback_duree = enrich_from_type(predicted_type, budget, avancement)
-        gain_estime = fallback_gain if gain_estime is None else float(gain_estime)
-        duree = fallback_duree if duree is None else int(duree)
+    fallback_gain_rate, fallback_duree = enrich_from_type(predicted_type, budget, avancement)
+
+    if duree is None:
+        duree = fallback_duree
     else:
-        gain_estime = float(gain_estime)
         duree = int(duree)
+
+    if gain_estime is None:
+        gain_amount = round((budget * fallback_gain_rate / 100), 2) if budget > 0 else None
+    else:
+        gain_value = float(gain_estime)
+        if is_db_candidate:
+            gain_amount = round(gain_value, 2)
+        else:
+            gain_amount = round((budget * gain_value / 100), 2) if budget > 0 else round(gain_value, 2)
 
     top_candidates = ranking_pool[:3]
     probabilities = normalize_scores_for_output([float(candidate["score"]) for candidate in top_candidates])
@@ -456,7 +465,7 @@ def recommend_strategy(data: dict[str, Any]) -> dict[str, Any]:
         "nomStrategie": predicted_strategy,
         "type": predicted_type,
         "budgetTotal": round(budget, 2),
-        "gainEstime": round(gain_estime, 2),
+        "gainEstime": gain_amount,
         "DureeTerme": int(duree),
         "statusStrategie": "En_attente",
         "top_3": top_3,

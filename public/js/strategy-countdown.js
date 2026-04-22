@@ -1,59 +1,62 @@
-(function () {
-    function pad(value) {
-        return String(value).padStart(2, '0');
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    const countdownElements = document.querySelectorAll('[data-strategy-countdown]');
 
-    function formatRemainingTime(milliseconds) {
-        const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
-        const hours = Math.floor(totalSeconds / 3600);
+    function updateCountdown(el) {
+        const endDate = new Date(el.dataset.endAt);
+        const now = new Date();
+
+        if (isNaN(endDate)) return;
+
+        const totalSeconds = (endDate - now) / 1000;
+        const isExpired = totalSeconds <= 0;
+
+        if (isExpired) {
+            el.classList.add('is-expired');
+            const displayEl = el.querySelector('[data-countdown-display]');
+            if (displayEl) displayEl.textContent = 'Expiré';
+            const progressBar = el.querySelector('[data-progress-bar]');
+            if (progressBar) progressBar.style.width = '100%';
+            return;
+        }
+
+        el.classList.remove('is-expired');
+
+        // Calculate time units
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
+        const seconds = Math.floor(totalSeconds % 60);
 
-        return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        // Format display (always show 4 groups)
+        const displayEl = el.querySelector('[data-countdown-display]');
+        if (displayEl) {
+            displayEl.textContent = `${days} ${hours.toString().padStart(2, '0')} ${minutes.toString().padStart(2, '0')} ${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Progress bar based on elapsed time
+        const startDate = new Date(endDate);
+        startDate.setMonth(startDate.getMonth() - 1); // approximate original lockedAt (adjust if you store it)
+        // Better: store `data-start-at` in Twig to have exact progress. 
+        // For now we compute a percentage from today to endDate over the total duration (in seconds).
+        // Since we don't have the original start, we assume total duration = (endDate - startDate).
+        // You can pass data-start-at="{{ strategy.lockedAt|date('c') }}" for exact progress.
+        // I'll implement a fallback: if no start, we don't show progress.
+        const startAttr = el.dataset.startAt;
+        if (startAttr && progressBar) {
+            const startDateExact = new Date(startAttr);
+            const totalDuration = (endDate - startDateExact) / 1000;
+            const elapsed = totalDuration - totalSeconds;
+            let percent = (elapsed / totalDuration) * 100;
+            percent = Math.min(100, Math.max(0, percent));
+            progressBar.style.width = `${percent}%`;
+        }
     }
 
-    function updateCountdownNode(node, nowTimestamp) {
-        const valueNode = node.querySelector('[data-countdown-value]');
-        if (!valueNode) {
-            return;
-        }
-
-        const endAtRaw = node.dataset.endAt || '';
-        const endTimestamp = Date.parse(endAtRaw);
-        if (Number.isNaN(endTimestamp)) {
-            valueNode.textContent = '--:--:--';
-            node.classList.add('is-expired');
-            return;
-        }
-
-        const remaining = endTimestamp - nowTimestamp;
-        if (remaining <= 0) {
-            valueNode.textContent = '00:00:00';
-            node.classList.add('is-expired');
-            return;
-        }
-
-        valueNode.textContent = formatRemainingTime(remaining);
-        node.classList.remove('is-expired');
+    function refreshAllCountdowns() {
+        countdownElements.forEach(el => updateCountdown(el));
     }
 
-    function initStrategyCountdowns() {
-        const countdownNodes = Array.from(document.querySelectorAll('[data-strategy-countdown]'));
-        if (countdownNodes.length === 0) {
-            return;
-        }
-
-        const tick = function () {
-            const now = Date.now();
-            countdownNodes.forEach(function (node) {
-                updateCountdownNode(node, now);
-            });
-        };
-
-        tick();
-        window.setInterval(tick, 1000);
-    }
-
-    document.addEventListener('DOMContentLoaded', initStrategyCountdowns);
-})();
-
+    // Run every second
+    refreshAllCountdowns();
+    setInterval(refreshAllCountdowns, 1000);
+});

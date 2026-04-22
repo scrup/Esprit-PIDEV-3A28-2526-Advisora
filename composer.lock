@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f407589dbf19db1da18f0e28c2248158",
+    "content-hash": "9b6607adef36035b5ef9d1907b6f3a66",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2216,6 +2216,57 @@
             "time": "2026-01-09T10:45:12+00:00"
         },
         {
+            "name": "jefs42/libretranslate",
+            "version": "v1.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jefs42/libretranslate.git",
+                "reference": "dce7d90cfbf675b4d24c8ea0c1f3840d03bccb8f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jefs42/libretranslate/zipball/dce7d90cfbf675b4d24c8ea0c1f3840d03bccb8f",
+                "reference": "dce7d90cfbf675b4d24c8ea0c1f3840d03bccb8f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": "^7.0|^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jefs42\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Jeffrey Shilt",
+                    "email": "dev@fortytwo-it.com",
+                    "homepage": "https://fortytwo-it.com"
+                }
+            ],
+            "description": "PHP interface for the open source LibreTranslate project",
+            "keywords": [
+                "libretranslate",
+                "php",
+                "translate"
+            ],
+            "support": {
+                "issues": "https://github.com/jefs42/libretranslate/issues",
+                "source": "https://github.com/jefs42/libretranslate/tree/v1.1.2"
+            },
+            "time": "2023-03-26T02:21:10+00:00"
+        },
+        {
             "name": "jms/metadata",
             "version": "2.9.0",
             "source": {
@@ -3502,6 +3553,63 @@
                 "source": "https://github.com/stripe/stripe-php/tree/v20.0.0"
             },
             "time": "2026-03-26T01:57:48+00:00"
+        },
+        {
+            "name": "survos/libre-translate-bundle",
+            "version": "1.5.395",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/survos/LibreTranslateBundle.git",
+                "reference": "0d7e019628cb13a5d414da8a730a69dd877a1ce4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/survos/LibreTranslateBundle/zipball/0d7e019628cb13a5d414da8a730a69dd877a1ce4",
+                "reference": "0d7e019628cb13a5d414da8a730a69dd877a1ce4",
+                "shasum": ""
+            },
+            "require": {
+                "jefs42/libretranslate": "^1.1",
+                "php": "^8.1",
+                "symfony/config": "^6.3 || ^7.0",
+                "symfony/dependency-injection": "^6.3 || ^7.0",
+                "symfony/http-kernel": "^6.3 || ^7.0",
+                "twig/twig": "^3.4"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^1.7",
+                "symfony/browser-kit": "^6.3 || ^7.0",
+                "symfony/framework-bundle": "^6.3 || ^7.0",
+                "symfony/phpunit-bridge": "^6.3 || ^7.0",
+                "symfony/twig-bundle": "^6.3 || ^7.0",
+                "symfony/var-dumper": "^6.3 || ^7.0"
+            },
+            "type": "symfony-bundle",
+            "autoload": {
+                "psr-4": {
+                    "Survos\\LibreTranslateBundle\\": "src/",
+                    "Surovs\\LibreTranslateBundle\\Tests\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "keywords": [
+                "symfony-ux",
+                "symfony6"
+            ],
+            "support": {
+                "issues": "https://github.com/survos/LibreTranslateBundle/issues",
+                "source": "https://github.com/survos/LibreTranslateBundle/tree/1.5.395"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/kbond",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-11-01T18:34:17+00:00"
         },
         {
             "name": "symfony/asset",

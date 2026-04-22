@@ -148,7 +148,8 @@
                             <span><strong>Type :</strong> {{ strategy.type ?: 'Non precise' }}</span>
                             <span><strong>Duree :</strong> {{ strategy.DureeTerme }} mois</span>
                             <span><strong>Budget :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                            <span><strong>Gain estime :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non precise' }}</span>
+                            <span><strong>Gain estime :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                            <span><strong>ROI :</strong> {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, '.', ' ') ~ '%' : 'Non precise' }}</span>
                             <span><strong>Objectifs :</strong> {{ strategy.objectives|length }}</span>
                         </div>
                     </section>

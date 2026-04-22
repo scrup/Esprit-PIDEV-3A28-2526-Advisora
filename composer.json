@@ -18,6 +18,7 @@
         "liip/imagine-bundle": "^2.17",
         "stof/doctrine-extensions-bundle": "1.8",
         "stripe/stripe-php": "^20.0",
+        "survos/libre-translate-bundle": "^1.5",
         "symfony/asset": "6.4.*",
         "symfony/console": "6.4.*",
         "symfony/dotenv": "6.4.*",

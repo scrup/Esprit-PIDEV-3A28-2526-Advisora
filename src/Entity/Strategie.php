@@ -214,6 +214,18 @@ class Strategie
         return $this;
     }
 
+    public function getEstimatedRoiPercent(): ?float
+    {
+        $budget = $this->getBudgetTotal();
+        $gainAmount = $this->getGainEstime();
+
+        if ($budget === null || $budget <= 0 || $gainAmount === null) {
+            return null;
+        }
+
+        return ($gainAmount / $budget) * 100;
+    }
+
   #[ORM\Column(name: 'DureeTerme', type: 'integer', nullable: true)]
 private ?int $DureeTerme = null;
 

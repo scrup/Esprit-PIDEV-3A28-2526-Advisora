@@ -330,7 +330,7 @@ function initObjectiveModal() {
 
 function calculateROI(budget, gainEstime) {
     if (!budget || budget === 0) {
-        return gainEstime || 0;
+        return 0;
     }
 
     return ((gainEstime || 0) / budget) * 100;

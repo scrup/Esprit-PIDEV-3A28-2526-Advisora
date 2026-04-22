@@ -28,7 +28,11 @@
                 </div>
                 <div class="recommendation-kpi">
                     <span class="recommendation-kpi-label">Gain estime</span>
-                    <strong>{{ (strategie.gainEstime ?? 0)|number_format(2, '.', ' ') }}%</strong>
+                    <strong>{{ strategie.gainEstime is not null ? strategie.gainEstime|number_format(2, '.', ' ') ~ ' TND' : 'Non defini' }}</strong>
+                </div>
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">ROI estime</span>
+                    <strong>{{ strategie.estimatedRoiPercent is not null ? strategie.estimatedRoiPercent|number_format(2, '.', ' ') ~ '%' : 'Non defini' }}</strong>
                 </div>
                 <div class="recommendation-kpi">
                     <span class="recommendation-kpi-label">Duree</span>
@@ -52,9 +56,17 @@
                 {% else %}
                     <p class="recommendation-decision-hint">
                         Cette strategie est seulement en apercu. Elle ne sera enregistree qu apres confirmation et passera en statut "En_cours" lors de l acceptation.
+                        Si vous voulez une alternative, utilisez le bouton Gemini pour generer un nouvel apercu.
                     </p>
 
                     <div class="recommendation-decision-actions">
+                        <form method="post" action="{{ path('strategie_recommandation_auto_generate', {'id': projet.id}) }}" onsubmit="return confirm('Generer un nouvel apercu de strategie avec Gemini ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('recommendation_auto_generate_' ~ projet.id) }}">
+                            <button type="submit" class="recommendation-btn recommendation-btn-gemini">
+                                Generer une autre strategie (Gemini)
+                            </button>
+                        </form>
+
                         <form method="post" action="{{ path('strategie_recommandation_decision', {'id': projet.id}) }}" onsubmit="return confirm('Confirmer et enregistrer cette strategie ?');">
                             <input type="hidden" name="_token" value="{{ csrf_token('recommendation_decision_' ~ projet.id) }}">
                             <input type="hidden" name="decision" value="accept">
