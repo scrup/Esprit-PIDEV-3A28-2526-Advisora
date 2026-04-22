@@ -504,6 +504,133 @@ SQL;
         ));
     }
 
+    /**
+     * @param list<Project> $projects
+     *
+     * @return array{PENDING: int, ACCEPTED: int, REFUSED: int}
+     */
+    public function getScopedStatusCounters(array $projects): array
+    {
+        $counters = [
+            Project::STATUS_PENDING => 0,
+            Project::STATUS_ACCEPTED => 0,
+            Project::STATUS_REFUSED => 0,
+        ];
+
+        foreach ($projects as $project) {
+            if (!$project instanceof Project) {
+                continue;
+            }
+
+            $status = $project->getStatus() ?? Project::STATUS_PENDING;
+            if (!array_key_exists($status, $counters)) {
+                continue;
+            }
+
+            ++$counters[$status];
+        }
+
+        return $counters;
+    }
+
+    /**
+     * @param list<Project> $projects
+     *
+     * @return array<string, int>
+     */
+    public function getScopedTypeCounters(array $projects, int $limit = 6): array
+    {
+        $counters = [];
+
+        foreach ($projects as $project) {
+            if (!$project instanceof Project) {
+                continue;
+            }
+
+            $type = trim((string) $project->getLegacyType());
+            $label = $type !== '' ? $type : 'Non precise';
+            $counters[$label] = ($counters[$label] ?? 0) + 1;
+        }
+
+        arsort($counters);
+
+        return array_slice($counters, 0, max(1, $limit), true);
+    }
+
+    /**
+     * @param list<Project> $projects
+     *
+     * @return array<string, int>
+     */
+    public function getScopedMonthlyCreationStats(array $projects, int $months = 6): array
+    {
+        $months = max(1, $months);
+        $referenceDate = new \DateTimeImmutable('first day of this month midnight');
+        $labels = [];
+
+        for ($offset = $months - 1; $offset >= 0; --$offset) {
+            $month = $referenceDate->modify(sprintf('-%d month', $offset));
+            $labels[$month->format('Y-m')] = 0;
+        }
+
+        foreach ($projects as $project) {
+            if (!$project instanceof Project || !$project->getStartDate() instanceof \DateTimeInterface) {
+                continue;
+            }
+
+            $key = $project->getStartDate()->format('Y-m');
+            if (!array_key_exists($key, $labels)) {
+                continue;
+            }
+
+            ++$labels[$key];
+        }
+
+        return $labels;
+    }
+
+    /**
+     * @param list<Project> $projects
+     *
+     * @return array{PENDING: float, ACCEPTED: float, REFUSED: float}
+     */
+    public function getScopedAverageBudgetsByStatus(array $projects): array
+    {
+        $totals = [
+            Project::STATUS_PENDING => ['sum' => 0.0, 'count' => 0],
+            Project::STATUS_ACCEPTED => ['sum' => 0.0, 'count' => 0],
+            Project::STATUS_REFUSED => ['sum' => 0.0, 'count' => 0],
+        ];
+
+        foreach ($projects as $project) {
+            if (!$project instanceof Project) {
+                continue;
+            }
+
+            $status = $project->getStatus() ?? Project::STATUS_PENDING;
+            if (!isset($totals[$status])) {
+                continue;
+            }
+
+            $budget = (float) ($project->getLegacyBudget() ?? 0.0);
+            if ($budget <= 0) {
+                continue;
+            }
+
+            $totals[$status]['sum'] += $budget;
+            ++$totals[$status]['count'];
+        }
+
+        $averages = [];
+        foreach ($totals as $status => $values) {
+            $averages[$status] = $values['count'] > 0
+                ? round($values['sum'] / $values['count'], 2)
+                : 0.0;
+        }
+
+        return $averages;
+    }
+
     //    /**
     //     * @return Project[] Returns an array of Project objects
     //     */

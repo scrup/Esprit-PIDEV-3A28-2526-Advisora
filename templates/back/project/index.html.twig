@@ -6,6 +6,7 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/back-dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
@@ -77,6 +78,13 @@
                 </div>
             </div>
         </div>
+
+        {% include 'shared/project_dashboard_block.html.twig' with {
+            dashboard: project_dashboard,
+            export_url: path('back_project_export_pdf'),
+            title: 'Pilotage global des projets',
+            description: 'Une lecture transversale du pipeline projet pour le gerant et l admin.'
+        } only %}
 
         <!-- Two Columns -->
         <div class="two-columns">
@@ -164,5 +172,7 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ asset('js/project-dashboard.js') }}"></script>
     <script src="{{ asset('js/back-dashboard.js') }}"></script>
 {% endblock %}
