@@ -1,0 +1,571 @@
+:root {
+    --estimation-primary: var(--pm-terracotta, #c37d5d);
+    --estimation-primary-dark: var(--pm-terracotta-dark, #a86447);
+    --estimation-primary-soft: var(--pm-terracotta-soft, #ead8ca);
+    --estimation-white: var(--pm-card, #fffdfa);
+    --estimation-ink: var(--pm-umber, #2c2418);
+    --estimation-muted: var(--pm-muted, #6b5a48);
+    --estimation-border: var(--pm-border, #f0e7dc);
+    --estimation-success: var(--pm-sage, #8faa7e);
+    --estimation-warning: var(--pm-gold, #e3c9a0);
+    --estimation-danger: var(--pm-danger, #d68b6e);
+    --estimation-shadow: var(--pm-shadow-md, 0 16px 34px rgba(44, 36, 24, 0.08));
+}
+
+.front-mode .btn {
+    border-radius: 40px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.front-mode .btn-outline {
+    background: transparent;
+    border: 1px solid #d1c3b2;
+    color: var(--pm-umber);
+}
+
+.front-mode .btn-outline:hover {
+    border-color: var(--estimation-primary);
+    color: var(--estimation-primary);
+    background: rgba(195, 125, 93, 0.05);
+}
+
+.front-mode .btn-primary {
+    border: none;
+    background: linear-gradient(135deg, var(--estimation-primary), var(--estimation-primary-dark));
+    color: #fffdf9;
+    box-shadow: 0 10px 22px rgba(195, 125, 93, 0.24);
+}
+
+.front-mode .btn-primary:hover,
+.front-mode .btn-primary:focus {
+    background: linear-gradient(135deg, var(--estimation-primary-dark), #92563c);
+    color: #fffdf9;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(195, 125, 93, 0.3);
+}
+
+.front-mode .btn-primary:active {
+    transform: translateY(0);
+}
+
+.estimation-shell {
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+}
+
+.estimation-admin-header {
+    background:
+        radial-gradient(circle at top right, rgba(195, 125, 93, 0.18), transparent 26%),
+        linear-gradient(135deg, #fcf8f0 0%, #fffdf9 58%, #f1e5d5 100%);
+}
+
+.estimation-admin-copy {
+    max-width: 760px;
+}
+
+.estimation-admin-copy p,
+.estimation-form-head p,
+.estimation-step-head p,
+.estimation-result-head p {
+    color: var(--estimation-muted);
+}
+
+.estimation-provider-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1rem;
+}
+
+.estimation-provider-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(195, 125, 93, 0.12);
+    color: var(--estimation-primary-dark);
+    font-weight: 700;
+}
+
+.estimation-provider-pill-fallback {
+    background: rgba(143, 170, 126, 0.18);
+    color: #5f7552;
+}
+
+.estimation-provider-warning {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+    max-width: 760px;
+}
+
+.estimation-context-pills,
+.estimation-funding-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.estimation-pill,
+.estimation-funding-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(195, 125, 93, 0.1);
+    color: var(--estimation-primary-dark);
+    font-weight: 700;
+}
+
+.estimation-context-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.estimation-context-copy {
+    display: grid;
+    gap: 0.25rem;
+    color: var(--estimation-muted);
+}
+
+.estimation-context-copy strong,
+.estimation-overline,
+.estimation-card-label {
+    color: var(--estimation-ink);
+    font-weight: 800;
+}
+
+.estimation-overline,
+.estimation-card-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--estimation-primary);
+}
+
+.estimation-alert {
+    margin-top: 1.5rem;
+}
+
+.estimation-topbar {
+    margin-top: 1.25rem;
+    padding: 1.1rem 1.35rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background:
+        radial-gradient(circle at top left, rgba(195, 125, 93, 0.08), transparent 24%),
+        linear-gradient(180deg, #fffdfa 0%, #faf5ee 100%);
+}
+
+.estimation-topbar-copy {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.estimation-topbar-kicker {
+    color: var(--estimation-primary);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.estimation-topbar-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--estimation-muted);
+    font-weight: 700;
+}
+
+.estimation-topbar-breadcrumbs a {
+    color: var(--estimation-primary-dark);
+    text-decoration: none;
+}
+
+.estimation-topbar-breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.estimation-topbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.estimation-form-card {
+    margin-top: 1.75rem;
+    padding: 2rem;
+    box-shadow: var(--pm-shadow-sm);
+}
+
+.estimation-form-head,
+.estimation-result-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.estimation-form-head h2,
+.estimation-result-head h2 {
+    margin: 0.35rem 0;
+}
+
+.estimation-progress-wrap {
+    margin: 1.5rem 0 1.75rem;
+}
+
+.estimation-progress {
+    height: 0.8rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ece3d8 0%, #e3d6c4 100%);
+    box-shadow: inset 0 1px 3px rgba(44, 36, 24, 0.08);
+}
+
+.estimation-progress .progress-bar {
+    border-radius: 999px;
+}
+
+.estimation-progress-bar {
+    background: linear-gradient(90deg, var(--pm-sage) 0%, var(--pm-terracotta) 100%);
+    box-shadow: 0 8px 18px rgba(143, 170, 126, 0.22);
+}
+
+.estimation-progress-label {
+    margin-top: 0.65rem;
+    color: var(--estimation-muted);
+    font-weight: 700;
+}
+
+.estimation-step {
+    border: 1px solid var(--estimation-border);
+    border-radius: 28px;
+    padding: 1.5rem;
+    background: linear-gradient(180deg, #fffdfa 0%, #faf5ee 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.estimation-step + .estimation-step {
+    margin-top: 1rem;
+}
+
+.estimation-step-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.estimation-step-head h3,
+.estimation-card-head h3,
+.estimation-result-card h4 {
+    margin: 0;
+    color: var(--estimation-ink);
+}
+
+.estimation-step-number {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--estimation-primary), var(--estimation-primary-dark));
+    color: var(--estimation-white);
+    font-weight: 900;
+    font-size: 1rem;
+    box-shadow: 0 12px 26px rgba(195, 125, 93, 0.24);
+}
+
+.estimation-field label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-weight: 700;
+    color: var(--estimation-ink);
+}
+
+.estimation-field input,
+.estimation-field select,
+.estimation-field textarea {
+    width: 100%;
+    border: 1.5px solid #e8e0d5;
+    border-radius: 16px;
+    padding: 0.85rem 1.2rem;
+    color: var(--estimation-ink);
+    background: #fffdfa;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.estimation-field input:focus,
+.estimation-field select:focus,
+.estimation-field textarea:focus {
+    outline: none;
+    border-color: var(--pm-terracotta);
+    box-shadow: 0 0 0 4px rgba(195, 125, 93, 0.12);
+}
+
+.estimation-field .form-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-right: 1rem;
+    margin-top: 0.3rem;
+}
+
+.estimation-field .form-check-input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0;
+}
+
+.estimation-field .form-check-label {
+    margin: 0;
+    font-weight: 600;
+}
+
+.estimation-field-error input,
+.estimation-field-error select,
+.estimation-field-error textarea {
+    border-color: var(--pm-danger);
+    background: #fff8f5;
+}
+
+.estimation-field-errors,
+.estimation-global-errors {
+    color: var(--estimation-danger);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.estimation-global-errors ul,
+.estimation-field-errors ul {
+    padding-left: 1rem;
+    margin: 0.4rem 0 0;
+}
+
+.estimation-step-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.estimation-submit-btn,
+.estimation-step-actions .pm-btn {
+    min-width: 170px;
+    justify-content: center;
+}
+
+.estimation-loading {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    color: var(--estimation-muted);
+    font-weight: 700;
+}
+
+.estimation-loading .spinner-border {
+    color: var(--estimation-primary-dark) !important;
+}
+
+.estimation-loading.is-visible {
+    display: inline-flex;
+}
+
+.estimation-result-shell {
+    margin-top: 1.75rem;
+}
+
+.estimation-result-score {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.estimation-verdict-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    font-weight: 800;
+    color: var(--estimation-white);
+    min-width: 140px;
+}
+
+.estimation-verdict-viable {
+    background: linear-gradient(135deg, #8faa7e, #6d8a60);
+}
+
+.estimation-verdict-risque {
+    background: linear-gradient(135deg, #e3c9a0, #c8a972);
+    color: #5a4525;
+}
+
+.estimation-verdict-non-viable {
+    background: linear-gradient(135deg, #d68b6e, #b66d52);
+}
+
+.estimation-score-ring {
+    --score-angle: calc(var(--score) * 3.6deg);
+    width: 148px;
+    height: 148px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(circle at center, #fff 58%, transparent 59%),
+        conic-gradient(var(--estimation-primary) var(--score-angle), #efe7dc 0deg);
+    box-shadow: var(--estimation-shadow);
+    text-align: center;
+}
+
+.estimation-score-ring strong {
+    display: block;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--estimation-ink);
+}
+
+.estimation-score-ring span {
+    color: var(--estimation-muted);
+    font-weight: 700;
+}
+
+.estimation-result-card {
+    height: 100%;
+    border-width: 1px;
+    border-color: var(--pm-border);
+    background: linear-gradient(180deg, #fffdfa 0%, #faf5ee 100%);
+}
+
+.estimation-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.estimation-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: var(--estimation-ink);
+}
+
+.estimation-list li + li {
+    margin-top: 0.75rem;
+}
+
+.estimation-list-good li::marker {
+    color: var(--estimation-success);
+}
+
+.estimation-list-risk li::marker {
+    color: var(--estimation-danger);
+}
+
+.estimation-next-step {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--estimation-border);
+}
+
+.estimation-next-step p,
+.estimation-region-box p,
+.estimation-result-card p {
+    margin-bottom: 0;
+    color: var(--estimation-muted);
+}
+
+.estimation-funding-card h4 {
+    margin: 0.9rem 0 0.55rem;
+    font-size: 1.2rem;
+}
+
+.estimation-region-box {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 20px;
+    background: #f4efe9;
+    border: 1px solid var(--pm-border);
+}
+
+.estimation-startup-act-card {
+    background:
+        linear-gradient(135deg, #fcf8f0 0%, #fffdf9 56%, #efe7dc 100%);
+}
+
+.estimation-startup-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.55rem 0.9rem;
+    background: linear-gradient(135deg, var(--estimation-primary), var(--estimation-primary-dark));
+    color: #fffdf9;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: 0 8px 16px rgba(195, 125, 93, 0.2);
+}
+
+@media (max-width: 991.98px) {
+    .estimation-result-score {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .estimation-shell {
+        width: min(100%, calc(100% - 1rem));
+    }
+
+    .estimation-form-card {
+        padding: 1.25rem;
+    }
+
+    .estimation-step {
+        padding: 1.1rem;
+    }
+
+    .estimation-step-head {
+        flex-direction: column;
+    }
+
+    .estimation-step-actions {
+        flex-direction: column;
+    }
+
+    .estimation-context-banner {
+        align-items: flex-start;
+    }
+
+    .estimation-context-pills,
+    .estimation-context-banner .pm-btn {
+        width: 100%;
+    }
+
+    .estimation-step-actions .pm-btn,
+    .estimation-submit-btn {
+        width: 100%;
+    }
+}

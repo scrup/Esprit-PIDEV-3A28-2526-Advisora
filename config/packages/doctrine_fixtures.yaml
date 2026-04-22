@@ -1,0 +1,4 @@
+doctrine_fixtures:
+    fixtures_path:
+        - '%kernel.project_dir%/src/DataFixtures'
+

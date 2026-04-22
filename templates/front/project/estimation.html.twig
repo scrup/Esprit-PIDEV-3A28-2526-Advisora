@@ -1,0 +1,363 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Analyse de Projet{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-estimation.css') }}">
+{% endblock %}
+
+{% macro field(field) %}
+    <div class="estimation-field {% if field.vars.errors|length > 0 %}estimation-field-error{% endif %}">
+        {{ form_label(field) }}
+        {{ form_widget(field) }}
+        {% if field.vars.help %}
+            <div class="estimation-field-help">{{ form_help(field) }}</div>
+        {% endif %}
+        <div class="estimation-field-errors">
+            {{ form_errors(field) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% block body %}
+    {% import _self as forms %}
+
+    {% set verdict_labels = {
+        'VIABLE': 'VIABLE',
+        'RISQUE': 'RISQUE',
+        'NON_VIABLE': 'NON VIABLE'
+    } %}
+    {% set verdict_classes = {
+        'VIABLE': 'estimation-verdict-viable',
+        'RISQUE': 'estimation-verdict-risque',
+        'NON_VIABLE': 'estimation-verdict-non-viable'
+    } %}
+    <section class="pm-admin-shell estimation-shell">
+        <div class="pm-admin-header estimation-admin-header">
+            <div class="estimation-admin-copy">
+                <span class="pm-badge">Analyse Projet</span>
+                <h1>Analyse de lancement de projet sur le marche tunisien</h1>
+                <p>
+                    Renseignez votre projet, vos moyens, votre positionnement et vos contraintes locales pour obtenir
+                    une lecture structuree de sa viabilite sur le marche tunisien.
+                </p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_top10') }}">
+                    <i class="fas fa-ranking-star"></i>
+                    <span>Voir le Top 10</span>
+                </a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Retour aux projets</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="pm-info-banner estimation-context-banner">
+            <div class="estimation-context-copy">
+                <strong>Advisora Workspace</strong>
+                <span>Projets / Estimation</span>
+            </div>
+            <div class="estimation-context-pills">
+                <span class="estimation-pill"><i class="fas fa-chart-line"></i> Lecture business et finance</span>
+                <span class="estimation-pill"><i class="fas fa-briefcase"></i> Tous types de projet</span>
+                <span class="estimation-pill"><i class="fas fa-location-dot"></i> Contexte tunisien reel</span>
+            </div>
+        </div>
+
+        {% if error %}
+            <div class="flash-message flash-error estimation-alert">{{ error }}</div>
+        {% endif %}
+
+        <div class="pm-form-card estimation-form-card">
+            <div class="estimation-form-head">
+                <div>
+                    <span class="estimation-overline">Wizard 5 etapes</span>
+                    <h2>Preparer une analyse complete</h2>
+                    <p>Chaque bloc couvre un angle concret du lancement et de la mise en oeuvre en Tunisie.</p>
+                </div>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_estimation') }}">Nouvelle estimation</a>
+            </div>
+
+            <div class="estimation-progress-wrap">
+                <div class="progress estimation-progress" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="{{ current_step }}">
+                    <div class="progress-bar estimation-progress-bar" style="width: {{ (current_step / 5) * 100 }}%" data-estimation-progress-bar></div>
+                </div>
+                <div class="estimation-progress-label" data-estimation-progress-label>Etape {{ current_step }} sur 5</div>
+            </div>
+
+            {{ form_start(form, {
+                action: path('project_estimation'),
+                attr: {
+                    class: 'estimation-form',
+                    novalidate: 'novalidate',
+                    'data-estimation-form': 'true',
+                    'data-initial-step': current_step
+                }
+            }) }}
+                <input type="hidden" name="wizard_step" value="{{ current_step }}" data-estimation-current-step>
+
+                <div class="estimation-global-errors">
+                    {{ form_errors(form) }}
+                </div>
+
+                <section class="estimation-step {% if current_step != 1 %}d-none{% endif %}" data-estimation-step="1">
+                    <div class="estimation-step-head">
+                        <span class="estimation-step-number">01</span>
+                        <div>
+                            <h3>Informations generales</h3>
+                            <p>Le coeur du projet, sa portee, sa date cible et sa zone de lancement.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-6">{{ forms.field(form.projectName) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.projectType) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.launchRegion) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.desiredLaunchDate) }}</div>
+                        <div class="col-12">{{ forms.field(form.projectDescription) }}</div>
+                    </div>
+                    <div class="estimation-step-actions">
+                        <button class="pm-btn pm-btn-primary" type="button" data-step-next>Suivant</button>
+                    </div>
+                </section>
+
+                <section class="estimation-step {% if current_step != 2 %}d-none{% endif %}" data-estimation-step="2">
+                    <div class="estimation-step-head">
+                        <span class="estimation-step-number">02</span>
+                        <div>
+                            <h3>Moyens financiers</h3>
+                            <p>Un cadrage chiffre en dinars tunisiens pour juger la faisabilite et l equilibre economique.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-6">{{ forms.field(form.totalBudgetDt) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.marketingBudgetDt) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.fundingSource) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.estimatedMonthlyRevenueDt) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.estimatedProfitabilityDelayMonths) }}</div>
+                    </div>
+                    <div class="estimation-step-actions">
+                        <button class="pm-btn pm-btn-secondary" type="button" data-step-prev>Precedent</button>
+                        <button class="pm-btn pm-btn-primary" type="button" data-step-next>Suivant</button>
+                    </div>
+                </section>
+
+                <section class="estimation-step {% if current_step != 3 %}d-none{% endif %}" data-estimation-step="3">
+                    <div class="estimation-step-head">
+                        <span class="estimation-step-number">03</span>
+                        <div>
+                            <h3>Execution et ressources</h3>
+                            <p>Les personnes mobilisees, leur experience et les ressources cles conditionnent la capacite de lancement.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-4">{{ forms.field(form.teamSize) }}</div>
+                        <div class="col-lg-4">{{ forms.field(form.founderExperienceYears) }}</div>
+                        <div class="col-lg-4">{{ forms.field(form.alreadyLaunchedInTunisia) }}</div>
+                        <div class="col-12">{{ forms.field(form.teamKeySkills) }}</div>
+                    </div>
+                    <div class="estimation-step-actions">
+                        <button class="pm-btn pm-btn-secondary" type="button" data-step-prev>Precedent</button>
+                        <button class="pm-btn pm-btn-primary" type="button" data-step-next>Suivant</button>
+                    </div>
+                </section>
+
+                <section class="estimation-step {% if current_step != 4 %}d-none{% endif %}" data-estimation-step="4">
+                    <div class="estimation-step-head">
+                        <span class="estimation-step-number">04</span>
+                        <div>
+                            <h3>Positionnement marche</h3>
+                            <p>Clientele, demande locale, alternatives presentes et potentiel de developpement.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-6">{{ forms.field(form.targetMarket) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.directCompetitorsTunisia) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.tunisianMarketStudyStatus) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.exportTarget) }}</div>
+                        <div class="col-12">{{ forms.field(form.competitiveAdvantage) }}</div>
+                    </div>
+                    <div class="estimation-step-actions">
+                        <button class="pm-btn pm-btn-secondary" type="button" data-step-prev>Precedent</button>
+                        <button class="pm-btn pm-btn-primary" type="button" data-step-next>Suivant</button>
+                    </div>
+                </section>
+
+                <section class="estimation-step {% if current_step != 5 %}d-none{% endif %}" data-estimation-step="5">
+                    <div class="estimation-step-head">
+                        <span class="estimation-step-number">05</span>
+                        <div>
+                            <h3>Mise en oeuvre et cadre local</h3>
+                            <p>Le niveau d avancement, le cadre administratif et les contraintes locales completent l analyse.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-4">{{ forms.field(form.mvpStatus) }}</div>
+                        <div class="col-lg-4">{{ forms.field(form.plannedLegalStatus) }}</div>
+                        <div class="col-lg-4">{{ forms.field(form.needsCertification) }}</div>
+                        <div class="col-lg-6">{{ forms.field(form.mainTechnology) }}</div>
+                        <div class="col-12">{{ forms.field(form.tunisianSpecificRisks) }}</div>
+                    </div>
+                    <div class="estimation-step-actions">
+                        <button class="pm-btn pm-btn-secondary" type="button" data-step-prev>Precedent</button>
+                        {{ form_widget(form.save, {attr: {'data-estimation-submit': 'true', class: 'pm-btn pm-btn-primary estimation-submit-btn'}}) }}
+                    </div>
+                    <div class="estimation-loading" data-estimation-loading>
+                        <span class="spinner-border" aria-hidden="true"></span>
+                        <span>Analyse du projet en cours...</span>
+                    </div>
+                </section>
+            {{ form_end(form) }}
+        </div>
+
+        {% if estimation %}
+            <section class="estimation-result-shell">
+                <div class="estimation-result-head">
+                    <div>
+                        <span class="estimation-overline">Resultat de l analyse</span>
+                        <h2>Lecture de viabilite pour votre projet</h2>
+                        <p>{{ estimation.resume }}</p>
+                        {% if estimation_meta.provider_used %}
+                            <div class="estimation-provider-meta">
+                                <span class="estimation-provider-pill">
+                                    Analyse via Advisora
+                                </span>
+                                {% if estimation_meta.used_fallback %}
+                                    <span class="estimation-provider-pill estimation-provider-pill-fallback">Moteur de secours actif</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        {% if estimation_meta.warning %}
+                            <div class="pm-info-banner estimation-provider-warning">
+                                <i class="fas fa-circle-info"></i>
+                                <span>{{ estimation_meta.warning }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="estimation-result-score">
+                        <span class="estimation-verdict-badge {{ verdict_classes[estimation.verdict]|default('estimation-verdict-risque') }}">
+                            {{ verdict_labels[estimation.verdict]|default(estimation.verdict) }}
+                        </span>
+                        <div class="estimation-score-ring" style="--score: {{ estimation.score }};">
+                            <strong>{{ estimation.score }}</strong>
+                            <span>/100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-4">
+                        <article class="pm-card estimation-result-card">
+                            <span class="estimation-card-label">Probabilite de succes</span>
+                            <h3>{{ estimation.probabilite_succes }}%</h3>
+                            <p>Estimation du potentiel de lancement et de traction selon les donnees fournies.</p>
+                        </article>
+                    </div>
+                    <div class="col-lg-4">
+                        <article class="pm-card estimation-result-card">
+                            <span class="estimation-card-label">Budget minimum</span>
+                            <h3>{{ estimation.budget_minimum_dt|number_format(2, '.', ' ') }} DT</h3>
+                            <p>Seuil estime pour lancer le projet avec une base plus solide et plus realiste.</p>
+                        </article>
+                    </div>
+                    <div class="col-lg-4">
+                        <article class="pm-card estimation-result-card">
+                            <span class="estimation-card-label">Delai recommande</span>
+                            <h3>{{ estimation.delai_recommande }}</h3>
+                            <p>Fenetre de lancement conseillee apres preparation, cadrage et validation terrain.</p>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-1">
+                    <div class="col-lg-6">
+                        <article class="pm-card estimation-result-card">
+                            <div class="estimation-card-head">
+                                <h3><i class="fas fa-circle-check"></i> Points forts</h3>
+                            </div>
+                            <ul class="estimation-list estimation-list-good">
+                                {% for item in estimation.points_forts %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </article>
+                    </div>
+                    <div class="col-lg-6">
+                        <article class="pm-card estimation-result-card">
+                            <div class="estimation-card-head">
+                                <h3><i class="fas fa-triangle-exclamation"></i> Points faibles</h3>
+                            </div>
+                            <ul class="estimation-list estimation-list-risk">
+                                {% for item in estimation.points_faibles %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-1">
+                    <div class="col-lg-6">
+                        <article class="pm-card estimation-result-card">
+                            <div class="estimation-card-head">
+                                <h3><i class="fas fa-lightbulb"></i> Recommandations prioritaires</h3>
+                            </div>
+                            <ul class="estimation-list">
+                                {% for item in estimation.recommandations %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                            <div class="estimation-next-step">
+                                <strong>Prochaine etape :</strong>
+                                <p>{{ estimation.prochaine_etape }}</p>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-lg-6">
+                        <article class="pm-card estimation-result-card estimation-funding-card">
+                            <div class="estimation-card-head">
+                                <h3><i class="fas fa-building-columns"></i> Financement et ancrage local</h3>
+                            </div>
+                            <div class="estimation-funding-badges">
+                                <span class="estimation-funding-pill">BTS</span>
+                                <span class="estimation-funding-pill">BFPME</span>
+                                <span class="estimation-funding-pill">SICAR</span>
+                                <span class="estimation-funding-pill">Smart Capital</span>
+                            </div>
+                            <h4>{{ estimation.financement_recommande.organisme }}</h4>
+                            <p>{{ estimation.financement_recommande.explication }}</p>
+                            <div class="estimation-region-box">
+                                <strong><i class="fas fa-location-dot"></i> Region recommandee</strong>
+                                <p>{{ estimation.region_recommandee }}</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-1">
+                    <div class="col-lg-12">
+                        <article class="pm-card estimation-result-card estimation-startup-act-card">
+                            <div class="estimation-card-head">
+                                <h3><i class="fas fa-flag"></i> Startup Act si applicable</h3>
+                                <span class="estimation-startup-badge">
+                                    {{ estimation.startup_act.eligible ? 'Potentiellement pertinent' : 'A confirmer selon le type de projet' }}
+                                </span>
+                            </div>
+                            <p>{{ estimation.startup_act.explication }}</p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="{{ asset('js/project-estimation.js') }}"></script>
+{% endblock %}

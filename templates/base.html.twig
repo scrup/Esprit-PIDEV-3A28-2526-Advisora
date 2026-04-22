@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    {% set public_base = app.request.basePath %}
+    {% set current_route = app.request.get('_route')|default('') %}
+    {% set is_shop_route = current_route starts with 'app_shop' %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Advisora{% endblock %}</title>
@@ -8,14 +11,13 @@
     <!-- Global CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/front.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/front-management.css') }}">
+    <link rel="stylesheet" href="{{ public_base ~ '/css/front.css?v=20260421-12' }}">
 
     
     <!-- Page specific CSS -->
     {% block stylesheets %}{% endblock %}
 </head>
-<body class="front-mode">
+<body class="front-mode {{ is_shop_route ? 'shop-route' : '' }}">
 
     <!-- Header included here -->
     {% include 'front/header.html.twig' %}
@@ -38,11 +40,11 @@
     <!-- Footer included here -->
     {% include 'front/footer.html.twig' %}
 
-    <!-- Global JavaScript -->
-    <script src="{{ asset('js/main.js') }}"></script>
-    <script src="{{ asset('js/interface-toggle.js') }}"></script>
-    
-    <!-- Page specific JavaScript -->
-    {% block javascripts %}{% endblock %}
+    <!-- JavaScript disabled on shop routes (app_shop*) -->
+    {% if not is_shop_route %}
+        <script src="{{ public_base ~ '/js/main.js' }}"></script>
+        <script src="{{ public_base ~ '/js/interface-toggle.js' }}"></script>
+        {% block javascripts %}{% endblock %}
+    {% endif %}
 </body>
 </html>

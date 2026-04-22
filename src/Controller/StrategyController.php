@@ -22,7 +22,6 @@ use App\Service\LibreTranslateService;
 use App\Service\StrategyPlaybookLocalizationService;
 use App\Service\GeminiStrategyGeneratorService;
 use Gedmo\Translatable\Entity\Translation;
-use App\Repository\ProjetRepository;
 use App\Service\PythonRecommendationService;
 use Knp\Component\Pager\PaginatorInterface;
 
@@ -194,7 +193,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         $this->syncLockedAtWithStatus($strategy);
 
         // Base locale = français
-        $strategy->setTranslatableLocale('fr');
+        $this->applyTranslatableLocaleIfSupported($strategy, 'fr');
 
         $entityManager->persist($strategy);
         $entityManager->flush();
@@ -235,7 +234,7 @@ public function edit(Request $request, Strategie $strategy, EntityManagerInterfa
         $this->syncLockedAtWithStatus($strategy, $previousStatus);
 
         // On sauvegarde d'abord la version FR
-        $strategy->setTranslatableLocale('fr');
+        $this->applyTranslatableLocaleIfSupported($strategy, 'fr');
         $entityManager->flush();
 
         // Puis on met à jour les traductions EN
@@ -278,10 +277,10 @@ public function show(Strategie $strategy, EntityManagerInterface $entityManager,
     // $locale = $user?->getPreferredLocale() ?? $request->getLocale();
 
     // Tell Gedmo which language to load
-    $strategy->setTranslatableLocale($locale);
-    
-    // Reload the entity to apply the translation
-    $entityManager->refresh($strategy);
+    if ($this->applyTranslatableLocaleIfSupported($strategy, $locale)) {
+        // Reload the entity to apply the translation
+        $entityManager->refresh($strategy);
+    }
 
     return $this->render('back/strategie/show.html.twig', [
         'strategy' => $strategy,
@@ -328,7 +327,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
             return $this->redirectToStrategyReferer($request);
         }
 
-        $strategy->setTranslatableLocale('fr');
+        $this->applyTranslatableLocaleIfSupported($strategy, 'fr');
         $this->saveRejectedJustificationWithTranslation($entityManager, $strategy, $justification);
     }
 
@@ -388,17 +387,8 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
                 return $this->redirectToStrategyReferer($request);
             }
 
-            if ($status === Strategie::STATUS_REJECTED) {
-    $justificationError = $this->validateRejectedStrategyJustification($justification);
-    if ($justificationError !== null) {
-        $this->addFlash('error', $justificationError);
-
-        return $this->redirectToStrategyReferer($request);
-    }
-
-    $strategy->setTranslatableLocale('fr');
-    $this->saveRejectedJustificationWithTranslation($entityManager, $strategy, $justification);
-}
+            $this->applyTranslatableLocaleIfSupported($strategy, 'fr');
+            $this->saveRejectedJustificationWithTranslation($entityManager, $strategy, $justification);
         }
 
         $previousStatus = $strategy->getStatusStrategie();
@@ -1241,7 +1231,7 @@ private function saveRejectedJustificationWithTranslation(
             );
 
             $strategie = $this->createStrategyFromRecommendation($normalizedRecommendation, $projet, $user);
-            $strategie->setTranslatableLocale('fr');
+            $this->applyTranslatableLocaleIfSupported($strategie, 'fr');
             $strategie->setStatusStrategie(Strategie::STATUS_PENDING);
             $strategie->setLockedAt(null);
             $this->storePendingRecommendation($request, $projet->getIdProj(), $user, $normalizedRecommendation);
@@ -1428,6 +1418,17 @@ private function saveRejectedJustificationWithTranslation(
     private function getRecommendationSessionKey(int $projectId, int $userId): string
     {
         return sprintf('%d:%d', $projectId, $userId);
+    }
+
+    private function applyTranslatableLocaleIfSupported(object $entity, string $locale): bool
+    {
+        if (!method_exists($entity, 'setTranslatableLocale')) {
+            return false;
+        }
+
+        $entity->setTranslatableLocale($locale);
+
+        return true;
     }
 
 

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Analyse Ressources</title>
+    <style>
+        body {
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            color: #1f1f1f;
+            margin: 24px;
+            line-height: 1.45;
+            font-size: 12px;
+        }
+        h1, h2, h3 {
+            margin: 0 0 8px;
+            color: #2a1f14;
+        }
+        .meta {
+            margin-bottom: 18px;
+            padding: 10px 12px;
+            border: 1px solid #dcc9ad;
+            background: #fbf6ef;
+            border-radius: 8px;
+        }
+        .kpi-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+            margin-bottom: 16px;
+        }
+        .kpi-cell {
+            border: 1px solid #e5d6c1;
+            background: #fffdf8;
+            border-radius: 8px;
+            padding: 10px 12px;
+            width: 25%;
+            vertical-align: top;
+        }
+        .kpi-label {
+            display: block;
+            color: #6d5842;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 6px;
+        }
+        .kpi-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2a1f14;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #e8dcca;
+            padding: 7px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #f4eadb;
+            color: #3f2e20;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .tag {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .tag-haute { background: #f8d6d2; color: #7d2c24; }
+        .tag-moyenne { background: #f7ebcc; color: #7a5a17; }
+        .tag-basse { background: #dcefdc; color: #2e6130; }
+        .small {
+            color: #7a6b5b;
+            font-size: 11px;
+        }
+        .summary {
+            margin: 12px 0 16px;
+            padding: 10px 12px;
+            border-left: 4px solid #b58d65;
+            background: #fbf7f1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rapport metier - Analyse Ressources Back Office</h1>
+    <div class="meta">
+        <div><strong>Genere le:</strong> {{ generated_at|date('d/m/Y H:i:s') }}</div>
+        <div><strong>Moteur:</strong> {{ analysis.engine|default('resource_actions_v1') }}</div>
+        <div>
+            <strong>Filtres appliques:</strong>
+            priorite={{ priority_filter ?: 'toutes' }},
+            action={{ action_code_filter ?: 'toutes' }}
+        </div>
+    </div>
+
+    <table class="kpi-grid">
+        <tr>
+            <td class="kpi-cell">
+                <span class="kpi-label">Stock critique</span>
+                <span class="kpi-value">{{ analysis.kpis.stock_critique|default(0) }}</span>
+            </td>
+            <td class="kpi-cell">
+                <span class="kpi-label">Surstock</span>
+                <span class="kpi-value">{{ analysis.kpis.surstock|default(0) }}</span>
+            </td>
+            <td class="kpi-cell">
+                <span class="kpi-label">Prix anormal</span>
+                <span class="kpi-value">{{ analysis.kpis.prix_anormal|default(0) }}</span>
+            </td>
+            <td class="kpi-cell">
+                <span class="kpi-label">Fournisseurs a risque</span>
+                <span class="kpi-value">{{ analysis.kpis.fournisseurs_a_risque|default(0) }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="summary">
+        <div><strong>{{ analysis.summary.headline|default('Synthese indisponible.') }}</strong></div>
+        <div class="small">{{ analysis.summary.narrative|default('') }}</div>
+    </div>
+
+    <h2>Actions recommandees</h2>
+    <div class="small">Total lignes exportees: {{ actions|length }}</div>
+    <table>
+        <thead>
+        <tr>
+            <th>Priorite</th>
+            <th>Code</th>
+            <th>Ressource</th>
+            <th>Fournisseur</th>
+            <th>Impact metier</th>
+            <th>Justification</th>
+            <th>Confiance</th>
+            <th>Delai</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for action in actions %}
+            {% set p = action.priority|default('basse') %}
+            <tr>
+                <td><span class="tag tag-{{ p }}">{{ p }}</span></td>
+                <td>{{ action.action_code|default('N/A') }}</td>
+                <td>
+                    {{ action.resource_name|default('Ressource') }}
+                    {% if action.resource_id is not null %}
+                        <div class="small">#{{ action.resource_id }}</div>
+                    {% endif %}
+                </td>
+                <td>{{ action.supplier_name|default('Non renseigne') }}</td>
+                <td>{{ action.impact_metier|default('') }}</td>
+                <td>{{ action.justification|default('') }}</td>
+                <td>{{ action.confidence_pct|default(0) }}%</td>
+                <td>{{ action.delay|default('N/A') }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="8">Aucune action a afficher avec les filtres selectionnes.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+

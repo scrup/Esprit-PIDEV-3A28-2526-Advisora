@@ -7,13 +7,17 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class LibreTranslateService
 {
-    private LibreTranslate $translator;
+    private ?LibreTranslate $translator = null;
 
     public function __construct(
         #[Autowire('%env(LIBRETRANSLATE_URL)%')] string $libreTranslateUrl
     ) {
-        // Initialize the client. It defaults to http://localhost:5000
-        $this->translator = new LibreTranslate($libreTranslateUrl);
+        // Initialize the client. Fall back gracefully if the endpoint/client is unavailable.
+        try {
+            $this->translator = new LibreTranslate($libreTranslateUrl);
+        } catch (\Throwable) {
+            $this->translator = null;
+        }
     }
 
     public function translate(string $text, string $targetLang, ?string $sourceLang = 'auto'): string
@@ -25,6 +29,10 @@ class LibreTranslateService
         }
 
         if ($targetLang === '' || ($sourceLang !== null && $targetLang === $sourceLang)) {
+            return $text;
+        }
+
+        if ($this->translator === null) {
             return $text;
         }
 
@@ -61,6 +69,10 @@ class LibreTranslateService
         }
 
         if ($pending === []) {
+            return $translated;
+        }
+
+        if ($this->translator === null) {
             return $translated;
         }
 

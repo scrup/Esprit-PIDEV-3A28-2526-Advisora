@@ -1,0 +1,535 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Top 10 Projets Mondiaux{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <style>
+        .top10-shell {
+            width: min(1150px, calc(100% - 2rem));
+            margin: 2rem auto 3rem;
+        }
+
+        .top10-shell .pm-hero {
+            position: relative;
+            overflow: hidden;
+            align-items: flex-start;
+            background:
+                radial-gradient(circle at top right, rgba(195, 125, 93, 0.18), transparent 26%),
+                linear-gradient(135deg, #fcf8f0 0%, #fffdf9 58%, #f1e5d5 100%);
+        }
+
+        .top10-shell .pm-hero::after {
+            content: '';
+            position: absolute;
+            inset: auto -10% -35% auto;
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(195, 125, 93, 0.22), transparent 68%);
+            pointer-events: none;
+        }
+
+        .top10-hero-copy,
+        .top10-hero-side {
+            position: relative;
+            z-index: 1;
+        }
+
+        .top10-hero-copy {
+            max-width: 720px;
+        }
+
+        .top10-hero-side {
+            min-width: 250px;
+            align-self: center;
+        }
+
+        .top10-side-card {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(195, 125, 93, 0.18);
+            border-radius: 24px;
+            padding: 1rem 1.25rem;
+            color: var(--pm-muted);
+            box-shadow: 0 12px 22px rgba(44, 36, 24, 0.05);
+        }
+
+        .top10-side-card strong {
+            display: block;
+            margin-top: 0.2rem;
+            color: var(--pm-umber);
+            font-size: 1.05rem;
+        }
+
+        .top10-form-layout {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            align-items: end;
+        }
+
+        .top10-select {
+            width: 100%;
+        }
+
+        .top10-form-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .top10-loading {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--pm-muted);
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .top10-loading.is-visible {
+            display: inline-flex;
+        }
+
+        .top10-results-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 2rem 0 1.5rem;
+        }
+
+        .top10-results-head h2 {
+            margin: 0;
+        }
+
+        .top10-results-summary {
+            color: var(--pm-muted);
+            margin-top: 0.3rem;
+        }
+
+        .top10-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .top10-news-shell {
+            margin-top: 1.5rem;
+        }
+
+        .top10-news-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .top10-news-head h2 {
+            margin: 0;
+        }
+
+        .top10-news-summary {
+            color: var(--pm-muted);
+            margin-top: 0.3rem;
+        }
+
+        .top10-news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .top10-news-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            height: 100%;
+        }
+
+        .top10-news-source {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            align-self: flex-start;
+            border-radius: 999px;
+            background: #eef4fb;
+            color: #28456f;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .top10-news-title {
+            margin: 0;
+            font-size: 1.05rem;
+            color: var(--pm-umber);
+        }
+
+        .top10-news-description {
+            margin: 0;
+            color: var(--pm-muted);
+            line-height: 1.6;
+            font-size: 0.94rem;
+        }
+
+        .top10-news-link {
+            margin-top: auto;
+            color: #2a5db0;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .top10-news-link:hover {
+            text-decoration: underline;
+        }
+
+        .top10-project-card {
+            height: 100%;
+            border-width: 2px;
+        }
+
+        .top10-rank-gold {
+            border-color: #d4af37;
+        }
+
+        .top10-rank-silver {
+            border-color: #b7bcc5;
+        }
+
+        .top10-rank-bronze {
+            border-color: #cd7f32;
+        }
+
+        .top10-rank-blue {
+            border-color: #5a84d6;
+        }
+
+        .top10-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .top10-rank-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            background: #f4ecdf;
+            color: #6c513f;
+            padding: 0.45rem 0.85rem;
+            font-weight: 800;
+            font-size: 0.92rem;
+        }
+
+        .top10-country-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            background: #eef4fb;
+            color: #28456f;
+            padding: 0.45rem 0.8rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .top10-name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--pm-umber);
+            margin-bottom: 0.75rem;
+        }
+
+        .top10-revenue {
+            color: #1d7d45;
+            font-size: 1.3rem;
+            font-weight: 900;
+            margin-bottom: 0.9rem;
+        }
+
+        .top10-meta {
+            color: var(--pm-muted);
+            font-size: 0.96rem;
+            line-height: 1.65;
+            margin-bottom: 0.9rem;
+        }
+
+        .top10-meta strong {
+            color: var(--pm-umber);
+        }
+
+        .top10-progress {
+            height: 10px;
+            border-radius: 999px;
+            background: #eee3d3;
+        }
+
+        .top10-progress .progress-bar {
+            border-radius: 999px;
+            background: linear-gradient(90deg, #5a84d6, #79a4f4);
+        }
+
+        .top10-rank-gold .progress-bar {
+            background: linear-gradient(90deg, #d4af37, #f0cf6a);
+        }
+
+        .top10-rank-silver .progress-bar {
+            background: linear-gradient(90deg, #a3aab5, #d7dde6);
+        }
+
+        .top10-rank-bronze .progress-bar {
+            background: linear-gradient(90deg, #b86b2a, #dc9b62);
+        }
+
+        .top10-empty {
+            border-radius: 24px;
+            border: 1px dashed #d4c4b0;
+            background: rgba(255, 255, 255, 0.82);
+            padding: 2rem;
+            text-align: center;
+            color: var(--pm-muted);
+        }
+
+        .top10-alert {
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .top10-form-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .top10-form-actions {
+                width: 100%;
+            }
+
+            .top10-form-actions .pm-btn {
+                flex: 1 1 220px;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .top10-shell .pm-hero {
+                padding: 1.75rem;
+            }
+
+            .top10-results-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <section class="top10-shell">
+        <section class="pm-hero">
+            <div class="top10-hero-copy">
+                <span class="pm-badge">Gemini Insights</span>
+                <h1>Top 10 Projets Mondiaux par secteur</h1>
+                <p>
+                    Selectionnez un domaine, lancez Gemini, puis explorez un classement visuel des projets reels
+                    les plus performants selon leur chiffre d affaires annuel.
+                </p>
+            </div>
+            <div class="top10-hero-side">
+                <div class="top10-side-card">
+                    <span>Format attendu</span>
+                    <strong>10 projets tries et prets a lire</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="pm-hero">
+            <form method="post" action="{{ path('project_top10_generate_ranking') }}" class="pm-form-card" data-top10-form>
+                <div class="top10-form-layout">
+                    <div class="pm-field">
+                        <label class="top10-form-label" for="project_type">Type de projet</label>
+                        <input
+                            class="top10-select"
+                            id="project_type"
+                            name="project_type"
+                            type="text"
+                            list="project_type_suggestions"
+                            value="{{ selected_type }}"
+                            placeholder="Ex. E-commerce, IA, Immobilier, Sante..."
+                            required
+                        >
+                        <datalist id="project_type_suggestions">
+                            {% for project_type in project_types %}
+                                <option value="{{ project_type }}"></option>
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    <div class="top10-form-actions">
+                        <button class="pm-btn pm-btn-primary" type="submit" formaction="{{ path('project_top10_generate_ranking') }}">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                            <span>Generer le classement</span>
+                        </button>
+                        <button class="pm-btn pm-btn-secondary" type="submit" formaction="{{ path('project_top10_generate_news') }}">
+                            <i class="fas fa-newspaper"></i>
+                            <span>Charger les actualites</span>
+                        </button>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_top10') }}">
+                            <i class="fas fa-rotate-left"></i>
+                            <span>Nouvelle recherche</span>
+                        </a>
+                    </div>
+                </div>
+
+                {# Loading feedback is only progressive enhancement and stays optional. #}
+                <div class="top10-loading" data-top10-loading>
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Chargement en cours...</span>
+                </div>
+            </form>
+        </section>
+
+        {% if error %}
+            <div class="flash-message flash-error top10-alert">
+                <strong>Impossible de generer le classement :</strong> {{ error }}
+            </div>
+        {% endif %}
+
+        {% if selected_type and (news_articles is not empty or news_meta.warning) %}
+            {% set news_summary = 'Actualites recentes pour le secteur ' ~ selected_type ~ '.' %}
+            {% if news_meta.source == 'live' %}
+                {% set news_summary = 'Actualites recentes trouvees en direct pour ' ~ selected_type ~ '.' %}
+            {% elseif news_meta.source == 'cache' and news_meta.used_stale_cache %}
+                {% set news_summary = 'Dernieres actualites disponibles en cache pour ' ~ selected_type ~ '.' %}
+            {% elseif news_meta.source == 'cache' %}
+                {% set news_summary = 'Actualites chargees depuis le cache pour ' ~ selected_type ~ '.' %}
+            {% endif %}
+
+            <section class="top10-news-shell">
+                <div class="top10-news-head">
+                    <div>
+                        <h2>Actualites liees a ce secteur</h2>
+                        <p class="top10-news-summary">{{ news_summary }}</p>
+                    </div>
+                </div>
+
+                {% if news_meta.warning %}
+                    <div class="flash-message flash-info top10-alert">
+                        {{ news_meta.warning }}
+                    </div>
+                {% endif %}
+
+                {% if news_articles is not empty %}
+                    <section class="top10-news-grid">
+                        {% for article in news_articles %}
+                            <article class="pm-card top10-news-card">
+                                <span class="top10-news-source">{{ article.source }}</span>
+                                <h3 class="top10-news-title">{{ article.title }}</h3>
+                                {% if article.description %}
+                                    <p class="top10-news-description">{{ article.description }}</p>
+                                {% endif %}
+                                {% if article.published_at %}
+                                    <p class="top10-meta mb-0"><strong>Publication :</strong> {{ article.published_at|date('d/m/Y H:i') }}</p>
+                                {% endif %}
+                                <a class="top10-news-link" href="{{ article.url }}" target="_blank" rel="noopener noreferrer">
+                                    Lire l article
+                                </a>
+                            </article>
+                        {% endfor %}
+                    </section>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        {% if has_results %}
+            {% set results_summary = 'Top ' ~ projects|length ~ ' projets affiches.' %}
+            {% if generation_meta.source == 'live' and generation_meta.used_fallback and generation_meta.model %}
+                {% set results_summary = 'Top ' ~ projects|length ~ ' projets generes en direct via le modele de secours ' ~ generation_meta.model ~ '.' %}
+            {% elseif generation_meta.source == 'live' and generation_meta.model %}
+                {% set results_summary = 'Top ' ~ projects|length ~ ' projets generes en direct via ' ~ generation_meta.model ~ '.' %}
+            {% elseif generation_meta.source == 'fresh_cache' %}
+                {% set results_summary = 'Top ' ~ projects|length ~ ' projets charges depuis le cache recent.' %}
+            {% elseif generation_meta.source == 'stale_cache' %}
+                {% set results_summary = 'Top ' ~ projects|length ~ ' projets affiches depuis le dernier resultat disponible.' %}
+            {% endif %}
+
+            <div class="top10-results-head">
+                <div>
+                    <h2>Classement pour {{ selected_type }}</h2>
+                    <p class="top10-results-summary">{{ results_summary }}</p>
+                </div>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Retour aux projets</span>
+                </a>
+            </div>
+
+            {% if generation_meta.warning %}
+                <div class="flash-message flash-info top10-alert">
+                    {{ generation_meta.warning }}
+                </div>
+            {% endif %}
+
+            <section class="top10-grid">
+                {% for project in projects %}
+                    <article class="pm-card top10-project-card {{ project.border_class }}">
+                        <div class="top10-card-header">
+                            <span class="top10-rank-chip">
+                                <span>{{ project.medal ?: '#' }}</span>
+                                <span>{{ project.rank }}</span>
+                            </span>
+                            <span class="top10-country-badge">{{ project.country_flag }} {{ project.country }}</span>
+                        </div>
+
+                        <h3 class="top10-name">{{ project.name }}</h3>
+                        <div class="top10-revenue">{{ project.annual_revenue }}</div>
+
+                        <p class="top10-meta">{{ project.description }}</p>
+                        <p class="top10-meta"><strong>Annee de fondation :</strong> {{ project.founded }}</p>
+                        <p class="top10-meta"><strong>Pourquoi ce projet est top :</strong> {{ project.why_top }}</p>
+
+                        <div class="top10-progress" role="progressbar" aria-label="Progression du rang" aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar" style="width: {{ project.progress }}%"></div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </section>
+        {% elseif selected_type and not error %}
+            <div class="top10-empty">
+                <h2>Aucun resultat exploitable</h2>
+                    <p class="mb-0">Gemini n a retourne aucun projet affichable pour cette recherche. Essayez un autre domaine.</p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('[data-top10-form]');
+            const loading = document.querySelector('[data-top10-loading]');
+            const loadingText = loading ? loading.querySelector('span') : null;
+
+            if (!form || !loading) {
+                return;
+            }
+
+            form.addEventListener('submit', (event) => {
+                const submitter = event.submitter;
+                const action = submitter ? submitter.getAttribute('formaction') || '' : '';
+
+                if (loadingText) {
+                    loadingText.textContent = action.includes('/news')
+                        ? 'Chargement des actualites en cours...'
+                        : 'Generation du classement en cours...';
+                }
+
+                loading.classList.add('is-visible');
+            });
+        });
+    </script>
+{% endblock %}

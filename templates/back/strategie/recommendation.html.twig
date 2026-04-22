@@ -75,13 +75,25 @@
                             </button>
                         </form>
 
-                        <form method="post" action="{{ path('strategie_recommandation_decision', {'id': projet.id}) }}" onsubmit="return confirm('Refuser cette recommandation ? Aucune strategie ne sera enregistree.');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('recommendation_decision_' ~ projet.id) }}">
-                            <input type="hidden" name="decision" value="reject">
-                            <button type="submit" class="recommendation-btn recommendation-btn-refuse">
-                                Rejeter la recommandation
-                            </button>
-                        </form>
+                        <details class="recommendation-refuse-box">
+                            <summary class="recommendation-btn recommendation-btn-refuse">Refuser la strategie</summary>
+                            <form method="post" action="{{ path('strategie_recommandation_decision', {'id': projet.id}) }}" class="recommendation-refuse-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('recommendation_decision_' ~ projet.id) }}">
+                                <input type="hidden" name="decision" value="reject">
+                                <label for="justification_preview_{{ projet.id }}">Justification optionnelle du refus</label>
+                                <textarea
+                                    id="justification_preview_{{ projet.id }}"
+                                    name="justification"
+                                    rows="4"
+                                    minlength="0"
+                                    maxlength="255"
+                                    placeholder="Optionnel: expliquez pourquoi vous refusez cette recommandation."
+                                ></textarea>
+                                <button type="submit" class="recommendation-btn recommendation-btn-refuse-submit">
+                                    Confirmer le refus
+                                </button>
+                            </form>
+                        </details>
                     </div>
                 {% endif %}
             </section>
@@ -108,3 +120,7 @@
     </div>
 </section>
 {% endblock %}
+
+
+
+    

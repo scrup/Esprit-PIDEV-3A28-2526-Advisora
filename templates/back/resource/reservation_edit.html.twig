@@ -6,64 +6,114 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
      <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260417-rs-v29">
 {% endblock %}
 
 {% block body %}
-    <section class="pm-admin-shell">
-        <div class="pm-admin-header">
-            <div>
-                <span class="pm-badge">Gestion reservation</span>
+    {% set reservationProcessStatus = reservation.project_status|default('PENDING')|upper %}
+    {% set reservationProcessLabel = reservationProcessStatus == 'ACCEPTED'
+        ? 'Acceptee'
+        : (reservationProcessStatus == 'REFUSED' ? 'Refusee' : 'En attente') %}
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+        <div class="pm-admin-header rs-header">
+            <div class="rs-header-copy back-users-title">
+                <span class="pm-badge">Back office</span>
                 <h1>Modifier une reservation</h1>
-                <p>Le gerant et l admin peuvent corriger le projet cible ou la quantite reservee pour n importe quel client.</p>
+                <p>Mise a jour ponctuelle de la quantite ou du projet cible pour une reservation existante.</p>
             </div>
-            <div class="pm-card-actions">
-                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_reservations') }}">Retour a l historique</a>
-                <a class="pm-btn pm-btn-secondary" href="{{ path('resource_show', {id: reservation.resource_id}) }}">Voir la ressource</a>
+            <div class="pm-card-actions rs-header-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_reservations') }}">Retour</a>
+                <form method="post" action="{{ path('back_resource_reservation_delete', {projectId: reservation.project_id, resourceId: reservation.resource_id}) }}" onsubmit="return confirm('Supprimer cette reservation ?');" class="rs-inline-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_reservation_' ~ reservation.project_id ~ '_' ~ reservation.resource_id) }}">
+                    <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                </form>
             </div>
         </div>
 
         {% include 'back/resource/_module_nav.html.twig' %}
 
-        <div class="pm-form-card">
-            <div class="pm-info-banner">
-                <strong>Ressource :</strong> {{ reservation.resource_name }}
-                <br>
-                <strong>Projet actuel :</strong> {{ reservation.project_title }}
-                <br>
-                <strong>Client :</strong> {{ ((reservation.client_firstname ?: '') ~ ' ' ~ (reservation.client_lastname ?: ''))|trim }}
-                <br>
-                <strong>Quantite actuelle :</strong> {{ reservation.reserved_qty }}
-                <br>
-                <strong>Stock total :</strong> {{ reservation.resource_stock }}
-                <br>
-                <strong>Stock reserve :</strong> {{ reservation.resource_reserved_total }}
-                <br>
-                <strong>Stock disponible :</strong> {{ reservation.resource_available_stock }}
-                <br>
-                <strong>Maximum modifiable :</strong> {{ reservation.resource_editable_max }}
-            </div>
+        <div class="rs-edit-grid">
+            <section class="pm-card rs-panel">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Contexte</h2>
+                        <p>Informations de la reservation</p>
+                    </div>
+                </div>
+                <div class="back-user-table-shell rs-table-wrap">
+                    <table class="back-user-table rs-table rs-kv-table">
+                        <tbody>
+                            <tr>
+                                <th>Ressource</th>
+                                <td><a class="rs-primary-link" href="{{ path('resource_show', {id: reservation.resource_id}) }}">{{ reservation.resource_name }}</a></td>
+                            </tr>
+                            <tr>
+                                <th>Projet actuel</th>
+                                <td>{{ reservation.project_title }}</td>
+                            </tr>
+                            <tr>
+                                <th>Traitement</th>
+                                <td><span class="rs-state rs-state-{{ reservationProcessStatus|lower }} rs-state-process">{{ reservationProcessLabel }}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Client</th>
+                                <td>{{ ((reservation.client_firstname ?: '') ~ ' ' ~ (reservation.client_lastname ?: ''))|trim }}</td>
+                            </tr>
+                            <tr>
+                                <th>Quantite actuelle</th>
+                                <td>{{ reservation.reserved_qty }}</td>
+                            </tr>
+                            <tr>
+                                <th>Stock total</th>
+                                <td>{{ reservation.resource_stock }}</td>
+                            </tr>
+                            <tr>
+                                <th>Stock reserve</th>
+                                <td>{{ reservation.resource_reserved_total }}</td>
+                            </tr>
+                            <tr>
+                                <th>Stock disponible</th>
+                                <td>{{ reservation.resource_available_stock }}</td>
+                            </tr>
+                            <tr>
+                                <th>Maximum modifiable</th>
+                                <td>{{ reservation.resource_editable_max }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-            <form method="post" class="pm-validated-form">
-                <input type="hidden" name="_token" value="{{ csrf_token('edit_reservation_' ~ reservation.project_id ~ '_' ~ reservation.resource_id) }}">
-                <div class="pm-form-grid">
-                    <div class="pm-field">
-                        <label for="quantity">Quantite</label>
-                        <input id="quantity" type="number" name="quantity" min="1" max="{{ reservation.resource_editable_max }}" value="{{ reservation.reserved_qty }}" required data-validation-label="Quantite" data-validation-min-message="Quantite doit etre superieure a 0.">
-                    </div>
-                    <div class="pm-field">
-                        <label for="project_id">Projet</label>
-                        <select id="project_id" name="project_id">
-                            <option value="">Garder le projet actuel</option>
-                            {% for project in projects %}
-                                <option value="{{ project.id }}" {% if reservation.project_id == project.id %}selected{% endif %}>#{{ project.id }} - {{ project.title }}</option>
-                            {% endfor %}
-                        </select>
+            <section class="pm-form-card rs-panel rs-form-panel">
+                <div class="pm-section-head rs-panel-head">
+                    <div>
+                        <h2>Mise a jour</h2>
+                        <p>Corriger la quantite reservee ou changer le projet cible.</p>
                     </div>
                 </div>
-                <div class="pm-form-actions">
-                    <button class="pm-btn pm-btn-primary" type="submit">Mettre a jour la reservation</button>
-                </div>
-            </form>
+                <form method="post" class="pm-validated-form rs-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('edit_reservation_' ~ reservation.project_id ~ '_' ~ reservation.resource_id) }}">
+                    <div class="rs-form-grid rs-form-grid-single">
+                        <div class="pm-field rs-form-field">
+                            <label for="quantity">Quantite</label>
+                            <input id="quantity" type="number" name="quantity" min="1" max="{{ reservation.resource_editable_max }}" value="{{ reservation.reserved_qty }}" required data-validation-label="Quantite" data-validation-min-message="Quantite doit etre superieure a 0.">
+                        </div>
+                        <div class="pm-field rs-form-field">
+                            <label for="project_id">Projet</label>
+                            <select id="project_id" name="project_id">
+                                <option value="">Garder le projet actuel</option>
+                                {% for project in projects %}
+                                    <option value="{{ project.id }}" {% if reservation.project_id == project.id %}selected{% endif %}>#{{ project.id }} - {{ project.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pm-form-actions rs-form-actions">
+                        <button class="pm-btn pm-btn-primary" type="submit">Enregistrer</button>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_reservations') }}">Annuler</a>
+                    </div>
+                </form>
+            </section>
         </div>
     </section>
 {% endblock %}

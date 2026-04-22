@@ -341,7 +341,6 @@ class GeminiPdfContentGenerator
                 '- ROI estime : %s',
                 $estimatedRoiPercent !== null ? number_format($estimatedRoiPercent, 2, ',', ' ') . '%' : 'Non defini'
             ),
-            sprintf('- Actualites / contexte : %s', $strategy->getNews() ?: 'Aucune actualite fournie'),
             sprintf('- Justification : %s', $strategy->getJustification() ?: 'Aucune justification fournie'),
             '',
             'Objectifs relies :',
@@ -737,9 +736,7 @@ class GeminiPdfContentGenerator
                         $project->getAvancementProj() !== null ? number_format((float) $project->getAvancementProj(), 0, ',', ' ') : '0'
                     )
                     : 'Associer cette strategie a un projet clarifiera la gouvernance et le suivi.',
-                $strategy->getNews()
-                    ? sprintf('Les actualites fournies ouvrent une fenetre de positionnement: %s', $strategy->getNews())
-                    : 'Les objectifs relies peuvent servir de feuille de route immediate pour le lancement du playbook.',
+                     'Les objectifs relies peuvent servir de feuille de route immediate pour le lancement du playbook.',
                 'Une execution par phases permet de tester rapidement la traction avant de generaliser les investissements.',
             ],
             'expected_outcome_curve' => $expectedOutcomeCurve,

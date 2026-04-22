@@ -1,12 +1,10 @@
-# Read the documentation: https://symfony.com/doc/current/bundles/StofDoctrineExtensionsBundle/index.html
-# See the official DoctrineExtensions documentation for more details: https://github.com/doctrine-extensions/DoctrineExtensions/tree/main/doc
-
-
-# config/packages/stof_doctrine_extensions.yaml
 stof_doctrine_extensions:
     default_locale: fr # Default fallback language (French)
     class:
         translatable: App\Doctrine\AttributeTranslatableListener
     orm:
         default:
-            translatable: true
+            timestampable: true
+            sluggable: true
+            softdeleteable: true
+
