@@ -5,6 +5,8 @@
 # config/packages/stof_doctrine_extensions.yaml
 stof_doctrine_extensions:
     default_locale: fr # Default fallback language (French)
+    class:
+        translatable: App\Doctrine\AttributeTranslatableListener
     orm:
         default:
             translatable: true
