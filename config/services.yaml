@@ -10,6 +10,17 @@ parameters:
     user_images_directory: '%kernel.project_dir%/public/uploads/users'
     shop_generated_images_directory: '%kernel.project_dir%/public/uploads/shop/generated'
     shop_generated_images_public_prefix: '/uploads/shop/generated'
+    gemini_api_key: '%env(string:GEMINI_API_KEY)%'
+    gemini_model: '%env(default::string:GEMINI_MODEL)%'
+    gemini_fallback_models: '%env(default::string:GEMINI_FALLBACK_MODELS)%'
+    gemini_api_base_url: '%env(default::string:GEMINI_API_BASE_URL)%'
+    news_api_key: '%env(default::string:NEWS_API_KEY)%'
+    news_api_base_url: '%env(default::string:NEWS_API_BASE_URL)%'
+    project_estimation_openai_api_key: '%env(default::string:PROJECT_ESTIMATION_OPENAI_API_KEY)%'
+    project_estimation_provider: '%env(default::string:PROJECT_ESTIMATION_PROVIDER)%'
+    project_estimation_fallback_provider: '%env(default::string:PROJECT_ESTIMATION_FALLBACK_PROVIDER)%'
+    openai_api_base_url: 'https://api.openai.com/v1'
+    openai_estimation_model: 'gpt-4o-mini'
 
 services:
     # default configuration for services in *this* file
@@ -24,6 +35,38 @@ services:
         exclude:
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Service\GeminiTopProjectsService:
+        arguments:
+            $cachePool: '@cache.app'
+            $apiKey: '%gemini_api_key%'
+            $model: '%gemini_model%'
+            $baseUrl: '%gemini_api_base_url%'
+            $fallbackModels: '%gemini_fallback_models%'
+
+    App\Service\NewsApiService:
+        arguments:
+            $apiKey: '%news_api_key%'
+            $baseUrl: '%news_api_base_url%'
+
+    App\Service\ProjectEstimationAnalyzerInterface: '@App\Service\FailoverProjectEstimationAnalyzer'
+
+    App\Service\OpenAiProjectEstimationService:
+        arguments:
+            $apiKey: '%project_estimation_openai_api_key%'
+            $baseUrl: '%openai_api_base_url%'
+            $model: '%openai_estimation_model%'
+
+    App\Service\GeminiProjectEstimationService:
+        arguments:
+            $apiKey: '%gemini_api_key%'
+            $baseUrl: '%gemini_api_base_url%'
+            $model: '%gemini_model%'
+
+    App\Service\FailoverProjectEstimationAnalyzer:
+        arguments:
+            $primaryProvider: '%project_estimation_provider%'
+            $fallbackProvider: '%project_estimation_fallback_provider%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

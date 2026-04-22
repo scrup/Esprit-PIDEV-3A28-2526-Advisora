@@ -11,6 +11,8 @@ use App\Form\TaskType;
 use App\Repository\DecisionRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
+use App\Service\PdfGeneratorService;
+use App\Service\ProjectDashboardInsightsService;
 use App\Service\ProjectAcceptanceService;
 use App\Service\TaskProgressService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,21 +29,22 @@ final class ProjectController extends AbstractController
     public function index(
         Request $request,
         ProjectRepository $projectRepository,
-        ProjectAcceptanceService $projectAcceptanceService
+        ProjectAcceptanceService $projectAcceptanceService,
+        ProjectDashboardInsightsService $projectDashboardInsightsService
     ): Response
     {
         $user = $this->getCurrentUser();
         $canSeeAll = $this->canSeeAllProjects($user);
 
-        $filters = [
-            'q' => trim((string) $request->query->get('q', '')),
-            'status' => trim((string) $request->query->get('status', '')),
-            'type' => trim((string) $request->query->get('type', '')),
-            'min_price' => $request->query->get('min_price', null),
-            'max_price' => $request->query->get('max_price', null),
-        ];
+        $filters = $this->buildFrontProjectFilters($request);
+        $dashboard = $user instanceof User
+            ? ($canSeeAll
+                ? $projectDashboardInsightsService->buildBackOfficeDashboard(array_merge($filters, ['_view' => 'front_global']))
+                : $projectDashboardInsightsService->buildClientDashboard($user, $filters))
+            : $this->createEmptyProjectDashboard('client');
 
-        $projects = $projectRepository->findFrontProjects($filters, $user, $canSeeAll);
+        /** @var list<Project> $projects */
+        $projects = $dashboard['projects'];
         $pendingProjects = array_values(array_filter(
             $projects,
             static fn (Project $project): bool => $project->getStatus() === Project::STATUS_PENDING
@@ -56,6 +59,7 @@ final class ProjectController extends AbstractController
             'can_client_decide_strategies' => $user?->getRoleUser() === 'client',
             'filters' => $filters,
             'status_choices' => Project::STATUSES,
+            'project_dashboard' => $dashboard,
             'strategy_statuses' => [
                 'approved' => \App\Entity\Strategie::STATUS_APPROVED,
                 'rejected' => \App\Entity\Strategie::STATUS_REJECTED,
@@ -65,7 +69,11 @@ final class ProjectController extends AbstractController
     }
 
     #[Route('/back/projects/overview', name: 'back_project_overview', methods: ['GET'])]
-    public function backOverview(ProjectRepository $projectRepository, DecisionRepository $decisionRepository): Response
+    public function backOverview(
+        ProjectRepository $projectRepository,
+        DecisionRepository $decisionRepository,
+        ProjectDashboardInsightsService $projectDashboardInsightsService
+    ): Response
     {
         $user = $this->getCurrentUser();
         if (!$this->canSeeAllProjects($user)) {
@@ -73,6 +81,7 @@ final class ProjectController extends AbstractController
         }
 
         $statusCounters = $projectRepository->getStatusCounters();
+        $dashboard = $projectDashboardInsightsService->buildBackOfficeDashboard();
 
         return $this->render('back/project/index.html.twig', [
             'page_title' => 'Gestion des projets',
@@ -83,6 +92,7 @@ final class ProjectController extends AbstractController
             'total_decisions' => $decisionRepository->count([]),
             'latest_projects' => $projectRepository->findLatestProjects(6),
             'latest_decisions' => $decisionRepository->findLatestGlobal(6),
+            'project_dashboard' => $dashboard,
         ]);
     }
 
@@ -90,7 +100,8 @@ final class ProjectController extends AbstractController
     public function backIndex(
         Request $request,
         ProjectRepository $projectRepository,
-        ProjectAcceptanceService $projectAcceptanceService
+        ProjectAcceptanceService $projectAcceptanceService,
+        ProjectDashboardInsightsService $projectDashboardInsightsService
     ): Response
     {
         $user = $this->getCurrentUser();
@@ -98,13 +109,10 @@ final class ProjectController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez pas consulter la gestion back des projets.');
         }
 
-        $filters = [
-            'q' => trim((string) $request->query->get('q', '')),
-            'status' => trim((string) $request->query->get('status', '')),
-            'owner' => trim((string) $request->query->get('owner', '')),
-        ];
-
-        $projects = $projectRepository->findBackOfficeProjects($filters);
+        $filters = $this->buildBackProjectFilters($request);
+        $dashboard = $projectDashboardInsightsService->buildBackOfficeDashboard($filters);
+        /** @var list<Project> $projects */
+        $projects = $dashboard['projects'];
         $pendingProjects = array_values(array_filter(
             $projects,
             static fn (Project $project): bool => $project->getStatus() === Project::STATUS_PENDING
@@ -117,7 +125,47 @@ final class ProjectController extends AbstractController
             'status_choices' => Project::STATUSES,
             'can_edit_any_project' => $user?->getRoleUser() === 'admin',
             'can_delete_any_project' => $user?->getRoleUser() === 'admin',
+            'project_dashboard' => $dashboard,
         ]);
+    }
+
+    #[Route('/projects/export/pdf', name: 'project_export_pdf', methods: ['GET'])]
+    public function exportFrontPdf(
+        Request $request,
+        ProjectDashboardInsightsService $projectDashboardInsightsService,
+        PdfGeneratorService $pdfGenerator
+    ): Response {
+        $user = $this->getCurrentUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez etre connecte pour exporter un rapport projet.');
+        }
+
+        $filters = $this->buildFrontProjectFilters($request);
+        $dashboard = $this->canSeeAllProjects($user)
+            ? $projectDashboardInsightsService->buildBackOfficeDashboard(array_merge($filters, ['_view' => 'front_global']))
+            : $projectDashboardInsightsService->buildClientDashboard($user, $filters);
+
+        return $this->createProjectDashboardExportResponse(
+            $dashboard,
+            $pdfGenerator,
+            sprintf('rapport-projets-%s', $user->getRoleUser() ?? 'front')
+        );
+    }
+
+    #[Route('/back/projects/export/pdf', name: 'back_project_export_pdf', methods: ['GET'])]
+    public function exportBackPdf(
+        Request $request,
+        ProjectDashboardInsightsService $projectDashboardInsightsService,
+        PdfGeneratorService $pdfGenerator
+    ): Response {
+        $user = $this->getCurrentUser();
+        if (!$this->canSeeAllProjects($user)) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas exporter le rapport global des projets.');
+        }
+
+        $dashboard = $projectDashboardInsightsService->buildBackOfficeDashboard($this->buildBackProjectFilters($request));
+
+        return $this->createProjectDashboardExportResponse($dashboard, $pdfGenerator, 'rapport-projets-back-office');
     }
 
     #[Route('/projects/{id}', name: 'project_show', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -778,5 +826,84 @@ final class ProjectController extends AbstractController
             'total' => count($tasks),
             'progress' => $taskProgressService->calculate($tasks),
         ];
+    }
+
+    private function buildFrontProjectFilters(Request $request): array
+    {
+        return [
+            'q' => trim((string) $request->query->get('q', '')),
+            'status' => trim((string) $request->query->get('status', '')),
+            'type' => trim((string) $request->query->get('type', '')),
+            'min_price' => $request->query->get('min_price', null),
+            'max_price' => $request->query->get('max_price', null),
+        ];
+    }
+
+    private function buildBackProjectFilters(Request $request): array
+    {
+        return [
+            'q' => trim((string) $request->query->get('q', '')),
+            'status' => trim((string) $request->query->get('status', '')),
+            'owner' => trim((string) $request->query->get('owner', '')),
+        ];
+    }
+
+    private function createEmptyProjectDashboard(string $scope): array
+    {
+        return [
+            'scope' => $scope,
+            'summary' => [
+                'total_projects' => 0,
+                'pending_projects' => 0,
+                'accepted_projects' => 0,
+                'refused_projects' => 0,
+                'total_budget' => 0.0,
+                'average_budget' => 0.0,
+                'active_types' => 0,
+                'acceptance_rate' => 0.0,
+            ],
+            'charts' => [
+                'status' => ['labels' => [], 'values' => []],
+                'types' => ['labels' => [], 'values' => []],
+                'timeline' => ['labels' => [], 'values' => []],
+                'budgets' => ['labels' => [], 'values' => []],
+            ],
+            'projects' => [],
+            'export_meta' => [
+                'generated_at' => new \DateTimeImmutable(),
+                'role_label' => 'Invite',
+                'filters' => [],
+            ],
+        ];
+    }
+
+    private function createProjectDashboardExportResponse(
+        array $dashboard,
+        PdfGeneratorService $pdfGenerator,
+        string $basename
+    ): Response {
+        $html = $pdfGenerator->renderHtml('front/project/dashboard-report.html.twig', [
+            'dashboard' => $dashboard,
+            'export_notice' => null,
+        ]);
+
+        if (!$pdfGenerator->supportsPdfGeneration()) {
+            return new Response($pdfGenerator->renderHtml('front/project/dashboard-report.html.twig', [
+                'dashboard' => $dashboard,
+                'export_notice' => 'Le service PDF est desactive. Cette version imprimable reste exportable depuis votre navigateur.',
+            ]));
+        }
+
+        try {
+            $filename = sprintf('%s-%s.pdf', $basename, (new \DateTimeImmutable())->format('YmdHis'));
+            $path = $pdfGenerator->generate($html, $filename, 'uploads/project-reports');
+
+            return $this->file($path, $filename);
+        } catch (\Throwable) {
+            return new Response($pdfGenerator->renderHtml('front/project/dashboard-report.html.twig', [
+                'dashboard' => $dashboard,
+                'export_notice' => 'Le service PDF est temporairement indisponible. Utilisez cette version imprimable pour enregistrer le rapport en PDF.',
+            ]));
+        }
     }
 }

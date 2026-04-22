@@ -5,6 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-dashboard.css') }}">
      <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
@@ -44,6 +45,13 @@
                 </div>
             </form>
         </div>
+
+        {% include 'shared/project_dashboard_block.html.twig' with {
+            dashboard: project_dashboard,
+            export_url: path('back_project_export_pdf', app.request.query.all),
+            title: 'Synthese back office des projets',
+            description: 'Gardez les indicateurs globaux sous les yeux tout en filtrant la liste operationnelle.'
+        } only %}
 
         <section class="pm-grid">
             {% for project in projects %}
@@ -86,4 +94,10 @@
             {% endfor %}
         </section>
     </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ asset('js/project-dashboard.js') }}"></script>
 {% endblock %}
