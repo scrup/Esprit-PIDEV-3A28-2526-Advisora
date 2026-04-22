@@ -12,7 +12,7 @@
         "doctrine/doctrine-bundle": "^2.18.2",
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
-        "endroid/qr-code-bundle": ">=6",
+        "endroid/qr-code-bundle": "6",
         "knplabs/knp-paginator-bundle": "^6.10",
         "league/flysystem-bundle": "^3.7",
         "liip/imagine-bundle": "^2.17",
