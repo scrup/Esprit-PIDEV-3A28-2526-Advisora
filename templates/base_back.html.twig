@@ -83,6 +83,13 @@
            <div class="back-topbar-actions">
     {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
 
+    {% if app.user and app.user.getRoleUser() == 'admin' %}
+        {% include 'back/_notification_panel.html.twig' with {
+            notifications: app.request.attributes.get('_admin_notifications', []),
+            unread_count: app.request.attributes.get('_admin_notifications_unread_count', 0)
+        } only %}
+    {% endif %}
+
     <a href="{{ path('back_user_profile') }}" class="back-user-chip">
         {% if app.user and app.user.image_path %}
             <img src="{{ asset(app.user.image_path) }}" alt="Profil" class="back-user-chip-avatar">

@@ -551,6 +551,46 @@ body {
     margin-top: 1.5rem;
 }
 
+.pm-login-separator {
+    position: relative;
+    text-align: center;
+    color: #8a7a64;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pm-login-separator::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px solid #e8e0d5;
+    transform: translateY(-50%);
+}
+
+.pm-login-separator span {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    padding: 0 0.75rem;
+}
+
+.pm-btn-google {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border: 1.5px solid #ddd3c6;
+    background: #fff;
+    color: #2d2a26;
+}
+
+.pm-btn-google:hover {
+    background: #f9f6f1;
+    border-color: #cbbba5;
+}
+
 .pm-role-actions {
     display: flex;
     justify-content: center;

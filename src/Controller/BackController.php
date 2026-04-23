@@ -4,15 +4,19 @@ namespace App\Controller;
 
 use App\Entity\Event;
 use App\Entity\Investment;
+use App\Entity\Notification;
 use App\Entity\Project;
 use App\Entity\Resource;
+use App\Entity\User;
 use App\Repository\DecisionRepository;
 use App\Repository\EventRepository;
 use App\Repository\InvestmentRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\ResourceRepository;
 use App\Repository\StrategieRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -135,5 +139,32 @@ final class BackController extends AbstractController
             'largest_ticket' => round($largestTicket, 2),
             'distribution' => $topSlices,
         ];
+    }
+
+    #[Route('/back/notifications/{id}/read', name: 'back_notification_mark_read', methods: ['POST'])]
+    public function markNotificationAsRead(
+        Notification $notification,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
+        if (!$user instanceof User || mb_strtolower((string) $user->getRoleUser()) !== 'admin') {
+            throw $this->createAccessDeniedException('Acces refuse.');
+        }
+
+        $token = (string) $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('mark_notification_read_' . $notification->getId(), $token)) {
+            $this->addFlash('error', 'Action invalide.');
+        } else {
+            $notification->setIsRead(true);
+            $entityManager->flush();
+        }
+
+        $referer = (string) $request->headers->get('referer', '');
+        if ($referer !== '') {
+            return $this->redirect($referer);
+        }
+
+        return $this->redirectToRoute('app_back');
     }
 }
