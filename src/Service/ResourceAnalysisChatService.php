@@ -14,9 +14,45 @@ namespace App\Service;
 class ResourceAnalysisChatService
 {
     private const HARD_API_KEY = '';
-    private const HARD_MODEL = 'gpt-4o-mini';
+    private const HARD_MODEL = 'gpt-4o';
     private const HARD_BASE_URL = '';
-    private const HARD_MAX_TOKENS = 220;
+    private const HARD_MAX_TOKENS = 320;
+    private const OFF_TOPIC_MESSAGE = 'Desole, je reponds uniquement aux questions de gestion des ressources/projets (stock, reservations, fournisseurs, prix, KPI, actions).';
+    /**
+     * @var string[]
+     */
+    private const DOMAIN_KEYWORDS = [
+        'ressource',
+        'resource',
+        'resources',
+        'stock',
+        'surstock',
+        'rupture',
+        'reappro',
+        'reservation',
+        'reservations',
+        'fournisseur',
+        'fournisseurs',
+        'fornisseur',
+        'fornisseurs',
+        'fourniseur',
+        'fourniseurs',
+        'prix',
+        'kpi',
+        'analyse',
+        'action',
+        'actions',
+        'priorite',
+        'projet',
+        'projets',
+        'project',
+        'projects',
+        'supply',
+        'gestion',
+        'inventaire',
+        'delai',
+        'confiance',
+    ];
 
     private ?string $apiKey;
     private string $model;
@@ -41,6 +77,18 @@ class ResourceAnalysisChatService
             return 'Merci de poser une question sur l analyse ressources.';
         }
 
+        if (!$this->isManagementQuestion($question)) {
+            return self::OFF_TOPIC_MESSAGE;
+        }
+
+        if ($this->isSupplierListingQuestion($question)) {
+            return $this->buildSupplierListAnswer($analysis);
+        }
+
+        if ($this->isResourceListingQuestion($question)) {
+            return $this->buildResourceListAnswer($analysis);
+        }
+
         // Fallback deterministic immediat pour rester robuste en production.
         $fallback = $this->buildLocalAnswer($analysis, $question);
 
@@ -56,7 +104,7 @@ class ResourceAnalysisChatService
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'Tu es un assistant operations supply. Reponse concise, actionnable, en francais. Pas de blabla.',
+                        'content' => 'Tu es un assistant operations supply pour la gestion des ressources/projets. Reponse concise, actionnable, en francais. Si la question est hors sujet, reponds exactement: "' . self::OFF_TOPIC_MESSAGE . '".',
                     ],
                     [
                         'role' => 'user',
@@ -170,6 +218,194 @@ class ResourceAnalysisChatService
         $topCode = is_array($actions[0] ?? null) ? (string) ($actions[0]['action_code'] ?? 'Aucune action') : 'Aucune action';
 
         return trim($headline . "\n" . $narrative . "\nTop action: " . $topCode);
+    }
+
+    /**
+     * @param array<string, mixed> $analysis
+     */
+    private function buildResourceListAnswer(array $analysis): string
+    {
+        $rows = is_array($analysis['resource_signals'] ?? null) ? $analysis['resource_signals'] : [];
+        if ($rows === []) {
+            return 'Aucune ressource analysee pour le moment. Clique sur "Analyser" pour charger les donnees.';
+        }
+
+        $lines = [];
+        $max = min(10, count($rows));
+        for ($index = 0; $index < $max; ++$index) {
+            $row = $rows[$index];
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $id = (int) ($row['resource_id'] ?? 0);
+            $name = trim((string) ($row['resource_name'] ?? 'Ressource'));
+            $supplier = trim((string) ($row['supplier_name'] ?? 'Non renseigne'));
+            $stockAvailable = (int) ($row['stock_available'] ?? 0);
+            $stockTotal = (int) ($row['stock_total'] ?? 0);
+            $status = trim((string) ($row['status'] ?? 'N/A'));
+
+            $lines[] = sprintf(
+                '%d) #%d %s | fournisseur: %s | stock: %d/%d | statut: %s',
+                $index + 1,
+                $id,
+                $name !== '' ? $name : 'Ressource',
+                $supplier !== '' ? $supplier : 'Non renseigne',
+                $stockAvailable,
+                $stockTotal,
+                $status !== '' ? $status : 'N/A'
+            );
+        }
+
+        if ($lines === []) {
+            return 'Aucune ressource valide dans le snapshot analyse.';
+        }
+
+        return "Voici les ressources existantes:\n" . implode("\n", $lines);
+    }
+
+    /**
+     * @param array<string, mixed> $analysis
+     */
+    private function buildSupplierListAnswer(array $analysis): string
+    {
+        $rows = is_array($analysis['resource_signals'] ?? null) ? $analysis['resource_signals'] : [];
+        if ($rows === []) {
+            return 'Aucun fournisseur detecte pour le moment. Clique sur "Analyser" pour charger les donnees.';
+        }
+
+        $supplierNames = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $supplier = trim((string) ($row['supplier_name'] ?? 'Non renseigne'));
+            if ($supplier === '') {
+                $supplier = 'Non renseigne';
+            }
+
+            if (!in_array($supplier, $supplierNames, true)) {
+                $supplierNames[] = $supplier;
+            }
+        }
+
+        if ($supplierNames === []) {
+            return 'Aucun fournisseur detecte dans le snapshot analyse.';
+        }
+
+        sort($supplierNames, SORT_NATURAL | SORT_FLAG_CASE);
+        $lines = [];
+        foreach ($supplierNames as $index => $supplier) {
+            $lines[] = sprintf(
+                '%d) %s',
+                $index + 1,
+                $supplier
+            );
+        }
+
+        return "Voici les fournisseurs:\n" . implode("\n", $lines);
+    }
+
+    private function isManagementQuestion(string $question): bool
+    {
+        $normalized = $this->normalizeText($question);
+        if ($normalized === '') {
+            return false;
+        }
+
+        foreach (self::DOMAIN_KEYWORDS as $keyword) {
+            if (str_contains($normalized, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isResourceListingQuestion(string $question): bool
+    {
+        $normalized = $this->normalizeText($question);
+        if ($normalized === '') {
+            return false;
+        }
+
+        $resourceHints = ['ressource', 'resource', 'resources', 'inventaire', 'stock'];
+        $listHints = ['donne', 'donner', 'donnee', 'liste', 'affiche', 'afficher', 'existe', 'exist'];
+
+        $hasResourceHint = false;
+        foreach ($resourceHints as $hint) {
+            if (str_contains($normalized, $hint)) {
+                $hasResourceHint = true;
+                break;
+            }
+        }
+
+        if (!$hasResourceHint) {
+            return false;
+        }
+
+        foreach ($listHints as $hint) {
+            if (str_contains($normalized, $hint)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isSupplierListingQuestion(string $question): bool
+    {
+        $normalized = $this->normalizeText($question);
+        if ($normalized === '') {
+            return false;
+        }
+
+        $supplierHints = [
+            'fournisseur',
+            'fournisseurs',
+            'fornisseur',
+            'fornisseurs',
+            'fourniseur',
+            'fourniseurs',
+            'supplier',
+            'suppliers',
+        ];
+        $listHints = ['donne', 'donner', 'donnee', 'liste', 'affiche', 'afficher', 'existe', 'exist'];
+
+        $hasSupplierHint = false;
+        foreach ($supplierHints as $hint) {
+            if (str_contains($normalized, $hint)) {
+                $hasSupplierHint = true;
+                break;
+            }
+        }
+
+        if (!$hasSupplierHint) {
+            return false;
+        }
+
+        foreach ($listHints as $hint) {
+            if (str_contains($normalized, $hint)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function normalizeText(string $value): string
+    {
+        $value = mb_strtolower(trim($value));
+        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+        if (is_string($ascii) && trim($ascii) !== '') {
+            $value = strtolower($ascii);
+        }
+
+        $value = preg_replace('/[^a-z0-9\s]/', ' ', $value) ?? $value;
+        $value = preg_replace('/\s+/', ' ', $value) ?? $value;
+
+        return trim($value);
     }
 
     /**

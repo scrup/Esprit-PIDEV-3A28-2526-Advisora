@@ -5,7 +5,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260421-23' }}">
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260424-01' }}">
 {% endblock %}
 
 {% block body %}
@@ -36,6 +36,7 @@
             </div>
         </section>
 
+        {# Vue checkout unitaire: resume produit + formulaire Symfony/Fiabilo + avis client. #}
         <section class="mini-shop-marketplace-layout mini-shop-checkout-layout">
             <article class="mini-shop-panel mini-shop-checkout-summary-card">
                 <div class="mini-shop-panel-head">
@@ -47,6 +48,28 @@
                     <div class="mini-shop-panel-chip">
                         <span>Prix unitaire</span>
                         <strong>{{ product.unitPrice|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-checkout-spotlight">
+                    <div class="mini-shop-checkout-spotlight-copy">
+                        <span class="mini-shop-checkout-spotlight-kicker">Controle Symfony</span>
+                        <h3>Commande prete pour validation serveur</h3>
+                        <p>La quantite, le wallet et la livraison sont verifies avant creation de la commande puis transmission Fiabilo.</p>
+                    </div>
+                    <div class="mini-shop-checkout-spotlight-metrics">
+                        <div>
+                            <span>Wallet</span>
+                            <strong>{{ wallet.balance|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+                        <div>
+                            <span>Total estime</span>
+                            <strong>{{ order_total }} coins</strong>
+                        </div>
+                        <div>
+                            <span>Disponible</span>
+                            <strong>{{ product.qtyRemaining }}</strong>
+                        </div>
                     </div>
                 </div>
 
@@ -72,7 +95,7 @@
                     {% endif %}
                 </div>
 
-                    <div class="mini-shop-cart-item-facts">
+                <div class="mini-shop-cart-item-facts">
                     <div>
                         <span>Disponible</span>
                         <strong>{{ product.qtyRemaining }}</strong>
@@ -94,6 +117,21 @@
                         <strong>{{ wallet.coin_rate|default(10)|number_format(3, '.', ' ') }} / 1 money</strong>
                     </div>
                 </div>
+
+                <div class="mini-shop-checkout-flow">
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 1</span>
+                        <strong>Choisir quantite et projet</strong>
+                    </div>
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 2</span>
+                        <strong>Completer la livraison</strong>
+                    </div>
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 3</span>
+                        <strong>Valider la commande</strong>
+                    </div>
+                </div>
             </article>
 
             <article class="mini-shop-panel mini-shop-checkout-form-card">
@@ -105,77 +143,101 @@
                     </div>
                 </div>
 
-                <form method="post" action="{{ path('app_shop_market_buy') }}" class="mini-shop-form mini-shop-grid mini-shop-checkout-form" novalidate>
-                    <input type="hidden" name="_token" value="{{ csrf_token('shop_market_buy') }}">
+                {{ form_start(checkout_form, {'action': path('app_shop_market_buy'), 'attr': {'class': 'mini-shop-form mini-shop-grid mini-shop-checkout-form', 'novalidate': 'novalidate'}}) }}
                     <input type="hidden" name="_redirect_page" value="checkout">
                     <input type="hidden" name="listing_id" value="{{ product.idListing }}">
 
-                    <div class="mini-shop-grid mini-shop-grid-two">
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_quantity">Quantite</label>
-                            <input id="checkout_quantity" type="number" name="quantity" value="{{ quantity }}">
+                    {% if checkout_form.vars.errors|length > 0 %}
+                        <div class="mini-shop-form-errors" role="alert">
+                            {{ form_errors(checkout_form) }}
                         </div>
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_project_id">Projet cible</label>
-                            <select id="checkout_project_id" name="project_id">
-                                <option value="">Dernier projet ou creation auto</option>
-                                {% for project in projects %}
-                                    <option value="{{ project.idProj }}">{{ project.titleProj }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_topup_provider">Fournisseur recharge auto</label>
-                            <select id="checkout_topup_provider" name="topup_provider">
-                                <option value="STRIPE">STRIPE</option>
-                                <option value="FLOUCI">FLOUCI</option>
-                                <option value="D17">D17</option>
-                            </select>
+                    {% endif %}
+
+                    <div class="mini-shop-checkout-form-intro">
+                        <i class="fas fa-shield-alt"></i>
+                        <p>Tous les champs de livraison sont controles cote Symfony avant creation de la commande.</p>
+                    </div>
+
+                    <div class="mini-shop-checkout-guardrail">
+                        <strong>Lecture simple pour la validation</strong>
+                        <p>Le formulaire est decoupe en deux blocs: parametres checkout puis coordonnees livraison, avec erreurs Symfony sous chaque champ si la saisie est invalide.</p>
+                    </div>
+
+                    <div class="mini-shop-checkout-section">
+                        <h3>Parametres checkout</h3>
+                        <div class="mini-shop-grid mini-shop-grid-two">
+                            <div class="mini-shop-field-group{{ checkout_form.quantity.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.quantity, 'Quantite') }}
+                                {{ form_widget(checkout_form.quantity, {'attr': {'id': 'checkout_quantity'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.quantity) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.project_id.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.project_id, 'Projet cible') }}
+                                {{ form_widget(checkout_form.project_id, {'attr': {'id': 'checkout_project_id'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.project_id) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.topup_provider.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.topup_provider, 'Fournisseur recharge auto') }}
+                                {{ form_widget(checkout_form.topup_provider, {'attr': {'id': 'checkout_topup_provider'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.topup_provider) }}</div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mini-shop-grid mini-shop-grid-three mini-shop-checkout-grid">
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_recipient">Destinataire</label>
-                            <input id="checkout_recipient" type="text" name="recipient_name" placeholder="Nom complet">
-                        </div>
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_governorate">Gouvernorat</label>
-                            <input id="checkout_governorate" type="text" name="governorate" placeholder="Tunis">
-                        </div>
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_city">Ville</label>
-                            <input id="checkout_city" type="text" name="city" placeholder="Ville">
-                        </div>
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_cp">Code postal</label>
-                            <input id="checkout_cp" type="text" name="postal_code" placeholder="1000">
-                        </div>
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_phone">Telephone</label>
-                            <input id="checkout_phone" type="text" name="phone" placeholder="Numero principal">
-                        </div>
-                        <div class="mini-shop-field-group">
-                            <label for="checkout_phone2">Telephone 2</label>
-                            <input id="checkout_phone2" type="text" name="phone2" placeholder="Numero secondaire">
-                        </div>
-                        <div class="mini-shop-field-group mini-shop-field-span-2">
-                            <label for="checkout_address">Adresse</label>
-                            <input id="checkout_address" type="text" name="address_line" placeholder="Adresse complete">
-                        </div>
-                        <div class="mini-shop-field-group mini-shop-field-span-3">
-                            <label for="checkout_note">Message livraison</label>
-                            <input id="checkout_note" type="text" name="delivery_note" placeholder="Ex: Appeler avant livraison">
+                    <div class="mini-shop-checkout-section">
+                        <h3>Coordonnees livraison</h3>
+                        <div class="mini-shop-grid mini-shop-grid-three mini-shop-checkout-grid">
+                            <div class="mini-shop-field-group{{ checkout_form.recipient_name.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.recipient_name, 'Destinataire') }}
+                                {{ form_widget(checkout_form.recipient_name, {'attr': {'id': 'checkout_recipient'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.recipient_name) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.governorate.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.governorate, 'Gouvernorat') }}
+                                {{ form_widget(checkout_form.governorate, {'attr': {'id': 'checkout_governorate'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.governorate) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.city.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.city, 'Ville') }}
+                                {{ form_widget(checkout_form.city, {'attr': {'id': 'checkout_city'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.city) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.postal_code.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.postal_code, 'Code postal') }}
+                                {{ form_widget(checkout_form.postal_code, {'attr': {'id': 'checkout_cp'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.postal_code) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.phone.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.phone, 'Telephone') }}
+                                {{ form_widget(checkout_form.phone, {'attr': {'id': 'checkout_phone'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.phone) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.phone2.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.phone2, 'Telephone 2') }}
+                                {{ form_widget(checkout_form.phone2, {'attr': {'id': 'checkout_phone2'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.phone2) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group mini-shop-field-span-2{{ checkout_form.address_line.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.address_line, 'Adresse') }}
+                                {{ form_widget(checkout_form.address_line, {'attr': {'id': 'checkout_address'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.address_line) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group mini-shop-field-span-3{{ checkout_form.delivery_note.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.delivery_note, 'Message livraison') }}
+                                {{ form_widget(checkout_form.delivery_note, {'attr': {'id': 'checkout_note'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.delivery_note) }}</div>
+                                <small class="mini-shop-field-help">Optionnel, utile pour faciliter la livraison.</small>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mini-shop-form-actions">
+                    <div class="mini-shop-form-actions mini-shop-checkout-actions">
                         <button type="submit" class="shop-btn shop-btn-primary">
                             <i class="fas fa-check-circle"></i>
                             Confirmer achat
                         </button>
                     </div>
-                </form>
+                {{ form_end(checkout_form) }}
             </article>
         </section>
 
