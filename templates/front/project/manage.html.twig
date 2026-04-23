@@ -10,6 +10,7 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ asset('js/project-task-board.js') }}"></script>
+    <script src="{{ asset('js/project-tts.js') }}"></script>
 {% endblock %}
 
 {% block body %}
@@ -26,6 +27,10 @@
                 </p>
             </div>
             <div class="pm-card-actions">
+                <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.summary }}">
+                    <i class="fas fa-volume-up"></i>
+                    <span data-project-tts-label>Ecouter</span>
+                </button>
                 <a class="pm-btn pm-btn-secondary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
                 {% if can_edit_project %}
                     <a class="pm-btn pm-btn-primary" href="{{ path('project_edit', {id: project.id}) }}">Modifier mon projet</a>
@@ -59,6 +64,12 @@
                         <strong>{{ latest_decision.getDecisionTitleLabel() }}</strong>
                         <span>{{ latest_decision.decisionDate|date('d/m/Y') }}</span>
                         <p>{{ latest_decision.description ?: 'Aucune justification.' }}</p>
+                        {% if tts_messages.refusal_reason is defined %}
+                            <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.refusal_reason }}">
+                                <i class="fas fa-headphones"></i>
+                                <span data-project-tts-label>Pourquoi refuse ?</span>
+                            </button>
+                        {% endif %}
                     </div>
                 {% else %}
                     <p class="pm-empty-text">Aucune validation associee a ce projet.</p>

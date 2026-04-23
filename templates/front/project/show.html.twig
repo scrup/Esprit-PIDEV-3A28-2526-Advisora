@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/project-tts.js') }}"></script>
+{% endblock %}
+
 {% block body %}
     <section class="pm-detail-shell">
         <div class="pm-detail-main">
@@ -31,16 +36,26 @@
                     <span><i class="fas fa-tasks"></i> Taches : {{ task_board.total }}</span>
                     <span><i class="fas fa-chart-line"></i> Avancement : {{ task_board.progress|number_format(2, '.', ' ') }}%</span>
                 </div>
-                {% if can_manage_project or can_manage_decisions %}
-                    <div class="pm-card-actions">
+                <div class="pm-card-actions">
+                    <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.summary }}">
+                        <i class="fas fa-volume-up"></i>
+                        <span data-project-tts-label>Ecouter</span>
+                    </button>
+                    {% if tts_messages.refusal_reason is defined %}
+                        <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.refusal_reason }}">
+                            <i class="fas fa-headphones"></i>
+                            <span data-project-tts-label>Pourquoi refuse ?</span>
+                        </button>
+                    {% endif %}
+                    {% if can_manage_project or can_manage_decisions %}
                         <a class="pm-btn pm-btn-primary" href="{{ use_back_manage ? path('project_back_manage', {id: project.id}) : path('project_manage', {id: project.id}) }}">
                             {{ use_back_manage ? 'Traiter ce projet' : 'Gerer ce projet' }}
                         </a>
                         {% if app.user and app.user.getRoleUser() == 'client' %}
                             <a class="pm-btn pm-btn-secondary" href="{{ path('investment_new', {id: project.id}) }}">Investir sur ce projet</a>
                         {% endif %}
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
 
             <div class="pm-card pm-card-large pm-task-summary-card">

@@ -49,7 +49,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return User[]
+     * @return list<User>
      */
     public function findInactiveGerants(\DateTimeInterface $cutoff): array
     {
@@ -64,7 +64,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return User[]
+     * @return list<User>
      */
     public function findAdmins(): array
     {
@@ -75,4 +75,18 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<User>
+     */
+    public function findAdminsAndGerants(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.roleUser IN (:roles)')
+            ->setParameter('roles', ['admin', 'gerant'])
+            ->orderBy('u.idUser', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
+
