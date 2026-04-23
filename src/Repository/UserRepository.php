@@ -62,4 +62,17 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return User[]
+     */
+    public function findAdmins(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('LOWER(u.roleUser) = :role')
+            ->setParameter('role', 'admin')
+            ->orderBy('u.idUser', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

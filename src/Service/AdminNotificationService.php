@@ -36,6 +36,11 @@ class AdminNotificationService
         $inactiveDays = max(1, $inactiveDays);
         $cutoff = (new \DateTimeImmutable())->modify(sprintf('-%d days', $inactiveDays));
         $created = 0;
+        $admins = $this->userRepository->findAdmins();
+
+        if ($admins === []) {
+            return 0;
+        }
 
         foreach ($this->userRepository->findInactiveGerants($cutoff) as $gerant) {
             if (!$gerant instanceof User) {
@@ -44,11 +49,6 @@ class AdminNotificationService
 
             $displayName = $this->buildUserDisplayName($gerant);
             $title = sprintf('Gerant inactif (%d jours) - %s', $inactiveDays, $displayName);
-
-            if ($this->notificationRepository->existsUnreadForRoleAndTitle('admin', $title)) {
-                continue;
-            }
-
             $lastActivity = $gerant->getLast_activity_at();
             $description = sprintf(
                 'Le gerant %s (%s) est inactif depuis au moins %d jours. Derniere activite: %s.',
@@ -58,16 +58,26 @@ class AdminNotificationService
                 $lastActivity instanceof \DateTimeInterface ? $lastActivity->format('d/m/Y H:i') : 'jamais'
             );
 
-            $notification = new Notification();
-            $notification->setTitle($title);
-            $notification->setDescription($description);
-            $notification->setDateNotification(new \DateTime('today'));
-            $notification->setIsRead(false);
-            $notification->setTarget_role('admin');
-            $notification->setTarget_project_id(null);
+            foreach ($admins as $admin) {
+                if (!$admin instanceof User) {
+                    continue;
+                }
 
-            $this->entityManager->persist($notification);
-            ++$created;
+                if ($this->notificationRepository->existsUnreadForRecipientAndTitle($admin, $title)) {
+                    continue;
+                }
+
+                $notification = $this->buildNotification(
+                    $admin,
+                    $title,
+                    $description,
+                    'gerant_inactive',
+                    null
+                );
+
+                $this->entityManager->persist($notification);
+                ++$created;
+            }
         }
 
         if ($created > 0) {
@@ -79,22 +89,39 @@ class AdminNotificationService
 
     private function createRoleNotification(string $role, string $title, string $description): void
     {
-        $date = new \DateTime('today');
-
-        if ($this->notificationRepository->existsForRoleTitleDescriptionOnDate($role, $title, $description, $date)) {
+        $admins = $role === 'admin' ? $this->userRepository->findAdmins() : [];
+        if ($admins === []) {
             return;
         }
 
-        $notification = new Notification();
-        $notification->setTitle($title);
-        $notification->setDescription($description);
-        $notification->setDateNotification($date);
-        $notification->setIsRead(false);
-        $notification->setTarget_role(mb_strtolower(trim($role)));
-        $notification->setTarget_project_id(null);
+        $date = new \DateTime();
+        $created = 0;
 
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
+        foreach ($admins as $admin) {
+            if (!$admin instanceof User) {
+                continue;
+            }
+
+            if ($this->notificationRepository->existsForRecipientTitleDescriptionOnDate($admin, $title, $description, $date)) {
+                continue;
+            }
+
+            $notification = $this->buildNotification(
+                $admin,
+                $title,
+                $description,
+                'failed_login_lock',
+                null,
+                $date
+            );
+
+            $this->entityManager->persist($notification);
+            ++$created;
+        }
+
+        if ($created > 0) {
+            $this->entityManager->flush();
+        }
     }
 
     private function buildUserDisplayName(User $user): string
@@ -102,5 +129,30 @@ class AdminNotificationService
         $name = trim(sprintf('%s %s', (string) $user->getPrenomUser(), (string) $user->getNomUser()));
 
         return $name !== '' ? $name : mb_strtolower(trim((string) $user->getUserIdentifier()));
+    }
+
+    private function buildNotification(
+        User $recipient,
+        string $title,
+        string $description,
+        string $eventType,
+        ?int $targetProjectId = null,
+        ?\DateTimeInterface $createdAt = null,
+    ): Notification {
+        $notification = new Notification();
+        $notification->setTitle($title);
+        $notification->setDescription($description);
+        $notification->setRecipient($recipient);
+        $notification->setEventType($eventType);
+        $notification->setSpokenText($description);
+        $notification->setCreatedAt(
+            $createdAt instanceof \DateTime
+                ? $createdAt
+                : \DateTime::createFromInterface($createdAt ?? new \DateTimeImmutable())
+        );
+        $notification->setIsRead(false);
+        $notification->setTarget_project_id($targetProjectId);
+
+        return $notification;
     }
 }

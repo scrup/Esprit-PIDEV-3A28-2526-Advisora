@@ -3,9 +3,6 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\NotificationRepository;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
@@ -42,7 +39,7 @@ class Notification
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(type: 'text', nullable: false)]
     private ?string $description = null;
 
     public function getDescription(): ?string
@@ -56,17 +53,28 @@ class Notification
         return $this;
     }
 
-    #[ORM\Column(type: 'date', nullable: false)]
-    private ?\DateTimeInterface $dateNotification = null;
+    #[ORM\Column(name: 'createdAt', type: 'datetime', nullable: false)]
+    private ?\DateTimeInterface $createdAt = null;
 
     public function getDateNotification(): ?\DateTimeInterface
     {
-        return $this->dateNotification;
+        return $this->createdAt;
     }
 
     public function setDateNotification(\DateTimeInterface $dateNotification): self
     {
-        $this->dateNotification = $dateNotification;
+        $this->createdAt = $dateNotification;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
         return $this;
     }
 
@@ -84,20 +92,6 @@ class Notification
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $target_role = null;
-
-    public function getTarget_role(): ?string
-    {
-        return $this->target_role;
-    }
-
-    public function setTarget_role(?string $target_role): self
-    {
-        $this->target_role = $target_role;
-        return $this;
-    }
-
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $target_project_id = null;
 
@@ -112,4 +106,46 @@ class Notification
         return $this;
     }
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'recipient_id', referencedColumnName: 'idUser', nullable: true, onDelete: 'CASCADE')]
+    private ?User $recipient = null;
+
+    public function getRecipient(): ?User
+    {
+        return $this->recipient;
+    }
+
+    public function setRecipient(?User $recipient): self
+    {
+        $this->recipient = $recipient;
+        return $this;
+    }
+
+    #[ORM\Column(name: 'eventType', type: 'string', length: 50, nullable: false)]
+    private ?string $eventType = null;
+
+    public function getEventType(): ?string
+    {
+        return $this->eventType;
+    }
+
+    public function setEventType(string $eventType): self
+    {
+        $this->eventType = $eventType;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'text', nullable: false)]
+    private ?string $spokenText = null;
+
+    public function getSpokenText(): ?string
+    {
+        return $this->spokenText;
+    }
+
+    public function setSpokenText(string $spokenText): self
+    {
+        $this->spokenText = $spokenText;
+        return $this;
+    }
 }
