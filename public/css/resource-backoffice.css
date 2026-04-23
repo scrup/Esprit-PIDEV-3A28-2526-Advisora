@@ -3781,3 +3781,45 @@ body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-card-reservation 
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================ */
+/* V32 - DASHBOARD CHARTS (RESOURCE ONLY)      */
+/* ============================================ */
+
+.rs-admin-shell.rs-module-resource .rs-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.rs-admin-shell.rs-module-resource .rs-chart-panel {
+    min-height: 338px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+
+.rs-admin-shell.rs-module-resource .rs-chart-wrap {
+    position: relative;
+    min-height: 240px;
+}
+
+.rs-admin-shell.rs-module-resource .rs-chart-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+@media (max-width: 1100px) {
+    .rs-admin-shell.rs-module-resource .rs-charts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .rs-admin-shell.rs-module-resource .rs-charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rs-admin-shell.rs-module-resource .rs-chart-panel {
+        min-height: 300px;
+    }
+}

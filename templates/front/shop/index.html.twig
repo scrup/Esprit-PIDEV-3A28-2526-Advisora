@@ -5,7 +5,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260421-23' }}">
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260424-01' }}">
 {% endblock %}
 
 {% block body %}
@@ -649,6 +649,7 @@
         {% set total_drawer_lines = checkout_cart_stats.items_count|default(0) + cart_stats.items_count|default(0) %}
         {% set total_drawer_units = checkout_cart_stats.units_count|default(0) + cart_stats.units_count|default(0) %}
 
+        {# Drawer panier: resume rapide + separation claire entre panier C2C et panier catalogue. #}
         <aside class="mini-shop-cart-drawer" id="shop-cart-drawer" aria-labelledby="shop-cart-title">
             <div class="mini-shop-cart-drawer-shell">
                 <div class="mini-shop-cart-drawer-head">
@@ -662,7 +663,7 @@
                     </a>
                 </div>
 
-                <div class="mini-shop-cart-drawer-body">
+                <div class="mini-shop-cart-drawer-body has-shop-sections">
                     <div class="mini-shop-panel-chip mini-shop-cart-drawer-chip">
                         {% if checkout_cart_stats.items_count|default(0) > 0 %}
                             <span>Sous-total C2C</span>
@@ -675,6 +676,36 @@
                             <strong>0 ligne(s)</strong>
                         {% endif %}
                     </div>
+
+                    <section class="mini-shop-cart-spotlight">
+                        <div class="mini-shop-cart-spotlight-copy">
+                            <span class="mini-shop-cart-spotlight-kicker">Controle Symfony</span>
+                            <h3>
+                                {% if checkout_cart_stats.items_count|default(0) > 0 %}
+                                    Panier C2C pret pour un checkout global
+                                {% elseif cart_stats.items_count|default(0) > 0 %}
+                                    Panier catalogue pret pour reservation projet
+                                {% else %}
+                                    Panier en attente d articles
+                                {% endif %}
+                            </h3>
+                            <p>Le back Symfony garde la main sur le stock, le wallet, les commandes et les livraisons avant toute validation.</p>
+                        </div>
+                        <div class="mini-shop-cart-spotlight-metrics">
+                            <div>
+                                <span>Wallet</span>
+                                <strong>{{ marketplace.wallet.balance|default(0)|number_format(3, '.', ' ') }} coins</strong>
+                            </div>
+                            <div>
+                                <span>Lignes</span>
+                                <strong>{{ total_drawer_lines }}</strong>
+                            </div>
+                            <div>
+                                <span>Unites</span>
+                                <strong>{{ total_drawer_units }}</strong>
+                            </div>
+                        </div>
+                    </section>
 
                     <section class="mini-shop-side-stats mini-shop-side-stats-cart">
                         <div class="mini-side-stat">
@@ -692,69 +723,93 @@
                     </section>
 
                     {% if checkout_cart_items is not empty %}
-                        <div class="mini-shop-form-actions">
+                        {# Section panier C2C: chaque annonce garde ses donnees checkout, mais le CTA principal est global. #}
+                        <div class="mini-shop-cart-section-head">
+                            <div>
+                                <span>Panier C2C</span>
+                                <h3>Commandes client a payer</h3>
+                            </div>
+                            <strong>{{ checkout_cart_stats.subtotal|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+
+                        <div class="mini-shop-cart-cta-row">
                             <a href="{{ path('app_shop_checkout') }}" class="shop-btn shop-btn-primary">
                                 <i class="fas fa-credit-card"></i>
                                 Checkout tout le panier ({{ checkout_cart_stats.subtotal|number_format(3, '.', ' ') }} coins)
                             </a>
+                            <p class="mini-shop-cart-inline-note">Un seul formulaire Symfony pour verifier wallet, stock et livraison.</p>
                         </div>
 
                         <div class="mini-shop-cart-list">
                             {% for checkout_item in checkout_cart_items %}
-                                <article class="mini-shop-c2c-cart-card">
-                                    <div class="mini-shop-cart-item-head">
-                                        <div>
-                                            <span class="mini-panel-tag">Panier C2C</span>
-                                            <h3>{{ checkout_item.resource_name }}</h3>
+                                {# Carte annonce checkout: informations visibles rapidement pour lecture/prof/tests. #}
+                                <article class="mini-shop-c2c-cart-card is-checkout-card">
+                                    <div class="mini-shop-c2c-cart-shell">
+                                        <div class="mini-shop-cart-item-media{% if checkout_item.image_url is empty %} is-placeholder{% endif %}">
+                                            {% if checkout_item.image_url is not empty %}
+                                                <img src="{{ checkout_item.image_url }}" alt="{{ checkout_item.resource_name }}">
+                                            {% else %}
+                                                <div class="mini-shop-cart-item-fallback">
+                                                    <span>{{ checkout_item.resource_name|slice(0, 1)|upper }}</span>
+                                                </div>
+                                            {% endif %}
                                         </div>
-                                        <span class="shop-status-badge is-available">LISTED</span>
-                                    </div>
+                                        <div class="mini-shop-c2c-cart-copy">
+                                            <div class="mini-shop-cart-item-head">
+                                                <div>
+                                                    <span class="mini-panel-tag">Panier C2C</span>
+                                                    <h3>{{ checkout_item.resource_name }}</h3>
+                                                </div>
+                                                <span class="shop-status-badge is-available">LISTED</span>
+                                            </div>
 
-                                    <div class="mini-shop-cart-item-meta">
-                                        <span>{{ checkout_item.supplier_name }}</span>
-                                        <span>Vendeur: {{ checkout_item.seller_name }}</span>
-                                        <span>Annonce #{{ checkout_item.listing_id }}</span>
-                                    </div>
+                                            <div class="mini-shop-cart-item-meta">
+                                                <span>{{ checkout_item.supplier_name }}</span>
+                                                <span>Vendeur: {{ checkout_item.seller_name }}</span>
+                                                <span>Annonce #{{ checkout_item.listing_id }}</span>
+                                            </div>
 
-                                    <div class="mini-shop-cart-item-facts">
-                                        <div>
-                                            <span>Prix unit.</span>
-                                            <strong>{{ checkout_item.unit_price|number_format(3, '.', ' ') }} coins</strong>
-                                        </div>
-                                        <div>
-                                            <span>Quantite</span>
-                                            <strong>{{ checkout_item.quantity }}</strong>
-                                        </div>
-                                        <div>
-                                            <span>Disponible</span>
-                                            <strong>{{ checkout_item.available }}</strong>
-                                        </div>
-                                        <div>
-                                            <span>Total</span>
-                                            <strong>{{ checkout_item.line_total|number_format(3, '.', ' ') }} coins</strong>
-                                        </div>
-                                    </div>
+                                            <div class="mini-shop-cart-item-facts">
+                                                <div>
+                                                    <span>Prix unit.</span>
+                                                    <strong>{{ checkout_item.unit_price|number_format(3, '.', ' ') }} coins</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Quantite</span>
+                                                    <strong>{{ checkout_item.quantity }}</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Disponible</span>
+                                                    <strong>{{ checkout_item.available }}</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Total</span>
+                                                    <strong>{{ checkout_item.line_total|number_format(3, '.', ' ') }} coins</strong>
+                                                </div>
+                                            </div>
 
-                                    <div class="mini-shop-form-actions">
-                                        <a href="{{ path('app_shop_market_checkout', {'listingId': checkout_item.listing_id, 'quantity': checkout_item.quantity}) }}" class="shop-btn shop-btn-primary">
-                                            <i class="fas fa-credit-card"></i>
-                                            Checkout
-                                        </a>
-                                        <form method="post" action="{{ path('app_shop_market_cart_clear') }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('shop_market_cart_clear') }}">
-                                            <input type="hidden" name="_redirect_fragment" value="shop-cart-drawer">
-                                            <input type="hidden" name="listing_id" value="{{ checkout_item.listing_id }}">
-                                            <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
-                                            <input type="hidden" name="q" value="{{ active_search }}">
-                                            <input type="hidden" name="market_q" value="{{ active_market_search }}">
-                                            <input type="hidden" name="c2c_sort" value="{{ active_market_sort }}">
-                                            {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
-                                            {% if orders_mode %}<input type="hidden" name="orders" value="1">{% endif %}
-                                            <button type="submit" class="shop-btn shop-btn-secondary">
-                                                <i class="fas fa-trash-alt"></i>
-                                                Retirer
-                                            </button>
-                                        </form>
+                                            <div class="mini-shop-form-actions mini-shop-cart-card-actions">
+                                                <a href="{{ path('app_shop_market_checkout', {'listingId': checkout_item.listing_id, 'quantity': checkout_item.quantity}) }}" class="shop-btn shop-btn-primary">
+                                                    <i class="fas fa-credit-card"></i>
+                                                    Checkout
+                                                </a>
+                                                <form method="post" action="{{ path('app_shop_market_cart_clear') }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('shop_market_cart_clear') }}">
+                                                    <input type="hidden" name="_redirect_fragment" value="shop-cart-drawer">
+                                                    <input type="hidden" name="listing_id" value="{{ checkout_item.listing_id }}">
+                                                    <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                                    <input type="hidden" name="q" value="{{ active_search }}">
+                                                    <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                                    <input type="hidden" name="c2c_sort" value="{{ active_market_sort }}">
+                                                    {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                                    {% if orders_mode %}<input type="hidden" name="orders" value="1">{% endif %}
+                                                    <button type="submit" class="shop-btn shop-btn-secondary">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                        Retirer
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </article>
                             {% endfor %}
@@ -774,6 +829,14 @@
                     {% endif %}
 
                     {% if cart_items is not empty %}
+                        <div class="mini-shop-cart-section-head is-catalog">
+                            <div>
+                                <span>Catalogue fournisseur</span>
+                                <h3>Reservation vers un projet</h3>
+                            </div>
+                            <strong>{{ cart_stats.items_count|default(0) }} ligne(s)</strong>
+                        </div>
+
                         <form method="post" action="{{ path('app_shop_cart_reserve') }}" class="mini-shop-form mini-shop-cart-bulk-form">
                             <input type="hidden" name="_token" value="{{ csrf_token('shop_cart_reserve') }}">
                             <input type="hidden" name="_redirect_fragment" value="shop-page">
@@ -790,6 +853,7 @@
                                         <option value="{{ project.idProj }}">{{ project.titleProj }}</option>
                                     {% endfor %}
                                 </select>
+                                <small class="mini-shop-cart-form-note">Cette action reste geree cote Symfony avec verification du stock avant reservation.</small>
                             </div>
 
                             <div class="mini-shop-form-actions">
