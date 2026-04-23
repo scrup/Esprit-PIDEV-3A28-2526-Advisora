@@ -8,9 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize buttons
     initButtons();
-    
-    // Initialize currency ticker
-    initTNDTicker();
 });
 
 // Initialize Charts
@@ -286,73 +283,3 @@ function initButtons() {
     });
 }
 
-// TND Currency ticker simulation
-let tickerInterval = null;
-
-function initTNDTicker() {
-    updateTNDTicker();
-    tickerInterval = setInterval(updateTNDTicker, 4500);
-}
-
-function updateTNDTicker() {
-    const tndusd = document.getElementById('tndusd');
-    const tndeur = document.getElementById('tndeur');
-    const tndgbp = document.getElementById('tndgbp');
-    const tndjpy = document.getElementById('tndjpy');
-    const tndchf = document.getElementById('tndchf');
-    const tndcad = document.getElementById('tndcad');
-    const tndcny = document.getElementById('tndcny');
-    
-    if (!tndusd) return;
-    
-    let tndusdVal = parseFloat(tndusd.innerText);
-    let tndeurVal = parseFloat(tndeur.innerText);
-    let tndgbpVal = parseFloat(tndgbp.innerText);
-    let tndjpyVal = parseFloat(tndjpy.innerText);
-    let tndchfVal = parseFloat(tndchf.innerText);
-    let tndcadVal = parseFloat(tndcad.innerText);
-    let tndcnyVal = parseFloat(tndcny.innerText);
-
-    const randomMove = () => (Math.random() - 0.5) * 0.0015;
-    const randomMoveJpy = () => (Math.random() - 0.5) * 0.25;
-    const randomMoveCny = () => (Math.random() - 0.5) * 0.008;
-
-    let newTNDUSD = +(tndusdVal + randomMove()).toFixed(4);
-    let newTNDEUR = +(tndeurVal + randomMove()).toFixed(4);
-    let newTNDGBP = +(tndgbpVal + randomMove()).toFixed(4);
-    let newTNDJPY = +(tndjpyVal + randomMoveJpy()).toFixed(2);
-    let newTNDCHF = +(tndchfVal + randomMove()).toFixed(4);
-    let newTNDCAD = +(tndcadVal + randomMove()).toFixed(4);
-    let newTNDCNY = +(tndcnyVal + randomMoveCny()).toFixed(4);
-
-    function setChange(elementId, newVal, oldVal) {
-        let span = document.getElementById(elementId);
-        if(span) {
-            let change = ((newVal - oldVal) / oldVal * 100).toFixed(2);
-            let isPositive = parseFloat(change) >= 0;
-            span.innerText = (isPositive ? `▲ +${Math.abs(change)}%` : `▼ -${Math.abs(change)}%`);
-            span.className = isPositive ? 'positive' : 'negative';
-        }
-    }
-
-    tndusd.innerText = newTNDUSD;
-    tndeur.innerText = newTNDEUR;
-    tndgbp.innerText = newTNDGBP;
-    tndjpy.innerText = newTNDJPY;
-    tndchf.innerText = newTNDCHF;
-    tndcad.innerText = newTNDCAD;
-    tndcny.innerText = newTNDCNY;
-
-    setChange('tndusdChange', newTNDUSD, tndusdVal);
-    setChange('tndeurChange', newTNDEUR, tndeurVal);
-    setChange('tndgbpChange', newTNDGBP, tndgbpVal);
-    setChange('tndjpyChange', newTNDJPY, tndjpyVal);
-    setChange('tndchfChange', newTNDCHF, tndchfVal);
-    setChange('tndcadChange', newTNDCAD, tndcadVal);
-    setChange('tndcnyChange', newTNDCNY, tndcnyVal);
-}
-
-// Cleanup interval on page unload
-window.addEventListener('beforeunload', () => {
-    if(tickerInterval) clearInterval(tickerInterval);
-});

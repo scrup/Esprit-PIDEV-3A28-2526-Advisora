@@ -35,7 +35,7 @@
                 <h2>Informations de l investissement</h2>
                 <div class="pm-meta-list pm-meta-list-vertical">
                     <span><strong>Projet :</strong> {{ investment.project ? investment.project.title : 'Non renseigne' }}</span>
-                    <span><strong>ID projet :</strong> {{ investment.project ? investment.project.id : 'N/A' }}</span>
+                    <span><strong>Secteur :</strong> {{ investment.project and investment.project.legacyType ? investment.project.legacyType : 'Non renseigne' }}</span>
                     <span><strong>Commentaire :</strong> {{ investment.commentaireInv ?: 'Aucun commentaire' }}</span>
                     <span><strong>Duree :</strong> {{ investment.durationEstimateDisplay }}</span>
                     <span><strong>Montant minimum :</strong> {{ investment.bud_minInv|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</span>
@@ -50,27 +50,36 @@
             </article>
 
             <article class="pm-card">
-                <h2>Transaction associee</h2>
-                {% if latest_transaction %}
-                    <div class="pm-current-decision">
-                        <span class="pm-badge">Transaction actuelle</span>
-                        <strong>{{ latest_transaction.statusLabel }}</strong>
-                        <span>{{ latest_transaction.DateTransac ? latest_transaction.DateTransac|date('d/m/Y') : 'Date inconnue' }}</span>
-                        <p>Montant : {{ latest_transaction.MontantTransac|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</p>
-                    </div>
-                    <div class="pm-meta-list pm-meta-list-vertical">
-                        <span><strong>Type :</strong> {{ latest_transaction.type ?: 'Non renseigne' }}</span>
-                        <span><strong>ID transaction :</strong> {{ latest_transaction.id }}</span>
-                    </div>
+                <h2>Transactions associees</h2>
+                {% if investment.transactions is not empty %}
+                    {% for transaction in investment.transactions %}
+                        <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(195, 125, 93, 0.16);">
+                            <div class="pm-current-decision">
+                                <span class="pm-badge">Transaction</span>
+                                <strong>{{ transaction.statusLabel }}</strong>
+                                <span>{{ transaction.DateTransac ? transaction.DateTransac|date('d/m/Y') : 'Date inconnue' }}</span>
+                                <p>Montant : {{ transaction.MontantTransac|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</p>
+                            </div>
+                            <div class="pm-meta-list pm-meta-list-vertical" style="margin-bottom: 12px;">
+                                <span><strong>Type :</strong> {{ transaction.type ?: 'Non renseigne' }}</span>
+                            </div>
+                            <div class="pm-card-actions">
+                                {% if transaction.isPending %}
+                                    <a class="pm-btn pm-btn-primary" href="{{ path('transaction_edit', {id: transaction.id}) }}">Modifier la transaction</a>
+                                    <form method="post" action="{{ path('transaction_delete', {id: transaction.id}) }}" onsubmit="return confirm('Supprimer cette transaction ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_transaction_' ~ transaction.id) }}">
+                                        <button class="pm-btn pm-btn-danger" type="submit">Supprimer la transaction</button>
+                                    </form>
+                                {% else %}
+                                    <span class="pm-empty-text">Cette transaction est en lecture seule.</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
                     <div class="pm-card-actions">
-                        {% if latest_transaction.isPending %}
-                            <a class="pm-btn pm-btn-primary" href="{{ path('transaction_edit', {id: latest_transaction.id}) }}">Modifier la transaction</a>
-                            <form method="post" action="{{ path('transaction_delete', {id: latest_transaction.id}) }}" onsubmit="return confirm('Supprimer cette transaction ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_transaction_' ~ latest_transaction.id) }}">
-                                <button class="pm-btn pm-btn-danger" type="submit">Supprimer la transaction</button>
-                            </form>
-                        {% else %}
-                            <span class="pm-empty-text">Cette transaction est en lecture seule.</span>
+                        {% if can_create_transaction %}
+                            <a class="pm-btn pm-btn-primary" href="{{ path('transaction_new', {id: investment.id}) }}">Ajouter une autre transaction</a>
                         {% endif %}
                     </div>
                 {% else %}
@@ -81,5 +90,10 @@
                 {% endif %}
             </article>
         </div>
+
+        {% include 'front/investment/_prediction_card.html.twig' with {
+            prediction: prediction,
+            prediction_error: prediction_error
+        } only %}
     </section>
 {% endblock %}
