@@ -1,0 +1,156 @@
+{% if prediction %}
+    <section class="pm-card pm-investment-analysis-card">
+        <details class="pm-analysis-disclosure">
+            <summary class="pm-analysis-trigger">
+                <span class="pm-btn pm-btn-primary">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Voir prediction d investissement</span>
+                </span>
+            </summary>
+
+            <div class="pm-analysis-body">
+                <div class="pm-analysis-head">
+                    <div>
+                        <span class="pm-badge">Prediction client</span>
+                        <h2>Lecture business du projet</h2>
+                        <p>{{ prediction.sectorOutlook }}</p>
+                    </div>
+                    <div class="pm-analysis-score-panel">
+                        <span class="pm-prediction-badge pm-prediction-badge-{{ prediction.recommendationBadgeClass }}">{{ prediction.recommendationLabel }}</span>
+                        <strong>{{ prediction.scorePercent }}/100</strong>
+                        <span>Score global</span>
+                    </div>
+                </div>
+
+                <div class="pm-analysis-badge-row">
+                    <span class="pm-analysis-chip">{{ prediction.sectorLabel }}</span>
+                    <span class="pm-analysis-chip">Projet: {{ prediction.projectType }}</span>
+                    <span class="pm-analysis-chip">Tunisie</span>
+                    <span class="pm-analysis-chip">Historiques: {{ prediction.similarProjectsCount }}</span>
+                </div>
+
+                <div class="pm-analysis-metric-grid">
+                    <article class="pm-analysis-metric">
+                        <span class="pm-analysis-metric-label">Recommendation</span>
+                        <strong class="pm-analysis-metric-value">{{ prediction.recommendationLabel }}</strong>
+                        <span class="pm-analysis-metric-note">Lecture simple pour le client</span>
+                    </article>
+                    <article class="pm-analysis-metric">
+                        <span class="pm-analysis-metric-label">ROI ajuste</span>
+                        <strong class="pm-analysis-metric-value {{ prediction.macroAnalysis.adjustedRoi >= 0 ? 'is-positive' : 'is-negative' }}">
+                            {{ prediction.macroAnalysis.adjustedRoi|number_format(2, '.', ' ') }}%
+                        </strong>
+                        <span class="pm-analysis-metric-note">Base brute {{ prediction.macroAnalysis.grossRoi|number_format(2, '.', ' ') }}%</span>
+                    </article>
+                    <article class="pm-analysis-metric">
+                        <span class="pm-analysis-metric-label">Risque macro</span>
+                        <strong class="pm-analysis-metric-value">{{ prediction.macroAnalysis.riskLevelLabel }}</strong>
+                        <span class="pm-analysis-metric-note">Score {{ prediction.macroAnalysis.score|number_format(1, '.', ' ') }}/100</span>
+                    </article>
+                    <article class="pm-analysis-metric">
+                        <span class="pm-analysis-metric-label">Taux secteur</span>
+                        <strong class="pm-analysis-metric-value">{{ prediction.acceptanceRatePercent }}%</strong>
+                        <span class="pm-analysis-metric-note">Historique projets similaires</span>
+                    </article>
+                </div>
+
+                <div class="pm-analysis-highlight-list">
+                    {% for highlight in prediction.highlights %}
+                        <article class="pm-analysis-highlight">
+                            <i class="fas fa-circle-check"></i>
+                            <span>{{ highlight }}</span>
+                        </article>
+                    {% endfor %}
+                </div>
+
+                <details class="pm-analysis-details-disclosure">
+                    <summary class="pm-analysis-trigger-secondary">
+                        <span class="pm-btn pm-btn-secondary">
+                            <i class="fas fa-magnifying-glass-chart"></i>
+                            <span>Voir plus de details</span>
+                        </span>
+                    </summary>
+
+                    <div class="pm-analysis-detail-grid">
+                        {% for block in prediction.reasonBlocks %}
+                            <article class="pm-analysis-detail-card pm-analysis-detail-card-{{ block.variant }}">
+                                <div class="pm-analysis-detail-head">
+                                    <span>{{ block.title }}</span>
+                                    <strong>{{ block.badge }}</strong>
+                                </div>
+                                <p>{{ block.description }}</p>
+                            </article>
+                        {% endfor %}
+                    </div>
+
+                    <div class="pm-analysis-macro-board">
+                        <article class="pm-analysis-mini-stat">
+                            <span>Inflation</span>
+                            <strong>{{ prediction.macroAnalysis.data.inflation|number_format(2, '.', ' ') }}%</strong>
+                            <small>{{ prediction.macroAnalysis.data.inflationYear }}</small>
+                        </article>
+                        <article class="pm-analysis-mini-stat">
+                            <span>PIB reel</span>
+                            <strong>{{ prediction.macroAnalysis.data.gdpGrowth|number_format(2, '.', ' ') }}%</strong>
+                            <small>{{ prediction.macroAnalysis.data.gdpGrowthYear }}</small>
+                        </article>
+                        <article class="pm-analysis-mini-stat">
+                            <span>Taux de credit</span>
+                            <strong>{{ prediction.macroAnalysis.data.lendingRate|number_format(2, '.', ' ') }}%</strong>
+                            <small>
+                                {{ prediction.macroAnalysis.data.lendingEstimated ? 'BCT ' : '' }}{{ prediction.macroAnalysis.data.lendingRateYear }}
+                            </small>
+                        </article>
+                        <article class="pm-analysis-mini-stat">
+                            <span>Prime de risque</span>
+                            <strong>{{ prediction.macroAnalysis.riskPremium|number_format(2, '.', ' ') }}%</strong>
+                            <small>{{ prediction.macroAnalysis.riskLevelLabel }}</small>
+                        </article>
+                    </div>
+
+                    <div class="pm-analysis-metric-grid pm-analysis-metric-grid-secondary">
+                        <article class="pm-analysis-metric">
+                            <span class="pm-analysis-metric-label">Macro readiness</span>
+                            <strong class="pm-analysis-metric-value">{{ prediction.macroReadinessScore }}%</strong>
+                            <span class="pm-analysis-metric-note">Impact Tunisie + sensibilite du secteur</span>
+                        </article>
+                        <article class="pm-analysis-metric">
+                            <span class="pm-analysis-metric-label">Budget fit</span>
+                            <strong class="pm-analysis-metric-value">{{ prediction.budgetFitScore }}%</strong>
+                            <span class="pm-analysis-metric-note">
+                                {% if prediction.medianAcceptedBudget is not null %}
+                                    Mediane acceptee: {{ prediction.medianAcceptedBudget|number_format(2, '.', ' ') }} TND
+                                {% else %}
+                                    Reference globale utilisee
+                                {% endif %}
+                            </span>
+                        </article>
+                        <article class="pm-analysis-metric">
+                            <span class="pm-analysis-metric-label">Projet readiness</span>
+                            <strong class="pm-analysis-metric-value">{{ prediction.projectReadinessScore }}%</strong>
+                            <span class="pm-analysis-metric-note">Qualite du dossier et lisibilite du projet</span>
+                        </article>
+                    </div>
+
+                    {% if prediction.warnings is not empty %}
+                        <div class="pm-analysis-warning-list">
+                            {% for warning in prediction.warnings %}
+                                <div class="pm-analysis-warning">
+                                    <i class="fas fa-triangle-exclamation"></i>
+                                    <span>{{ warning }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </details>
+            </div>
+        </details>
+    </section>
+{% elseif prediction_error is defined and prediction_error %}
+    <section class="pm-card pm-investment-analysis-card">
+        <div class="pm-analysis-warning">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span>{{ prediction_error }}</span>
+        </div>
+    </section>
+{% endif %}
