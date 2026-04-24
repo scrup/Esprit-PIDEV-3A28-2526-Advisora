@@ -23,6 +23,7 @@ use App\Service\GeminiStrategyGeneratorService;
 use App\Service\PythonRecommendationService;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Service\AutoTranslator;
+use App\Service\FrenchSpellCorrector;
 use Gedmo\Translatable\Entity\Repository\TranslationRepository;
 use Gedmo\Translatable\Entity\Translation;
 
@@ -167,11 +168,73 @@ final class StrategyController extends AbstractController
         ]);
     }
 
+    #[Route('/back/strategies/spellcheck', name: 'app_back_strategies_spellcheck', methods: ['POST'])]
+    public function spellcheck(Request $request, FrenchSpellCorrector $frenchSpellCorrector): JsonResponse
+    {
+        $field = trim((string) $request->request->get('field', ''));
+        $text = (string) $request->request->get('text', '');
+        $language = trim((string) $request->request->get('language', 'fr'));
+
+        if (!in_array($field, ['nomStrategie', 'justification'], true)) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Champ non supporte pour la correction.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($text === '') {
+            return $this->json([
+                'status' => 'ok',
+                'field' => $field,
+                'original' => $text,
+                'corrected' => $text,
+                'changed' => false,
+            ]);
+        }
+
+        try {
+            $result = $frenchSpellCorrector->correctWithStatus($text, $language !== '' ? $language : 'fr');
+            $status = (string) ($result['status'] ?? 'ok');
+            $corrected = (string) ($result['corrected'] ?? $text);
+            $changed = (bool) ($result['changed'] ?? false);
+            $errorMessage = isset($result['error']) ? (string) $result['error'] : '';
+
+            if ($status !== 'ok') {
+                return $this->json([
+                    'status' => 'error',
+                    'field' => $field,
+                    'original' => $text,
+                    'corrected' => $text,
+                    'changed' => false,
+                    'message' => $errorMessage !== '' ? $errorMessage : 'LanguageTool indisponible.',
+                ], Response::HTTP_SERVICE_UNAVAILABLE);
+            }
+
+            return $this->json([
+                'status' => 'ok',
+                'field' => $field,
+                'original' => $text,
+                'corrected' => $corrected,
+                'changed' => $changed,
+            ]);
+        } catch (\Throwable $exception) {
+            return $this->json([
+                'status' => 'error',
+                'field' => $field,
+                'original' => $text,
+                'corrected' => $text,
+                'changed' => false,
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+    }
+
    #[Route('/back/strategies/nouvelle', name: 'app_back_strategies_new', methods: ['GET', 'POST'])]
 public function new(
     Request $request,
     EntityManagerInterface $entityManager,
-    AutoTranslator $autoTranslator
+    AutoTranslator $autoTranslator,
+    FrenchSpellCorrector $frenchSpellCorrector
 ): Response {
     $strategy = new Strategie();
     $currentUser = $this->getCurrentUser();
@@ -191,6 +254,13 @@ public function new(
 
         $this->applyAutomaticStatusRules($strategy);
         $this->syncLockedAtWithStatus($strategy);
+        $correctedFields = $this->applyFrenchSpellCorrections($strategy, $frenchSpellCorrector);
+        if ($correctedFields !== []) {
+            $this->addFlash('info', sprintf(
+                'Correction orthographique automatique appliquee (FR) sur: %s.',
+                implode(', ', $correctedFields)
+            ));
+        }
 
         /** @var StrategieRepository $strategieRepository */
         $strategieRepository = $entityManager->getRepository(Strategie::class);
@@ -240,7 +310,8 @@ public function edit(
     Request $request,
     Strategie $strategy,
     EntityManagerInterface $entityManager,
-    AutoTranslator $autoTranslator
+    AutoTranslator $autoTranslator,
+    FrenchSpellCorrector $frenchSpellCorrector
 ): Response {
     $previousStatus = $strategy->getStatusStrategie();
     $previousProject = $strategy->getProject();
@@ -257,6 +328,13 @@ public function edit(
         $projectChanged = $this->hasStrategyProjectChanged($previousProject, $strategy->getProject());
         $this->applyAutomaticStatusRules($strategy, $previousStatus, $projectChanged);
         $this->syncLockedAtWithStatus($strategy, $previousStatus);
+        $correctedFields = $this->applyFrenchSpellCorrections($strategy, $frenchSpellCorrector);
+        if ($correctedFields !== []) {
+            $this->addFlash('info', sprintf(
+                'Correction orthographique automatique appliquee (FR) sur: %s.',
+                implode(', ', $correctedFields)
+            ));
+        }
 
         $duplicate = $entityManager
             ->getRepository(Strategie::class)
@@ -1465,6 +1543,30 @@ private function saveRejectedJustification(Strategie $strategy, string $justific
     private function getRecommendationSessionKey(int $projectId, int $userId): string
     {
         return sprintf('%d:%d', $projectId, $userId);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function applyFrenchSpellCorrections(Strategie $strategy, FrenchSpellCorrector $frenchSpellCorrector): array
+    {
+        $correctedFields = [];
+
+        $currentName = (string) ($strategy->getNomStrategie() ?? '');
+        $correctedName = $frenchSpellCorrector->correct($currentName, 'fr');
+        if ($correctedName !== $currentName) {
+            $strategy->setNomStrategie($correctedName);
+            $correctedFields[] = 'nom';
+        }
+
+        $currentJustification = $strategy->getJustification();
+        $correctedJustification = $frenchSpellCorrector->correctNullable($currentJustification, 'fr');
+        if ($correctedJustification !== $currentJustification) {
+            $strategy->setJustification($correctedJustification);
+            $correctedFields[] = 'justification';
+        }
+
+        return $correctedFields;
     }
 
 
