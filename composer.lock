@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "225dd8c7a73ef0649eca2d9376c49348",
+    "content-hash": "b5a919d80351d3e2851783a0e4d56161",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1088,16 +1088,16 @@
         },
         {
             "name": "doctrine/migrations",
-            "version": "3.9.6",
+            "version": "3.9.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/migrations.git",
-                "reference": "ffd8355cdd8505fc650d9604f058bf62aedd80a1"
+                "reference": "96cb2a89b56c9efb0bac38e606dc0b0f13e650ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/migrations/zipball/ffd8355cdd8505fc650d9604f058bf62aedd80a1",
-                "reference": "ffd8355cdd8505fc650d9604f058bf62aedd80a1",
+                "url": "https://api.github.com/repos/doctrine/migrations/zipball/96cb2a89b56c9efb0bac38e606dc0b0f13e650ec",
+                "reference": "96cb2a89b56c9efb0bac38e606dc0b0f13e650ec",
                 "shasum": ""
             },
             "require": {
@@ -1171,7 +1171,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/migrations/issues",
-                "source": "https://github.com/doctrine/migrations/tree/3.9.6"
+                "source": "https://github.com/doctrine/migrations/tree/3.9.7"
             },
             "funding": [
                 {
@@ -1187,7 +1187,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-11T06:46:11+00:00"
+            "time": "2026-04-23T19:33:20+00:00"
         },
         {
             "name": "doctrine/orm",
@@ -3501,16 +3501,16 @@
         },
         {
             "name": "stripe/stripe-php",
-            "version": "v20.0.0",
+            "version": "v20.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stripe/stripe-php.git",
-                "reference": "7338bd140e641b1f9c7cb602e2de971e14db6b3b"
+                "reference": "6d0ec5ffa0678a408d63163ace1453b35a85fb24"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/7338bd140e641b1f9c7cb602e2de971e14db6b3b",
-                "reference": "7338bd140e641b1f9c7cb602e2de971e14db6b3b",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/6d0ec5ffa0678a408d63163ace1453b35a85fb24",
+                "reference": "6d0ec5ffa0678a408d63163ace1453b35a85fb24",
                 "shasum": ""
             },
             "require": {
@@ -3557,9 +3557,9 @@
             ],
             "support": {
                 "issues": "https://github.com/stripe/stripe-php/issues",
-                "source": "https://github.com/stripe/stripe-php/tree/v20.0.0"
+                "source": "https://github.com/stripe/stripe-php/tree/v20.1.0"
             },
-            "time": "2026-03-26T01:57:48+00:00"
+            "time": "2026-04-24T00:12:56+00:00"
         },
         {
             "name": "survos/libre-translate-bundle",

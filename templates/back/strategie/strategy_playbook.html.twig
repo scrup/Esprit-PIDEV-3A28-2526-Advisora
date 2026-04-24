@@ -248,7 +248,7 @@
     {% set projectProgress = project and project.avancementProj is not null ? project.avancementProj|number_format(0, ',', ' ') ~ '%' : 'Non defini' %}
     {% set projectStatus = project ? project.statusLabel : 'Non defini' %}
     {% set hasProjectContext = project and project.descriptionProj %}
-    {% set hasStrategyContext = strategy.news or strategy.justification %}
+    {% set hasStrategyContext = strategy.justification %}
 
     <div class="page">
         <section class="hero">
@@ -323,13 +323,10 @@
                         <td>
                             <div class="section-box">
                                 <h3 class="note-title">Contexte strategique</h3>
-                                {% if strategy.news %}
-                                    <p class="note-copy"><strong>Actualites :</strong> {{ strategy.news }}</p>
-                                {% endif %}
                                 {% if strategy.justification %}
                                     <h3 class="note-title">Justification</h3>
                                     <p class="note-copy">{{ strategy.justification }}</p>
-                                {% elseif not strategy.news %}
+                                {% else %}
                                     <p class="note-copy">Aucune note de contexte strategique fournie.</p>
                                 {% endif %}
                             </div>
