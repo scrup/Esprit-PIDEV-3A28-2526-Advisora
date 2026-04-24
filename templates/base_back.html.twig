@@ -86,7 +86,6 @@
                     {% include 'shared/notification_center.html.twig' with {variant: 'back'} %}
                 {% endif %}
                 {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
-
                 <a href="{{ path('back_user_profile') }}" class="back-user-chip">
                     {% if app.user and app.user.image_path %}
                         <img src="{{ asset(app.user.image_path) }}" alt="Profil" class="back-user-chip-avatar">

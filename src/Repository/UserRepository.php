@@ -51,6 +51,34 @@ class UserRepository extends ServiceEntityRepository
     /**
      * @return list<User>
      */
+    public function findInactiveGerants(\DateTimeInterface $cutoff): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('LOWER(u.roleUser) = :role')
+            ->andWhere('u.last_activity_at IS NULL OR u.last_activity_at < :cutoff')
+            ->setParameter('role', 'gerant')
+            ->setParameter('cutoff', $cutoff)
+            ->orderBy('u.last_activity_at', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<User>
+     */
+    public function findAdmins(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('LOWER(u.roleUser) = :role')
+            ->setParameter('role', 'admin')
+            ->orderBy('u.idUser', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<User>
+     */
     public function findAdminsAndGerants(): array
     {
         return $this->createQueryBuilder('u')
@@ -61,3 +89,4 @@ class UserRepository extends ServiceEntityRepository
             ->getResult();
     }
 }
+

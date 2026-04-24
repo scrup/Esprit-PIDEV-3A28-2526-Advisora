@@ -116,9 +116,11 @@ class Notification
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
-        $this->createdAt = $createdAt;
+        $this->createdAt = $createdAt instanceof \DateTimeImmutable
+            ? $createdAt
+            : \DateTimeImmutable::createFromInterface($createdAt);
 
         return $this;
     }
@@ -158,4 +160,27 @@ class Notification
 
         return $this;
     }
+
+    // Backward-compat aliases (legacy naming)
+
+    public function getDateNotification(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setDateNotification(\DateTimeInterface $dateNotification): self
+    {
+        return $this->setCreatedAt($dateNotification);
+    }
+
+    public function getTarget_project_id(): ?int
+    {
+        return $this->targetProjectId;
+    }
+
+    public function setTarget_project_id(?int $target_project_id): self
+    {
+        return $this->setTargetProjectId($target_project_id);
+    }
 }
+
