@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\ObjectiveRepository;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -36,6 +37,7 @@ class Objective
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $descriptionOb = null;
 
     #[Assert\NotBlank(message: 'La description de l objectif est obligatoire.')]
@@ -112,7 +114,11 @@ class Objective
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $nomObj = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     #[Assert\NotBlank(message: 'Le nom de l objectif est obligatoire.')]
     #[Assert\Length(
@@ -129,6 +135,13 @@ class Objective
     public function setNomObj(?string $nomObj): self
     {
         $this->nomObj = $nomObj;
+        return $this;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
         return $this;
     }
 

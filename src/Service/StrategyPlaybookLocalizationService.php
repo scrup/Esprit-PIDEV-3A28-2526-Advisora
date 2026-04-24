@@ -15,11 +15,6 @@ class StrategyPlaybookLocalizationService
      */
     private const SUPPORTED_LANGUAGES = ['fr', 'en'];
 
-    public function __construct(
-        private LibreTranslateService $translator
-    ) {
-    }
-
     public function normalizeLanguage(?string $language): string
     {
         $language = strtolower(trim((string) $language));
@@ -181,13 +176,7 @@ class StrategyPlaybookLocalizationService
      */
     public function localizeMessages(array $messages, string $language): array
     {
-        $language = $this->normalizeLanguage($language);
-
-        if ($language === 'fr' || $messages === []) {
-            return array_values($messages);
-        }
-
-        return $this->translator->translateBatch(array_values($messages), 'en', 'fr');
+        return array_values($messages);
     }
 
     /**
@@ -218,7 +207,7 @@ class StrategyPlaybookLocalizationService
             'actions',
         ] as $field) {
             if (isset($localized[$field]) && is_array($localized[$field])) {
-                $localized[$field] = $this->translator->translateBatch(array_values($localized[$field]), 'en', 'fr');
+                $localized[$field] = array_values($localized[$field]);
             }
         }
 
@@ -282,6 +271,7 @@ class StrategyPlaybookLocalizationService
      */
     private function localizeStrategy(Strategie $strategy, string $language, array $labels): array
     {
+        
         return [
             'name' => $this->firstNonEmpty(
                 $this->translateNullableText($strategy->getNomStrategie(), $language),
@@ -292,7 +282,6 @@ class StrategyPlaybookLocalizationService
                 $this->translateNullableText($strategy->getType(), $language),
                 (string) $labels['undefined']
             ),
-            'news' => $this->translateNullableText($strategy->getNews(), $language),
             'justification' => $this->translateNullableText($strategy->getJustification(), $language),
             'owner' => $this->buildUserFullName(
                 $strategy->getUser()?->getPrenomUser(),
@@ -375,9 +364,6 @@ class StrategyPlaybookLocalizationService
             return $trimmed;
         }
 
-        // LibreTranslate disabled for teammate environments without the service.
-        // Uncomment when translation service is available again:
-        // return $this->translator->translate($trimmed, 'en', 'fr');
         return $trimmed;
     }
 

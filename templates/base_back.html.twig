@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale|default('fr') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -82,6 +82,26 @@
 
            <div class="back-topbar-actions">
     {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
+
+    {% set current_route_name = app.request.attributes.get('_route')|default('app_back') %}
+    {% set route_params = app.request.attributes.get('_route_params', {}) %}
+    {% set query_params = app.request.query.all() %}
+    {% set fr_params = route_params|merge(query_params)|merge({'_locale': 'fr'}) %}
+    {% set en_params = route_params|merge(query_params)|merge({'_locale': 'en'}) %}
+
+    <div class="back-lang-switcher" aria-label="Choisir la langue">
+        <a href="{{ path(current_route_name, fr_params) }}"
+           class="back-lang-option {{ app.request.locale == 'fr' ? 'active' : '' }}"
+           aria-label="Francais">
+            FR
+        </a>
+        <span class="back-lang-divider">|</span>
+        <a href="{{ path(current_route_name, en_params) }}"
+           class="back-lang-option {{ app.request.locale == 'en' ? 'active' : '' }}"
+           aria-label="English">
+            EN
+        </a>
+    </div>
 
     <a href="{{ path('back_user_profile') }}" class="back-user-chip">
         {% if app.user and app.user.image_path %}

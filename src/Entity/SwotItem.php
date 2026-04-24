@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\SwotItemRepository;
 
@@ -58,7 +59,11 @@ class SwotItem
     }
 
     #[ORM\Column(type: 'text', nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $description = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     public function getDescription(): ?string
     {
@@ -110,6 +115,13 @@ class SwotItem
     public function setUpdated_at(?\DateTimeInterface $updated_at): self
     {
         $this->updated_at = $updated_at;
+        return $this;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
         return $this;
     }
 

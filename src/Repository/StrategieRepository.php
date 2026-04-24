@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Strategie;
+use App\Entity\Project;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -21,7 +22,11 @@ class StrategieRepository extends ServiceEntityRepository
     /**
      * @return Strategie[]
      */
-    public function findBackOfficeStrategies(array $filters = [], string $sortBy = 'created_at', string $direction = 'DESC'): array
+    public function findBackOfficeStrategies(
+        array $filters = [],
+        string $sortBy = 'created_at',
+        string $direction = 'DESC'
+    ): array
     {
         if (!in_array($direction, ['ASC', 'DESC'], true)) {
             $direction = 'DESC';
@@ -201,6 +206,39 @@ class StrategieRepository extends ServiceEntityRepository
         return $qb->getQuery()->getOneOrNullResult();
     }
 
+    public function findDuplicateByNameForProject(
+        string $name,
+        ?Project $project,
+        ?int $excludeStrategyId = null
+    ): ?Strategie {
+        $normalizedName = mb_strtolower(trim($name));
+        if ($normalizedName === '') {
+            return null;
+        }
+
+        $qb = $this->createQueryBuilder('s')
+            ->andWhere('LOWER(TRIM(s.nomStrategie)) = :normalizedName')
+            ->setParameter('normalizedName', $normalizedName)
+            ->orderBy('s.idStrategie', 'DESC')
+            ->setMaxResults(1);
+
+        if ($project instanceof Project) {
+            $qb
+                ->andWhere('s.project = :project')
+                ->setParameter('project', $project);
+        } else {
+            $qb->andWhere('s.project IS NULL');
+        }
+
+        if ($excludeStrategyId !== null && $excludeStrategyId > 0) {
+            $qb
+                ->andWhere('s.idStrategie != :excludeStrategyId')
+                ->setParameter('excludeStrategyId', $excludeStrategyId);
+        }
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
     private function formatDateLabel(\DateTimeImmutable $date): string
     {
         return $date->format('d/m/Y');
@@ -251,6 +289,20 @@ class StrategieRepository extends ServiceEntityRepository
             ->leftJoin('s.user', 'u')
             ->leftJoin('s.objectives', 'o')
             ->addSelect('p', 'u', 'o');
+
+        // Keep the latest strategy for each (project, normalized name) pair to avoid
+        // showing historical duplicates created before duplicate guards were added.
+        $qb->andWhere(
+            's.idStrategie = (
+                SELECT MAX(s2.idStrategie)
+                FROM App\Entity\Strategie s2
+                WHERE LOWER(TRIM(s2.nomStrategie)) = LOWER(TRIM(s.nomStrategie))
+                  AND (
+                    (s2.project IS NULL AND s.project IS NULL)
+                    OR s2.project = s.project
+                  )
+            )'
+        );
 
         $searchQuery = trim((string) ($filters['query'] ?? ''));
         if ($searchQuery !== '') {

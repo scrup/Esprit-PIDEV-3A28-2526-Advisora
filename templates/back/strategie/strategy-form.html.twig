@@ -18,6 +18,7 @@
 {% endblock %}
 
 {% block body %}
+{% set currentLocale = app.request.locale|lower starts with 'en' ? 'en' : 'fr' %}
 <div class="form-container">
     <div class="form-header">
         <div class="header-left">
@@ -39,6 +40,10 @@
                 {% else %}
                     Remplissez le formulaire ci-dessous pour creer une nouvelle strategie d'investissement.
                 {% endif %}
+            </p>
+            <p style="margin-top:8px;font-size:.9rem;color:#7b8493;">
+                Langue d edition active: <strong>{{ currentLocale|upper }}</strong>.
+                Utilisez le switch FR/EN en haut pour modifier la traduction de cette langue.
             </p>
         </div>
     </div>

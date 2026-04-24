@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initCharts();
     initEventListeners();
     updateTypeDistribution();
+    initStrategyCountdowns();
+    initBackToTop();
     initObjectiveModal();
 });
 
@@ -85,22 +87,51 @@ function initCharts() {
 }
 
 function updateTypeDistribution() {
+    const donutContainer = document.querySelector('.donut-container');
+    const rawDistribution = donutContainer?.dataset.typeDistribution || '';
+    const strategyTotalFromServer = Number(donutContainer?.dataset.strategyTotal || 0);
     const cards = getStrategyCards();
-    const counts = new Map();
 
-    cards.forEach((card) => {
-        const type = card.dataset.type || 'non-defini';
-        counts.set(type, (counts.get(type) || 0) + 1);
-    });
+    let entries = parseTypeDistribution(rawDistribution);
 
-    const entries = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    if (entries.length === 0) {
+        const counts = new Map();
+
+        cards.forEach((card) => {
+            const type = card.dataset.type || 'non-defini';
+            counts.set(type, (counts.get(type) || 0) + 1);
+        });
+
+        entries = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    }
 
     if (typeDonutTotal) {
-        typeDonutTotal.textContent = String(cards.length);
+        typeDonutTotal.textContent = String(strategyTotalFromServer > 0 ? strategyTotalFromServer : cards.length);
     }
 
     renderTypeLegend(entries);
     updateTypeDonutChart(entries);
+}
+
+function parseTypeDistribution(rawDistribution) {
+    if (!rawDistribution) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(rawDistribution);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            return [];
+        }
+
+        return Object.entries(parsed)
+            .map(([type, count]) => [String(type), Number(count) || 0])
+            .filter(([, count]) => count > 0)
+            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    } catch (error) {
+        console.warn('Impossible de parser la distribution des types de strategie.', error);
+        return [];
+    }
 }
 
 function renderTypeLegend(entries) {
@@ -163,9 +194,102 @@ function formatTypeLabel(type) {
 
     return type
         .toLowerCase()
-        .split('_')
+        .split(/[_\s]+/)
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
+}
+
+function formatCountdownGroups(totalSeconds) {
+    const normalized = Math.max(0, Math.floor(totalSeconds));
+    const days = Math.floor(normalized / 86400);
+    const hours = Math.floor((normalized % 86400) / 3600);
+    const minutes = Math.floor((normalized % 3600) / 60);
+    const seconds = normalized % 60;
+
+    return `${days} ${String(hours).padStart(2, '0')} ${String(minutes).padStart(2, '0')} ${String(seconds).padStart(2, '0')}`;
+}
+
+function initStrategyCountdowns() {
+    const countdownElements = Array.from(document.querySelectorAll('[data-strategy-countdown]'));
+    if (countdownElements.length === 0) {
+        return;
+    }
+
+    const updateCountdown = (element) => {
+        const displayElement = element.querySelector('[data-countdown-display], [data-countdown-value]');
+        if (!displayElement) {
+            return;
+        }
+
+        const endAtRaw = element.dataset.endAt || '';
+        const endDate = new Date(endAtRaw);
+        if (Number.isNaN(endDate.getTime())) {
+            displayElement.textContent = '-- -- -- --';
+            return;
+        }
+
+        const now = new Date();
+        const remainingSeconds = (endDate.getTime() - now.getTime()) / 1000;
+        const progressBar = element.querySelector('[data-progress-bar]');
+
+        if (remainingSeconds <= 0) {
+            element.classList.add('is-expired');
+            displayElement.textContent = 'Expiree';
+            if (progressBar) {
+                progressBar.style.width = '100%';
+            }
+            return;
+        }
+
+        element.classList.remove('is-expired');
+        displayElement.textContent = formatCountdownGroups(remainingSeconds);
+
+        if (!progressBar) {
+            return;
+        }
+
+        const startAtRaw = element.dataset.startAt || '';
+        const startDate = new Date(startAtRaw);
+        if (Number.isNaN(startDate.getTime()) || endDate.getTime() <= startDate.getTime()) {
+            progressBar.style.width = '0%';
+            return;
+        }
+
+        const totalDuration = (endDate.getTime() - startDate.getTime()) / 1000;
+        const elapsed = totalDuration - remainingSeconds;
+        const percent = Math.max(0, Math.min(100, (elapsed / totalDuration) * 100));
+        progressBar.style.width = `${percent}%`;
+    };
+
+    const refreshCountdowns = () => {
+        countdownElements.forEach(updateCountdown);
+    };
+
+    refreshCountdowns();
+    window.setInterval(refreshCountdowns, 1000);
+}
+
+function initBackToTop() {
+    const backToTopButton = document.getElementById('strategyBackToTop');
+
+    if (!backToTopButton) {
+        return;
+    }
+
+    const toggleButton = () => {
+        const shouldShow = window.scrollY > 320;
+        backToTopButton.classList.toggle('is-visible', shouldShow);
+    };
+
+    backToTopButton.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    window.addEventListener('scroll', toggleButton, { passive: true });
+    toggleButton();
 }
 
 function initEventListeners() {

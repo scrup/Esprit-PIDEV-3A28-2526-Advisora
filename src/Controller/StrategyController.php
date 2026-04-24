@@ -18,21 +18,18 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\GeminiPdfContentGenerator;
 use App\Service\PdfGeneratorService;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Service\LibreTranslateService;
 use App\Service\StrategyPlaybookLocalizationService;
 use App\Service\GeminiStrategyGeneratorService;
-use Gedmo\Translatable\Entity\Translation;
 use App\Service\PythonRecommendationService;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Service\AutoTranslator;
+use Gedmo\Translatable\Entity\Repository\TranslationRepository;
+use Gedmo\Translatable\Entity\Translation;
 
 
 final class StrategyController extends AbstractController
 {
     private const RECOMMENDATION_SESSION_KEY = 'strategy_pending_recommendations';
-
-    public function __construct(
-        private LibreTranslateService $translator
-    ) {}
 
     private const OBJECTIVE_PRIORITY_MAP = [
         'low' => Objective::PRIORITY_LOW,
@@ -170,9 +167,12 @@ final class StrategyController extends AbstractController
         ]);
     }
 
-     #[Route('/back/strategies/nouvelle', name: 'app_back_strategies_new', methods: ['GET', 'POST'])]
-public function new(Request $request, EntityManagerInterface $entityManager): Response
-{
+   #[Route('/back/strategies/nouvelle', name: 'app_back_strategies_new', methods: ['GET', 'POST'])]
+public function new(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    AutoTranslator $autoTranslator
+): Response {
     $strategy = new Strategie();
     $currentUser = $this->getCurrentUser();
 
@@ -192,15 +192,37 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         $this->applyAutomaticStatusRules($strategy);
         $this->syncLockedAtWithStatus($strategy);
 
-        // Base locale = français
-        $this->applyTranslatableLocaleIfSupported($strategy, 'fr');
+        /** @var StrategieRepository $strategieRepository */
+        $strategieRepository = $entityManager->getRepository(Strategie::class);
+        $duplicate = $strategieRepository->findDuplicateByNameForProject(
+            (string) $strategy->getNomStrategie(),
+            $strategy->getProject()
+        );
+
+        if ($duplicate instanceof Strategie) {
+            $this->addFlash(
+                'info',
+                sprintf(
+                    'Une strategie avec le meme nom existe deja pour ce projet (ID #%d).',
+                    (int) $duplicate->getIdStrategie()
+                )
+            );
+
+            return $this->redirectToRoute('app_back_strategies_edit', ['id' => $duplicate->getIdStrategie()]);
+        }
 
         $entityManager->persist($strategy);
         $entityManager->flush();
 
-        // Traductions anglaises
-        $this->syncEnglishStrategyTranslations($entityManager, $strategy);
-        $entityManager->flush();
+        try {
+            $this->autoTranslateStrategyFields($strategy, $entityManager, $autoTranslator, 'fr');
+            $entityManager->flush();
+        } catch (\Throwable $e) {
+            $this->addFlash(
+                'info',
+                'Strategie creee, mais la traduction automatique a echoue : ' . $e->getMessage()
+            );
+        }
 
         $this->addFlash('success', 'Strategie creee avec succes.');
 
@@ -213,10 +235,13 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
     ]);
 }
 
-
-   #[Route('/back/strategies/{id}/edit', name: 'app_back_strategies_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
-{
+#[Route('/back/strategies/{id}/edit', name: 'app_back_strategies_edit', methods: ['GET', 'POST'])]
+public function edit(
+    Request $request,
+    Strategie $strategy,
+    EntityManagerInterface $entityManager,
+    AutoTranslator $autoTranslator
+): Response {
     $previousStatus = $strategy->getStatusStrategie();
     $previousProject = $strategy->getProject();
     $currentUser = $this->getCurrentUser();
@@ -233,13 +258,37 @@ public function edit(Request $request, Strategie $strategy, EntityManagerInterfa
         $this->applyAutomaticStatusRules($strategy, $previousStatus, $projectChanged);
         $this->syncLockedAtWithStatus($strategy, $previousStatus);
 
-        // On sauvegarde d'abord la version FR
-        $this->applyTranslatableLocaleIfSupported($strategy, 'fr');
+        $duplicate = $entityManager
+            ->getRepository(Strategie::class)
+            ->findDuplicateByNameForProject(
+                (string) $strategy->getNomStrategie(),
+                $strategy->getProject(),
+                $strategy->getIdStrategie()
+            );
+
+        if ($duplicate instanceof Strategie) {
+            $this->addFlash(
+                'error',
+                sprintf(
+                    'Nom deja utilise pour ce projet par la strategie #%d. Choisissez un autre nom.',
+                    (int) $duplicate->getIdStrategie()
+                )
+            );
+
+            return $this->redirectToRoute('app_back_strategies_edit', ['id' => $strategy->getIdStrategie()]);
+        }
+
         $entityManager->flush();
 
-        // Puis on met à jour les traductions EN
-        $this->syncEnglishStrategyTranslations($entityManager, $strategy);
-        $entityManager->flush();
+        try {
+            $this->autoTranslateStrategyFields($strategy, $entityManager, $autoTranslator, 'fr');
+            $entityManager->flush();
+        } catch (\Throwable $e) {
+            $this->addFlash(
+                'info',
+                'Strategie modifiee, mais la traduction automatique a echoue : ' . $e->getMessage()
+            );
+        }
 
         $this->addFlash('success', 'Strategie modifiee avec succes.');
 
@@ -250,6 +299,138 @@ public function edit(Request $request, Strategie $strategy, EntityManagerInterfa
         'form' => $form->createView(),
         'strategy' => $strategy,
     ]);
+}
+
+#[Route('/back/strategies/objectives/new', name: 'app_back_strategies_objective_new', methods: ['POST'])]
+public function createObjective(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    ValidatorInterface $validator,
+    AutoTranslator $autoTranslator
+): Response {
+    if (!$this->isCsrfTokenValid('create_objective', (string) $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide. Creation de l objectif impossible.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $strategyId = (int) $request->request->get('strategyId');
+    if ($strategyId <= 0) {
+        $this->addFlash('error', 'Strategie cible invalide.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $strategy = $entityManager->getRepository(Strategie::class)->find($strategyId);
+
+    if (!$strategy) {
+        $this->addFlash('error', 'Strategie introuvable.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $objectiveData = $this->extractObjectiveData($request);
+
+    if ($objectiveData['name'] === '') {
+        $this->addFlash('error', 'Le nom de l objectif est obligatoire.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    if (!$this->isObjectivePriorityKeyValid($objectiveData['priority_key'])) {
+        $this->addFlash('error', 'La priorite de l objectif est invalide.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $objective = new Objective();
+    $this->applyObjectiveData($objective, $objectiveData);
+    $objective->setStrategie($strategy);
+
+    $violations = $validator->validate($objective);
+    if (count($violations) > 0) {
+        $this->addObjectiveValidationErrors($violations);
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $entityManager->persist($objective);
+    $entityManager->flush();
+
+    try {
+        $this->autoTranslateObjectiveFields($objective, $entityManager, $autoTranslator, 'fr');
+        $entityManager->flush();
+    } catch (\Throwable $e) {
+        $this->addFlash(
+            'info',
+            'Objectif ajoute, mais la traduction automatique a echoue : ' . $e->getMessage()
+        );
+    }
+
+    $this->addFlash('success', sprintf(
+        'Objectif "%s" ajoute a la strategie "%s".',
+        $objective->getNomObj(),
+        $strategy->getNomStrategie()
+    ));
+
+    return $this->redirectToStrategyReferer($request);
+}
+
+#[Route('/back/strategies/objectives/{id}/edit', name: 'app_back_strategies_objective_edit', methods: ['POST'])]
+public function updateObjective(
+    Request $request,
+    Objective $objective,
+    EntityManagerInterface $entityManager,
+    ValidatorInterface $validator,
+    AutoTranslator $autoTranslator
+): Response {
+    if (!$this->isCsrfTokenValid('edit_objective_' . $objective->getIdOb(), (string) $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide. Modification de l objectif impossible.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $objectiveData = $this->extractObjectiveData($request);
+
+    if ($objectiveData['name'] === '') {
+        $this->addFlash('error', 'Le nom de l objectif est obligatoire.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    if (!$this->isObjectivePriorityKeyValid($objectiveData['priority_key'])) {
+        $this->addFlash('error', 'La priorite de l objectif est invalide.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $this->applyObjectiveData($objective, $objectiveData);
+
+    $violations = $validator->validate($objective);
+    if (count($violations) > 0) {
+        $this->addObjectiveValidationErrors($violations);
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $entityManager->flush();
+
+    try {
+        $this->autoTranslateObjectiveFields($objective, $entityManager, $autoTranslator, 'fr');
+        $entityManager->flush();
+    } catch (\Throwable $e) {
+        $this->addFlash(
+            'info',
+            'Objectif mis a jour, mais la traduction automatique a echoue : ' . $e->getMessage()
+        );
+    }
+
+    $this->addFlash('success', sprintf(
+        'Objectif "%s" mis a jour avec succes.',
+        $objective->getNomObj()
+    ));
+
+    return $this->redirectToStrategyReferer($request);
 }
 
     #[Route('/back/strategies/{id}/delete', name: 'app_back_strategies_delete', methods: ['POST'])]
@@ -266,22 +447,9 @@ public function edit(Request $request, Strategie $strategy, EntityManagerInterfa
         return $this->redirectToStrategyListReferer($request);
     }
 
-    #[Route('/back/strategies/{id}/show', name: 'app_back_strategies_show', methods: ['GET'])]
-public function show(Strategie $strategy, EntityManagerInterface $entityManager, Request $request): Response
+#[Route('/back/strategies/{id}/show', name: 'app_back_strategies_show', methods: ['GET'])]
+public function show(Strategie $strategy): Response
 {
-    // Determine the user's locale (e.g., from session, user preference, or request)
-    $locale = $request->getLocale(); // Defaults to 'fr' if not set
-    
-    // Or, if you store locale in the User entity:
-    // $user = $this->getCurrentUser();
-    // $locale = $user?->getPreferredLocale() ?? $request->getLocale();
-
-    // Tell Gedmo which language to load
-    if ($this->applyTranslatableLocaleIfSupported($strategy, $locale)) {
-        // Reload the entity to apply the translation
-        $entityManager->refresh($strategy);
-    }
-
     return $this->render('back/strategie/show.html.twig', [
         'strategy' => $strategy,
     ]);
@@ -327,8 +495,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
             return $this->redirectToStrategyReferer($request);
         }
 
-        $this->applyTranslatableLocaleIfSupported($strategy, 'fr');
-        $this->saveRejectedJustificationWithTranslation($entityManager, $strategy, $justification);
+        $this->saveRejectedJustification($strategy, $justification);
     }
 
     $previousStatus = $strategy->getStatusStrategie();
@@ -387,8 +554,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
                 return $this->redirectToStrategyReferer($request);
             }
 
-            $this->applyTranslatableLocaleIfSupported($strategy, 'fr');
-            $this->saveRejectedJustificationWithTranslation($entityManager, $strategy, $justification);
+            $this->saveRejectedJustification($strategy, $justification);
         }
 
         $previousStatus = $strategy->getStatusStrategie();
@@ -418,101 +584,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
         return $this->redirectToStrategyReferer($request);
     }
 
-    #[Route('/back/strategies/objectives/new', name: 'app_back_strategies_objective_new', methods: ['POST'])]
-    public function createObjective(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
-    {
-        if (!$this->isCsrfTokenValid('create_objective', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token invalide. Creation de l objectif impossible.');
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        $strategyId = (int) $request->request->get('strategyId');
-        if ($strategyId <= 0) {
-            $this->addFlash('error', 'Strategie cible invalide.');
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        $strategy = $entityManager->getRepository(Strategie::class)->find($strategyId);
-
-        if (!$strategy) {
-            $this->addFlash('error', 'Strategie introuvable.');
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        $objectiveData = $this->extractObjectiveData($request);
-
-        if ($objectiveData['name'] === '') {
-            $this->addFlash('error', 'Le nom de l objectif est obligatoire.');
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        if (!$this->isObjectivePriorityKeyValid($objectiveData['priority_key'])) {
-            $this->addFlash('error', 'La priorite de l objectif est invalide.');
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        $objective = new Objective();
-        $this->applyObjectiveData($objective, $objectiveData);
-        $objective->setStrategie($strategy);
-
-        $violations = $validator->validate($objective);
-        if (count($violations) > 0) {
-            $this->addObjectiveValidationErrors($violations);
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        $entityManager->persist($objective);
-        $entityManager->flush();
-
-        $this->addFlash('success', sprintf('Objectif "%s" ajoute a la strategie "%s".', $objective->getNomObj(), $strategy->getNomStrategie()));
-
-        return $this->redirectToStrategyReferer($request);
-    }
-
-    #[Route('/back/strategies/objectives/{id}/edit', name: 'app_back_strategies_objective_edit', methods: ['POST'])]
-    public function updateObjective(Request $request, Objective $objective, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
-    {
-        if (!$this->isCsrfTokenValid('edit_objective_' . $objective->getIdOb(), (string) $request->request->get('_token'))) {
-            $this->addFlash('error', 'Token invalide. Modification de l objectif impossible.');
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        $objectiveData = $this->extractObjectiveData($request);
-
-        if ($objectiveData['name'] === '') {
-            $this->addFlash('error', 'Le nom de l objectif est obligatoire.');
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        if (!$this->isObjectivePriorityKeyValid($objectiveData['priority_key'])) {
-            $this->addFlash('error', 'La priorite de l objectif est invalide.');
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        $this->applyObjectiveData($objective, $objectiveData);
-
-        $violations = $validator->validate($objective);
-        if (count($violations) > 0) {
-            $this->addObjectiveValidationErrors($violations);
-
-            return $this->redirectToStrategyReferer($request);
-        }
-
-        $entityManager->flush();
-
-        $this->addFlash('success', sprintf('Objectif "%s" mis a jour avec succes.', $objective->getNomObj()));
-
-        return $this->redirectToStrategyReferer($request);
-    }
+    
     #[Route('/strategies/{id}/generate-pdf', name: 'strategy_generate_pdf', methods: ['POST'])]
     public function generatePdf(
         Request $request,
@@ -978,46 +1050,9 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
 
         return $criteria;
     }
-
-
-
-private function syncEnglishStrategyTranslations(EntityManagerInterface $entityManager, Strategie $strategy): void
+private function saveRejectedJustification(Strategie $strategy, string $justification): void
 {
-    $this->saveEnglishTranslation($entityManager, $strategy, 'nomStrategie', $strategy->getNomStrategie());
-    $this->saveEnglishTranslation($entityManager, $strategy, 'justification', $strategy->getJustification());
-    $this->saveEnglishTranslation($entityManager, $strategy, 'type', $strategy->getType());
-}
-
-private function saveEnglishTranslation(
-    EntityManagerInterface $entityManager,
-    Strategie $strategy,
-    string $field,
-    ?string $frenchValue
-): void {
-    $frenchValue = trim((string) $frenchValue);
-
-    if ($frenchValue === '') {
-        return;
-    }
-
-    /** @var \Gedmo\Translatable\Entity\Repository\TranslationRepository $translationRepo */
-    $translationRepo = $entityManager->getRepository(Translation::class);
-
-    $englishValue = $frenchValue;
-    // LibreTranslate disabled for teammate environments without the service.
-    // Uncomment when translation service is available again:
-    // $englishValue = $this->translator->translate($frenchValue, 'en', 'fr');
-
-    $translationRepo->translate($strategy, $field, 'en', $englishValue);
-}
-
-private function saveRejectedJustificationWithTranslation(
-    EntityManagerInterface $entityManager,
-    Strategie $strategy,
-    string $justification
-): void {
     $strategy->setJustification($justification);
-    $this->saveEnglishTranslation($entityManager, $strategy, 'justification', $justification);
 }
 
 
@@ -1183,10 +1218,23 @@ private function saveRejectedJustificationWithTranslation(
         }
 
         $strategie = $this->createStrategyFromRecommendation($pendingRecommendation, $projet, $user);
+
+        $duplicate = $strategieRepository->findDuplicateByNameForProject(
+            (string) $strategie->getNomStrategie(),
+            $strategie->getProject()
+        );
+        if ($duplicate instanceof Strategie) {
+            $this->applyRecommendationToExistingStrategy($duplicate, $projet, $user);
+            $entityManager->flush();
+
+            $this->clearPendingRecommendation($request, $id, $user);
+            $this->addFlash('info', 'Une strategie du meme nom existe deja pour ce projet. La strategie existante a ete reutilisee.');
+
+            return $this->redirectToRoute('project_back_manage', ['id' => $id]);
+        }
+
         $strategie->setStatusStrategie(Strategie::STATUS_IN_PROGRESS);
         $entityManager->persist($strategie);
-        $entityManager->flush();
-        $this->syncEnglishStrategyTranslations($entityManager, $strategie);
         $entityManager->flush();
 
         $this->clearPendingRecommendation($request, $id, $user);
@@ -1231,7 +1279,6 @@ private function saveRejectedJustificationWithTranslation(
             );
 
             $strategie = $this->createStrategyFromRecommendation($normalizedRecommendation, $projet, $user);
-            $this->applyTranslatableLocaleIfSupported($strategie, 'fr');
             $strategie->setStatusStrategie(Strategie::STATUS_PENDING);
             $strategie->setLockedAt(null);
             $this->storePendingRecommendation($request, $projet->getIdProj(), $user, $normalizedRecommendation);
@@ -1420,16 +1467,57 @@ private function saveRejectedJustificationWithTranslation(
         return sprintf('%d:%d', $projectId, $userId);
     }
 
-    private function applyTranslatableLocaleIfSupported(object $entity, string $locale): bool
-    {
-        if (!method_exists($entity, 'setTranslatableLocale')) {
-            return false;
+
+
+    private function autoTranslateStrategyFields(
+    Strategie $strategy,
+    EntityManagerInterface $entityManager,
+    AutoTranslator $autoTranslator,
+    string $source = 'fr'
+): void {
+    /** @var TranslationRepository $translationRepo */
+    $translationRepo = $entityManager->getRepository(Translation::class);
+
+    foreach (['en', 'ar'] as $target) {
+        $translatedName = $autoTranslator->translateNullable($strategy->getNomStrategie(), $source, $target);
+        $translatedType = $autoTranslator->translateNullable($strategy->getType(), $source, $target);
+        $translatedJustification = $autoTranslator->translateNullable($strategy->getJustification(), $source, $target);
+
+        if ($translatedName !== null && trim($translatedName) !== '') {
+            $translationRepo->translate($strategy, 'nomStrategie', $target, $translatedName);
         }
 
-        $entity->setTranslatableLocale($locale);
+        if ($translatedType !== null && trim($translatedType) !== '') {
+            $translationRepo->translate($strategy, 'type', $target, $translatedType);
+        }
 
-        return true;
+        if ($translatedJustification !== null && trim($translatedJustification) !== '') {
+            $translationRepo->translate($strategy, 'justification', $target, $translatedJustification);
+        }
     }
+}
 
+private function autoTranslateObjectiveFields(
+    Objective $objective,
+    EntityManagerInterface $entityManager,
+    AutoTranslator $autoTranslator,
+    string $source = 'fr'
+): void {
+    /** @var TranslationRepository $translationRepo */
+    $translationRepo = $entityManager->getRepository(Translation::class);
+
+    foreach (['en', 'ar'] as $target) {
+        $translatedName = $autoTranslator->translateNullable($objective->getNomObj(), $source, $target);
+        $translatedDescription = $autoTranslator->translateNullable($objective->getDescriptionOb(), $source, $target);
+
+        if ($translatedName !== null && trim($translatedName) !== '') {
+            $translationRepo->translate($objective, 'nomObj', $target, $translatedName);
+        }
+
+        if ($translatedDescription !== null && trim($translatedDescription) !== '') {
+            $translationRepo->translate($objective, 'descriptionOb', $target, $translatedDescription);
+        }
+    }
+}
 
 }

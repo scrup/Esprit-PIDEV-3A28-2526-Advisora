@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\ResourceRepository;
 
@@ -53,7 +54,11 @@ class Resource
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $nomRs = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     public function getNomRs(): ?string
     {
@@ -267,6 +272,13 @@ class Resource
             'UNAVAILABLE', 'OUT_OF_STOCK', 'INDISPONIBLE' => self::STATUS_UNAVAILABLE,
             default => $normalized,
         };
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
+        return $this;
     }
 
 }

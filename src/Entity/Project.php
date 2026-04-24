@@ -6,6 +6,7 @@ use App\Repository\ProjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\Table(name: 'projects')]
@@ -28,16 +29,22 @@ class Project
     private ?int $idProj = null;
 
     #[ORM\Column(type: 'string', length: 160, nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $titleProj = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $descriptionProj = null;
 
     #[ORM\Column(type: 'float', nullable: false, options: ['default' => 0])]
     private ?float $budgetProj = null;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $typeProj = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     #[ORM\Column(
         type: 'string',
@@ -476,6 +483,13 @@ class Project
         if ($this->strategies->removeElement($strategy) && $strategy->getProject() === $this) {
             $strategy->setProject(null);
         }
+
+        return $this;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
 
         return $this;
     }

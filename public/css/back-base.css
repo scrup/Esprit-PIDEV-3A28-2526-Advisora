@@ -1334,3 +1334,35 @@ body.back-mode .back-header {
         gap: 10px;
     }
 }
+
+.back-lang-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--back-border);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.back-lang-option {
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--back-text-soft);
+    letter-spacing: 0.06em;
+    transition: color 0.2s ease;
+}
+
+.back-lang-option:hover {
+    color: var(--back-text);
+}
+
+.back-lang-option.active {
+    color: var(--back-beige);
+}
+
+.back-lang-divider {
+    color: var(--back-border-strong);
+    font-size: 0.74rem;
+}

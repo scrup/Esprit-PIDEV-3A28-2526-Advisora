@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\UserlogRepository;
 
@@ -44,7 +45,11 @@ class Userlog
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $actionLog = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     public function getActionLog(): ?string
     {
@@ -82,6 +87,13 @@ class Userlog
     public function setIp_address(?string $ip_address): self
     {
         $this->ip_address = $ip_address;
+        return $this;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
         return $this;
     }
 

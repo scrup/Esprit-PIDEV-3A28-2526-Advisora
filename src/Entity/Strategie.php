@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use Gedmo\Mapping\Annotation as Gedmo;
 use App\Repository\StrategieRepository;
 
 #[ORM\Entity(repositoryClass: StrategieRepository::class)]
@@ -100,19 +100,7 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $news = null;
-
-    public function getNews(): ?string
-    {
-        return $this->news;
-    }
-
-    public function setNews(?string $news): self
-    {
-        $this->news = $news;
-        return $this;
-    }
+   
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'strategies')]
     #[ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj')]
@@ -145,6 +133,7 @@ class Strategie
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $nomStrategie = null;
 
     public function getNomStrategie(): ?string
@@ -159,6 +148,7 @@ class Strategie
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $justification = null;
 
     public function getJustification(): ?string
@@ -173,7 +163,11 @@ class Strategie
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $type = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     public function getType(): ?string
     {
@@ -234,12 +228,19 @@ public function getDureeTerme(): ?int
     return $this->DureeTerme;
 }
 
-public function setDureeTerme(?int $DureeTerme): self
+    public function setDureeTerme(?int $DureeTerme): self
 {
     $this->DureeTerme = $DureeTerme;
 
     return $this;
 }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
 
 
     #[ORM\OneToMany(targetEntity: Objective::class, mappedBy: 'strategie')]

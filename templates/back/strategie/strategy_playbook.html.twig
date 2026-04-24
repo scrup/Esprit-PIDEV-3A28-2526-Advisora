@@ -262,25 +262,20 @@
             <tr>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Projet associe</div>
-                        <div class="meta-value">{{ project ? (project.titleProj ?: 'Projet #' ~ project.idProj) : 'Aucun projet' }}</div>
-                        <div class="meta-detail">Statut: {{ projectStatus }}</div>
+                        <div class="meta-label">{{ labels.associated_project }}</div>
+                        <div class="meta-value">{{ project ? (project.titleProj ?: labels.no_project) : labels.no_project }}</div>
+                        <div class="meta-detail">{{ labels.status }}: {{ projectStatus }}</div>
                     </div>
                 </td>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Budget strategie</div>
-                        <div class="meta-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</div>
-                        <div class="meta-detail">Budget projet: {{ project and project.budgetProj is not null ? project.budgetProj|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</div>
+                        <div class="meta-label">{{ labels.strategy_budget }}</div>
+                        <div class="meta-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : labels.undefined }}</div>
+                        <div class="meta-detail">{{ labels.project_budget }}: {{ project and project.budgetProj is not null ? project.budgetProj|number_format(0, ',', ' ') ~ ' DT' : labels.undefined }}</div>
                     </div>
                 </td>
                 <td>
                     <div class="card meta-card">
-<<<<<<< HEAD
-                        <div class="meta-label">Gain estime</div>
-                        <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non defini' }}</div>
-                        <div class="meta-detail">Avancement projet: {{ projectProgress }}</div>
-=======
                         <div class="meta-label">{{ labels.estimated_gain }}</div>
                         <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : labels.undefined }}</div>
                         <div class="meta-detail">{{ labels.project_progress }}: {{ projectProgress }}</div>
@@ -290,23 +285,23 @@
             <tr>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Duree cible</div>
-                        <div class="meta-value">{{ strategy.DureeTerme ?: 'Non definie' }} mois</div>
-                        <div class="meta-detail">Type: {{ strategy.type ?: 'Non defini' }}</div>
+                        <div class="meta-label">{{ labels.target_duration }}</div>
+                        <div class="meta-value">{{ strategy.DureeTerme ?: labels.undefined }} {{ labels.duration_unit }}</div>
+                        <div class="meta-detail">{{ labels.type }}: {{ strategy.type ?: labels.undefined }}</div>
                     </div>
                 </td>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Responsable strategie</div>
-                        <div class="meta-value">{{ strategyOwner ?: 'Non defini' }}</div>
-                        <div class="meta-detail">Client projet: {{ projectOwner ?: 'Non defini' }}</div>
+                        <div class="meta-label">{{ labels.strategy_owner }}</div>
+                        <div class="meta-value">{{ strategyOwner ?: labels.undefined }}</div>
+                        <div class="meta-detail">{{ labels.project_client }}: {{ projectOwner ?: labels.undefined }}</div>
                     </div>
                 </td>
                 <td>
                     <div class="card meta-card">
-                        <div class="meta-label">Objectifs relies</div>
+                        <div class="meta-label">{{ labels.linked_objectives_count }}</div>
                         <div class="meta-value">{{ strategy.objectives|length }}</div>
-                        <div class="meta-detail">Document genere le {{ "now"|date("d/m/Y H:i") }}</div>
+                        <div class="meta-detail">{{ labels.generated_on }} {{ "now"|date("d/m/Y H:i") }}</div>
                     </div>
                 </td>
             </tr>

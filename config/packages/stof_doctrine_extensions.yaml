@@ -1,10 +1,7 @@
 stof_doctrine_extensions:
-    default_locale: fr # Default fallback language (French)
-    class:
-        translatable: App\Doctrine\AttributeTranslatableListener
+    default_locale: fr
     orm:
         default:
-            timestampable: true
+            translatable: true
             sluggable: true
             softdeleteable: true
-

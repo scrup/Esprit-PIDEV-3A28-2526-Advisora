@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\NotificationRepository;
 
@@ -29,6 +30,7 @@ class Notification
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $title = null;
 
     public function getTitle(): ?string
@@ -43,7 +45,11 @@ class Notification
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $description = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     public function getDescription(): ?string
     {
@@ -109,6 +115,13 @@ class Notification
     public function setTarget_project_id(?int $target_project_id): self
     {
         $this->target_project_id = $target_project_id;
+        return $this;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
         return $this;
     }
 

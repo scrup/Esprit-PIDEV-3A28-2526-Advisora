@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\DecisionRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: DecisionRepository::class)]
 #[ORM\Table(name: 'decisions')]
@@ -33,7 +34,11 @@ class Decision
     private ?string $StatutD = null;
 
     #[ORM\Column(name: 'descriptionD', type: 'text', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $descriptionD = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     #[ORM\Column(name: 'dateDecision', type: 'date', nullable: false)]
     private ?\DateTimeInterface $dateDecision = null;
@@ -166,6 +171,13 @@ class Decision
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
 
         return $this;
     }

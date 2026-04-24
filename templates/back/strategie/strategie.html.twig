@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="strategies-list">
-                    {% for strategy in strategies %}
+                    {% for strategy in pagination %}
                     {% set strategyOwner = strategy.user ? ((strategy.user.prenomUser ?: '') ~ ' ' ~ (strategy.user.nomUser ?: ''))|trim : '' %}
                     {% set budgetLabel = strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' %}
                     {% set gainLabel = strategy.gainEstime is not null ? strategy.gainEstime|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' %}
@@ -123,10 +123,12 @@
                                                 <strong class="strategy-summary-value">{{ strategyOwner != '' ? strategyOwner : 'Non assigne' }}</strong>
                                             </div>
 
-                                            {% if strategy.lockedAt and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
-    {% set strategy_deadline = strategy.lockedAt|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
+                                            {% set strategy_countdown_start = strategy.lockedAt ?: strategy.CreatedAtS %}
+                                            {% if strategy_countdown_start and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
+    {% set strategy_deadline = (strategy_countdown_start|date('c'))|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
     <div class="strategy-countdown-card" 
          data-strategy-countdown 
+         data-start-at="{{ strategy_countdown_start|date('c') }}"
          data-end-at="{{ strategy_deadline|date('c') }}"
          role="timer"
          aria-live="polite">
@@ -277,6 +279,14 @@
                         </div>
                     {% endfor %}
                 </div>
+                {% if pagination.pageCount > 1 %}
+                    <div class="strategy-pagination-wrap">
+                        <div class="strategy-pagination-meta" aria-live="polite">
+                            Page {{ pagination.currentPageNumber }} / {{ pagination.pageCount }}
+                        </div>
+                        {{ knp_pagination_render(pagination) }}
+                    </div>
+                {% endif %}
             </section>
 
             <aside class="strategies-sidebar">
@@ -361,11 +371,15 @@
                 
                 <div class="sidebar-card">
                     <h2>Repartition par Type</h2>
-                    <div class="donut-container">
+                    <div
+                        class="donut-container"
+                        data-type-distribution='{{ typeDistribution|json_encode|e('html_attr') }}'
+                        data-strategy-total="{{ filteredStrategiesCount }}"
+                    >
                         <div class="donut-chart">
                             <canvas id="strategyTypeDonutChart" width="160" height="160"></canvas>
                             <div class="donut-center">
-                                <span class="donut-total" id="typeDonutTotal">{{ strategies|length }}</span>
+                                <span class="donut-total" id="typeDonutTotal">{{ filteredStrategiesCount }}</span>
                                 <span class="donut-label">Total</span>
                             </div>
                         </div>
@@ -473,6 +487,15 @@
         </div>
     </div>
 </div>
+
+<button
+    type="button"
+    class="strategy-back-to-top"
+    id="strategyBackToTop"
+    aria-label="Retour en haut de page"
+>
+    <span class="material-symbols-outlined">north</span>
+</button>
 {% endblock %}
 
 {% block javascripts %}

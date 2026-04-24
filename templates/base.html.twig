@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale|default('fr') }}">
 <head>
     {% set public_base = app.request.basePath %}
     {% set current_route = app.request.get('_route')|default('') %}
