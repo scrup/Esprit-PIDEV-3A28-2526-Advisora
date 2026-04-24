@@ -250,7 +250,7 @@
                                         <span><strong>{{ 'project.strategy.estimated_gain'|trans }} :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
                                         <span><strong>ROI :</strong> {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, '.', ' ') ~ '%' : ('project.card.not_specified'|trans) }}</span>
                                         <span><strong>{{ 'project.strategy.objectives'|trans }} :</strong> {{ strategy.objectives|length }}</span>
-                                        {% set strategy_countdown_start = strategy.lockedAt ?: strategy.CreatedAtS %}
+                                        {% set strategy_countdown_start = strategy.statusStrategie == strategy_statuses.approved ? strategy.lockedAt : null %}
                                         {% if strategy_countdown_start and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
                                             {% set strategy_deadline = (strategy_countdown_start|date('c'))|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
                                             <span

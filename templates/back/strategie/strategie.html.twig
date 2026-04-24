@@ -123,7 +123,7 @@
                                                 <strong class="strategy-summary-value">{{ strategyOwner != '' ? strategyOwner : 'Non assigne' }}</strong>
                                             </div>
 
-                                            {% set strategy_countdown_start = strategy.lockedAt ?: strategy.CreatedAtS %}
+                                            {% set strategy_countdown_start = strategy.statusStrategie == constant('App\\Entity\\Strategie::STATUS_APPROVED') ? strategy.lockedAt : null %}
                                             {% if strategy_countdown_start and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
     {% set strategy_deadline = (strategy_countdown_start|date('c'))|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
     <div class="strategy-countdown-card" 
