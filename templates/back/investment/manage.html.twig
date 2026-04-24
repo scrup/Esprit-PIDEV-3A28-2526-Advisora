@@ -1,0 +1,65 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion investissement{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Gestion investissement</span>
+                <h1>Investissement #{{ investment.id }}</h1>
+                <p>Consultez le detail de l investissement et sa transaction associee.</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_investment_index') }}">Retour a la liste</a>
+                {% if latest_transaction %}
+                    <a class="pm-btn pm-btn-primary" href="{{ path('back_transaction_manage', {id: latest_transaction.id}) }}">Ouvrir la transaction</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% include 'back/investment/_module_nav.html.twig' %}
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>Investissement</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Client ID :</strong> {{ investment.user ? investment.user.idUser : 'N/A' }}</span>
+                    <span><strong>Client :</strong> {{ investment.user ? (investment.user.getPrenomUser() ~ ' ' ~ investment.user.getNomUser())|trim : 'Non renseigne' }}</span>
+                    <span><strong>Email :</strong> {{ investment.user ? investment.user.getEmailUser() : 'Non renseigne' }}</span>
+                    <span><strong>Projet :</strong> {{ investment.project ? investment.project.title : 'Projet indisponible' }}</span>
+                    <span><strong>Projet ID :</strong> {{ investment.project ? investment.project.id : 'N/A' }}</span>
+                    <span><strong>Commentaire :</strong> {{ investment.commentaireInv ?: 'Aucun commentaire' }}</span>
+                    <span><strong>Duree :</strong> {{ investment.durationEstimateDisplay }}</span>
+                    <span><strong>Fourchette :</strong> {{ investment.budgetRangeLabel }}</span>
+                </div>
+            </article>
+
+            <article class="pm-card">
+                <h2>Transaction actuelle</h2>
+                {% if latest_transaction %}
+                    <div class="pm-current-decision">
+                        <span class="pm-badge">Transaction</span>
+                        <strong>{{ latest_transaction.statusLabel }}</strong>
+                        <span>{{ latest_transaction.DateTransac ? latest_transaction.DateTransac|date('d/m/Y') : 'Date inconnue' }}</span>
+                        <p>Montant : {{ latest_transaction.MontantTransac|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</p>
+                    </div>
+                    <div class="pm-meta-list pm-meta-list-vertical">
+                        <span><strong>Transaction ID :</strong> {{ latest_transaction.id }}</span>
+                        <span><strong>Type :</strong> {{ latest_transaction.type ?: 'Non renseigne' }}</span>
+                    </div>
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('back_transaction_manage', {id: latest_transaction.id}) }}">Traiter la transaction</a>
+                    </div>
+                {% else %}
+                    <p class="pm-empty-text">Aucune transaction liee a cet investissement.</p>
+                {% endif %}
+            </article>
+        </div>
+    </section>
+{% endblock %}

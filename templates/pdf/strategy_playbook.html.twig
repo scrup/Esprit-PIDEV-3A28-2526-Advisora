@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Playbook Strategie</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            color: #2f2419;
+            background: #fffdfa;
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .page {
+            padding: 40px 46px 56px;
+        }
+
+        .hero {
+            padding: 28px 30px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #f8efe4 0%, #fffaf3 100%);
+            border: 1px solid #eadfd2;
+            margin-bottom: 24px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: #9a7b61;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 30px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            margin: 0;
+            color: #6c5847;
+        }
+
+        .meta-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+            margin: 8px 0 28px;
+        }
+
+        .meta-grid td {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 14px;
+        }
+
+        .meta-card {
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px solid #efe3d6;
+            background: #ffffff;
+        }
+
+        .meta-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #9a8a77;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .meta-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2f2419;
+        }
+
+        .section {
+            margin-bottom: 28px;
+        }
+
+        .section h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #6f4d38;
+        }
+
+        .section-box {
+            padding: 18px 20px;
+            border-radius: 18px;
+            border: 1px solid #efe3d6;
+            background: #ffffff;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li + li {
+            margin-top: 8px;
+        }
+
+        .footer {
+            margin-top: 36px;
+            padding-top: 18px;
+            border-top: 1px solid #eadfd2;
+            color: #8a7a64;
+            font-size: 12px;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #f3e7d8;
+            color: #7f5b45;
+            font-size: 12px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <p class="eyebrow">Playbook strategie</p>
+            <h1>{{ strategy.nomStrategie ?: 'Strategie sans nom' }}</h1>
+            <p>{{ content.executive_summary }}</p>
+            <div class="status">{{ strategy.statusLabel }}</div>
+        </section>
+
+        <table class="meta-grid" role="presentation">
+            <tr>
+                <td>
+                    <div class="meta-card">
+                        <span class="meta-label">Projet associe</span>
+                        <div class="meta-value">{{ project ? (project.titleProj ?: 'Projet #' ~ project.idProj) : 'Aucun projet' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="meta-card">
+                        <span class="meta-label">Budget strategie</span>
+                        <div class="meta-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="meta-card">
+                        <span class="meta-label">Gain estime</span>
+                        <div class="meta-value">{{ strategy.gainEstime is not null ? strategy.gainEstime ~ '%' : 'Non defini' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="meta-card">
+                        <span class="meta-label">Duree</span>
+                        <div class="meta-value">{{ strategy.DureeTerme ?: 'Non definie' }} mois</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <section class="section">
+            <h2>Points cles</h2>
+            <div class="section-box">
+                <ul>
+                    {% for item in content.highlights %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Opportunites</h2>
+            <div class="section-box">
+                <ul>
+                    {% for item in content.opportunities %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Risques et points de vigilance</h2>
+            <div class="section-box">
+                <ul>
+                    {% for item in content.risks %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Plan d action recommande</h2>
+            <div class="section-box">
+                <ul>
+                    {% for item in content.actions %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Indicateurs a suivre</h2>
+            <div class="section-box">
+                <ul>
+                    {% for item in content.kpis %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <div class="footer">
+            Document genere le {{ "now"|date("d/m/Y H:i") }} depuis Advisora.
+        </div>
+    </div>
+</body>
+</html>

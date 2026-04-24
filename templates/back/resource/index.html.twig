@@ -1,0 +1,106 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des ressources{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Gestion ressource</span>
+                <h1>Gestion des ressources</h1>
+                <p>Consultez toutes les ressources du module, appliquez des filtres, ajoutez une ressource si besoin et ouvrez leur dossier pour traitement, avec le meme rendu de gestion que le module Projet.</p>
+            </div>
+            <div class="pm-card-actions pm-card-actions-stack">
+                <a class="pm-btn pm-btn-primary" href="{{ path('resource_new') }}">Ajouter une ressource</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_dashboard') }}">Retour au dashboard</a>
+            </div>
+        </div>
+
+        {% include 'back/resource/_module_nav.html.twig' %}
+
+        <div class="pm-form-card pm-filter-card">
+            <form method="get" class="pm-filter-grid" data-auto-filter-form>
+                <div>
+                    <label for="q">Recherche</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Nom de la ressource">
+                </div>
+                <div>
+                    <label for="status">Statut</label>
+                    <select id="status" name="status">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="supplier_id">Fournisseur</label>
+                    <select id="supplier_id" name="supplier_id">
+                        <option value="">Tous les fournisseurs</option>
+                        {% for supplier in suppliers %}
+                            {% set supplierLabel = supplier.fournisseur ?: supplier.nomFr %}
+                            <option value="{{ supplier.idFr }}" {% if filters.supplier_id == supplier.idFr %}selected{% endif %}>{{ supplierLabel }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="pm-filter-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_index') }}">Reinitialiser</a>
+                </div>
+            </form>
+        </div>
+
+        <section class="pm-grid">
+            {% for resource in resources %}
+                <article class="pm-card">
+                    <div class="pm-card-head">
+                        <span class="pm-status pm-status-{{ resource.status|default('')|lower|replace({' ':'_','-':'_'}) }}">{{ resource.getStatusLabel() }}</span>
+                        <span class="pm-meta">Ressource #{{ resource.id }}</span>
+                    </div>
+                    <div class="pm-resource-media">
+                        {% if resource.primaryImageUrl %}
+                            <img src="{{ resource.primaryImageUrl }}" alt="{{ resource.name }}">
+                        {% else %}
+                            <div class="pm-resource-placeholder"><i class="fas fa-box-open"></i></div>
+                        {% endif %}
+                    </div>
+                    <h2>{{ resource.name }}</h2>
+                    <p>Fiche back office de la ressource pour suivi de stock, fournisseur et prix catalogue.</p>
+                    <div class="pm-meta-list pm-meta-list-vertical">
+                        <span><strong>Fournisseur :</strong> {{ resource.getSupplierDisplayName() }}</span>
+                        <span><strong>Stock total :</strong> {{ resource.quantity }}</span>
+                        <span><strong>Prix :</strong> {{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                        <span><strong>Reservations liees :</strong> {{ resource.projects|length }}</span>
+                    </div>
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('resource_back_manage', {id: resource.id}) }}">Traiter</a>
+                        {% if can_edit_any_resource %}
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('resource_edit', {id: resource.id}) }}">Modifier la ressource</a>
+                        {% endif %}
+                        {% if can_delete_any_resource %}
+                            <form method="post" action="{{ path('resource_delete', {id: resource.id}) }}" onsubmit="return confirm('Supprimer cette ressource ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_' ~ resource.id) }}">
+                                <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <div class="pm-empty">
+                    <h2>Aucune ressource ne correspond aux filtres</h2>
+                    <p>Essayez de modifier la recherche ou de reinitialiser les filtres.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/resource-filters.js') }}"></script>
+{% endblock %}

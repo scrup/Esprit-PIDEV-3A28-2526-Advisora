@@ -1,0 +1,106 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des fournisseurs{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Gestion fournisseur</span>
+                <h1>Gestion des fournisseurs</h1>
+                <p>Retrouvez la logique metier Fournisseur avec un ecran de gestion harmonise sur le meme style que Gestion Projet.</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-primary" href="{{ path('supplier_new') }}">Ajouter un fournisseur</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_dashboard') }}">Retour au dashboard</a>
+            </div>
+        </div>
+
+        {% include 'back/resource/_module_nav.html.twig' %}
+
+        <section class="pm-grid">
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-badge">Indicateur</span>
+                </div>
+                <h2>Total fournisseurs</h2>
+                <p>{{ total_suppliers }}</p>
+            </article>
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-badge">Indicateur</span>
+                </div>
+                <h2>Total produits</h2>
+                <p>{{ total_products }}</p>
+            </article>
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-badge">Indicateur</span>
+                </div>
+                <h2>Fournisseurs actifs</h2>
+                <p>{{ active_suppliers }}</p>
+            </article>
+        </section>
+
+        <div class="pm-form-card pm-filter-card">
+            <form method="get" class="pm-filter-grid">
+                <div>
+                    <label for="q">Recherche</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Nom, societe, email, telephone">
+                </div>
+                <div>
+                    <label for="status">Statut</label>
+                    <select id="status" name="status">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="pm-filter-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_supplier_index') }}">Reinitialiser</a>
+                </div>
+            </form>
+        </div>
+
+        <section class="pm-grid">
+            {% for supplier in suppliers %}
+                <article class="pm-card">
+                    <div class="pm-card-head">
+                        <span class="pm-status pm-status-{{ supplier.getStatus() }}">{{ supplier.getStatusLabel() }}</span>
+                        <span class="pm-meta">Fournisseur #{{ supplier.id }}</span>
+                    </div>
+                    <h2>{{ supplier.nomFr }}</h2>
+                    <p>{{ supplier.getDisplayName() }}</p>
+                    <div class="pm-meta-list pm-meta-list-vertical">
+                        <span><strong>Societe :</strong> {{ supplier.fournisseur }}</span>
+                        <span><strong>Email :</strong> {{ supplier.emailFr }}</span>
+                        <span><strong>Telephone :</strong> {{ supplier.numTelFr }}</span>
+                        <span><strong>Localisation :</strong> {{ supplier.localisationFr }}</span>
+                        <span><strong>Quantite produit :</strong> {{ supplier.quantite }}</span>
+                        <span><strong>Ressources rattachees :</strong> {{ supplier.resources|length }}</span>
+                    </div>
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('supplier_back_manage', {id: supplier.id}) }}">Traiter</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('supplier_edit', {id: supplier.id}) }}">Modifier</a>
+                        <form method="post" action="{{ path('supplier_delete', {id: supplier.id}) }}" onsubmit="return confirm('Supprimer ce fournisseur ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_supplier_' ~ supplier.id) }}">
+                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <div class="pm-empty">
+                    <h2>Aucun fournisseur ne correspond aux filtres</h2>
+                    <p>Essayez une autre recherche ou ajoutez un nouveau fournisseur.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </section>
+{% endblock %}

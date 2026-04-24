@@ -12,6 +12,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class DecisionType extends AbstractType
@@ -58,6 +60,14 @@ class DecisionType extends AbstractType
                 'help' => 'Choisissez si le projet reste en attente, est accepté ou est refusé.',
                 'constraints' => [
                     new NotBlank(['message' => 'Le statut de la décision est requis.']),
+                    new Choice([
+                        'choices' => [
+                            Decision::STATUS_PENDING,
+                            Decision::STATUS_ACTIVE,
+                            Decision::STATUS_REFUSED,
+                        ],
+                        'message' => 'Le statut de la decision selectionne est invalide.',
+                    ]),
                 ],
             ])
             ->add('description', TextareaType::class, [
@@ -71,6 +81,12 @@ class DecisionType extends AbstractType
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'La justification de la décision est requise.']),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'La justification doit contenir au moins 10 caracteres.',
+                        'max' => 2000,
+                        'maxMessage' => 'La justification ne doit pas depasser 2000 caracteres.',
+                    ]),
                 ],
             ])
             ->add('decisionDate', DateType::class, [

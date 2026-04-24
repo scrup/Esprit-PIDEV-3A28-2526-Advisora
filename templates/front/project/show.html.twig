@@ -34,6 +34,9 @@
                         <a class="pm-btn pm-btn-primary" href="{{ use_back_manage ? path('project_back_manage', {id: project.id}) : path('project_manage', {id: project.id}) }}">
                             {{ use_back_manage ? 'Traiter ce projet' : 'Gérer ce projet' }}
                         </a>
+                        {% if app.user and app.user.getRoleUser() == 'client' %}
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('investment_new', {id: project.id}) }}">Investir sur ce projet</a>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>

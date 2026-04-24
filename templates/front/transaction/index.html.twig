@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Mes transactions{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Transactions</span>
+            <h1>Mes transactions</h1>
+            <p>Suivez ici tous vos transferts lies a vos investissements.</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-primary" href="{{ path('investment_index') }}">Voir mes investissements</a>
+        </div>
+    </section>
+
+    {% include 'front/investment/_module_nav.html.twig' %}
+
+    <section class="pm-hero">
+        <form method="get" action="{{ path('transaction_index') }}" class="pm-form-card">
+            <div class="pm-filter-grid">
+                <div class="pm-field">
+                    <label for="filter_q">Recherche</label>
+                    <input id="filter_q" type="search" name="q" placeholder="Type, projet, investissement, ID..." value="{{ filters.q|default('') }}">
+                </div>
+                <div class="pm-field">
+                    <label for="filter_status">Statut</label>
+                    <select id="filter_status" name="status">
+                        <option value="">Tous</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status is defined and filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('transaction_index') }}">Reinitialiser</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="pm-grid">
+        {% for transaction in transactions %}
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ transaction.statusCssClass }}">{{ transaction.statusLabel }}</span>
+                    <span class="pm-meta">Transaction #{{ transaction.id }}</span>
+                </div>
+                <h2>{{ transaction.investment and transaction.investment.project ? transaction.investment.project.title : 'Projet indisponible' }}</h2>
+                <p>{{ transaction.type ?: 'Type non renseigne' }}</p>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Investissement :</strong> #{{ transaction.investment ? transaction.investment.id : 'N/A' }}</span>
+                    <span><strong>Date :</strong> {{ transaction.DateTransac ? transaction.DateTransac|date('d/m/Y') : 'Non renseignee' }}</span>
+                    <span><strong>Montant :</strong> {{ transaction.MontantTransac|number_format(2, '.', ' ') }} {{ transaction.investment ? transaction.investment.CurrencyInv : 'TND' }}</span>
+                    <span><strong>Fourchette investissement :</strong> {{ transaction.investment ? transaction.investment.budgetRangeLabel : 'Non disponible' }}</span>
+                </div>
+                <div class="pm-card-actions">
+                    {% if transaction.investment %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('investment_manage', {id: transaction.investment.id}) }}">Ouvrir l investissement</a>
+                    {% endif %}
+                    {% if transaction.isPending %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('transaction_edit', {id: transaction.id}) }}">Modifier</a>
+                        <form method="post" action="{{ path('transaction_delete', {id: transaction.id}) }}" onsubmit="return confirm('Supprimer cette transaction ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_transaction_' ~ transaction.id) }}">
+                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                        </form>
+                    {% else %}
+                        <span class="pm-empty-text">Transaction en lecture seule.</span>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>Aucune transaction enregistree</h2>
+                <p>Creez un investissement puis ajoutez une transaction pour transferer le montant souhaite.</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}
