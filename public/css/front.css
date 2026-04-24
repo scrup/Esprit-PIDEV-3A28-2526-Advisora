@@ -107,6 +107,9 @@ body {
 .negative {
   color: #D68B6E;
 }
+.neutral {
+  color: #CBBEAE;
+}
 .ticker-label {
   font-weight: 600;
   color: #CBBEAE;
@@ -118,6 +121,16 @@ body {
   letter-spacing: 0.5px;
   margin-top: 4px;
   color: rgba(195, 125, 93, 0.5);
+}
+.ticker-update,
+.ticker-note {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(232, 221, 208, 0.78);
 }
 
 /* HEADER */

@@ -152,6 +152,10 @@ final class BackController extends AbstractController
             throw $this->createAccessDeniedException('Acces refuse.');
         }
 
+        if ($notification->getRecipient()?->getIdUser() !== $user->getIdUser()) {
+            throw $this->createAccessDeniedException('Notification introuvable.');
+        }
+
         $token = (string) $request->request->get('_token');
         if (!$this->isCsrfTokenValid('mark_notification_read_' . $notification->getId(), $token)) {
             $this->addFlash('error', 'Action invalide.');

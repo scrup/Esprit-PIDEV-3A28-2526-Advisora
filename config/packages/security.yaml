@@ -25,6 +25,8 @@ security:
 
     access_control:
         - { path: ^/connect, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/profile, roles: ROLE_CLIENT }
         - { path: ^/role-choice, roles: ROLE_GERANT }
         - { path: ^/events/new$, roles: [ROLE_GERANT, ROLE_ADMIN] }
         - { path: ^/events/\d+/edit$, roles: [ROLE_GERANT, ROLE_ADMIN] }

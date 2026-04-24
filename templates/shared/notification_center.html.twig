@@ -1,0 +1,34 @@
+<div
+    class="notification-center {{ variant|default('front') == 'back' ? 'notification-center-back' : 'notification-center-front' }}"
+    data-notification-center
+    data-feed-url="{{ path('notification_feed') }}"
+    data-consume-url-base="{{ path('notification_feed')|replace({'/feed': ''}) }}"
+>
+    <button class="notification-toggle" type="button" data-notification-toggle aria-expanded="false" aria-haspopup="dialog">
+        <span class="notification-toggle-icon"><i class="fas fa-bell"></i></span>
+        <span class="notification-toggle-copy">
+            <strong>Notifications</strong>
+            <small data-notification-audio-state>Desactive</small>
+        </span>
+        <span class="notification-toggle-badge" data-notification-count>0</span>
+    </button>
+
+    <div class="notification-panel" data-notification-panel hidden>
+        <div class="notification-panel-head">
+            <div>
+                <strong>Centre de notifications</strong>
+                <span data-notification-panel-subtitle>Lecture vocale inactive</span>
+            </div>
+            <button class="notification-audio-toggle" type="button" data-notification-audio-toggle>
+                <span data-notification-audio-toggle-label>Activer</span>
+            </button>
+            <div class="notification-panel-shortcuts">
+                <span><kbd>J</kbd> Activer</span>
+                <span><kbd>F</kbd> Desactiver</span>
+            </div>
+        </div>
+        <div class="notification-panel-list" data-notification-list>
+            <p class="notification-empty">Aucune notification active.</p>
+        </div>
+    </div>
+</div>

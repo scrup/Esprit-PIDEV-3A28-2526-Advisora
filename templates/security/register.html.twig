@@ -1,0 +1,165 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Inscription{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') ~ '?v=20260423-4' }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if captcha_provider == 'turnstile' %}
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    {% elseif captcha_provider == 'image' %}
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                const refreshBtn = document.getElementById('refresh-captcha');
+                const captchaImg = document.getElementById('captcha-img');
+                const captchaUrl = captchaImg?.getAttribute('data-captcha-url');
+
+                if (!refreshBtn || !captchaImg || !captchaUrl) {
+                    return;
+                }
+
+                refreshBtn.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    captchaImg.src = `${captchaUrl}?t=${Math.random()}`;
+                });
+            });
+        </script>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+<section class="pm-login-shell">
+    <div class="pm-auth-grid pm-auth-grid-register">
+        <aside class="pm-auth-aside" aria-hidden="true">
+            <img class="pm-auth-logo" src="{{ asset('assets/images/ADVISORA.png') }}" alt="Advisora">
+            <h2 class="pm-auth-title">Bienvenue sur Advisora</h2>
+            <p class="pm-auth-subtitle">Creez votre compte pour gerer vos projets, reservations et services en toute simplicite.</p>
+            <div class="pm-auth-chips">
+                <span class="pm-auth-chip">Rapide</span>
+                <span class="pm-auth-chip">Securise</span>
+                <span class="pm-auth-chip">Support</span>
+            </div>
+            <ul class="pm-auth-list">
+                <li>Tableau de bord client</li>
+                <li>Suivi des projets et demandes</li>
+                <li>Acces rapide a vos reservations</li>
+            </ul>
+        </aside>
+
+        <div class="pm-login-card">
+            <img class="pm-auth-logo pm-auth-logo-inline" src="{{ asset('assets/images/ADVISORA.png') }}" alt="Advisora">
+            <span class="pm-badge">Nouvel espace</span>
+            <h1>Creer un compte client</h1>
+            <p>Inscrivez-vous pour acceder aux projets, reservations et modules client.</p>
+
+            {% for message in app.flashes('success') %}
+                <div class="flash-message flash-success">{{ message }}</div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="flash-message flash-error">{{ message }}</div>
+            {% endfor %}
+
+            <form method="post" action="{{ path('app_register') }}" class="pm-login-form" novalidate>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}">
+
+                <div class="pm-field {{ field_errors.first_name ? 'pm-field-has-error' : '' }}">
+                    <label for="first_name">Prenom</label>
+                    <input type="text" id="first_name" name="first_name" value="{{ form_data.first_name }}" required class="{{ field_errors.first_name ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                    <div class="pm-field-errors">{{ field_errors.first_name ?: '' }}</div>
+                </div>
+
+                <div class="pm-field {{ field_errors.last_name ? 'pm-field-has-error' : '' }}">
+                    <label for="last_name">Nom</label>
+                    <input type="text" id="last_name" name="last_name" value="{{ form_data.last_name }}" required class="{{ field_errors.last_name ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                    <div class="pm-field-errors">{{ field_errors.last_name ?: '' }}</div>
+                </div>
+
+                <div class="pm-field {{ field_errors.email ? 'pm-field-has-error' : '' }}">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ form_data.email }}" autocomplete="email" required class="{{ field_errors.email ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                    <div class="pm-field-errors">{{ field_errors.email ?: '' }}</div>
+                </div>
+
+                <div class="pm-field {{ field_errors.phone ? 'pm-field-has-error' : '' }}">
+                    <label for="phone">Telephone</label>
+                    <input type="text" id="phone" name="phone" value="{{ form_data.phone }}" autocomplete="tel" class="{{ field_errors.phone ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                    <div class="pm-field-errors">{{ field_errors.phone ?: '' }}</div>
+                </div>
+
+                <div class="pm-field {{ field_errors.cin ? 'pm-field-has-error' : '' }}">
+                    <label for="cin">CIN</label>
+                    <input type="text" id="cin" name="cin" value="{{ form_data.cin }}" inputmode="numeric" class="{{ field_errors.cin ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                    <div class="pm-field-errors">{{ field_errors.cin ?: '' }}</div>
+                </div>
+
+                <div class="pm-field {{ field_errors.date_of_birth ? 'pm-field-has-error' : '' }}">
+                    <label for="date_of_birth">Date de naissance</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth" value="{{ form_data.date_of_birth }}" class="{{ field_errors.date_of_birth ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                    <div class="pm-field-errors">{{ field_errors.date_of_birth ?: '' }}</div>
+                </div>
+
+                <div class="pm-field {{ field_errors.password ? 'pm-field-has-error' : '' }}">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" autocomplete="new-password" required class="{{ field_errors.password ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                    <div class="pm-field-errors">{{ field_errors.password ?: '' }}</div>
+                </div>
+
+                <div class="pm-field {{ field_errors.confirm_password ? 'pm-field-has-error' : '' }}">
+                    <label for="confirm_password">Confirmer le mot de passe</label>
+                    <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required class="{{ field_errors.confirm_password ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                    <div class="pm-field-errors">{{ field_errors.confirm_password ?: '' }}</div>
+                </div>
+
+                {% if captcha_provider == 'turnstile' %}
+                    <div class="pm-field {{ field_errors.captcha ? 'pm-field-has-error' : '' }}">
+                        <label>Verification</label>
+                        <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
+                        <div class="pm-field-errors">{{ field_errors.captcha ?: '' }}</div>
+                    </div>
+                {% elseif captcha_provider == 'math' %}
+                    <div class="pm-field {{ field_errors.captcha ? 'pm-field-has-error' : '' }}">
+                        <label for="math_captcha">Verification: {{ math_captcha_question }}</label>
+                        <input type="text" id="math_captcha" name="math_captcha" value="{{ form_data.math_captcha }}" inputmode="numeric" class="{{ field_errors.captcha ? 'pm-input pm-input-invalid' : 'pm-input' }}">
+                        <div class="pm-field-errors">{{ field_errors.captcha ?: '' }}</div>
+                    </div>
+                {% elseif captcha_provider == 'image' %}
+                    <div class="pm-field {{ field_errors.captcha ? 'pm-field-has-error' : '' }}">
+                        <label for="image_captcha">Captcha</label>
+                        <div style="display:flex; align-items:center; gap: 12px; flex-wrap: wrap;">
+                            <img
+                                id="captcha-img"
+                                data-captcha-url="{{ path('app_register_captcha') }}"
+                                src="{{ path('app_register_captcha') ~ '?t=' ~ random() }}"
+                                alt="captcha"
+                                style="border-radius: 10px; border: 1px solid rgba(148,163,184,0.6);"
+                            >
+                            <button
+                                class="pm-btn pm-btn-secondary"
+                                style="text-decoration:none;"
+                                title="Rafraichir le captcha"
+                                type="button"
+                                id="refresh-captcha"
+                            >
+                                Rafraichir
+                            </button>
+                        </div>
+                        <input type="text" id="image_captcha" name="image_captcha" value="{{ form_data.image_captcha }}" autocomplete="off" class="{{ field_errors.captcha ? 'pm-input pm-input-invalid' : 'pm-input' }}" style="margin-top: 10px;">
+                        <div class="pm-field-errors">{{ field_errors.captcha ?: '' }}</div>
+                    </div>
+                {% endif %}
+
+                <button class="pm-btn pm-btn-primary pm-btn-block" type="submit">Creer mon compte</button>
+
+                <div style="margin-top: 12px; text-align: center;">
+                    <a href="{{ path('app_login') }}">J ai deja un compte</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

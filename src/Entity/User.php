@@ -504,6 +504,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Userlog::class, mappedBy: 'user')]
     private Collection $userlogs;
 
+    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'recipient')]
+    private Collection $receivedNotifications;
+
     /**
      * @return Collection<int, Userlog>
      */
@@ -529,9 +532,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function setTranslatableLocale(string $locale): self
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getReceivedNotifications(): Collection
     {
-        $this->locale = $locale;
+        if (!$this->receivedNotifications instanceof Collection) {
+            $this->receivedNotifications = new ArrayCollection();
+        }
+
+        return $this->receivedNotifications;
+    }
+
+    public function addReceivedNotification(Notification $notification): self
+    {
+        if (!$this->getReceivedNotifications()->contains($notification)) {
+            $this->getReceivedNotifications()->add($notification);
+            $notification->setRecipient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReceivedNotification(Notification $notification): self
+    {
+        if ($this->getReceivedNotifications()->removeElement($notification) && $notification->getRecipient() === $this) {
+            $notification->setRecipient(null);
+        }
 
         return $this;
     }

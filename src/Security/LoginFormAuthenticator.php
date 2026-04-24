@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -44,6 +45,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         private MailerInterface $mailer,
         private Environment $twig,
         private TokenStorageInterface $tokenStorage,
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 
@@ -176,7 +178,11 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             $user->setUpdatedAt(new \DateTime());
             $this->entityManager->flush();
 
-            $this->adminNotificationService->notifyFailedLoginLock($user, $lockedUntil);
+            try {
+                // A failed admin notification must not block the account lock itself.
+                $this->adminNotificationService->notifyFailedLoginLock($user, $lockedUntil);
+            } catch (\Throwable) {
+            }
 
             return parent::onAuthenticationFailure(
                 $request,
@@ -208,6 +214,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
         $user->setFailed_login_count(0);
         $user->setLock_until(null);
+        $this->upgradeStoredPasswordIfNeeded($user);
         $user->setLast_activity_at(new \DateTime());
         $user->setUpdatedAt(new \DateTime());
         $this->entityManager->flush();
@@ -298,5 +305,19 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             || str_starts_with($value, '$2b$')
             || str_starts_with($value, '$argon2i$')
             || str_starts_with($value, '$argon2id$');
+    }
+
+    private function upgradeStoredPasswordIfNeeded(User $user): void
+    {
+        $storedPassword = (string) $user->getPassword();
+
+        if ($storedPassword === '') {
+            return;
+        }
+
+        if (!$this->looksHashed($storedPassword) || $this->passwordHasher->needsRehash($user)) {
+            $user->setPasswordUser($this->passwordHasher->hashPassword($user, $storedPassword));
+            $user->setPassword_changed_at(new \DateTime());
+        }
     }
 }

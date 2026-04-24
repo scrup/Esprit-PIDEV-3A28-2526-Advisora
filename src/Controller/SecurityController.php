@@ -19,7 +19,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Gregwar\Captcha\CaptchaBuilder;
 
 final class SecurityController extends AbstractController
 {
@@ -148,6 +150,284 @@ final class SecurityController extends AbstractController
     public function connectGoogleCheck(): never
     {
         throw new \LogicException('Cette methode est interceptee par GoogleAuthenticator.');
+    }
+
+    #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
+    public function register(
+        Request $request,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher,
+        HttpClientInterface $httpClient
+    ): Response {
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            return match ($user->getRoleUser()) {
+                'client' => $this->redirectToRoute('project_index'),
+                'gerant' => $this->redirectToRoute('app_role_choice'),
+                default => $this->redirectToRoute('app_back'),
+            };
+        }
+
+        $turnstileSiteKey = trim((string) ($_ENV['TURNSTILE_SITE_KEY'] ?? ''));
+        $turnstileSecretKey = trim((string) ($_ENV['TURNSTILE_SECRET_KEY'] ?? ''));
+        $captchaProviderSetting = mb_strtolower(trim((string) ($_ENV['CAPTCHA_PROVIDER'] ?? '')));
+        $captchaProvider = match ($captchaProviderSetting) {
+            'turnstile', 'image', 'math', 'none' => $captchaProviderSetting,
+            default => '',
+        };
+
+        if ($captchaProvider === '') {
+            $captchaProvider = ($turnstileSiteKey !== '' && $turnstileSecretKey !== '') ? 'turnstile' : 'image';
+        }
+
+        if ($captchaProvider === 'turnstile' && ($turnstileSiteKey === '' || $turnstileSecretKey === '')) {
+            $captchaProvider = 'image';
+        }
+
+        $session = $request->getSession();
+        $mathQuestion = null;
+        if ($captchaProvider === 'math') {
+            if ($request->isMethod('GET') || !is_array($session->get('register_math_captcha'))) {
+                $a = random_int(1, 9);
+                $b = random_int(1, 9);
+                $session->set('register_math_captcha', [
+                    'a' => $a,
+                    'b' => $b,
+                    'answer' => $a + $b,
+                ]);
+            }
+
+            $math = (array) $session->get('register_math_captcha');
+            $a = (int) ($math['a'] ?? 0);
+            $b = (int) ($math['b'] ?? 0);
+            $mathQuestion = sprintf('%d + %d = ?', $a, $b);
+        }
+
+        $formData = [
+            'first_name' => trim((string) $request->request->get('first_name', '')),
+            'last_name' => trim((string) $request->request->get('last_name', '')),
+            'email' => trim((string) $request->request->get('email', '')),
+            'phone' => trim((string) $request->request->get('phone', '')),
+            'cin' => trim((string) $request->request->get('cin', '')),
+            'date_of_birth' => trim((string) $request->request->get('date_of_birth', '')),
+            'math_captcha' => trim((string) $request->request->get('math_captcha', '')),
+            'image_captcha' => trim((string) $request->request->get('image_captcha', '')),
+        ];
+        $fieldErrors = [
+            'first_name' => null,
+            'last_name' => null,
+            'email' => null,
+            'phone' => null,
+            'cin' => null,
+            'date_of_birth' => null,
+            'captcha' => null,
+            'password' => null,
+            'confirm_password' => null,
+        ];
+
+        if ($request->isMethod('POST')) {
+            $password = (string) $request->request->get('password', '');
+            $confirmPassword = (string) $request->request->get('confirm_password', '');
+            $normalizedEmail = mb_strtolower($formData['email']);
+
+            if (!$this->isCsrfTokenValid('register', (string) $request->request->get('_csrf_token'))) {
+                $this->addFlash('error', 'Le formulaire d inscription a expire. Merci de reessayer.');
+
+                return $this->render('security/register.html.twig', [
+                    'form_data' => $formData,
+                    'field_errors' => $fieldErrors,
+                    'captcha_provider' => $captchaProvider,
+                    'turnstile_site_key' => $turnstileSiteKey,
+                    'math_captcha_question' => $mathQuestion,
+                ]);
+            }
+
+            if ($formData['first_name'] === '') {
+                $fieldErrors['first_name'] = 'Le prenom est obligatoire.';
+            }
+
+            if ($formData['last_name'] === '') {
+                $fieldErrors['last_name'] = 'Le nom est obligatoire.';
+            }
+
+            if ($normalizedEmail === '') {
+                $fieldErrors['email'] = 'L email est obligatoire.';
+            } elseif (!filter_var($normalizedEmail, FILTER_VALIDATE_EMAIL)) {
+                $fieldErrors['email'] = 'Email invalide.';
+            } elseif ($userRepository->findOneByEmailInsensitive($normalizedEmail) instanceof User) {
+                $fieldErrors['email'] = 'Cet email existe deja.';
+            }
+
+            if ($formData['phone'] !== '') {
+                $existingByPhone = $userRepository->findOneBy(['NumTelUser' => $formData['phone']]);
+                if ($existingByPhone instanceof User) {
+                    $fieldErrors['phone'] = 'Ce numero de telephone existe deja.';
+                }
+            }
+
+            if ($formData['cin'] === '') {
+                $fieldErrors['cin'] = 'Le CIN est obligatoire.';
+            } elseif (!preg_match('/^\\d{8}$/', $formData['cin'])) {
+                $fieldErrors['cin'] = 'Le CIN doit contenir exactement 8 chiffres numeriques.';
+            } elseif ($userRepository->findOneBy(['cin' => $formData['cin']]) instanceof User) {
+                $fieldErrors['cin'] = 'Ce CIN existe deja.';
+            }
+
+            $birthDate = null;
+            if ($formData['date_of_birth'] === '') {
+                $fieldErrors['date_of_birth'] = 'La date de naissance est obligatoire.';
+            } else {
+                $birthDate = \DateTime::createFromFormat('Y-m-d', $formData['date_of_birth']);
+                if (!$birthDate instanceof \DateTime) {
+                    $fieldErrors['date_of_birth'] = 'Date de naissance invalide.';
+                } else {
+                    $today = new \DateTime('today');
+                    $minDate = new \DateTime('1900-01-01');
+                    $age = $birthDate->diff($today)->y;
+
+                    if ($birthDate > $today) {
+                        $fieldErrors['date_of_birth'] = 'La date de naissance ne peut pas etre dans le futur.';
+                    } elseif ($birthDate < $minDate) {
+                        $fieldErrors['date_of_birth'] = 'Date de naissance trop ancienne.';
+                    } elseif ($age < 17) {
+                        $fieldErrors['date_of_birth'] = 'L utilisateur doit avoir au moins 17 ans.';
+                    } elseif ($age > 100) {
+                    $fieldErrors['date_of_birth'] = 'Age invalide.';
+                    }
+                }
+            }
+
+            if ($captchaProvider === 'turnstile') {
+                $captchaToken = trim((string) $request->request->get('cf-turnstile-response', ''));
+                if ($captchaToken === '') {
+                    $fieldErrors['captcha'] = 'Le captcha est obligatoire.';
+                } else {
+                    try {
+                        $verify = $httpClient->request('POST', 'https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                            'body' => [
+                                'secret' => $turnstileSecretKey,
+                                'response' => $captchaToken,
+                                'remoteip' => (string) $request->getClientIp(),
+                            ],
+                        ]);
+
+                        $payload = $verify->toArray(false);
+                        $success = (bool) ($payload['success'] ?? false);
+
+                        if (!$success) {
+                            $fieldErrors['captcha'] = 'Captcha invalide. Veuillez reessayer.';
+                        }
+                    } catch (\Throwable) {
+                        $fieldErrors['captcha'] = 'Impossible de verifier le captcha. Veuillez reessayer.';
+                    }
+                }
+            } elseif ($captchaProvider === 'math') {
+                $math = (array) $session->get('register_math_captcha');
+                $expected = (string) ($math['answer'] ?? '');
+                $provided = trim((string) $formData['math_captcha']);
+
+                if ($provided === '') {
+                    $fieldErrors['captcha'] = 'Le captcha est obligatoire.';
+                } elseif ($expected === '' || !hash_equals($expected, $provided)) {
+                    $fieldErrors['captcha'] = 'Captcha invalide. Veuillez reessayer.';
+                }
+            } elseif ($captchaProvider === 'image') {
+                $expected = (string) $session->get('register_image_captcha_phrase', '');
+                $provided = trim((string) $formData['image_captcha']);
+
+                if ($provided === '') {
+                    $fieldErrors['captcha'] = 'Le captcha est obligatoire.';
+                } elseif ($expected === '' || mb_strtolower($expected) !== mb_strtolower($provided)) {
+                    $fieldErrors['captcha'] = 'Captcha invalide. Veuillez reessayer.';
+                    $session->remove('register_image_captcha_phrase');
+                    $formData['image_captcha'] = '';
+                }
+            }
+
+            if ($password === '') {
+                $fieldErrors['password'] = 'Le mot de passe est obligatoire.';
+            } elseif (mb_strlen($password) < 8) {
+                $fieldErrors['password'] = 'Le mot de passe doit contenir au moins 8 caracteres.';
+            }
+
+            if ($confirmPassword === '') {
+                $fieldErrors['confirm_password'] = 'La confirmation du mot de passe est obligatoire.';
+            } elseif ($password !== '' && $password !== $confirmPassword) {
+                $fieldErrors['confirm_password'] = 'Les mots de passe ne correspondent pas.';
+            }
+
+            $hasErrors = array_filter($fieldErrors, static fn (?string $error): bool => $error !== null);
+
+            if ($hasErrors === []) {
+                $now = new \DateTime();
+                $newUser = new User();
+                $newUser->setPrenomUser($formData['first_name']);
+                $newUser->setNomUser($formData['last_name']);
+                $newUser->setEmailUser($normalizedEmail);
+                $newUser->setNumTelUser($formData['phone'] !== '' ? $formData['phone'] : null);
+                $newUser->setCin($formData['cin']);
+                $newUser->setDateNUser($birthDate);
+                $newUser->setRoleUser('client');
+                $newUser->setTotp_enabled(false);
+                $newUser->setFailed_login_count(0);
+                $newUser->setLock_until(null);
+                $newUser->setLast_activity_at(null);
+                $newUser->setCreatedAt($now);
+                $newUser->setUpdatedAt($now);
+                $newUser->setPassword_changed_at($now);
+                $newUser->setPasswordUser($passwordHasher->hashPassword($newUser, $password));
+
+                $entityManager->persist($newUser);
+                $entityManager->flush();
+
+                $session->remove('register_math_captcha');
+                $session->remove('register_image_captcha_phrase');
+
+                $this->addFlash('success', 'Compte cree avec succes. Vous pouvez maintenant vous connecter.');
+
+                return $this->redirectToRoute('app_login');
+            }
+
+            if ($captchaProvider === 'math') {
+                $a = random_int(1, 9);
+                $b = random_int(1, 9);
+                $session->set('register_math_captcha', [
+                    'a' => $a,
+                    'b' => $b,
+                    'answer' => $a + $b,
+                ]);
+                $mathQuestion = sprintf('%d + %d = ?', $a, $b);
+                $formData['math_captcha'] = '';
+            }
+        }
+
+        return $this->render('security/register.html.twig', [
+            'form_data' => $formData,
+            'field_errors' => $fieldErrors,
+            'captcha_provider' => $captchaProvider,
+            'turnstile_site_key' => $turnstileSiteKey,
+            'math_captcha_question' => $mathQuestion,
+        ]);
+    }
+
+    #[Route('/register/captcha', name: 'app_register_captcha', methods: ['GET'])]
+    public function registerCaptcha(Request $request): Response
+    {
+        $session = $request->getSession();
+
+        $builder = new CaptchaBuilder();
+        $builder->build(140, 44);
+        $session->set('register_image_captcha_phrase', $builder->getPhrase());
+
+        $response = new Response($builder->get(), Response::HTTP_OK, [
+            'Content-Type' => 'image/jpeg',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
+
+        return $response;
     }
 
     #[Route('/logout', name: 'app_logout', methods: ['POST'])]
@@ -440,6 +720,20 @@ final class SecurityController extends AbstractController
         return $this->render('security/verify_login_code.html.twig', [
             'email' => $user->getUserIdentifier(),
         ]);
+    }
+
+    #[Route('/login/cancel-otp', name: 'app_login_cancel_otp', methods: ['GET'])]
+    public function cancelLoginOtp(Request $request): Response
+    {
+        $session = $request->getSession();
+        $session->remove('login_otp_user_id');
+        $session->remove('login_otp_verified');
+        $session->remove('login_otp_verified_user_id');
+        $session->remove('login_otp_cooldown_until');
+
+        $this->addFlash('success', 'Verification annulee. Vous pouvez vous reconnecter.');
+
+        return $this->redirectToRoute('app_login');
     }
 
     #[Route('/login/resend-code', name: 'app_login_resend_code', methods: ['POST'])]

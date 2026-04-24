@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Mes inscriptions aux evenements</title>
+<style>
+    /* ── Reset & base ── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: DejaVu Sans, sans-serif;
+        font-size: 10pt;
+        color: #2c2418;
+        background: #fff;
+        line-height: 1.5;
+    }
+
+    /* ── Page layout ── */
+    .page {
+        padding: 0;
+    }
+
+    /* ── Header band ── */
+    .header {
+        background: linear-gradient(135deg, #c37d5d 0%, #a86447 100%);
+        color: #fff;
+        padding: 28px 36px 22px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header-inner {
+        display: table;
+        width: 100%;
+    }
+
+    .header-left {
+        display: table-cell;
+        vertical-align: middle;
+        width: 70%;
+    }
+
+    .header-right {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: right;
+        width: 30%;
+    }
+
+    .header-logo {
+        font-size: 22pt;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: #fff;
+    }
+
+    .header-logo span {
+        opacity: 0.7;
+        font-weight: 400;
+    }
+
+    .header-title {
+        font-size: 14pt;
+        font-weight: 700;
+        margin-top: 4px;
+        color: rgba(255,255,255,0.95);
+    }
+
+    .header-sub {
+        font-size: 8.5pt;
+        color: rgba(255,255,255,0.75);
+        margin-top: 3px;
+    }
+
+    .header-date {
+        font-size: 8pt;
+        color: rgba(255,255,255,0.8);
+        text-align: right;
+    }
+
+    .header-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.35);
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: 7.5pt;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: #fff;
+        margin-top: 6px;
+    }
+
+    /* ── User info strip ── */
+    .user-strip {
+        background: #faf5ee;
+        border-bottom: 1px solid #ede5d8;
+        padding: 10px 36px;
+        display: table;
+        width: 100%;
+    }
+
+    .user-strip-cell {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .user-strip-cell:last-child {
+        text-align: right;
+    }
+
+    .user-name {
+        font-size: 10pt;
+        font-weight: 700;
+        color: #2c2418;
+    }
+
+    .user-email {
+        font-size: 8.5pt;
+        color: #6b5a48;
+    }
+
+    .user-stat {
+        font-size: 8.5pt;
+        color: #6b5a48;
+    }
+
+    .user-stat strong {
+        color: #c37d5d;
+        font-size: 11pt;
+    }
+
+    /* ── Content area ── */
+    .content {
+        padding: 24px 36px 36px;
+    }
+
+    /* ── Section title ── */
+    .section-title {
+        font-size: 11pt;
+        font-weight: 700;
+        color: #2c2418;
+        margin-bottom: 14px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid #c37d5d;
+        display: table;
+        width: 100%;
+    }
+
+    .section-title-text {
+        display: table-cell;
+        vertical-align: bottom;
+    }
+
+    .section-title-count {
+        display: table-cell;
+        text-align: right;
+        font-size: 8.5pt;
+        font-weight: 400;
+        color: #6b5a48;
+        vertical-align: bottom;
+    }
+
+    /* ── Booking card ── */
+    .booking-card {
+        border: 1px solid #ede5d8;
+        border-radius: 8px;
+        margin-bottom: 14px;
+        overflow: hidden;
+        page-break-inside: avoid;
+    }
+
+    .booking-card-header {
+        background: #fcf8f0;
+        border-bottom: 1px solid #ede5d8;
+        padding: 10px 16px;
+        display: table;
+        width: 100%;
+    }
+
+    .booking-card-header-left {
+        display: table-cell;
+        vertical-align: middle;
+        width: 70%;
+    }
+
+    .booking-card-header-right {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: right;
+        width: 30%;
+    }
+
+    .booking-event-title {
+        font-size: 11pt;
+        font-weight: 700;
+        color: #2c2418;
+    }
+
+    .booking-id {
+        font-size: 7.5pt;
+        color: #8a7a64;
+        margin-top: 2px;
+    }
+
+    /* ── Status pill ── */
+    .status-pill {
+        display: inline-block;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 7.5pt;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    .status-pending  { background: #fff0d8; color: #ab6f02; border: 1px solid #f5d98a; }
+    .status-accepted { background: #e8f7ee; color: #1f6b3c; border: 1px solid #a3d9b8; }
+    .status-refused  { background: #fdeaea; color: #a33939; border: 1px solid #f5b8b8; }
+
+    /* ── Price pill ── */
+    .price-pill {
+        display: inline-block;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 7.5pt;
+        font-weight: 700;
+        background: #fff3e0;
+        color: #e65100;
+        border: 1px solid #ffcc80;
+        margin-left: 6px;
+    }
+
+    .price-pill-free {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-color: #a5d6a7;
+    }
+
+    /* ── Booking body ── */
+    .booking-card-body {
+        padding: 12px 16px;
+        display: table;
+        width: 100%;
+    }
+
+    .booking-col {
+        display: table-cell;
+        vertical-align: top;
+        width: 50%;
+        padding-right: 12px;
+    }
+
+    .booking-col:last-child {
+        padding-right: 0;
+        padding-left: 12px;
+        border-left: 1px solid #f0e7dc;
+    }
+
+    .meta-row {
+        margin-bottom: 5px;
+        font-size: 9pt;
+        color: #2c2418;
+    }
+
+    .meta-label {
+        font-weight: 700;
+        color: #6b5a48;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        display: block;
+        margin-bottom: 1px;
+    }
+
+    .meta-value {
+        color: #2c2418;
+        font-size: 9pt;
+    }
+
+    /* ── Description ── */
+    .booking-description {
+        padding: 8px 16px 12px;
+        font-size: 8.5pt;
+        color: #6b5a48;
+        line-height: 1.5;
+        border-top: 1px solid #f5ede3;
+        font-style: italic;
+    }
+
+    /* ── Ticket summary box ── */
+    .ticket-box {
+        background: linear-gradient(135deg, #fcf8f0, #f6eee3);
+        border: 1px solid #e8d8c4;
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin-top: 8px;
+        display: table;
+        width: 100%;
+    }
+
+    .ticket-box-cell {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .ticket-box-cell:last-child {
+        text-align: right;
+    }
+
+    .ticket-count {
+        font-size: 9pt;
+        color: #6b5a48;
+    }
+
+    .ticket-total {
+        font-size: 11pt;
+        font-weight: 700;
+        color: #c37d5d;
+    }
+
+    .ticket-total-label {
+        font-size: 7.5pt;
+        color: #8a7a64;
+        display: block;
+    }
+
+    /* ── Grand total ── */
+    .grand-total {
+        background: linear-gradient(135deg, #c37d5d, #a86447);
+        border-radius: 8px;
+        padding: 14px 20px;
+        margin-top: 20px;
+        display: table;
+        width: 100%;
+        color: #fff;
+    }
+
+    .grand-total-cell {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .grand-total-cell:last-child {
+        text-align: right;
+    }
+
+    .grand-total-label {
+        font-size: 10pt;
+        font-weight: 700;
+        color: rgba(255,255,255,0.9);
+    }
+
+    .grand-total-sub {
+        font-size: 8pt;
+        color: rgba(255,255,255,0.65);
+        margin-top: 2px;
+    }
+
+    .grand-total-amount {
+        font-size: 18pt;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .grand-total-currency {
+        font-size: 10pt;
+        color: rgba(255,255,255,0.8);
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #8a7a64;
+        border: 1px dashed #d8cbb9;
+        border-radius: 8px;
+    }
+
+    .empty-state-title {
+        font-size: 12pt;
+        font-weight: 700;
+        color: #2c2418;
+        margin-bottom: 6px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 8px 36px;
+        background: #faf5ee;
+        border-top: 1px solid #ede5d8;
+        display: table;
+        width: 100%;
+        font-size: 7.5pt;
+        color: #8a7a64;
+    }
+
+    .footer-cell {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .footer-cell:last-child {
+        text-align: right;
+    }
+
+    .footer-brand {
+        font-weight: 700;
+        color: #c37d5d;
+    }
+
+    /* ── Divider ── */
+    .divider {
+        height: 1px;
+        background: #ede5d8;
+        margin: 16px 0;
+    }
+</style>
+</head>
+<body>
+<div class="page">
+
+    {# ── Header ── #}
+    <div class="header">
+        <div class="header-inner">
+            <div class="header-left">
+                <div class="header-logo">ADVISORA<span>.</span></div>
+                <div class="header-title">Mes inscriptions aux evenements</div>
+                <div class="header-sub">Document genere automatiquement depuis votre espace personnel</div>
+                <div class="header-badge">Confidentiel &mdash; Usage personnel</div>
+            </div>
+            <div class="header-right">
+                <div class="header-date">
+                    Genere le<br>
+                    <strong>{{ generated_at|date('d/m/Y') }}</strong><br>
+                    a {{ generated_at|date('H:i') }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── User strip ── #}
+    <div class="user-strip">
+        <div class="user-strip-cell">
+            <div class="user-name">{{ user.prenomUser }} {{ user.nomUser }}</div>
+            <div class="user-email">{{ user.emailUser }}</div>
+        </div>
+        <div class="user-strip-cell">
+            <div class="user-stat">
+                Inscriptions : <strong>{{ bookings|length }}</strong>
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                Tickets : <strong>{{ bookings|reduce((carry, b) => carry + b.ticketCount, 0) }}</strong>
+            </div>
+        </div>
+    </div>
+
+    {# ── Footer (fixed) ── #}
+    <div class="footer">
+        <div class="footer-cell">
+            <span class="footer-brand">Advisora</span> &mdash; Plateforme de gestion de projets et evenements
+        </div>
+        <div class="footer-cell">
+            Document confidentiel &mdash; {{ generated_at|date('d/m/Y H:i') }}
+        </div>
+    </div>
+
+    {# ── Content ── #}
+    <div class="content">
+
+        {% if bookings|length == 0 %}
+        <div class="empty-state">
+            <div class="empty-state-title">Aucune inscription enregistree</div>
+            <p>Vous n'avez pas encore de reservations actives.</p>
+        </div>
+
+        {% else %}
+
+        {# Section title #}
+        <div class="section-title">
+            <div class="section-title-text">Recapitulatif de vos reservations</div>
+            <div class="section-title-count">{{ bookings|length }} inscription{{ bookings|length != 1 ? 's' : '' }}</div>
+        </div>
+
+        {# ── Booking cards ── #}
+        {% set grand_total = 0 %}
+        {% set total_tickets = 0 %}
+
+        {% for booking in bookings %}
+            {% set event = booking.event %}
+            {% set subtotal = event and event.price ? (event.price * booking.ticketCount) : 0 %}
+            {% set grand_total = grand_total + subtotal %}
+            {% set total_tickets = total_tickets + booking.ticketCount %}
+
+            <div class="booking-card">
+
+                {# Card header #}
+                <div class="booking-card-header">
+                    <div class="booking-card-header-left">
+                        <div class="booking-event-title">
+                            {{ event ? event.title : 'Evenement indisponible' }}
+                        </div>
+                        <div class="booking-id">Inscription #{{ booking.id }} &mdash; Reservee le {{ booking.bookingDate ? booking.bookingDate|date('d/m/Y a H:i') : 'N/A' }}</div>
+                    </div>
+                    <div class="booking-card-header-right">
+                        <span class="status-pill status-{{ booking.workflowStatusCssClass }}">{{ booking.workflowStatusLabel }}</span>
+                        {% if event and event.price %}
+                            <span class="price-pill">{{ event.price|number_format(2, '.', ' ') }} TND/ticket</span>
+                        {% else %}
+                            <span class="price-pill price-pill-free">Gratuit</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Card body — two columns #}
+                <div class="booking-card-body">
+                    <div class="booking-col">
+                        {% if event %}
+                        <div class="meta-row">
+                            <span class="meta-label">Organisateur</span>
+                            <span class="meta-value">{{ event.organizerName ?: 'Non renseigne' }}</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Lieu</span>
+                            <span class="meta-value">{{ event.location ?: 'Non renseigne' }}</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Date de debut</span>
+                            <span class="meta-value">{{ event.startDate ? event.startDate|date('d/m/Y a H:i') : 'Non renseigne' }}</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Date de fin</span>
+                            <span class="meta-value">{{ event.endDate ? event.endDate|date('d/m/Y a H:i') : 'Non renseigne' }}</span>
+                        </div>
+                        {% else %}
+                        <div class="meta-row">
+                            <span class="meta-value" style="color:#a33939;">Evenement supprime ou indisponible</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="booking-col">
+                        {% if event %}
+                        <div class="meta-row">
+                            <span class="meta-label">Statut evenement</span>
+                            <span class="meta-value">{{ event.getTimelineLabel() }}</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Capacite totale</span>
+                            <span class="meta-value">{{ event.capacity }} places</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Places restantes</span>
+                            <span class="meta-value">{{ event.remainingTickets }} place{{ event.remainingTickets != 1 ? 's' : '' }}</span>
+                        </div>
+                        {% endif %}
+
+                        {# Ticket summary box #}
+                        <div class="ticket-box">
+                            <div class="ticket-box-cell">
+                                <div class="ticket-count">{{ booking.ticketCount }} ticket{{ booking.ticketCount != 1 ? 's' : '' }} reserves</div>
+                            </div>
+                            <div class="ticket-box-cell">
+                                <span class="ticket-total-label">Sous-total</span>
+                                <span class="ticket-total">
+                                    {% if event and event.price %}
+                                        {{ subtotal|number_format(2, '.', ' ') }} TND
+                                    {% else %}
+                                        Gratuit
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Description #}
+                {% if event and event.description %}
+                <div class="booking-description">
+                    {{ event.description|length > 200 ? event.description|slice(0, 200) ~ '…' : event.description }}
+                </div>
+                {% endif %}
+
+            </div>
+        {% endfor %}
+
+        {# ── Grand total ── #}
+        <div class="grand-total">
+            <div class="grand-total-cell">
+                <div class="grand-total-label">Total de vos reservations</div>
+                <div class="grand-total-sub">{{ total_tickets }} ticket{{ total_tickets != 1 ? 's' : '' }} sur {{ bookings|length }} evenement{{ bookings|length != 1 ? 's' : '' }}</div>
+            </div>
+            <div class="grand-total-cell">
+                {% if grand_total > 0 %}
+                    <span class="grand-total-amount">{{ grand_total|number_format(2, '.', ' ') }}</span>
+                    <span class="grand-total-currency"> TND</span>
+                {% else %}
+                    <span class="grand-total-amount">Gratuit</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% endif %}
+
+    </div>{# /content #}
+
+</div>{# /page #}
+</body>
+</html>

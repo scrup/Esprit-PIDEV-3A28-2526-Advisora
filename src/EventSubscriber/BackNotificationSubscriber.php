@@ -47,12 +47,11 @@ class BackNotificationSubscriber implements EventSubscriberInterface
 
         $request->attributes->set(
             '_admin_notifications',
-            $this->notificationRepository->findLatestForRole('admin', 8)
+            $this->notificationRepository->findLatestForRecipient($user, 8)
         );
         $request->attributes->set(
             '_admin_notifications_unread_count',
-            $this->notificationRepository->countUnreadForRole('admin')
+            $this->notificationRepository->countUnreadForRecipient($user)
         );
     }
 }
-

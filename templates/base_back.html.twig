@@ -10,7 +10,8 @@
 
     <link rel="stylesheet" href="{{ asset('css/back-base.css') }}?v={{ back_asset_version }}">
     <link rel="stylesheet" href="{{ asset('css/back-management.css') }}?v=20260412-management-v1">
-        <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/notifications.css') }}?v=20260422-01">
 
     {% block stylesheets %}{% endblock %}
 </head>
@@ -80,54 +81,52 @@
                 </div>
             </div>
 
-           <div class="back-topbar-actions">
-    {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
+            <div class="back-topbar-actions">
+                {% if app.user %}
+                    {% include 'shared/notification_center.html.twig' with {variant: 'back'} %}
+                {% endif %}
 
-    {% set current_route_name = app.request.attributes.get('_route')|default('app_back') %}
-    {% set route_params = app.request.attributes.get('_route_params', {}) %}
-    {% set query_params = app.request.query.all() %}
-    {% set fr_params = route_params|merge(query_params)|merge({'_locale': 'fr'}) %}
-    {% set en_params = route_params|merge(query_params)|merge({'_locale': 'en'}) %}
+                {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
 
-    <div class="back-lang-switcher" aria-label="Choisir la langue">
-        <a href="{{ path(current_route_name, fr_params) }}"
-           class="back-lang-option {{ app.request.locale == 'fr' ? 'active' : '' }}"
-           aria-label="Francais">
-            FR
-        </a>
-        <span class="back-lang-divider">|</span>
-        <a href="{{ path(current_route_name, en_params) }}"
-           class="back-lang-option {{ app.request.locale == 'en' ? 'active' : '' }}"
-           aria-label="English">
-            EN
-        </a>
-    </div>
-    {% if app.user and app.user.getRoleUser() == 'admin' %}
-        {% include 'back/_notification_panel.html.twig' with {
-            notifications: app.request.attributes.get('_admin_notifications', []),
-            unread_count: app.request.attributes.get('_admin_notifications_unread_count', 0)
-        } only %}
-    {% endif %}
+                {% set current_route_name = app.request.attributes.get('_route')|default('app_back') %}
+                {% set route_params = app.request.attributes.get('_route_params', {}) %}
+                {% set query_params = app.request.query.all() %}
+                {% set fr_params = route_params|merge(query_params)|merge({'_locale': 'fr'}) %}
+                {% set en_params = route_params|merge(query_params)|merge({'_locale': 'en'}) %}
 
-    <a href="{{ path('back_user_profile') }}" class="back-user-chip">
-        {% if app.user and app.user.image_path %}
-            <img src="{{ asset(app.user.image_path) }}" alt="Profil" class="back-user-chip-avatar">
-        {% else %}
-            <i class="fas fa-user-circle"></i>
-        {% endif %}
-        <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
-    </a>
+                <div class="back-lang-switcher" aria-label="Choisir la langue">
+                    <a href="{{ path(current_route_name, fr_params) }}"
+                       class="back-lang-option {{ app.request.locale == 'fr' ? 'active' : '' }}"
+                       aria-label="Francais">
+                        FR
+                    </a>
+                    <span class="back-lang-divider">|</span>
+                    <a href="{{ path(current_route_name, en_params) }}"
+                       class="back-lang-option {{ app.request.locale == 'en' ? 'active' : '' }}"
+                       aria-label="English">
+                        EN
+                    </a>
+                </div>
 
-    {% if app.user %}
-        <form method="post" action="{{ path('app_logout') }}" class="back-logout-form">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-            <button type="submit" class="back-logout-button" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Deconnecter</span>
-            </button>
-        </form>
-    {% endif %}
-</div>
+                <a href="{{ path('back_user_profile') }}" class="back-user-chip">
+                    {% if app.user and app.user.image_path %}
+                        <img src="{{ asset(app.user.image_path) }}" alt="Profil" class="back-user-chip-avatar">
+                    {% else %}
+                        <i class="fas fa-user-circle"></i>
+                    {% endif %}
+                    <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
+                </a>
+
+                {% if app.user %}
+                    <form method="post" action="{{ path('app_logout') }}" class="back-logout-form">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                        <button type="submit" class="back-logout-button" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Deconnecter</span>
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
         </header>
 
         <main class="back-content">
@@ -143,6 +142,7 @@
 </div>
 
 {% block javascripts %}
+    <script src="{{ asset('js/notifications.js') }}?v=20260422-01"></script>
     <script src="{{ asset('js/form-validation.js') }}?v={{ back_asset_version }}"></script>
     <script src="{{ asset('js/interface-toggle.js') }}?v={{ back_asset_version }}"></script>
     <script src="{{ asset('js/back-layout.js') }}?v={{ back_asset_version }}"></script>

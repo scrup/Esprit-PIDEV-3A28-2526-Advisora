@@ -1,0 +1,252 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Mon panier{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/cart.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if items|length > 0 and total > 0 and paypal_client_id %}
+    <script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD" data-sdk-integration-source="button-factory"></script>
+    {% endif %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // ── Quantity stepper ──────────────────────────────────────────────────
+        document.querySelectorAll('.cart-qty-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = btn.closest('.cart-qty-wrap').querySelector('.cart-qty-input');
+                var val   = parseInt(input.value, 10) || 1;
+                var max   = parseInt(input.dataset.max, 10) || 999;
+                if (btn.dataset.dir === 'up')   val = Math.min(val + 1, max);
+                if (btn.dataset.dir === 'down') val = Math.max(val - 1, 1);
+                input.value = val;
+            });
+        });
+
+        {% if items|length > 0 and total > 0 and paypal_client_id %}
+        // ── PayPal button ─────────────────────────────────────────────────────
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color:  'gold',
+                shape:  'pill',
+                label:  'pay',
+                height: 48
+            },
+            createOrder: function () {
+                return fetch('{{ path('event_paypal_create_order') }}', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.error) throw new Error(data.error);
+                    if (data.free)  { window.location.href = '{{ path('event_cart_confirm_free') }}'; return; }
+                    return data.orderID;
+                });
+            },
+            onApprove: function (data) {
+                document.getElementById('paypal-loading').style.display = 'flex';
+                return fetch('{{ path('event_paypal_capture_order') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ orderID: data.orderID })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    if (result.success) {
+                        window.location.href = result.redirect;
+                    } else {
+                        document.getElementById('paypal-loading').style.display = 'none';
+                        document.getElementById('paypal-error').textContent = result.error || 'Erreur de paiement.';
+                        document.getElementById('paypal-error').style.display = 'block';
+                    }
+                });
+            },
+            onError: function (err) {
+                document.getElementById('paypal-loading').style.display = 'none';
+                document.getElementById('paypal-error').textContent = 'Une erreur PayPal est survenue. Veuillez reessayer.';
+                document.getElementById('paypal-error').style.display = 'block';
+                console.error(err);
+            },
+            onCancel: function () {
+                document.getElementById('paypal-error').textContent = 'Paiement annule.';
+                document.getElementById('paypal-error').style.display = 'block';
+            }
+        }).render('#paypal-button-container');
+        {% endif %}
+    });
+    </script>
+{% endblock %}
+
+{% block body %}
+<div class="cart-shell">
+
+    {# ── Header ── #}
+    <div class="cart-header">
+        <div>
+            <a class="pm-back-link" href="{{ path('event_index') }}">← Retour aux evenements</a>
+            <h1>Mon panier</h1>
+            <p>{{ items|length }} evenement{{ items|length != 1 ? 's' : '' }} &mdash; {{ items|reduce((carry, item) => carry + item.quantity, 0) }} ticket{{ items|reduce((carry, item) => carry + item.quantity, 0) != 1 ? 's' : '' }}</p>
+        </div>
+        {% if items|length > 0 %}
+        <form method="post" action="{{ path('event_cart_remove', {id: 0}) }}" style="display:none" id="clear-form"></form>
+        {% endif %}
+    </div>
+
+    {% if items|length == 0 %}
+    {# ── Empty cart ── #}
+    <div class="cart-empty">
+        <div class="cart-empty-icon">🛒</div>
+        <h2>Votre panier est vide</h2>
+        <p>Parcourez les evenements disponibles et ajoutez des tickets a votre panier.</p>
+        <a class="pm-btn pm-btn-primary" href="{{ path('event_index') }}">Voir les evenements</a>
+    </div>
+
+    {% else %}
+    <div class="cart-layout">
+
+        {# ── Items ── #}
+        <div class="cart-items">
+            {% for item in items %}
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <div class="cart-item-status">
+                        <span class="pm-status pm-status-{{ item.event.getTimelineStatus() }}">{{ item.event.getTimelineLabel() }}</span>
+                        {% if item.event.price %}
+                            <span class="ev-price-tag">{{ item.event.price|number_format(2, '.', ' ') }} TND / ticket</span>
+                        {% else %}
+                            <span class="ev-price-tag ev-price-free">Gratuit</span>
+                        {% endif %}
+                    </div>
+                    <h3><a href="{{ path('event_show', {id: item.event.id}) }}">{{ item.event.title }}</a></h3>
+                    <ul class="ev-meta-chips" style="margin:0.5rem 0 0;">
+                        {% if item.event.location %}
+                            <li><i class="fas fa-location-dot"></i> {{ item.event.location }}</li>
+                        {% endif %}
+                        {% if item.event.startDate %}
+                            <li><i class="fas fa-calendar"></i> {{ item.event.startDate|date('d/m/Y H:i') }}</li>
+                        {% endif %}
+                        <li><i class="fas fa-chair"></i> {{ item.event.remainingTickets }} place{{ item.event.remainingTickets != 1 ? 's' : '' }} restante{{ item.event.remainingTickets != 1 ? 's' : '' }}</li>
+                    </ul>
+                </div>
+
+                <div class="cart-item-controls">
+                    {# Quantity form #}
+                    <form method="post" action="{{ path('event_cart_update', {id: item.event.id}) }}" class="cart-qty-form">
+                        <div class="cart-qty-wrap">
+                            <button type="button" class="cart-qty-btn" data-dir="down" aria-label="Diminuer">−</button>
+                            <input
+                                type="number"
+                                name="quantity"
+                                class="cart-qty-input"
+                                value="{{ item.quantity }}"
+                                min="1"
+                                max="{{ item.event.remainingTickets + item.quantity }}"
+                                data-max="{{ item.event.remainingTickets + item.quantity }}"
+                            >
+                            <button type="button" class="cart-qty-btn" data-dir="up" aria-label="Augmenter">+</button>
+                        </div>
+                        <button type="submit" class="cart-qty-save pm-btn pm-btn-secondary">Mettre a jour</button>
+                    </form>
+
+                    {# Remove #}
+                    <form method="post" action="{{ path('event_cart_remove', {id: item.event.id}) }}">
+                        <button type="submit" class="cart-remove-btn" aria-label="Retirer du panier">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="cart-item-subtotal">
+                    {% if item.event.price %}
+                        <span class="cart-subtotal-amount">{{ item.subtotal|number_format(2, '.', ' ') }} TND</span>
+                        <span class="cart-subtotal-detail">{{ item.quantity }} × {{ item.event.price|number_format(2, '.', ' ') }}</span>
+                    {% else %}
+                        <span class="cart-subtotal-amount cart-subtotal-free">Gratuit</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# ── Summary & Checkout ── #}
+        <aside class="cart-summary">
+            <div class="cart-summary-card">
+                <h2>Recapitulatif</h2>
+
+                <div class="cart-summary-lines">
+                    {% for item in items %}
+                    <div class="cart-summary-line">
+                        <span>{{ item.event.title|length > 28 ? item.event.title|slice(0,28) ~ '…' : item.event.title }} × {{ item.quantity }}</span>
+                        <span>
+                            {% if item.event.price %}
+                                {{ item.subtotal|number_format(2, '.', ' ') }} TND
+                            {% else %}
+                                Gratuit
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="cart-summary-total">
+                    <span>Total</span>
+                    <span class="cart-total-amount">
+                        {% if total > 0 %}
+                            {{ total|number_format(2, '.', ' ') }} TND
+                        {% else %}
+                            Gratuit
+                        {% endif %}
+                    </span>
+                </div>
+
+                {# PayPal loading overlay #}
+                <div id="paypal-loading" class="cart-paypal-loading" style="display:none;">
+                    <div class="progress-circle"></div>
+                    <span>Traitement du paiement...</span>
+                </div>
+
+                {# Error message #}
+                <div id="paypal-error" class="cart-paypal-error" style="display:none;"></div>
+
+                {% if total > 0 %}
+                    {% if paypal_client_id %}
+                        <div class="cart-paypal-wrap">
+                            <p class="cart-paypal-label"><i class="fas fa-lock"></i> Paiement securise via PayPal</p>
+                            <div id="paypal-button-container"></div>
+                        </div>
+                    {% else %}
+                        <div class="cart-no-paypal">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Paiement PayPal non configure.<br>Ajoutez <code>PAYPAL_CLIENT_ID</code> dans votre <code>.env</code>.</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {# All free — confirm without payment #}
+                    <form method="post" action="{{ path('event_cart_confirm_free') }}">
+                        <button type="submit" class="pm-btn pm-btn-primary pm-btn-block" style="margin-top:1rem;">
+                            <i class="fas fa-check"></i> Confirmer l'inscription gratuite
+                        </button>
+                    </form>
+                {% endif %}
+
+                <a class="pm-btn pm-btn-secondary pm-btn-block" href="{{ path('event_index') }}" style="margin-top:0.75rem; text-align:center;">
+                    Continuer a parcourir
+                </a>
+            </div>
+        </aside>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

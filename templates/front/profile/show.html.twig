@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Mon profil{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Espace client</span>
+            <h1>Mon profil</h1>
+            <p>Consultez vos informations personnelles et mettez a jour votre compte.</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-primary" href="{{ path('client_profile_edit') }}">
+                <i class="fas fa-user-pen"></i>
+                <span>Modifier</span>
+            </a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="pm-grid pm-profile-grid">
+        <article class="pm-card pm-profile-card">
+            <div class="pm-profile-head">
+                <div class="pm-profile-avatar">
+                    {% if userProfile.image_path %}
+                        <img src="{{ asset(userProfile.image_path) }}" alt="Photo de profil">
+                    {% else %}
+                        <span>
+                            {{ userProfile.prenomUser|slice(0, 1)|upper }}{{ userProfile.nomUser|slice(0, 1)|upper }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="pm-profile-identity">
+                    <h2>{{ userProfile.prenomUser }} {{ userProfile.nomUser }}</h2>
+                    <p>{{ userProfile.EmailUser }}</p>
+                </div>
+            </div>
+
+            <div class="pm-profile-info">
+                <div class="pm-profile-info-item">
+                    <span class="pm-profile-label">Telephone</span>
+                    <strong>{{ userProfile.NumTelUser ?: '-' }}</strong>
+                </div>
+                <div class="pm-profile-info-item">
+                    <span class="pm-profile-label">CIN</span>
+                    <strong>{{ userProfile.cin ?: '-' }}</strong>
+                </div>
+                <div class="pm-profile-info-item">
+                    <span class="pm-profile-label">Date de naissance</span>
+                    <strong>{{ userProfile.dateNUser ? userProfile.dateNUser|date('d/m/Y') : '-' }}</strong>
+                </div>
+                <div class="pm-profile-info-item">
+                    <span class="pm-profile-label">Role</span>
+                    <strong>{{ userProfile.roleUser|capitalize }}</strong>
+                </div>
+            </div>
+        </article>
+    </section>
+{% endblock %}
+

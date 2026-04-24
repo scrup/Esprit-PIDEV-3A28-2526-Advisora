@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Form\InvestmentType;
 use App\Repository\InvestmentRepository;
 use App\Repository\ProjectRepository;
+use App\Service\InvestmentPredictionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -42,7 +43,8 @@ final class InvestmentController extends AbstractController
     public function create(
         Request $request,
         ProjectRepository $projectRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        InvestmentPredictionService $investmentPredictionService
     ): Response {
         $user = $this->getCurrentUser();
         if (!$this->isClient($user)) {
@@ -53,7 +55,7 @@ final class InvestmentController extends AbstractController
         $investment->setUser($user);
         $investment->setCurrencyInv('TND');
 
-        return $this->handleCreateForm($request, $investment, $projectRepository, $entityManager, null, $user);
+        return $this->handleCreateForm($request, $investment, $projectRepository, $entityManager, $investmentPredictionService, null, $user);
     }
 
     #[Route('/projects/{id}/investments/new', name: 'investment_new', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
@@ -61,7 +63,8 @@ final class InvestmentController extends AbstractController
         int $id,
         Request $request,
         ProjectRepository $projectRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        InvestmentPredictionService $investmentPredictionService
     ): Response {
         $user = $this->getCurrentUser();
         if (!$this->isClient($user)) {
@@ -78,11 +81,15 @@ final class InvestmentController extends AbstractController
         $investment->setCurrencyInv('TND');
         $investment->setProject($project);
 
-        return $this->handleCreateForm($request, $investment, $projectRepository, $entityManager, $project, $user);
+        return $this->handleCreateForm($request, $investment, $projectRepository, $entityManager, $investmentPredictionService, $project, $user);
     }
 
     #[Route('/investments/{id}/manage', name: 'investment_manage', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function manage(int $id, InvestmentRepository $investmentRepository): Response
+    public function manage(
+        int $id,
+        InvestmentRepository $investmentRepository,
+        InvestmentPredictionService $investmentPredictionService
+    ): Response
     {
         $user = $this->getCurrentUser();
         if (!$this->isClient($user)) {
@@ -96,12 +103,25 @@ final class InvestmentController extends AbstractController
 
         $latestTransaction = $investment->getLatestTransaction();
 
+        $totalActive = $investment->getTotalActiveTransactionsAmount();
+        $budMax = (float) ($investment->getBud_maxInv() ?? 0);
+        $prediction = null;
+        $predictionError = null;
+
+        try {
+            $prediction = $investmentPredictionService->predictForInvestment($investment);
+        } catch (\Throwable) {
+            $predictionError = 'La prediction d investissement est temporairement indisponible.';
+        }
+
         return $this->render('front/investment/manage.html.twig', [
             'investment' => $investment,
             'latest_transaction' => $latestTransaction,
             'can_edit_investment' => $investment->isEditableByClient(),
             'can_delete_investment' => $investment->isEditableByClient(),
-            'can_create_transaction' => $latestTransaction === null,
+            'can_create_transaction' => $totalActive < $budMax,
+            'prediction' => $prediction,
+            'prediction_error' => $predictionError,
         ]);
     }
 
@@ -257,10 +277,19 @@ final class InvestmentController extends AbstractController
         Investment $investment,
         ProjectRepository $projectRepository,
         EntityManagerInterface $entityManager,
+        InvestmentPredictionService $investmentPredictionService,
         ?Project $prefilledProject,
         User $user
     ): Response {
         $allProjects = $projectRepository->findAllOrdered();
+        $investmentRecommendations = [];
+        $investmentRecommendationsError = null;
+
+        try {
+            $investmentRecommendations = $investmentPredictionService->getTopProjectRecommendations($allProjects, 5);
+        } catch (\Throwable) {
+            $investmentRecommendationsError = 'Le classement des projets recommandes est temporairement indisponible.';
+        }
 
         $form = $this->createForm(InvestmentType::class, $investment, [
             'submit_label' => 'Ajouter l investissement',
@@ -293,6 +322,12 @@ final class InvestmentController extends AbstractController
             'investment' => $investment,
             'project' => $investment->getProject() ?? $prefilledProject,
             'projects_count' => count($allProjects),
+            'investment_recommendations' => $investmentRecommendations,
+            'investment_recommendations_error' => $investmentRecommendationsError,
+            'recommendation_macro' => $investmentRecommendations !== []
+                ? $investmentRecommendations[0]['prediction']->getMacroAnalysis()
+                : null,
+            'selected_project_id' => $investment->getProject()?->getId(),
             'page_title' => 'Ajouter un investissement',
             'page_badge' => 'Investissement client',
             'page_message' => 'Choisissez librement un projet existant puis saisissez une fourchette min/max compatible avec votre futur transfert.',
@@ -333,15 +368,62 @@ final class InvestmentController extends AbstractController
 
     private function validatePendingTransactionStillFits($form, Investment $investment): void
     {
-        $latestTransaction = $investment->getLatestTransaction();
-        if (!$latestTransaction instanceof Transaction || !$latestTransaction->isPending()) {
-            return;
+        $totalActive = $investment->getTotalActiveTransactionsAmount();
+        
+        if ($totalActive > (float) ($investment->getBud_maxInv() ?? 0)) {
+            $form->addError(new FormError('Le total des transactions existantes depasse le nouveau montant maximum de l investissement.'));
+        }
+    }
+
+    #[Route('/investments/history', name: 'investment_history', methods: ['GET'])]
+    public function history(Request $request, InvestmentRepository $investmentRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->isClient($user)) {
+            throw $this->createAccessDeniedException('Seul un client peut consulter ses investissements.');
         }
 
-        $amount = (float) ($latestTransaction->getMontantTransac() ?? 0);
-        if ($amount < (float) ($investment->getBud_minInv() ?? 0) || $amount > (float) ($investment->getBud_maxInv() ?? 0)) {
-            $form->addError(new FormError('La transaction en attente n est plus comprise dans la fourchette saisie.'));
+        $allInvestments = $investmentRepository->findClientInvestments($user, []);
+
+        $pagination = $paginator->paginate(
+            $allInvestments,
+            $request->query->getInt('page', 1),
+            6 
+        );
+
+        return $this->render('front/investment/history.html.twig', [
+            'pagination' => $pagination,
+        ]);
+    }
+
+    #[Route('/investments/history/pdf', name: 'investment_history_pdf', methods: ['GET'])]
+    public function historyPdf(Request $request, InvestmentRepository $investmentRepository): Response
+    {
+        $user = $this->getCurrentUser();
+        if (!$this->isClient($user)) {
+            throw $this->createAccessDeniedException('Seul un client peut consulter ses investissements.');
         }
+
+        $investments = $investmentRepository->findClientInvestments($user, []);
+
+        $pdfOptions = new \Dompdf\Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        $pdfOptions->setIsRemoteEnabled(true);
+
+        $dompdf = new \Dompdf\Dompdf($pdfOptions);
+        
+        $html = $this->renderView('front/investment/history_pdf.html.twig', [
+            'investments' => $investments,
+        ]);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="historique_investissements.pdf"'
+        ]);
     }
 
     private function getStatusChoices(bool $clientScope): array

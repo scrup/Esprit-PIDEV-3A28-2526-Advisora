@@ -9,6 +9,7 @@ use App\Form\EventType;
 use App\Repository\BookingRepository;
 use App\Repository\EventRepository;
 use App\Service\BookingStatusStore;
+use App\Service\EventRecommendationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,9 +23,9 @@ final class EventController extends AbstractController
         Request $request,
         EventRepository $eventRepository,
         BookingRepository $bookingRepository,
-        BookingStatusStore $bookingStatusStore
-    ): Response
-    {
+        BookingStatusStore $bookingStatusStore,
+        EventRecommendationService $recommendationService
+    ): Response {
         $user = $this->getCurrentUser();
         $filters = [
             'q' => trim((string) $request->query->get('q', '')),
@@ -45,13 +46,41 @@ final class EventController extends AbstractController
             }
         }
 
+        $recommendations = [];
+        if ($user && $this->isClient($user)) {
+            $recommendations = $recommendationService->getRecommendationsForUser($user, 5);
+        }
+
         return $this->render('front/event/index.html.twig', [
             'events' => $events,
             'filters' => $filters,
             'can_manage_events' => $this->canManageEvents($user),
             'can_book_events' => $this->isClient($user),
             'existing_bookings' => $existingBookings,
+            'recommendations' => $recommendations,
         ]);
+    }
+
+    #[Route('/events/calendar-data', name: 'event_calendar_data', methods: ['GET'])]
+    public function calendarData(EventRepository $eventRepository): Response {
+        $events = $eventRepository->findAll();
+        $data = [];
+
+        foreach ($events as $event) {
+            if ($event->getStartDateEv() === null || $event->getEndDateEv() === null) {
+                continue;
+            }
+
+            $data[] = [
+                'id' => $event->getIdEv(),
+                'title' => $event->getTitleEv() ?? 'Sans titre',
+                'start' => $event->getStartDateEv()->format('Y-m-d\TH:i:s'),
+                'end' => $event->getEndDateEv()->format('Y-m-d\TH:i:s'),
+                'url' => $this->generateUrl('event_show', ['id' => $event->getIdEv()]),
+            ];
+        }
+
+        return $this->json($data);
     }
 
     #[Route('/events/{id}', name: 'event_show', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -60,8 +89,7 @@ final class EventController extends AbstractController
         EventRepository $eventRepository,
         BookingRepository $bookingRepository,
         BookingStatusStore $bookingStatusStore
-    ): Response
-    {
+    ): Response {
         $event = $eventRepository->findOneWithManagerAndBookings($id);
         if (!$event instanceof Event) {
             throw $this->createNotFoundException('Evenement introuvable.');
@@ -86,8 +114,7 @@ final class EventController extends AbstractController
     }
 
     #[Route('/back/events', name: 'back_event_index', methods: ['GET'])]
-    public function backIndex(Request $request, EventRepository $eventRepository): Response
-    {
+    public function backIndex(Request $request, EventRepository $eventRepository): Response {
         $user = $this->getCurrentUser();
         if (!$this->canManageEvents($user)) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas consulter la gestion des evenements.');
@@ -105,8 +132,7 @@ final class EventController extends AbstractController
     }
 
     #[Route('/events/new', name: 'event_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
+    public function new(Request $request, EntityManagerInterface $entityManager): Response {
         $user = $this->getCurrentUser();
         if (!$this->canManageEvents($user)) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas creer d evenement.');
@@ -144,8 +170,7 @@ final class EventController extends AbstractController
     }
 
     #[Route('/back/events/{id}/manage', name: 'event_back_manage', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function backManage(int $id, EventRepository $eventRepository, BookingStatusStore $bookingStatusStore): Response
-    {
+    public function backManage(int $id, EventRepository $eventRepository, BookingStatusStore $bookingStatusStore): Response {
         $user = $this->getCurrentUser();
         if (!$this->canManageEvents($user)) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas gerer cet evenement.');
@@ -166,8 +191,7 @@ final class EventController extends AbstractController
     }
 
     #[Route('/events/{id}/edit', name: 'event_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    public function edit(int $id, Request $request, EventRepository $eventRepository, EntityManagerInterface $entityManager): Response
-    {
+    public function edit(int $id, Request $request, EventRepository $eventRepository, EntityManagerInterface $entityManager): Response {
         $user = $this->getCurrentUser();
         if (!$this->canManageEvents($user)) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cet evenement.');
@@ -240,25 +264,21 @@ final class EventController extends AbstractController
         return $this->redirectToRoute('back_event_index');
     }
 
-    private function getCurrentUser(): ?User
-    {
+    private function getCurrentUser(): ?User {
         $user = $this->getUser();
 
         return $user instanceof User ? $user : null;
     }
 
-    private function canManageEvents(?User $user): bool
-    {
+    private function canManageEvents(?User $user): bool {
         return $user instanceof User && in_array($user->getRoleUser(), ['admin', 'gerant'], true);
     }
 
-    private function isClient(?User $user): bool
-    {
+    private function isClient(?User $user): bool {
         return $user instanceof User && $user->getRoleUser() === 'client';
     }
 
-    private function normalizeEventForPersistence(Event $event, ?User $manager): void
-    {
+    private function normalizeEventForPersistence(Event $event, ?User $manager): void {
         $event->setTitleEv(trim((string) $event->getTitleEv()));
         $event->setOrganisateurName(trim((string) $event->getOrganisateurName()));
         $event->setLocalisationEv(trim((string) $event->getLocalisationEv()));
@@ -281,8 +301,7 @@ final class EventController extends AbstractController
      * @param array<int, Booking> $bookings
      * @return array<int, Booking>
      */
-    private function sortBookingsByDate(array $bookings): array
-    {
+    private function sortBookingsByDate(array $bookings): array {
         usort($bookings, static function (Booking $left, Booking $right): int {
             $leftDate = $left->getBookingDate()?->getTimestamp() ?? 0;
             $rightDate = $right->getBookingDate()?->getTimestamp() ?? 0;
