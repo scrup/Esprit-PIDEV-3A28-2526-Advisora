@@ -1358,7 +1358,7 @@
 }
 
 /* Flash Messages */
-.flash-message {
+.strategy-container .flash-message {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1368,9 +1368,9 @@
     animation: slideDown 0.3s ease;
 }
 
-.flash-success { background: rgba(126, 139, 99, 0.2); color: #bcd0a0; border-left: 4px solid var(--sage-green); }
-.flash-error { background: rgba(214, 139, 110, 0.2); color: #e6a192; border-left: 4px solid #d68b6e; }
-.flash-info { background: rgba(212, 160, 23, 0.2); color: #e6c87a; border-left: 4px solid #d4a017; }
+.strategy-container .flash-success { background: rgba(126, 139, 99, 0.2); color: #bcd0a0; border-left: 4px solid var(--sage-green); }
+.strategy-container .flash-error { background: rgba(214, 139, 110, 0.2); color: #e6a192; border-left: 4px solid #d68b6e; }
+.strategy-container .flash-info { background: rgba(212, 160, 23, 0.2); color: #e6c87a; border-left: 4px solid #d4a017; }
 
 @keyframes slideDown {
     from { opacity: 0; transform: translateY(-10px); }

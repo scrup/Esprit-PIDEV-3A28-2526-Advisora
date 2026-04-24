@@ -47,4 +47,19 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * @return User[]
+     */
+    public function findInactiveGerants(\DateTimeInterface $cutoff): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('LOWER(u.roleUser) = :role')
+            ->andWhere('u.last_activity_at IS NULL OR u.last_activity_at < :cutoff')
+            ->setParameter('role', 'gerant')
+            ->setParameter('cutoff', $cutoff)
+            ->orderBy('u.last_activity_at', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

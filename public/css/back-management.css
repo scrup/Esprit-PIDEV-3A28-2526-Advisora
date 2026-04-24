@@ -6,7 +6,7 @@ body.back-mode {
     color: var(--back-text);
 }
 
-body.back-mode .flash-message {
+body.back-mode .back-content > .back-flash.flash-message {
     width: 100%;
     margin: 0 0 1rem;
     border-radius: 18px;

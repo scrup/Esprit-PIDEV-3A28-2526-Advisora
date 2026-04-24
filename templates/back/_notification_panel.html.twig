@@ -1,0 +1,38 @@
+<details class="back-notification-menu">
+    <summary class="back-notification-button" aria-label="Ouvrir les notifications admin">
+        <i class="fas fa-bell"></i>
+        {% if unread_count > 0 %}
+            <span class="back-notification-count">{{ unread_count > 99 ? '99+' : unread_count }}</span>
+        {% endif %}
+    </summary>
+
+    <div class="back-notification-popover">
+        <div class="back-notification-head">
+            <strong>Notifications admin</strong>
+            <span>{{ unread_count }} non lue(s)</span>
+        </div>
+
+        {% if notifications is empty %}
+            <p class="back-notification-empty">Aucune notification pour le moment.</p>
+        {% else %}
+            <div class="back-notification-list">
+                {% for notification in notifications %}
+                    <article class="back-notification-item {{ notification.isIsRead ? 'is-read' : 'is-unread' }}">
+                        <h4>{{ notification.title }}</h4>
+                        <p>{{ notification.description }}</p>
+                        <div class="back-notification-meta">
+                            <span>{{ notification.dateNotification ? notification.dateNotification|date('d/m/Y') : '' }}</span>
+                            {% if not notification.isIsRead %}
+                                <form method="post" action="{{ path('back_notification_mark_read', {id: notification.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('mark_notification_read_' ~ notification.id) }}">
+                                    <button type="submit">Marquer lu</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</details>
+
