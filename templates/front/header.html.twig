@@ -15,19 +15,41 @@
 {% set home_solutions_href = current_route == 'app_home' ? '#solutions' : path('app_home') ~ '#solutions' %}
 {% set home_whyus_href = current_route == 'app_home' ? '#whyus' : path('app_home') ~ '#whyus' %}
 {% set home_reviews_href = current_route == 'app_home' ? '#reviews' : path('app_home') ~ '#reviews' %}
+{% set forex_ticker = exchange_ticker_data() %}
+{% set ticker_icons = {
+    'USD': 'coins',
+    'EUR': 'euro-sign',
+    'GBP': 'sterling-sign',
+    'JPY': 'chart-line',
+    'CHF': 'chart-line',
+    'CAD': 'dollar-sign',
+    'CNY': 'chart-simple'
+} %}
 
 <div class="top-currency-bar">
-    <div class="currency-ticker" id="forexTicker">
-        <span><i class="fas fa-coins"></i> <span class="ticker-label">TND/USD:</span> <span id="tndusd">0.3215</span> <span id="tndusdChange" class="positive">+0.18%</span></span>
-        <span><i class="fas fa-euro-sign"></i> <span class="ticker-label">TND/EUR:</span> <span id="tndeur">0.2950</span> <span id="tndeurChange" class="positive">+0.07%</span></span>
-        <span><i class="fas fa-pound-sign"></i> <span class="ticker-label">TND/GBP:</span> <span id="tndgbp">0.2532</span> <span id="tndgbpChange" class="negative">-0.11%</span></span>
-        <span><i class="fas fa-chart-line"></i> <span class="ticker-label">TND/JPY:</span> <span id="tndjpy">48.62</span> <span id="tndjpyChange" class="positive">+0.23%</span></span>
-        <span><i class="fas fa-franc-sign"></i> <span class="ticker-label">TND/CHF:</span> <span id="tndchf">0.2845</span> <span id="tndchfChange" class="negative">-0.05%</span></span>
-        <span><i class="fas fa-dollar-sign"></i> <span class="ticker-label">TND/CAD:</span> <span id="tndcad">0.4370</span> <span id="tndcadChange" class="positive">+0.09%</span></span>
-        <span><i class="fas fa-chart-simple"></i> <span class="ticker-label">TND/CNY:</span> <span id="tndcny">2.3210</span> <span id="tndcnyChange" class="negative">-0.03%</span></span>
-    </div>
+    {% if forex_ticker.items is not empty %}
+        <div class="currency-ticker" id="forexTicker">
+            {% for item in forex_ticker.items %}
+                <span>
+                    <i class="fas fa-{{ ticker_icons[item.code]|default('chart-line') }}"></i>
+                    <span class="ticker-label">{{ forex_ticker.base }}/{{ item.code }}:</span>
+                    <span>{{ item.displayRate }}</span>
+                    <span class="{{ item.changeClass }}">{{ item.changeLabel }}</span>
+                </span>
+            {% endfor %}
+        </div>
+    {% endif %}
     <div class="ticker-subtitle">
-        <i class="fas fa-chart-line"></i> Dinar Tunisien (TND) - Taux de change en direct
+        <i class="fas fa-chart-line"></i> Dinar Tunisien ({{ forex_ticker.base|default('TND') }}) - Taux de change en direct
+        {% if forex_ticker.updatedAt %}
+            <span class="ticker-update">Mise a jour {{ forex_ticker.updatedAt|date('d/m/Y H:i') }}</span>
+        {% endif %}
+        {% if forex_ticker.usingFallback %}
+            <span class="ticker-note">Cache</span>
+        {% endif %}
+        {% if forex_ticker.warning %}
+            <span class="ticker-note">{{ forex_ticker.warning }}</span>
+        {% endif %}
     </div>
 </div>
 

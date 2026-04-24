@@ -1,0 +1,118 @@
+<section
+    class="pm-card pm-investment-reco-shell"
+    data-investment-recommendations
+    data-project-select-id="{{ project_select_id }}"
+>
+    <details class="pm-analysis-disclosure">
+        <summary class="pm-analysis-trigger">
+            <span class="pm-btn pm-btn-primary">
+                <i class="fas fa-ranking-star"></i>
+                <span>Voir les meilleurs projets a investir</span>
+            </span>
+        </summary>
+
+        <div class="pm-analysis-body">
+            <div class="pm-analysis-head">
+                <div>
+                    <span class="pm-badge">Aide a la decision</span>
+                    <h2>Top projets recommandes</h2>
+                    <p>Classement base sur le ROI projete, les indicateurs World Bank Tunisie, la traction sectorielle et la qualite du dossier.</p>
+                </div>
+
+                {% if recommendation_macro %}
+                    <div class="pm-analysis-score-panel pm-reco-score-panel">
+                        <span class="pm-badge">World Bank Tunisie</span>
+                        <strong>{{ recommendation_macro.adjustedRoi|number_format(2, '.', ' ') }}%</strong>
+                        <span>ROI macro de base</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if recommendation_macro %}
+                <div class="pm-analysis-badge-row">
+                    <span class="pm-analysis-chip">Inflation {{ recommendation_macro.data.inflation|number_format(2, '.', ' ') }}%</span>
+                    <span class="pm-analysis-chip">PIB {{ recommendation_macro.data.gdpGrowth|number_format(2, '.', ' ') }}%</span>
+                    <span class="pm-analysis-chip">Credit {{ recommendation_macro.data.lendingRate|number_format(2, '.', ' ') }}%</span>
+                    <span class="pm-analysis-chip">{{ recommendation_macro.riskLevelLabel }}</span>
+                </div>
+            {% endif %}
+
+            {% if investment_recommendations is not empty %}
+                <div class="pm-recommendation-grid">
+                    {% for item in investment_recommendations %}
+                        {% set recommended_project = item.project %}
+                        {% set prediction = item.prediction %}
+                        {% set is_selected = selected_project_id is not null and selected_project_id == recommended_project.id %}
+
+                        <article
+                            class="pm-recommendation-card {{ is_selected ? 'is-selected' : '' }}"
+                            data-recommendation-card
+                            data-project-id="{{ recommended_project.id }}"
+                        >
+                            <div class="pm-recommendation-head">
+                                <div class="pm-recommendation-rank-row">
+                                    <span class="pm-recommendation-rank">#{{ loop.index }}</span>
+                                    <span class="pm-status pm-status-{{ item.statusClass }}">{{ recommended_project.statusLabel }}</span>
+                                </div>
+                                <span class="pm-prediction-badge pm-prediction-badge-{{ prediction.recommendationBadgeClass }}">{{ prediction.recommendationLabel }}</span>
+                            </div>
+
+                            <h3>{{ recommended_project.title ?: 'Projet sans titre' }}</h3>
+                            <p>{{ prediction.sectorOutlook }}</p>
+
+                            <div class="pm-recommendation-kpi-grid">
+                                <article class="pm-recommendation-kpi">
+                                    <span>ROI projete</span>
+                                    <strong class="{{ item.projectedRoi >= 0 ? 'is-positive' : 'is-negative' }}">{{ item.projectedRoi|number_format(2, '.', ' ') }}%</strong>
+                                </article>
+                                <article class="pm-recommendation-kpi">
+                                    <span>Score invest</span>
+                                    <strong>{{ item.rankingScore }}/100</strong>
+                                </article>
+                                <article class="pm-recommendation-kpi">
+                                    <span>Secteur</span>
+                                    <strong>{{ prediction.sectorLabel }}</strong>
+                                </article>
+                            </div>
+
+                            <div class="pm-meta-list pm-meta-list-vertical">
+                                <span><strong>ID :</strong> #{{ recommended_project.id }}</span>
+                                <span><strong>Budget :</strong> {{ recommended_project.legacyBudget is not null ? recommended_project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                                <span><strong>Taux secteur :</strong> {{ prediction.acceptanceRatePercent }}%</span>
+                            </div>
+
+                            <div class="pm-recommendation-highlights">
+                                {% for highlight in prediction.highlights|slice(0, 2) %}
+                                    <article class="pm-analysis-highlight pm-analysis-highlight-compact">
+                                        <i class="fas fa-circle-check"></i>
+                                        <span>{{ highlight }}</span>
+                                    </article>
+                                {% endfor %}
+                            </div>
+
+                            <div class="pm-card-actions">
+                                <button
+                                    type="button"
+                                    class="pm-btn {{ is_selected ? 'pm-btn-primary' : 'pm-btn-secondary' }}"
+                                    data-recommend-project="{{ recommended_project.id }}"
+                                >
+                                    {{ is_selected ? 'Projet selectionne' : 'Choisir ce projet' }}
+                                </button>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% elseif investment_recommendations_error %}
+                <div class="pm-analysis-warning">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <span>{{ investment_recommendations_error }}</span>
+                </div>
+            {% else %}
+                <div class="pm-analysis-warning">
+                    <i class="fas fa-circle-info"></i>
+                    <span>Aucune recommandation n est disponible pour le moment.</span>
+                </div>
+            {% endif %}
+        </div>
+    </details>
+</section>

@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block body %}
-    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource" data-resource-chart-configs="{{ resource_charts|json_encode|e('html_attr') }}">
         <div class="pm-admin-header rs-header">
             <div class="rs-header-copy back-users-title">
                 <span class="pm-badge">Back office</span>
@@ -40,11 +40,49 @@
             </article>
         </section>
 
+        <section class="rs-charts-grid">
+            <article class="pm-card rs-panel rs-chart-panel">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Stock global</h2>
+                        <p>Part du stock reserve vs disponible</p>
+                    </div>
+                </div>
+                <div class="rs-chart-wrap">
+                    <canvas id="rs-stock-distribution-chart" aria-label="Repartition du stock global" role="img"></canvas>
+                </div>
+            </article>
+
+            <article class="pm-card rs-panel rs-chart-panel">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Ressources par statut</h2>
+                        <p>Disponibles, reservees et indisponibles</p>
+                    </div>
+                </div>
+                <div class="rs-chart-wrap">
+                    <canvas id="rs-status-distribution-chart" aria-label="Repartition des statuts de ressources" role="img"></canvas>
+                </div>
+            </article>
+
+            <article class="pm-card rs-panel rs-chart-panel">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Top ressources affectees</h2>
+                        <p>Nombre de projets lies (Top 8)</p>
+                    </div>
+                </div>
+                <div class="rs-chart-wrap">
+                    <canvas id="rs-project-links-chart" aria-label="Top des ressources affectees aux projets" role="img"></canvas>
+                </div>
+            </article>
+        </section>
+
         <section class="pm-card rs-panel rs-list-panel">
             <div class="pm-card-head rs-panel-head">
                 <div>
                     <h2>Ressources actuellement affectees</h2>
-                    <p>Elements avec reservation(s) active(s)</p>
+                    <p>Elements avec reservation(s) active(s). Cliquez sur le nom d une ressource pour ouvrir sa fiche.</p>
                 </div>
             </div>
 
@@ -58,7 +96,6 @@
                                 <th class="rs-col-number">Stock disponible</th>
                                 <th class="rs-col-number">Reservations</th>
                                 <th>Projets lies</th>
-                                <th class="rs-actions-col">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -76,7 +113,7 @@
                                             </a>
                                             <div class="rs-resource-copy">
                                                 <a class="rs-primary-link" href="{{ path('resource_back_manage', {id: resource.id}) }}">{{ resource.name }}</a>
-                                                <span class="rs-secondary-text">#{{ resource.id }}</span>
+                                                <span class="rs-secondary-text">#{{ resource.id }} - Ouvrir la fiche</span>
                                             </div>
                                         </div>
                                     </td>
@@ -92,9 +129,6 @@
                                             {% endfor %}
                                         </div>
                                     </td>
-                                    <td class="back-user-table-actions rs-row-actions rs-cell-actions">
-                                        <a class="pm-btn pm-btn-primary rs-table-btn" href="{{ path('resource_back_manage', {id: resource.id}) }}">Traiter</a>
-                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -108,4 +142,59 @@
             {% endif %}
         </section>
     </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            if (typeof window.Chart === 'undefined') {
+                return;
+            }
+
+            const dashboardNode = document.querySelector('.rs-module-resource[data-resource-chart-configs]');
+            if (!dashboardNode) {
+                return;
+            }
+
+            const rawChartConfigs = dashboardNode.getAttribute('data-resource-chart-configs');
+            if (!rawChartConfigs) {
+                return;
+            }
+
+            let chartConfigs = {};
+            try {
+                chartConfigs = JSON.parse(rawChartConfigs);
+            } catch (error) {
+                return;
+            }
+
+            const chartTargets = {
+                stock_distribution: 'rs-stock-distribution-chart',
+                status_distribution: 'rs-status-distribution-chart',
+                project_links: 'rs-project-links-chart'
+            };
+
+            Object.entries(chartTargets).forEach(([chartKey, elementId]) => {
+                const canvas = document.getElementById(elementId);
+                const config = chartConfigs[chartKey] ?? null;
+
+                if (!canvas || !config) {
+                    return;
+                }
+
+                const context = canvas.getContext('2d');
+                if (!context) {
+                    return;
+                }
+
+                if (canvas.rsChartInstance) {
+                    canvas.rsChartInstance.destroy();
+                }
+
+                canvas.rsChartInstance = new window.Chart(context, config);
+            });
+        })();
+    </script>
 {% endblock %}

@@ -24,6 +24,8 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 final class ResourceController extends AbstractController
 {
@@ -32,7 +34,8 @@ final class ResourceController extends AbstractController
         ResourceRepository $resourceRepository,
         CataloguefournisseurRepository $supplierRepository,
         EntityManagerInterface $entityManager,
-        ResourceReservationService $reservationService
+        ResourceReservationService $reservationService,
+        ChartBuilderInterface $chartBuilder
     ): Response
     {
         $user = $this->getCurrentUser();
@@ -53,10 +56,18 @@ final class ResourceController extends AbstractController
             static fn (Resource $left, Resource $right): int => $right->getProjects()->count() <=> $left->getProjects()->count()
         );
 
+        $dashboardLinkedResources = array_slice($linkedResources, 0, 8);
+        $stockSnapshots = $this->buildStockSnapshots($dashboardLinkedResources, $reservationService);
+
         return $this->render('back/resource/dashboard.html.twig', [
             'metrics' => $metrics,
-            'linked_resources' => array_slice($linkedResources, 0, 8),
-            'stock_snapshots' => $this->buildStockSnapshots($linkedResources, $reservationService),
+            'linked_resources' => $dashboardLinkedResources,
+            'stock_snapshots' => $stockSnapshots,
+            'resource_charts' => [
+                'stock_distribution' => $this->createStockDistributionChart($metrics, $chartBuilder)->createView(),
+                'status_distribution' => $this->createResourceStatusChart($resources, $chartBuilder)->createView(),
+                'project_links' => $this->createTopLinkedResourcesChart($dashboardLinkedResources, $chartBuilder)->createView(),
+            ],
         ]);
     }
 
@@ -993,6 +1004,172 @@ final class ResourceController extends AbstractController
         }
 
         return $choices;
+    }
+
+    /**
+     * @param array<string, int> $metrics
+     */
+    private function createStockDistributionChart(array $metrics, ChartBuilderInterface $chartBuilder): Chart
+    {
+        $availableStock = max(0, (int) ($metrics['stock_available'] ?? 0));
+        $reservedStock = max(0, (int) ($metrics['stock_reserved'] ?? 0));
+
+        $chart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        if ($availableStock === 0 && $reservedStock === 0) {
+            $chart->setData([
+                'labels' => ['Aucun stock enregistre'],
+                'datasets' => [[
+                    'data' => [1],
+                    'backgroundColor' => ['#d9ccbb'],
+                    'borderColor' => ['#f0e9de'],
+                    'borderWidth' => 1,
+                ]],
+            ]);
+        } else {
+            $chart->setData([
+                'labels' => ['Stock disponible', 'Stock reserve'],
+                'datasets' => [[
+                    'data' => [$availableStock, $reservedStock],
+                    'backgroundColor' => ['#6f865b', '#c37d5d'],
+                    'borderColor' => ['#edf4e7', '#f7ece6'],
+                    'borderWidth' => 1,
+                    'hoverOffset' => 4,
+                ]],
+            ]);
+        }
+
+        $chart->setOptions([
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                    'labels' => [
+                        'boxWidth' => 12,
+                        'usePointStyle' => true,
+                    ],
+                ],
+            ],
+        ]);
+
+        return $chart;
+    }
+
+    /**
+     * @param Resource[] $resources
+     */
+    private function createResourceStatusChart(array $resources, ChartBuilderInterface $chartBuilder): Chart
+    {
+        $statusCounts = [
+            Resource::STATUS_AVAILABLE => 0,
+            Resource::STATUS_RESERVED => 0,
+            Resource::STATUS_UNAVAILABLE => 0,
+        ];
+
+        foreach ($resources as $resource) {
+            $status = $resource->getStatus() ?? Resource::STATUS_UNAVAILABLE;
+            if (!array_key_exists($status, $statusCounts)) {
+                $status = Resource::STATUS_UNAVAILABLE;
+            }
+
+            ++$statusCounts[$status];
+        }
+
+        $chart = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $chart->setData([
+            'labels' => ['Disponibles', 'Reservees', 'Indisponibles'],
+            'datasets' => [[
+                'label' => 'Nombre de ressources',
+                'data' => [
+                    $statusCounts[Resource::STATUS_AVAILABLE],
+                    $statusCounts[Resource::STATUS_RESERVED],
+                    $statusCounts[Resource::STATUS_UNAVAILABLE],
+                ],
+                'backgroundColor' => ['#6f865b', '#c37d5d', '#9f5b47'],
+                'borderRadius' => 8,
+                'maxBarThickness' => 42,
+            ]],
+        ]);
+        $chart->setOptions([
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => ['display' => false],
+            ],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => [
+                        'precision' => 0,
+                        'stepSize' => 1,
+                    ],
+                ],
+                'x' => [
+                    'grid' => ['display' => false],
+                ],
+            ],
+        ]);
+
+        return $chart;
+    }
+
+    /**
+     * @param Resource[] $linkedResources
+     */
+    private function createTopLinkedResourcesChart(array $linkedResources, ChartBuilderInterface $chartBuilder): Chart
+    {
+        $labels = [];
+        $values = [];
+
+        foreach ($linkedResources as $resource) {
+            $name = trim((string) $resource->getName());
+            if ($name === '') {
+                $name = 'Ressource sans nom';
+            }
+
+            if (strlen($name) > 26) {
+                $name = substr($name, 0, 23) . '...';
+            }
+
+            $labels[] = $name;
+            $values[] = $resource->getProjects()->count();
+        }
+
+        if ($labels === []) {
+            $labels[] = 'Aucune liaison';
+            $values[] = 0;
+        }
+
+        $chart = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $chart->setData([
+            'labels' => $labels,
+            'datasets' => [[
+                'label' => 'Projets lies',
+                'data' => $values,
+                'backgroundColor' => '#7f6c57',
+                'borderRadius' => 8,
+                'barThickness' => 16,
+            ]],
+        ]);
+        $chart->setOptions([
+            'indexAxis' => 'y',
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => ['display' => false],
+            ],
+            'scales' => [
+                'x' => [
+                    'beginAtZero' => true,
+                    'ticks' => [
+                        'precision' => 0,
+                        'stepSize' => 1,
+                    ],
+                ],
+                'y' => [
+                    'grid' => ['display' => false],
+                ],
+            ],
+        ]);
+
+        return $chart;
     }
 
     /**

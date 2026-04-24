@@ -34,11 +34,23 @@
 
         {% include 'front/investment/_module_nav.html.twig' %}
 
+        {% if form.project is defined %}
+            {% include 'front/investment/_project_recommendations.html.twig' with {
+                investment_recommendations: investment_recommendations|default([]),
+                investment_recommendations_error: investment_recommendations_error|default(null),
+                recommendation_macro: recommendation_macro|default(null),
+                selected_project_id: selected_project_id|default(project ? project.id : null),
+                project_select_id: form.project.vars.id
+            } only %}
+        {% endif %}
+
         <div class="pm-form-card">
-            <div class="pm-info-banner">
-                <strong>Projet preselectionne :</strong> {{ project ? project.title : 'Aucun pour le moment' }}<br>
-                <strong>ID projet :</strong> {{ project ? project.id : 'A selectionner' }}<br>
-                <strong>Budget projet :</strong> {{ project and project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}<br>
+            <div class="pm-info-banner" data-selected-project-banner>
+                <strong>Projet preselectionne :</strong> <span data-selected-project-title>{{ project ? project.title : 'Aucun pour le moment' }}</span><br>
+                <strong>ID projet :</strong> <span data-selected-project-id>{{ project ? '#' ~ project.id : 'A selectionner' }}</span><br>
+                <strong>Budget projet :</strong> <span data-selected-project-budget>{{ project and project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span><br>
+                <strong>Secteur :</strong> <span data-selected-project-sector>{{ project and project.legacyType ? project.legacyType : 'Non renseigne' }}</span><br>
+                <strong>Statut :</strong> <span data-selected-project-status>{{ project ? project.statusLabel : 'Non renseigne' }}</span><br>
                 <strong>Projets disponibles :</strong> {{ projects_count|default(0) }}
             </div>
             {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'investment'}}) }}
@@ -63,5 +75,8 @@
 
 {% block javascripts %}
     {{ parent() }}
+    {% if form.project is defined %}
+        <script src="{{ asset('js/investment-project-recommendations.js') }}"></script>
+    {% endif %}
     <script src="{{ asset('js/investment-form-validation.js') }}"></script>
 {% endblock %}
