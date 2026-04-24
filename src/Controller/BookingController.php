@@ -9,6 +9,7 @@ use App\Form\BookingType;
 use App\Repository\BookingRepository;
 use App\Repository\EventRepository;
 use App\Service\BookingStatusStore;
+use App\Service\PdfService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -32,6 +33,31 @@ final class BookingController extends AbstractController
         return $this->render('front/event/bookings.html.twig', [
             'bookings' => $bookings,
         ]);
+    }
+
+    #[Route('/events/my-bookings/export-pdf', name: 'event_bookings_export_pdf', methods: ['GET'])]
+    public function exportPdf(
+        BookingRepository $bookingRepository,
+        BookingStatusStore $bookingStatusStore,
+        PdfService $pdfService
+    ): Response {
+        $user = $this->getCurrentUser();
+        if (!$this->isClient($user)) {
+            throw $this->createAccessDeniedException('Seul un client peut exporter ses inscriptions.');
+        }
+
+        $bookings = $bookingRepository->findClientBookings($user);
+        $bookingStatusStore->hydrateStatuses($bookings);
+
+        $pdf = $pdfService->generateFromTemplate('front/event/bookings_pdf.html.twig', [
+            'bookings'     => $bookings,
+            'user'         => $user,
+            'generated_at' => new \DateTimeImmutable(),
+        ]);
+
+        $filename = sprintf('mes-inscriptions-%s.pdf', (new \DateTimeImmutable())->format('Y-m-d'));
+
+        return $pdfService->downloadResponse($pdf, $filename);
     }
 
     #[Route('/events/{id}/book', name: 'event_book', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]

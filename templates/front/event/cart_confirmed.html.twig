@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Inscription confirmee{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/cart.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="cart-shell">
+    <div class="cart-confirmed">
+        <div class="cart-confirmed-icon">✓</div>
+        <h1>Inscription confirmee !</h1>
+        <p>Votre paiement a ete accepte et vos inscriptions ont ete enregistrees avec succes.</p>
+        <p class="cart-confirmed-sub">Vous recevrez une confirmation par email. Vos billets sont disponibles dans votre espace personnel.</p>
+        <div class="cart-confirmed-actions">
+            <a class="pm-btn pm-btn-primary" href="{{ path('event_my_bookings') }}">
+                <i class="fas fa-ticket"></i> Voir mes inscriptions
+            </a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('event_index') }}">
+                Retour aux evenements
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

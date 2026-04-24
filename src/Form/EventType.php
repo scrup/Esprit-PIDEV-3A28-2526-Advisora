@@ -6,6 +6,7 @@ use App\Entity\Event;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -105,6 +106,40 @@ class EventType extends AbstractType
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'La description est obligatoire.']),
+                ],
+            ])
+            ->add('price', NumberType::class, [
+                'label' => 'Prix par ticket (TND)',
+                'required' => false,
+                'scale' => 2,
+                'html5' => true,
+                'attr' => [
+                    'min' => 0,
+                    'step' => 0.01,
+                    'placeholder' => 'Laisser vide pour un evenement gratuit',
+                    'data-validation-label' => 'Prix',
+                ],
+            ])
+            ->add('latitude', NumberType::class, [
+                'label' => 'Latitude',
+                'required' => false,
+                'scale' => 8,
+                'html5' => true,
+                'attr' => [
+                    'step' => 0.00000001,
+                    'placeholder' => 'Ex: 36.80650000',
+                    'data-validation-label' => 'Latitude',
+                ],
+            ])
+            ->add('longitude', NumberType::class, [
+                'label' => 'Longitude',
+                'required' => false,
+                'scale' => 8,
+                'html5' => true,
+                'attr' => [
+                    'step' => 0.00000001,
+                    'placeholder' => 'Ex: 10.18150000',
+                    'data-validation-label' => 'Longitude',
                 ],
             ])
             ->add('save', SubmitType::class, [
