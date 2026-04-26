@@ -12,7 +12,7 @@ final class MacroRiskEngineTest extends TestCase
     public function testItComputesHighRiskWhenInflationAndRatesAreElevated(): void
     {
         $engine = new MacroRiskEngine();
-        $indicators = new MacroIndicators('TN', 'Tunisie', 9.2, 2024, 8.0, 2024, true, 0.5, 2024);
+        $indicators = new MacroIndicators('TN', 'Tunisie', 12.4, 2024, 10.5, 2024, true, -1.2, 2024);
 
         $analysis = $engine->analyse($indicators);
 

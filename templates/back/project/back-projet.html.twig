@@ -5,6 +5,8 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-dashboard.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
 {% block body %}
@@ -39,14 +41,22 @@
                 </div>
                 <div class="pm-filter-actions">
                     <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
-                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">Réinitialiser</a>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_project_index') }}">RÃ©initialiser</a>
                 </div>
             </form>
         </div>
 
+        {% include 'shared/project_dashboard_block.html.twig' with {
+            dashboard: project_dashboard,
+            export_url: path('back_project_export_pdf', app.request.query.all),
+            title: 'Synthese back office des projets',
+            description: 'Gardez les indicateurs globaux sous les yeux tout en filtrant la liste operationnelle.'
+        } only %}
+
         <section class="pm-grid">
             {% for project in projects %}
                 <article class="pm-card">
+                    {% set estimate = project_acceptance_estimates[project.id]|default(null) %}
                     <div class="pm-card-head">
                         <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
                         <span class="pm-meta">Projet #{{ project.id }}</span>
@@ -54,12 +64,15 @@
                     <h2>{{ project.title }}</h2>
                     <p>{{ project.description ?: 'Aucune description disponible.' }}</p>
                     <div class="pm-meta-list pm-meta-list-vertical">
-                        <span><strong>Type :</strong> {{ project.legacyType ?: 'Non précisé' }}</span>
-                        <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non précisé' }}</span>
-                        <span><strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non précisée' }}</span>
-                        <span><strong>Porteur :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}</span>
-                        <span><strong>Historique des décisions :</strong> {{ project.decisions|length }}</span>
+                        <span><strong>Type :</strong> {{ project.legacyType ?: 'Non prÃ©cisÃ©' }}</span>
+                        <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non prÃ©cisÃ©' }}</span>
+                        <span><strong>Date de crÃ©ation :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non prÃ©cisÃ©e' }}</span>
+                        <span><strong>Porteur :</strong> {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assignÃ©' }}</span>
+                        <span><strong>Historique des dÃ©cisions :</strong> {{ project.decisions|length }}</span>
                     </div>
+                    {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
+                        {% include 'shared/project_acceptance_estimate.html.twig' with { estimate: estimate, variant: 'compact' } only %}
+                    {% endif %}
                     <div class="pm-card-actions">
                         <a class="pm-btn pm-btn-primary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
                         {% if can_edit_any_project %}
@@ -76,9 +89,15 @@
             {% else %}
                 <div class="pm-empty">
                     <h2>Aucun projet ne correspond aux filtres</h2>
-                    <p>Essayez de modifier la recherche ou de réinitialiser les filtres.</p>
+                    <p>Essayez de modifier la recherche ou de rÃ©initialiser les filtres.</p>
                 </div>
             {% endfor %}
         </section>
     </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ asset('js/project-dashboard.js') }}"></script>
 {% endblock %}

@@ -1,0 +1,3825 @@
+:root {
+    --rs-surface: #fbf8f3;
+    --rs-surface-muted: #f3ede4;
+    --rs-surface-strong: #ebe1d3;
+    --rs-panel: #fffdfa;
+    --rs-border: #d9ccbb;
+    --rs-border-soft: #e8dfd3;
+    --rs-text: #2d261d;
+    --rs-text-muted: #6f6252;
+    --rs-danger: #9f5b47;
+    --rs-success: #6f865b;
+    --rs-warning: #9a7442;
+    --rs-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.rs-admin-shell {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1.25rem;
+}
+
+.rs-admin-shell,
+.rs-admin-shell * {
+    box-sizing: border-box;
+}
+
+.rs-admin-shell .pm-card,
+.rs-admin-shell .pm-form-card,
+.rs-admin-shell .pm-admin-header,
+.rs-admin-shell .pm-card:hover,
+.rs-admin-shell .pm-form-card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.rs-admin-shell .pm-btn {
+    transform: none;
+    box-shadow: none;
+}
+
+.rs-admin-shell .pm-btn:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.rs-panel,
+.rs-header {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 253, 250, 1) 100%);
+    border: 1px solid var(--rs-border);
+    border-radius: 10px;
+    box-shadow: none;
+    position: relative;
+}
+
+.rs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+}
+
+.rs-header::before,
+.rs-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--pm-terracotta-dark), rgba(195, 125, 93, 0.15));
+    border-radius: 10px 10px 0 0;
+}
+
+.rs-header-copy {
+    min-width: 0;
+}
+
+.rs-context {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.24rem 0.55rem;
+    border: 1px solid var(--rs-border);
+    border-radius: 999px;
+    background: var(--rs-surface-muted);
+    color: var(--pm-terracotta-dark);
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.rs-header h1 {
+    margin: 0.45rem 0 0;
+    color: var(--rs-text);
+    font-size: 1.35rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.rs-header p {
+    margin: 0.35rem 0 0;
+    max-width: 760px;
+    color: var(--rs-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.rs-header-actions {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.rs-btn {
+    min-height: 34px;
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    box-shadow: none;
+    letter-spacing: 0.01em;
+}
+
+.rs-btn.pm-btn-primary,
+.rs-btn.rs-btn-primary {
+    background: linear-gradient(180deg, var(--pm-terracotta) 0%, var(--pm-terracotta-dark) 100%);
+    color: #fff;
+    border: 1px solid var(--pm-terracotta-dark);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.rs-btn.pm-btn-primary:hover,
+.rs-btn.rs-btn-primary:hover,
+.rs-btn.pm-btn-secondary:hover,
+.rs-btn.rs-btn-secondary:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.rs-btn.pm-btn-primary:hover,
+.rs-btn.rs-btn-primary:hover {
+    filter: brightness(0.98);
+}
+
+.rs-btn.pm-btn-secondary,
+.rs-btn.rs-btn-secondary {
+    background: linear-gradient(180deg, #ffffff 0%, #f7f2ea 100%);
+    color: var(--rs-text);
+    border: 1px solid var(--rs-border);
+}
+
+.rs-btn.pm-btn-secondary:hover,
+.rs-btn.rs-btn-secondary:hover {
+    background: linear-gradient(180deg, #fffdf9 0%, #f1e9dd 100%);
+}
+
+.rs-btn.rs-btn-danger {
+    background: #fff6f2;
+    color: var(--rs-danger);
+    border: 1px solid #dfc0b4;
+}
+
+.rs-nav-panel {
+    margin-top: 0;
+    padding: 0.4rem;
+    background: var(--rs-surface);
+    border-radius: 8px;
+    box-shadow: none;
+    gap: 0.35rem;
+    justify-content: flex-start;
+}
+
+.rs-nav-panel:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.rs-tab {
+    min-height: 32px;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    gap: 0.45rem;
+}
+
+.rs-tab.is-active {
+    border-color: var(--pm-terracotta-dark);
+    background: linear-gradient(180deg, #f6ede2 0%, #efe3d4 100%);
+    color: var(--rs-text);
+}
+
+.rs-tab:hover {
+    transform: none;
+    box-shadow: none;
+    background: #f3ece2;
+}
+
+.rs-tab i {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+.rs-toolbar-panel {
+    padding: 0.9rem 1rem;
+}
+
+.rs-filter-form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.rs-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.35fr) minmax(170px, 0.8fr) minmax(180px, 0.95fr) auto;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.rs-field,
+.rs-form-field {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.rs-field label::after,
+.rs-form-field label::after {
+    content: "";
+    display: block;
+    width: 22px;
+    height: 1px;
+    margin-top: 0.22rem;
+    background: rgba(195, 125, 93, 0.25);
+}
+
+.rs-field label,
+.rs-form label,
+.rs-form-field label {
+    margin: 0;
+    color: var(--rs-text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.rs-field input,
+.rs-field select,
+.rs-form input,
+.rs-form select,
+.rs-form textarea,
+.rs-form-field input,
+.rs-form-field select,
+.rs-form-field textarea {
+    width: 100%;
+    min-height: 38px;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--rs-border);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #ffffff 0%, #fefcf9 100%);
+    box-shadow: none;
+    color: var(--rs-text);
+    box-sizing: border-box;
+    transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.rs-field input:focus,
+.rs-field select:focus,
+.rs-form input:focus,
+.rs-form select:focus,
+.rs-form textarea:focus {
+    outline: none;
+    border-color: var(--pm-terracotta);
+    box-shadow: 0 0 0 2px rgba(195, 125, 93, 0.12);
+}
+
+.rs-form-field.pm-field-has-error input,
+.rs-form-field.pm-field-has-error select,
+.rs-form-field.pm-field-has-error textarea {
+    border-color: #d7a594;
+    background: #fff8f4;
+}
+
+.rs-toolbar-actions {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.rs-panel {
+    padding: 1rem 1.1rem;
+    overflow: hidden;
+}
+
+.rs-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--rs-border-soft);
+}
+
+.rs-panel-head h2 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--rs-text);
+    letter-spacing: -0.01em;
+}
+
+.rs-panel-head p {
+    margin: 0.2rem 0 0;
+    color: var(--rs-text-muted);
+    font-size: 0.82rem;
+}
+
+.rs-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.rs-stat-box {
+    background: linear-gradient(180deg, #fffdfa 0%, #f6f0e7 100%);
+    border: 1px solid var(--rs-border);
+    border-radius: 8px;
+    padding: 0.85rem 0.95rem;
+    display: grid;
+    gap: 0.18rem;
+    box-shadow: var(--rs-shadow-inset);
+}
+
+.rs-stat-box span {
+    color: var(--rs-text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.rs-stat-box strong {
+    color: var(--rs-text);
+    font-size: 1.35rem;
+    line-height: 1.1;
+}
+
+.rs-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--rs-border-soft);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: var(--rs-shadow-inset);
+}
+
+.rs-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--rs-text);
+    font-size: 0.88rem;
+}
+
+.rs-table thead th {
+    padding: 0.75rem 0.8rem;
+    border-bottom: 1px solid var(--rs-border);
+    background: linear-gradient(180deg, #f4ede3 0%, #ece1d0 100%);
+    color: #5d5041;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.rs-table tbody td,
+.rs-table tbody th {
+    padding: 0.75rem 0.8rem;
+    border-bottom: 1px solid var(--rs-border-soft);
+    vertical-align: middle;
+}
+
+.rs-table tbody tr:nth-child(even) {
+    background: #fcfaf7;
+}
+
+.rs-table tbody tr:hover {
+    background: #f4ede4;
+}
+
+.rs-table tbody tr:last-child td,
+.rs-table tbody tr:last-child th {
+    border-bottom: none;
+}
+
+.rs-actions-col,
+.rs-row-actions {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.rs-resource-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 240px;
+}
+
+.rs-thumb {
+    width: 58px;
+    min-width: 58px;
+    height: 44px;
+    border: 1px solid var(--rs-border-soft);
+    border-radius: 6px;
+    background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 60%),
+        linear-gradient(180deg, #ffffff 0%, #f3ece2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: var(--pm-terracotta-dark);
+    text-decoration: none;
+}
+
+.rs-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.15rem;
+}
+
+.rs-resource-copy,
+.rs-stack-text {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.rs-primary-link {
+    color: var(--rs-text);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.rs-primary-link:hover {
+    color: var(--pm-terracotta-dark);
+}
+
+.rs-secondary-text,
+.rs-stack-text span {
+    color: var(--rs-text-muted);
+    font-size: 0.79rem;
+    line-height: 1.35;
+}
+
+.rs-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    box-shadow: var(--rs-shadow-inset);
+}
+
+.rs-state-available {
+    background: #eff6ea;
+    border-color: #ccdaba;
+    color: #587043;
+}
+
+.rs-state-reserved {
+    background: #fdf3e4;
+    border-color: #e7d1af;
+    color: #8a6632;
+}
+
+.rs-state-unavailable {
+    background: #fbece7;
+    border-color: #ebc7bc;
+    color: #915441;
+}
+
+.rs-icon-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--rs-border);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f1e9 100%);
+    color: var(--rs-text-muted);
+    display: inline-grid;
+    place-items: center;
+    text-decoration: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.rs-icon-btn:hover {
+    background: linear-gradient(180deg, #fffdfa 0%, #efe6da 100%);
+    color: var(--pm-terracotta-dark);
+}
+
+.rs-icon-btn-danger {
+    color: var(--rs-danger);
+}
+
+.rs-inline-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.rs-empty {
+    padding: 1rem 0.2rem 0.3rem;
+    color: var(--rs-text-muted);
+}
+
+.rs-empty h2 {
+    margin: 0 0 0.35rem;
+    color: var(--rs-text);
+    font-size: 1rem;
+}
+
+.rs-empty p {
+    margin: 0;
+}
+
+.rs-empty-inline {
+    padding: 0;
+}
+
+.rs-detail-grid,
+.rs-edit-grid {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.rs-detail-stack {
+    display: grid;
+    gap: 1rem;
+}
+
+.rs-preview-panel {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.rs-preview-frame {
+    min-height: 250px;
+    border: 1px solid var(--rs-border-soft);
+    border-radius: 8px;
+    background:
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 62%),
+        linear-gradient(180deg, #ffffff 0%, #f3ece0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-shadow: var(--rs-shadow-inset);
+}
+
+.rs-preview-frame img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 10px rgba(44, 36, 24, 0.08));
+}
+
+.rs-preview-placeholder {
+    width: 110px;
+    height: 110px;
+    border-radius: 16px;
+    border: 1px solid var(--rs-border-soft);
+    background: var(--rs-surface);
+    display: grid;
+    place-items: center;
+    color: var(--pm-terracotta-dark);
+    font-size: 2.3rem;
+}
+
+.rs-mini-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.rs-mini-metric {
+    padding: 0.7rem 0.75rem;
+    border: 1px solid var(--rs-border-soft);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #fffdfa 0%, #f4eee4 100%);
+    display: grid;
+    gap: 0.15rem;
+    box-shadow: var(--rs-shadow-inset);
+}
+
+.rs-mini-metric span {
+    color: var(--rs-text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.rs-mini-metric strong {
+    color: var(--rs-text);
+    font-size: 0.96rem;
+    line-height: 1.2;
+}
+
+.rs-panel-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.rs-kv-table th {
+    width: 32%;
+    background: linear-gradient(180deg, #f8f3ea 0%, #f1e8db 100%);
+    color: #5f5143;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.rs-kv-table td {
+    background: #fff;
+}
+
+.rs-text-action {
+    color: var(--pm-terracotta-dark);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.rs-text-action:hover {
+    text-decoration: underline;
+}
+
+.rs-form-panel {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.rs-form-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--rs-border-soft);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #fcfaf6 0%, #f1ebdf 100%);
+    color: var(--rs-text-muted);
+    font-size: 0.83rem;
+    box-shadow: var(--rs-shadow-inset);
+}
+
+.rs-form {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.rs-form .pm-field-help {
+    color: var(--rs-text-muted);
+    font-size: 0.76rem;
+}
+
+.rs-form .pm-field-errors {
+    min-height: 0;
+    color: var(--rs-danger);
+    font-size: 0.76rem;
+}
+
+.rs-form.pm-validated-form > ul,
+.rs-form.pm-validated-form > .form-errors {
+    margin: 0;
+    padding: 0.75rem 0.85rem;
+    border-radius: 8px;
+    border-left: none;
+    border: 1px solid #e6c6bb;
+    background: #fff4ef;
+    color: var(--rs-danger);
+    font-weight: 600;
+    font-size: 0.83rem;
+}
+
+.rs-form .pm-field-errors ul {
+    margin: 0.1rem 0 0;
+}
+
+.rs-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+}
+
+.rs-form-grid-single {
+    grid-template-columns: 1fr;
+}
+
+.rs-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--rs-border-soft);
+}
+
+.rs-project-tags {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.rs-project-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--rs-border-soft);
+    background: var(--rs-surface);
+    color: var(--rs-text-muted);
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+.rs-table td .rs-project-tag,
+.rs-table td .rs-state {
+    vertical-align: middle;
+}
+
+.rs-table td strong,
+.rs-mini-metric strong,
+.rs-stat-box strong {
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1100px) {
+    .rs-filter-grid,
+    .rs-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rs-detail-grid,
+    .rs-edit-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .rs-header {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .rs-header-actions,
+    .rs-toolbar-actions,
+    .rs-form-actions {
+        justify-content: flex-start;
+    }
+
+    .rs-filter-grid,
+    .rs-stat-grid,
+    .rs-form-grid,
+    .rs-mini-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .rs-resource-cell {
+        min-width: 200px;
+    }
+
+    .rs-panel {
+        padding: 0.9rem;
+    }
+}
+
+/* ============================================ */
+/* V3 - ALIGNEMENT COULEURS BACK OFFICE */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell {
+    --rs-surface: rgba(255, 255, 255, 0.035);
+    --rs-surface-muted: rgba(255, 255, 255, 0.055);
+    --rs-surface-strong: rgba(255, 255, 255, 0.08);
+    --rs-panel: linear-gradient(180deg, rgba(20, 25, 27, 0.98) 0%, rgba(15, 20, 22, 0.98) 100%);
+    --rs-border: var(--back-border);
+    --rs-border-strong: var(--back-border-strong);
+    --rs-text: var(--back-text);
+    --rs-text-muted: var(--back-text-soft);
+    --rs-accent: var(--back-beige-deep);
+    --rs-accent-soft: rgba(185, 145, 105, 0.16);
+    --rs-success-soft: rgba(126, 139, 99, 0.16);
+    --rs-danger-soft: rgba(140, 77, 71, 0.16);
+    --rs-warning-soft: rgba(185, 145, 105, 0.16);
+}
+
+body.back-mode .rs-admin-shell .rs-panel,
+body.back-mode .rs-admin-shell .rs-header,
+body.back-mode .rs-admin-shell .rs-stat-box {
+    background: var(--rs-panel);
+    border-color: var(--rs-border);
+    color: var(--rs-text);
+    box-shadow: 0 18px 32px rgba(0, 0, 0, 0.16);
+}
+
+body.back-mode .rs-admin-shell .rs-header::before,
+body.back-mode .rs-admin-shell .rs-panel::before {
+    background: linear-gradient(90deg, rgba(185, 145, 105, 0.9), rgba(185, 145, 105, 0.18));
+}
+
+body.back-mode .rs-admin-shell .rs-context {
+    background: rgba(185, 145, 105, 0.14);
+    border-color: rgba(185, 145, 105, 0.22);
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell .rs-header h1,
+body.back-mode .rs-admin-shell .rs-panel-head h2,
+body.back-mode .rs-admin-shell .rs-primary-link,
+body.back-mode .rs-admin-shell .rs-kv-table td,
+body.back-mode .rs-admin-shell .rs-table tbody td,
+body.back-mode .rs-admin-shell .rs-table tbody th,
+body.back-mode .rs-admin-shell .rs-table td strong,
+body.back-mode .rs-admin-shell .rs-mini-metric strong,
+body.back-mode .rs-admin-shell .rs-stat-box strong {
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell .rs-header p,
+body.back-mode .rs-admin-shell .rs-panel-head p,
+body.back-mode .rs-admin-shell .rs-secondary-text,
+body.back-mode .rs-admin-shell .rs-stack-text span,
+body.back-mode .rs-admin-shell .rs-empty,
+body.back-mode .rs-admin-shell .rs-form-meta,
+body.back-mode .rs-admin-shell .rs-mini-metric span,
+body.back-mode .rs-admin-shell .rs-stat-box span {
+    color: var(--back-text-soft);
+}
+
+body.back-mode .rs-admin-shell .rs-btn.pm-btn-primary,
+body.back-mode .rs-admin-shell .rs-btn.rs-btn-primary {
+    background: linear-gradient(135deg, var(--back-beige-deep), #8d6545);
+    border-color: transparent;
+    color: #fff7ef;
+    box-shadow: 0 14px 26px rgba(185, 145, 105, 0.24);
+}
+
+body.back-mode .rs-admin-shell .rs-btn.pm-btn-primary:hover,
+body.back-mode .rs-admin-shell .rs-btn.rs-btn-primary:hover {
+    box-shadow: 0 18px 32px rgba(185, 145, 105, 0.3);
+}
+
+body.back-mode .rs-admin-shell .rs-btn.pm-btn-secondary,
+body.back-mode .rs-admin-shell .rs-btn.rs-btn-secondary {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--back-border-strong);
+    color: var(--back-text);
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell .rs-btn.pm-btn-secondary:hover,
+body.back-mode .rs-admin-shell .rs-btn.rs-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(232, 221, 208, 0.24);
+}
+
+body.back-mode .rs-admin-shell .rs-btn.rs-btn-danger {
+    background: linear-gradient(135deg, #8c4d47, #6b332f);
+    border-color: transparent;
+    color: #fff7f5;
+    box-shadow: 0 12px 24px rgba(107, 51, 47, 0.24);
+}
+
+body.back-mode .rs-admin-shell .rs-nav-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--rs-border);
+}
+
+body.back-mode .rs-admin-shell .rs-tab {
+    background: rgba(255, 255, 255, 0.035);
+    border-color: var(--back-border-strong);
+    color: var(--back-text-soft);
+}
+
+body.back-mode .rs-admin-shell .rs-tab:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(232, 221, 208, 0.24);
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell .rs-tab.is-active {
+    background: linear-gradient(135deg, var(--back-beige-deep), #8d6545);
+    border-color: transparent;
+    color: #fff7ef;
+    box-shadow: 0 14px 26px rgba(185, 145, 105, 0.22);
+}
+
+body.back-mode .rs-admin-shell .rs-filter-grid-supplier {
+    grid-template-columns: minmax(260px, 1.5fr) minmax(180px, 0.8fr) auto;
+}
+
+body.back-mode .rs-admin-shell .rs-field label,
+body.back-mode .rs-admin-shell .rs-form-field label {
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell .rs-field label::after,
+body.back-mode .rs-admin-shell .rs-form-field label::after {
+    background: rgba(185, 145, 105, 0.22);
+}
+
+body.back-mode .rs-admin-shell .rs-field input,
+body.back-mode .rs-admin-shell .rs-field select,
+body.back-mode .rs-admin-shell .rs-form input,
+body.back-mode .rs-admin-shell .rs-form select,
+body.back-mode .rs-admin-shell .rs-form textarea,
+body.back-mode .rs-admin-shell .rs-form-field input,
+body.back-mode .rs-admin-shell .rs-form-field select,
+body.back-mode .rs-admin-shell .rs-form-field textarea {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--back-border-strong);
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell .rs-field input::placeholder,
+body.back-mode .rs-admin-shell .rs-form input::placeholder,
+body.back-mode .rs-admin-shell .rs-form textarea::placeholder {
+    color: #8f8578;
+}
+
+body.back-mode .rs-admin-shell .rs-field input:focus,
+body.back-mode .rs-admin-shell .rs-field select:focus,
+body.back-mode .rs-admin-shell .rs-form input:focus,
+body.back-mode .rs-admin-shell .rs-form select:focus,
+body.back-mode .rs-admin-shell .rs-form textarea:focus {
+    border-color: rgba(185, 145, 105, 0.5);
+    box-shadow: 0 0 0 4px rgba(185, 145, 105, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+body.back-mode .rs-admin-shell .rs-form-field.pm-field-has-error input,
+body.back-mode .rs-admin-shell .rs-form-field.pm-field-has-error select,
+body.back-mode .rs-admin-shell .rs-form-field.pm-field-has-error textarea {
+    border-color: #8c4d47;
+    background: rgba(140, 77, 71, 0.12);
+}
+
+body.back-mode .rs-admin-shell .rs-table-wrap {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(232, 221, 208, 0.08);
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell .rs-table {
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell .rs-table thead th {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom-color: rgba(232, 221, 208, 0.08);
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell .rs-table tbody td,
+body.back-mode .rs-admin-shell .rs-table tbody th {
+    border-bottom-color: rgba(232, 221, 208, 0.06);
+}
+
+body.back-mode .rs-admin-shell .rs-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body.back-mode .rs-admin-shell .rs-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.back-mode .rs-admin-shell .rs-thumb,
+body.back-mode .rs-admin-shell .rs-preview-frame,
+body.back-mode .rs-admin-shell .rs-mini-metric,
+body.back-mode .rs-admin-shell .rs-stat-box,
+body.back-mode .rs-admin-shell .rs-form-meta {
+    background: rgba(255, 255, 255, 0.035);
+    border-color: rgba(232, 221, 208, 0.08);
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell .rs-thumb {
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell .rs-thumb-neutral,
+body.back-mode .rs-admin-shell .rs-preview-frame-neutral {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.015) 100%);
+}
+
+body.back-mode .rs-admin-shell .rs-preview-placeholder,
+body.back-mode .rs-admin-shell .rs-thumb-neutral i {
+    border-color: rgba(185, 145, 105, 0.18);
+    background: rgba(185, 145, 105, 0.1);
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell .rs-preview-placeholder-large {
+    width: 140px;
+    height: 140px;
+    border-radius: 22px;
+    font-size: 2.8rem;
+}
+
+body.back-mode .rs-admin-shell .rs-state {
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell .rs-state-available,
+body.back-mode .rs-admin-shell .rs-state-active {
+    background: rgba(126, 139, 99, 0.16);
+    border-color: rgba(126, 139, 99, 0.22);
+    color: #d8e4c2;
+}
+
+body.back-mode .rs-admin-shell .rs-state-reserved {
+    background: rgba(185, 145, 105, 0.16);
+    border-color: rgba(185, 145, 105, 0.2);
+    color: #f0d8bb;
+}
+
+body.back-mode .rs-admin-shell .rs-state-unavailable,
+body.back-mode .rs-admin-shell .rs-state-empty {
+    background: rgba(140, 77, 71, 0.16);
+    border-color: rgba(140, 77, 71, 0.22);
+    color: #e6bdb8;
+}
+
+body.back-mode .rs-admin-shell .rs-icon-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(232, 221, 208, 0.12);
+    color: var(--back-text-soft);
+}
+
+body.back-mode .rs-admin-shell .rs-icon-btn:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(185, 145, 105, 0.28);
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell .rs-icon-btn-danger:hover {
+    background: rgba(140, 77, 71, 0.14);
+    border-color: rgba(140, 77, 71, 0.24);
+    color: #f0c7c3;
+}
+
+body.back-mode .rs-admin-shell .rs-kv-table th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--back-text-soft);
+}
+
+body.back-mode .rs-admin-shell .rs-kv-table td {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+body.back-mode .rs-admin-shell .rs-text-action {
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell .rs-project-tag {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(232, 221, 208, 0.08);
+    color: var(--back-text-soft);
+}
+
+body.back-mode .rs-admin-shell .rs-empty {
+    color: var(--back-text-soft);
+}
+
+@media (max-width: 1100px) {
+    body.back-mode .rs-admin-shell .rs-filter-grid-supplier {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    body.back-mode .rs-admin-shell .rs-filter-grid-supplier {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================ */
+/* V4 - UNIFICATION FOURNISSEUR + DENSITE ADMIN */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell {
+    width: min(1240px, 100%);
+    margin-inline: auto;
+    gap: 0.85rem;
+    font-family: "Segoe UI", Inter, sans-serif;
+}
+
+body.back-mode .rs-admin-shell .rs-header,
+body.back-mode .rs-admin-shell .rs-panel {
+    border-radius: 12px;
+}
+
+body.back-mode .rs-admin-shell .rs-header {
+    align-items: center;
+    padding: 0.95rem 1.05rem;
+}
+
+body.back-mode .rs-admin-shell .rs-panel {
+    padding: 0.95rem 1.05rem;
+}
+
+body.back-mode .rs-admin-shell .rs-header-copy h1 {
+    font-size: 1.26rem;
+}
+
+body.back-mode .rs-admin-shell .rs-header p {
+    max-width: 64rem;
+    font-size: 0.84rem;
+}
+
+body.back-mode .rs-admin-shell .rs-context {
+    padding: 0.2rem 0.48rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+}
+
+body.back-mode .rs-admin-shell .rs-header-actions,
+body.back-mode .rs-admin-shell .rs-toolbar-actions,
+body.back-mode .rs-admin-shell .rs-form-actions,
+body.back-mode .rs-admin-shell .rs-panel-actions {
+    gap: 0.4rem;
+}
+
+body.back-mode .rs-admin-shell .rs-btn {
+    min-height: 32px;
+    padding: 0.4rem 0.86rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+body.back-mode .rs-admin-shell .rs-btn:hover {
+    transform: translateY(-2px);
+}
+
+body.back-mode .rs-admin-shell .rs-nav-panel {
+    padding: 0.35rem;
+    border-radius: 10px;
+}
+
+body.back-mode .rs-admin-shell .rs-tab {
+    min-height: 30px;
+    padding: 0.38rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.79rem;
+}
+
+body.back-mode .rs-admin-shell .rs-toolbar-panel {
+    padding: 0.85rem 0.95rem;
+}
+
+body.back-mode .rs-admin-shell .rs-filter-grid {
+    grid-template-columns: minmax(240px, 1.25fr) minmax(170px, 0.82fr) minmax(190px, 0.95fr) auto;
+    gap: 0.65rem;
+}
+
+body.back-mode .rs-admin-shell .rs-field,
+body.back-mode .rs-admin-shell .rs-form-field {
+    gap: 0.3rem;
+}
+
+body.back-mode .rs-admin-shell .rs-field label,
+body.back-mode .rs-admin-shell .rs-form label,
+body.back-mode .rs-admin-shell .rs-form-field label {
+    font-size: 0.77rem;
+}
+
+body.back-mode .rs-admin-shell .rs-field input,
+body.back-mode .rs-admin-shell .rs-field select,
+body.back-mode .rs-admin-shell .rs-form input,
+body.back-mode .rs-admin-shell .rs-form select,
+body.back-mode .rs-admin-shell .rs-form textarea,
+body.back-mode .rs-admin-shell .rs-form-field input,
+body.back-mode .rs-admin-shell .rs-form-field select,
+body.back-mode .rs-admin-shell .rs-form-field textarea {
+    min-height: 36px;
+    padding: 0.5rem 0.65rem;
+    border-radius: 7px;
+}
+
+body.back-mode .rs-admin-shell .rs-panel-head {
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.62rem;
+}
+
+body.back-mode .rs-admin-shell .rs-panel-head h2 {
+    font-size: 0.96rem;
+}
+
+body.back-mode .rs-admin-shell .rs-panel-head p {
+    font-size: 0.78rem;
+}
+
+body.back-mode .rs-admin-shell .rs-stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.7rem;
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box {
+    min-height: 86px;
+    padding: 0.78rem 0.88rem;
+    position: relative;
+    overflow: hidden;
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(185, 145, 105, 0.62), rgba(126, 139, 99, 0.28), transparent);
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box span {
+    font-size: 0.7rem;
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box strong {
+    font-size: 1.22rem;
+}
+
+body.back-mode .rs-admin-shell .rs-table-wrap {
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+body.back-mode .rs-admin-shell .rs-table {
+    font-size: 0.84rem;
+}
+
+body.back-mode .rs-admin-shell .rs-table thead th {
+    padding: 0.68rem 0.75rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.035));
+    letter-spacing: 0.08em;
+}
+
+body.back-mode .rs-admin-shell .rs-table tbody td,
+body.back-mode .rs-admin-shell .rs-table tbody th {
+    padding: 0.65rem 0.75rem;
+}
+
+body.back-mode .rs-admin-shell .rs-resource-cell {
+    min-width: 0;
+    gap: 0.68rem;
+}
+
+body.back-mode .rs-admin-shell .rs-thumb {
+    width: 54px;
+    min-width: 54px;
+    height: 42px;
+    border-radius: 7px;
+}
+
+body.back-mode .rs-admin-shell .rs-thumb img {
+    padding: 0.18rem;
+}
+
+body.back-mode .rs-admin-shell .rs-resource-copy,
+body.back-mode .rs-admin-shell .rs-stack-text {
+    gap: 0.12rem;
+}
+
+body.back-mode .rs-admin-shell .rs-secondary-text,
+body.back-mode .rs-admin-shell .rs-stack-text span {
+    font-size: 0.76rem;
+}
+
+body.back-mode .rs-admin-shell .rs-state {
+    min-height: 22px;
+    padding: 0.16rem 0.5rem;
+    font-size: 0.72rem;
+}
+
+body.back-mode .rs-admin-shell .rs-icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.back-mode .rs-admin-shell .rs-detail-grid,
+body.back-mode .rs-admin-shell .rs-edit-grid {
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 0.9rem;
+}
+
+body.back-mode .rs-admin-shell .rs-detail-stack {
+    gap: 0.9rem;
+}
+
+body.back-mode .rs-admin-shell .rs-preview-panel {
+    gap: 0.8rem;
+}
+
+body.back-mode .rs-admin-shell .rs-preview-frame {
+    min-height: 225px;
+    border-radius: 10px;
+}
+
+body.back-mode .rs-admin-shell .rs-preview-frame img {
+    max-height: 200px;
+}
+
+body.back-mode .rs-admin-shell .rs-preview-placeholder {
+    width: 104px;
+    height: 104px;
+    border-radius: 18px;
+}
+
+body.back-mode .rs-admin-shell .rs-preview-placeholder-large {
+    width: 132px;
+    height: 132px;
+    border-radius: 20px;
+}
+
+body.back-mode .rs-admin-shell .rs-mini-metrics {
+    gap: 0.5rem;
+}
+
+body.back-mode .rs-admin-shell .rs-mini-metric {
+    padding: 0.62rem 0.68rem;
+    border-radius: 8px;
+}
+
+body.back-mode .rs-admin-shell .rs-mini-metric span,
+body.back-mode .rs-admin-shell .rs-form-meta,
+body.back-mode .rs-admin-shell .rs-project-tag {
+    font-size: 0.76rem;
+}
+
+body.back-mode .rs-admin-shell .rs-form-meta {
+    padding: 0.68rem 0.75rem;
+    border-radius: 8px;
+}
+
+body.back-mode .rs-admin-shell .rs-form {
+    gap: 0.8rem;
+}
+
+body.back-mode .rs-admin-shell .rs-form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem 0.9rem;
+}
+
+body.back-mode .rs-admin-shell .rs-form-actions {
+    padding-top: 0.8rem;
+}
+
+body.back-mode .rs-admin-shell .rs-kv-table th {
+    width: 30%;
+}
+
+body.back-mode .rs-admin-shell .rs-project-tag {
+    min-height: 22px;
+}
+
+body.back-mode .rs-admin-shell .rs-empty {
+    padding: 0.9rem 0.15rem 0.15rem;
+}
+
+body.back-mode .rs-admin-shell .rs-empty h2 {
+    font-size: 0.95rem;
+}
+
+body.back-mode .rs-admin-shell .rs-empty p {
+    font-size: 0.82rem;
+}
+
+body.back-mode .rs-admin-shell .rs-form.pm-validated-form > ul,
+body.back-mode .rs-admin-shell .rs-form.pm-validated-form > .form-errors {
+    border-color: rgba(140, 77, 71, 0.28);
+    background: rgba(140, 77, 71, 0.12);
+    color: #f0c7c3;
+}
+
+@media (max-width: 1100px) {
+    body.back-mode .rs-admin-shell .rs-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    body.back-mode .rs-admin-shell .rs-header,
+    body.back-mode .rs-admin-shell .rs-panel {
+        padding: 0.85rem;
+    }
+
+    body.back-mode .rs-admin-shell .rs-filter-grid,
+    body.back-mode .rs-admin-shell .rs-form-grid,
+    body.back-mode .rs-admin-shell .rs-stat-grid,
+    body.back-mode .rs-admin-shell .rs-mini-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    body.back-mode .rs-admin-shell .rs-preview-frame {
+        min-height: 190px;
+    }
+}
+
+/* ============================================ */
+/* V6 - ALIGNEMENT VISUEL AVEC LES AUTRES GESTIONS */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell .rs-header {
+    border-radius: 20px;
+    border-color: rgba(232, 221, 208, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.1), transparent 28%),
+        radial-gradient(circle at left bottom, rgba(126, 139, 99, 0.08), transparent 24%),
+        linear-gradient(145deg, rgba(20, 25, 27, 0.96), rgba(11, 15, 18, 0.98));
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+body.back-mode .rs-admin-shell .rs-panel {
+    border-radius: 18px;
+    border-color: rgba(232, 221, 208, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.06), transparent 26%),
+        linear-gradient(155deg, rgba(15, 21, 28, 0.98), rgba(8, 12, 17, 0.98));
+    box-shadow: 0 20px 42px rgba(0, 0, 0, 0.18);
+}
+
+body.back-mode .rs-admin-shell .rs-header::before,
+body.back-mode .rs-admin-shell .rs-panel::before {
+    background: linear-gradient(90deg, rgba(185, 145, 105, 0.92), rgba(126, 139, 99, 0.28), transparent);
+}
+
+body.back-mode .rs-admin-shell .rs-context {
+    background: rgba(185, 145, 105, 0.14);
+    border-color: rgba(185, 145, 105, 0.24);
+    color: var(--back-beige);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.back-mode .rs-admin-shell .rs-nav-panel,
+body.back-mode .rs-admin-shell .rs-toolbar-panel {
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.08), transparent 28%),
+        linear-gradient(145deg, rgba(20, 25, 27, 0.94), rgba(11, 15, 18, 0.98));
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.16);
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box {
+    border-radius: 20px;
+    border-color: rgba(232, 221, 208, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(126, 139, 99, 0.12), transparent 30%),
+        radial-gradient(circle at left bottom, rgba(185, 145, 105, 0.1), transparent 28%),
+        linear-gradient(145deg, rgba(17, 22, 29, 0.95), rgba(9, 13, 18, 0.98));
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box:nth-child(2) {
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.13), transparent 30%),
+        radial-gradient(circle at left bottom, rgba(126, 139, 99, 0.08), transparent 26%),
+        linear-gradient(145deg, rgba(17, 22, 29, 0.95), rgba(9, 13, 18, 0.98));
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box:nth-child(3) {
+    background:
+        radial-gradient(circle at top right, rgba(126, 139, 99, 0.14), transparent 30%),
+        linear-gradient(145deg, rgba(17, 22, 29, 0.95), rgba(9, 13, 18, 0.98));
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box:nth-child(4) {
+    background:
+        radial-gradient(circle at top right, rgba(140, 77, 71, 0.12), transparent 28%),
+        radial-gradient(circle at left bottom, rgba(185, 145, 105, 0.08), transparent 24%),
+        linear-gradient(145deg, rgba(17, 22, 29, 0.95), rgba(9, 13, 18, 0.98));
+}
+
+body.back-mode .rs-admin-shell .rs-stat-box strong,
+body.back-mode .rs-admin-shell .rs-mini-metric strong {
+    color: #fff;
+}
+
+body.back-mode .rs-admin-shell .rs-table-wrap {
+    border-radius: 14px;
+    border-color: rgba(232, 221, 208, 0.08);
+    background: linear-gradient(145deg, rgba(20, 25, 27, 0.94), rgba(11, 15, 18, 0.98));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+body.back-mode .rs-admin-shell .rs-table thead th {
+    background: rgba(255, 255, 255, 0.04);
+    color: #f8f3eb;
+}
+
+body.back-mode .rs-admin-shell .rs-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.back-mode .rs-admin-shell .rs-kv-table th {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+body.back-mode .rs-admin-shell .rs-kv-table td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body.back-mode .rs-admin-shell .rs-field input,
+body.back-mode .rs-admin-shell .rs-field select,
+body.back-mode .rs-admin-shell .rs-form input,
+body.back-mode .rs-admin-shell .rs-form select,
+body.back-mode .rs-admin-shell .rs-form textarea,
+body.back-mode .rs-admin-shell .rs-form-field input,
+body.back-mode .rs-admin-shell .rs-form-field select,
+body.back-mode .rs-admin-shell .rs-form-field textarea {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(232, 221, 208, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+body.back-mode .rs-admin-shell .rs-thumb,
+body.back-mode .rs-admin-shell .rs-thumb-neutral,
+body.back-mode .rs-admin-shell .rs-preview-frame,
+body.back-mode .rs-admin-shell .rs-preview-frame-neutral,
+body.back-mode .rs-admin-shell .rs-mini-metric,
+body.back-mode .rs-admin-shell .rs-form-meta,
+body.back-mode .rs-admin-shell .rs-project-tag {
+    border-color: rgba(232, 221, 208, 0.08);
+    background:
+        radial-gradient(circle at top, rgba(185, 145, 105, 0.08), transparent 58%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+}
+
+body.back-mode .rs-admin-shell .rs-preview-placeholder,
+body.back-mode .rs-admin-shell .rs-thumb-neutral i {
+    background: linear-gradient(135deg, rgba(185, 145, 105, 0.18), rgba(185, 145, 105, 0.08));
+    border-color: rgba(185, 145, 105, 0.2);
+    color: #f1dcc2;
+}
+
+body.back-mode .rs-admin-shell .rs-empty {
+    border: 1px dashed rgba(232, 221, 208, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* ============================================ */
+/* V7 - ALIGNEMENT BOUTONS GESTION RESSOURCE */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-header-actions,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-toolbar-actions,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form-actions,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-panel-actions,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-row-actions {
+    gap: 0.75rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-inline-form {
+    display: inline-flex;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn {
+    min-height: 42px;
+    padding: 0.78rem 1.12rem;
+    border-radius: 14px;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    line-height: 1;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-toolbar-actions .rs-btn,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form-actions .rs-btn {
+    min-height: 40px;
+    padding: 0.72rem 1.05rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn.pm-btn-primary,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn.rs-btn-primary,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-tab.is-active {
+    background: linear-gradient(135deg, #d5a46e, #b88757);
+    color: #16110d;
+    box-shadow: 0 14px 30px rgba(185, 145, 105, 0.22);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn.pm-btn-primary:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn.rs-btn-primary:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-tab.is-active:hover {
+    box-shadow: 0 20px 40px rgba(185, 145, 105, 0.3);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn.pm-btn-secondary,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn.rs-btn-secondary,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-tab {
+    background: rgba(255, 255, 255, 0.03);
+    color: #f4eee6;
+    border: 1px solid rgba(232, 221, 208, 0.12);
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn.pm-btn-secondary:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-btn.rs-btn-secondary:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-tab:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(232, 221, 208, 0.2);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-tab {
+    min-height: 40px;
+    padding: 0.72rem 1rem;
+    border-radius: 14px;
+    font-size: 0.86rem;
+    gap: 0.45rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-tab i {
+    font-size: 0.88rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid rgba(232, 221, 208, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(185, 145, 105, 0.28);
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-icon-btn-primary {
+    background: rgba(185, 145, 105, 0.14);
+    border-color: rgba(185, 145, 105, 0.24);
+    color: #f1dcc2;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-icon-btn-primary:hover {
+    background: rgba(185, 145, 105, 0.22);
+    border-color: rgba(185, 145, 105, 0.32);
+    color: #fff6e9;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-icon-btn-danger {
+    color: #f2d2cf;
+    border-color: rgba(140, 77, 71, 0.22);
+    background: rgba(140, 77, 71, 0.14);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-icon-btn-danger:hover {
+    background: rgba(140, 77, 71, 0.2);
+    border-color: rgba(140, 77, 71, 0.28);
+    color: #fff2f0;
+}
+
+/* ============================================ */
+/* V8 - ALIGNEMENT GLOBAL SUR LE DESIGN SYSTEM */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-header::before,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-panel::before {
+    display: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-admin-header,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-empty,
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table-shell {
+    background: linear-gradient(180deg, rgba(20, 25, 27, 0.98) 0%, rgba(15, 20, 22, 0.98) 100%);
+    border: 1px solid var(--back-border);
+    box-shadow: 0 22px 44px rgba(0, 0, 0, 0.2);
+    color: var(--back-text);
+    transform: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-admin-header {
+    border-radius: 26px;
+    padding: 1.5rem 1.6rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-empty {
+    border-radius: 24px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-empty {
+    padding: 1.5rem 1.6rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card {
+    padding: 1.4rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table-shell {
+    border-radius: 24px;
+    padding: 0;
+    overflow-x: auto;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-admin-header h1 {
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-admin-header p {
+    color: var(--back-text-soft);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card-actions,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-actions,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-filter-actions {
+    gap: 0.85rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn {
+    min-height: 46px;
+    padding: 0.85rem 1.2rem;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: none;
+    transform: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn:hover {
+    transform: translateY(-2px);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-primary {
+    background: linear-gradient(135deg, #d5a46e, #b88757);
+    color: #16110d;
+    box-shadow: 0 14px 30px rgba(185, 145, 105, 0.22);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-primary:hover {
+    box-shadow: 0 20px 40px rgba(185, 145, 105, 0.3);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-secondary {
+    background: rgba(255, 255, 255, 0.03);
+    color: #f4eee6;
+    border: 1px solid rgba(232, 221, 208, 0.12);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(232, 221, 208, 0.2);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-danger {
+    background: linear-gradient(135deg, #8c4d47, #6b332f);
+    color: #fff7f5;
+    box-shadow: 0 12px 24px rgba(107, 51, 47, 0.24);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card label {
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card input,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card textarea,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--back-border-strong);
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card input::placeholder,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card textarea::placeholder {
+    color: #8f8578;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card input:focus,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card textarea:focus,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card select:focus {
+    border-color: rgba(185, 145, 105, 0.5);
+    box-shadow: 0 0 0 4px rgba(185, 145, 105, 0.12);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table thead th {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid rgba(232, 221, 208, 0.08);
+    color: var(--back-text);
+    background: transparent;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table td,
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table th {
+    padding: 1rem 1.1rem;
+    color: var(--back-text-soft);
+    border-bottom: 1px solid rgba(232, 221, 208, 0.06);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-row:hover {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table-actions,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button-form,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-inline-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button {
+    width: 38px;
+    height: 38px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 12px;
+    border: 1px solid rgba(232, 221, 208, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--back-text);
+    text-decoration: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(185, 145, 105, 0.28);
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button-danger:hover {
+    background: rgba(140, 77, 71, 0.14);
+    border-color: rgba(140, 77, 71, 0.24);
+    color: #f0c7c3;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-empty {
+    border-style: dashed;
+    border-color: var(--back-border-strong);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-empty.rs-empty-inline {
+    padding: 1.2rem;
+    grid-column: auto;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-empty.rs-empty-inline::before {
+    display: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card-head.rs-panel-head h2,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-section-head.rs-panel-head h2 {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: var(--back-text);
+    letter-spacing: -0.02em;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card-head.rs-panel-head p,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-section-head.rs-panel-head p {
+    color: var(--back-text-soft);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-primary-link {
+    color: var(--back-text);
+    font-weight: 700;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-secondary-text,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-stack-text span {
+    color: var(--back-text-soft);
+    font-size: 0.82rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    border: 1px solid transparent;
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-available,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-active {
+    background: rgba(126, 139, 99, 0.16);
+    color: #d8e4c2;
+    border-color: rgba(126, 139, 99, 0.22);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-reserved {
+    background: rgba(185, 145, 105, 0.16);
+    color: #efd8bf;
+    border-color: rgba(185, 145, 105, 0.2);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-unavailable,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-empty {
+    background: rgba(140, 77, 71, 0.16);
+    color: #e6bdb8;
+    border-color: rgba(140, 77, 71, 0.22);
+}
+
+/* ============================================ */
+/* V9 - FINITIONS LISTES ALIGNEMENT EXACT      */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field label::after,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form-field label::after {
+    display: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field label,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form label,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form-field label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--back-text);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card-head.rs-panel-head,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-section-head.rs-panel-head {
+    margin-bottom: 1rem;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-wrap {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb-neutral {
+    border: 1px solid rgba(232, 221, 208, 0.1);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--back-beige);
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb-neutral:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(185, 145, 105, 0.22);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-primary-link:hover {
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .users-stat-card.rs-stat-box {
+    position: relative;
+    overflow: hidden;
+    padding: 1.3rem 1.35rem;
+    border-radius: 24px;
+    border: 1px solid rgba(232, 221, 208, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(126, 139, 99, 0.09), transparent 30%),
+        linear-gradient(145deg, rgba(17, 22, 29, 0.95), rgba(9, 13, 18, 0.98));
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .users-stat-card.rs-stat-box span {
+    display: block;
+    margin-bottom: 0.55rem;
+    color: var(--back-text-soft);
+    font-size: 0.84rem;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .users-stat-card.rs-stat-box strong {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: #fff;
+    font-size: 2.3rem;
+    line-height: 1;
+    font-weight: 800;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .users-stat-card.rs-stat-box small {
+    color: #c5b9a8;
+    font-size: 0.9rem;
+}
+
+/* ============================================ */
+/* V11 - LISTES ET BOUTONS STYLE PROJECT       */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-header-copy.back-users-title {
+    max-width: 760px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel {
+    padding: 1.5rem 1.6rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table {
+    width: 100%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table th,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table td {
+    vertical-align: middle;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table tbody td strong,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-primary-link {
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-primary-link {
+    font-size: 0.95rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-resource-cell {
+    min-width: 260px;
+    gap: 0.9rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral {
+    width: 62px;
+    min-width: 62px;
+    height: 48px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-stack-text {
+    gap: 0.2rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-secondary-text,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-stack-text span {
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-project-tag {
+    border-color: rgba(232, 221, 208, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--back-text-soft);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-primary-link {
+    color: var(--back-beige);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb-neutral {
+    border-color: rgba(185, 145, 105, 0.24);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-row-actions {
+    gap: 0.55rem;
+    min-width: 210px;
+    flex-wrap: wrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-inline-form {
+    display: inline-flex;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn {
+    min-height: 36px;
+    padding: 0.55rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.81rem;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn.pm-btn-primary {
+    box-shadow: 0 10px 22px rgba(185, 145, 105, 0.18);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn.pm-btn-primary:hover {
+    box-shadow: 0 14px 28px rgba(185, 145, 105, 0.24);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn.pm-btn-secondary {
+    border-color: var(--back-border-strong);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn.pm-btn-danger {
+    box-shadow: 0 10px 22px rgba(107, 51, 47, 0.18);
+}
+
+/* ============================================ */
+/* V12 - HISTORIQUE RESERVATION                 */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-reservation-main {
+    min-width: 240px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-meta {
+    color: var(--back-text-soft);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-table-number {
+    white-space: nowrap;
+    font-weight: 700;
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-table-stock {
+    min-width: 140px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-stock-text strong {
+    color: var(--back-text);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-row-actions {
+    min-width: 120px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-table-btn {
+    min-width: 92px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-process {
+    min-width: 110px;
+    justify-content: center;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-pending {
+    background: rgba(185, 145, 105, 0.16);
+    color: #efd8bf;
+    border-color: rgba(185, 145, 105, 0.2);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-accepted {
+    background: rgba(126, 139, 99, 0.16);
+    color: #d8e4c2;
+    border-color: rgba(126, 139, 99, 0.22);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-state-refused {
+    background: rgba(140, 77, 71, 0.16);
+    color: #e6bdb8;
+    border-color: rgba(140, 77, 71, 0.22);
+}
+
+/* ============================================ */
+/* V16 - ALIGNEMENT BOUTONS STYLE AUTRES GESTIONS */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn {
+    min-height: 46px;
+    padding: 0.85rem 1.2rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: normal;
+    box-shadow: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-primary {
+    background: linear-gradient(135deg, var(--back-beige-deep), #8d6545);
+    color: #fff7ef;
+    box-shadow: 0 14px 26px rgba(185, 145, 105, 0.24);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-primary:hover {
+    box-shadow: 0 18px 34px rgba(185, 145, 105, 0.3);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-secondary {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--back-text);
+    border: 1px solid var(--back-border-strong);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(232, 221, 208, 0.2);
+    color: #fff6ec;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn-danger {
+    background: linear-gradient(135deg, #8c4d47, #6b332f);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(107, 51, 47, 0.22);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card.pm-card-actions {
+    padding: 1.4rem;
+    border-radius: 24px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card.pm-card-actions .pm-btn {
+    min-height: 46px;
+    padding-inline: 1.2rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn {
+    min-height: 46px;
+    padding: 0.85rem 1.2rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+/* ============================================ */
+/* V18 - TRANSITIONS PROFESSIONNELLES           */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn,
+body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-primary-link,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb-neutral,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-admin-header,
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table-shell,
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-row,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card input,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card textarea,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card select,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field input,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field select,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form input,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form textarea,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form select {
+    transition:
+        background-color 0.16s ease,
+        border-color 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease,
+        opacity 0.16s ease;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb-neutral:hover {
+    transform: translateY(-1px);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table-shell:hover {
+    border-color: rgba(185, 145, 105, 0.16);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-row {
+    transition: background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-row:hover {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-primary-link:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb-neutral:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(185, 145, 105, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-btn,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn,
+    body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-primary-link,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb-neutral,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-card,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-admin-header,
+    body.back-mode .rs-admin-shell.rs-module-resource .back-user-table-shell,
+    body.back-mode .rs-admin-shell.rs-module-resource .back-user-row,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card input,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card textarea,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card select,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-field input,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-field select,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-form input,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-form textarea,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-form select {
+        transition: none;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-btn:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-thumb-neutral:hover {
+        transform: none;
+    }
+}
+
+/* ============================================ */
+/* V24 - EQUILIBRE COLONNES LISTES             */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-col-price,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-price {
+    min-width: 128px;
+    white-space: nowrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-actions-col,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-actions {
+    width: 152px;
+    min-width: 152px;
+    white-space: nowrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-price {
+    padding-right: 1.45rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-actions {
+    padding-left: 1.1rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-actions.rs-row-actions {
+    justify-content: flex-end;
+    align-items: center;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-actions .rs-table-btn {
+    min-width: 112px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-price {
+    min-width: 134px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions {
+    padding-left: 1.25rem;
+}
+
+/* ============================================ */
+/* V20 - HOVER SOURIS PLUS VISIBLE              */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn:hover {
+    transform: translateY(-2px);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-btn:active,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-table-btn:active,
+body.back-mode .rs-admin-shell.rs-module-resource .back-icon-button:active {
+    transform: translateY(0);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 26px 48px rgba(0, 0, 0, 0.22);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-table-shell:hover {
+    box-shadow: 0 24px 46px rgba(0, 0, 0, 0.2);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-row:hover .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-row:hover .rs-thumb-neutral {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .back-user-row:hover .rs-state {
+    border-color: rgba(232, 221, 208, 0.18);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-primary-link:hover {
+    text-shadow: 0 0 12px rgba(185, 145, 105, 0.12);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card input:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card textarea:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card select:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field input:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field select:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form input:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form textarea:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form select:hover {
+    border-color: rgba(185, 145, 105, 0.28);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-card:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-form-card:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .back-user-row:hover .rs-thumb,
+    body.back-mode .rs-admin-shell.rs-module-resource .back-user-row:hover .rs-thumb-neutral {
+        transform: none;
+    }
+}
+
+/* ============================================ */
+/* V21 - POLISH FINAL LISTES                    */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel {
+    padding: 1.4rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-actions-col,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table td:last-child {
+    width: 1%;
+    white-space: nowrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-row-actions {
+    min-width: 0;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-row-actions {
+    min-width: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-resource-copy {
+    gap: 0.15rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-state {
+    min-width: 104px;
+    justify-content: center;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-number,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-stock-text strong {
+    font-variant-numeric: tabular-nums;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb img {
+    padding: 0.2rem;
+}
+
+/* ============================================ */
+/* V22 - FINITION LISTES PRIORITAIRES           */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel {
+    padding: 1.25rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel > .pm-card-head.rs-panel-head {
+    margin-bottom: 1rem;
+    padding: 0 0 1rem;
+    align-items: flex-end;
+    border-bottom: 1px solid rgba(232, 221, 208, 0.08);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel > .pm-card-head.rs-panel-head h2 {
+    font-size: 1.08rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel > .pm-card-head.rs-panel-head p {
+    margin-top: 0.22rem;
+    font-size: 0.86rem;
+    color: var(--back-text-soft);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel .rs-table-wrap {
+    border-radius: 22px;
+    overflow: hidden;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table {
+    table-layout: auto;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table thead th {
+    padding-top: 0.95rem;
+    padding-bottom: 0.95rem;
+    background: rgba(255, 255, 255, 0.038);
+    color: #f2eadf;
+    font-size: 0.77rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table tbody td {
+    padding-top: 0.95rem;
+    padding-bottom: 0.95rem;
+    vertical-align: middle;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table th:first-child,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table td:first-child {
+    padding-left: 1.25rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table th:last-child,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table td:last-child {
+    padding-right: 1.25rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-col-status,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-status {
+    text-align: center;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-col-number,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-number,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-number {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-col-stock,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-stock {
+    min-width: 150px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-actions-col {
+    text-align: right;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-resource-cell {
+    gap: 0.9rem;
+    align-items: center;
+    min-width: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-resource-copy {
+    min-width: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-primary-link {
+    display: inline-block;
+    color: var(--back-text);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-secondary-text,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-meta {
+    font-size: 0.79rem;
+    color: var(--back-text-soft);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-stack-text {
+    gap: 0.2rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-stack-text strong {
+    color: var(--back-text);
+    font-weight: 700;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    flex-shrink: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb img {
+    padding: 0.18rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-state {
+    min-height: 34px;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.79rem;
+    font-weight: 700;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-row-actions {
+    justify-content: flex-end;
+    gap: 0.65rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn {
+    min-width: 98px;
+    min-height: 42px;
+    padding: 0.78rem 1.05rem;
+    font-size: 0.91rem;
+    box-shadow: 0 10px 22px rgba(185, 145, 105, 0.18);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row {
+    transition: background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-btn {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(185, 145, 105, 0.24);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb-neutral {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.16);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-reservation-main {
+    min-width: 260px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-stock {
+    min-width: 156px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-table-stock {
+    min-width: 156px;
+}
+
+/* ============================================ */
+/* V23 - INTERACTIONS LISTES & HOVERS          */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource {
+    --rs-motion-fast: 0.14s;
+    --rs-motion-base: 0.18s;
+    --rs-motion-soft: 0.22s;
+    --rs-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --rs-ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    --rs-focus-ring: 0 0 0 3px rgba(185, 145, 105, 0.18);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-header-actions .pm-btn,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card.pm-card-actions .pm-btn,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-filter-actions .pm-btn,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-primary-link,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-state,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table tbody td,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-toolbar-panel,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel .rs-table-wrap,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field input,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field select,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form input,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form textarea,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form select {
+    transition:
+        background-color var(--rs-motion-base) var(--rs-ease-standard),
+        border-color var(--rs-motion-base) var(--rs-ease-standard),
+        color var(--rs-motion-fast) var(--rs-ease-standard),
+        box-shadow var(--rs-motion-soft) var(--rs-ease-soft),
+        transform var(--rs-motion-soft) var(--rs-ease-soft),
+        opacity var(--rs-motion-fast) var(--rs-ease-standard);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-toolbar-panel:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel:hover {
+    transform: none;
+    border-color: rgba(232, 221, 208, 0.12);
+    box-shadow: 0 24px 46px rgba(0, 0, 0, 0.2);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel .rs-table-wrap:hover {
+    border-color: rgba(185, 145, 105, 0.16);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 18px 34px rgba(0, 0, 0, 0.16);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-header-actions .pm-btn:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card.pm-card-actions .pm-btn:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-filter-actions .pm-btn:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:hover {
+    transform: translateY(-1px);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-header-actions .pm-btn:active,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card.pm-card-actions .pm-btn:active,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-filter-actions .pm-btn:active,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:active {
+    transform: translateY(0);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover {
+    background: rgba(255, 255, 255, 0.038);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover td {
+    color: #efe8de;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-secondary-text,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-meta,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-stack-text span {
+    color: #d2c7b9;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-state {
+    border-color: rgba(232, 221, 208, 0.22);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-primary-link {
+    color: #fff7ef;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-primary-link:hover {
+    color: #fff9f2;
+    text-shadow: 0 0 10px rgba(185, 145, 105, 0.1);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral:hover {
+    border-color: rgba(185, 145, 105, 0.22);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field input:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field select:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form input:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form textarea:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form select:hover {
+    border-color: rgba(185, 145, 105, 0.24);
+    background: rgba(255, 255, 255, 0.055);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field input:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-field select:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form input:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form textarea:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-form select:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-header-actions .pm-btn:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-card.pm-card-actions .pm-btn:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .pm-filter-actions .pm-btn:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-primary-link:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb:focus-visible,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral:focus-visible {
+    outline: none;
+    box-shadow: var(--rs-focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-header-actions .pm-btn,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-card.pm-card-actions .pm-btn,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-filter-actions .pm-btn,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-primary-link,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-state,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table tbody td,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-toolbar-panel,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel .rs-table-wrap,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-field input,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-field select,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-form input,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-form textarea,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-form select {
+        transition: none;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-header-actions .pm-btn:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-card.pm-card-actions .pm-btn:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .pm-filter-actions .pm-btn:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral:hover {
+        transform: none;
+    }
+}
+
+/* ============================================ */
+/* V25 - LISTES PRIORITAIRES FINAL             */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel {
+    padding: 1.22rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel .rs-table-wrap {
+    border-radius: 22px;
+    overflow: hidden;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table thead th {
+    padding-top: 0.96rem;
+    padding-bottom: 0.96rem;
+    font-size: 0.77rem;
+    line-height: 1.2;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table tbody td {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    line-height: 1.45;
+    vertical-align: middle;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-col-price,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-price {
+    width: 140px;
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-actions-col,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-actions {
+    width: 168px;
+    min-width: 168px;
+    white-space: nowrap;
+    text-align: right;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-price {
+    padding-right: 1.5rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-actions {
+    padding-left: 1.3rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-cell-actions.rs-row-actions {
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn {
+    min-width: 118px;
+    min-height: 42px;
+    justify-content: center;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-state {
+    min-width: 110px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.036), rgba(255, 255, 255, 0.024));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.015),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover td {
+    color: #f1eadf;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-secondary-text,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-meta,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-stack-text span {
+    color: #d4cabb;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-btn {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px rgba(185, 145, 105, 0.22);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-state {
+    border-color: rgba(232, 221, 208, 0.24);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb-neutral {
+    transform: translateY(-1px);
+    border-color: rgba(185, 145, 105, 0.22);
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.16);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-primary-link:hover {
+    color: #fffaf3;
+    text-shadow: 0 0 10px rgba(185, 145, 105, 0.08);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-toolbar-panel:hover {
+    border-color: rgba(232, 221, 208, 0.13);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-price {
+    width: 146px;
+    min-width: 146px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions {
+    width: 172px;
+    min-width: 172px;
+    padding-left: 1.35rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-btn,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb-neutral {
+        box-shadow: none;
+        transform: none;
+    }
+}
+
+/* ============================================ */
+/* V26 - RESERVATION ACTION FIX + HOVER PRO    */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-reservation-main {
+    min-width: 212px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-col-status,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-status {
+    width: 122px;
+    min-width: 122px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-col-stock,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-stock,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-table-stock {
+    width: 142px;
+    min-width: 142px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-col-price,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-price {
+    width: 126px;
+    min-width: 126px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-actions-col,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions {
+    width: 150px;
+    min-width: 150px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions {
+    padding-left: 1rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions .rs-table-btn {
+    min-width: 104px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table thead th,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table tbody td {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:first-child,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:first-child {
+    padding-left: 1.1rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:last-child,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:last-child {
+    padding-right: 1.1rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-table-meta,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-secondary-text,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-stack-text span {
+    font-size: 0.78rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row {
+    position: relative;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(185, 145, 105, 0.03), transparent 24%, transparent 76%, rgba(185, 145, 105, 0.025));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--rs-motion-soft) var(--rs-ease-soft);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover::after {
+    opacity: 1;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn {
+    transition:
+        background-color var(--rs-motion-base) var(--rs-ease-standard),
+        border-color var(--rs-motion-base) var(--rs-ease-standard),
+        color var(--rs-motion-fast) var(--rs-ease-standard),
+        box-shadow var(--rs-motion-soft) var(--rs-ease-soft),
+        transform var(--rs-motion-soft) var(--rs-ease-soft),
+        filter var(--rs-motion-base) var(--rs-ease-standard);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:hover {
+    filter: saturate(1.04) brightness(1.02);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-state,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral {
+    transition:
+        background-color var(--rs-motion-base) var(--rs-ease-standard),
+        border-color var(--rs-motion-base) var(--rs-ease-standard),
+        color var(--rs-motion-fast) var(--rs-ease-standard),
+        box-shadow var(--rs-motion-soft) var(--rs-ease-soft),
+        transform var(--rs-motion-soft) var(--rs-ease-soft),
+        opacity var(--rs-motion-fast) var(--rs-ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row::after {
+        display: none;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:hover {
+        filter: none;
+    }
+}
+
+/* ============================================ */
+/* V27 - RESERVATION TABLE FIT FINAL           */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel .rs-table-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-gutter: stable both-edges;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table thead th,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table tbody td {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(1),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(1) {
+    width: 23%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(2),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(2) {
+    width: 15%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(3),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(3) {
+    width: 12%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(4),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(4) {
+    width: 12%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(5),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(5) {
+    width: 7%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(6),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(6) {
+    width: 14%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(7),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(7) {
+    width: 9%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(8),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(8) {
+    width: 12%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-reservation-main {
+    min-width: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(2),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(3) {
+    overflow-wrap: anywhere;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-status,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-stock,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-price,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions {
+    width: auto;
+    min-width: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-state {
+    min-width: 0;
+    width: 100%;
+    max-width: 112px;
+    margin-inline: auto;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-price {
+    white-space: nowrap;
+    padding-right: 1rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions {
+    padding-left: 0.9rem;
+    text-align: right;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions .rs-table-btn {
+    min-width: 98px;
+    padding-inline: 0.95rem;
+    font-size: 0.88rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:hover {
+    box-shadow: 0 18px 30px rgba(185, 145, 105, 0.24);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover::after {
+    opacity: 0.9;
+}
+
+@media (max-width: 1200px) {
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table {
+        min-width: 1080px;
+        table-layout: auto;
+    }
+}
+
+/* ============================================ */
+/* V28 - HOVER LISTES PLUS VIVANT              */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row {
+    transform-origin: center;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover {
+    background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.022) 36%, rgba(255, 255, 255, 0.028) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.018),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.022),
+        0 14px 26px rgba(0, 0, 0, 0.08);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover::after {
+    opacity: 1;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-primary-link {
+    color: #fffdf7;
+    text-shadow: 0 0 12px rgba(185, 145, 105, 0.1);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-number,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-cell-price,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-stack-text strong {
+    color: #fff6eb;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb-neutral {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 16px 28px rgba(0, 0, 0, 0.18);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-state {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.14);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-btn {
+    transform: translateY(-2px) scale(1.015);
+    box-shadow: 0 20px 34px rgba(185, 145, 105, 0.26);
+    filter: saturate(1.06) brightness(1.03);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:hover {
+    transform: translateY(-2px) scale(1.015);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb-neutral,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-state,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn {
+    will-change: transform, box-shadow, filter;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-toolbar-panel:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel:hover,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-panel .rs-table-wrap:hover {
+    box-shadow:
+        0 24px 46px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(185, 145, 105, 0.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb-neutral,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-state,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-btn,
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:hover {
+        transform: none;
+        filter: none;
+    }
+}
+
+/* ============================================ */
+/* V29 - ALIGNEMENT FINAL + HOVER PREMIUM      */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table thead th {
+    white-space: nowrap;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(1),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(1) {
+    width: 22%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(2),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(2) {
+    width: 14%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(3),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(3) {
+    width: 11%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(4),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(4) {
+    width: 11%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(5),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(5) {
+    width: 7%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(6),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(6) {
+    width: 15%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(7),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(7) {
+    width: 9%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table th:nth-child(8),
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table td:nth-child(8) {
+    width: 11%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-actions-col {
+    min-width: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions {
+    padding-left: 0.9rem;
+    padding-right: 1rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-reservation-table .rs-cell-actions .rs-table-btn {
+    min-width: 100px;
+    max-width: 100%;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 42%, transparent 58%, rgba(255, 255, 255, 0.08));
+    opacity: 0;
+    transition: opacity var(--rs-motion-base) var(--rs-ease-standard);
+    pointer-events: none;
+    z-index: -1;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-btn::after,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn:hover::after {
+    opacity: 1;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-table-btn {
+    transform: translateY(-2px) scale(1.018);
+    box-shadow: 0 22px 36px rgba(185, 145, 105, 0.28);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-state {
+    border-color: rgba(232, 221, 208, 0.28);
+    background: linear-gradient(180deg, rgba(45, 52, 41, 0.92), rgba(38, 45, 35, 0.96));
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-cell-actions {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.02));
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb img {
+    transform: scale(1.04);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-thumb img {
+    transition: transform var(--rs-motion-soft) var(--rs-ease-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .rs-table-btn::after {
+        display: none;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-list-table .back-user-row:hover .rs-thumb img {
+        transform: none;
+    }
+}
+
+/* ============================================ */
+/* V31 - RESOURCE ANALYSIS PANEL               */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-status,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-summary,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-chat {
+    padding: 1.05rem 1.15rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-alert {
+    border-radius: 12px;
+    padding: 0.85rem 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-alert-info {
+    border: 1px solid rgba(185, 145, 105, 0.36);
+    background: rgba(185, 145, 105, 0.13);
+    color: #f7ecde;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-alert-danger {
+    border: 1px solid rgba(199, 106, 96, 0.4);
+    background: rgba(135, 57, 50, 0.22);
+    color: #ffe9e7;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-headline {
+    margin: 0.15rem 0 0.35rem;
+    color: #f8f2e8;
+    font-size: 1.01rem;
+    font-weight: 700;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-narrative {
+    margin: 0;
+    color: var(--back-text-soft);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-table td,
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-table th {
+    vertical-align: top;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-priority {
+    min-width: 84px;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-priority-haute {
+    background: linear-gradient(180deg, rgba(145, 62, 55, 0.9), rgba(113, 44, 39, 0.95));
+    border-color: rgba(238, 171, 164, 0.3);
+    color: #ffeceb;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-priority-moyenne {
+    background: linear-gradient(180deg, rgba(120, 91, 48, 0.9), rgba(91, 69, 37, 0.95));
+    border-color: rgba(230, 197, 143, 0.28);
+    color: #fff6e8;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-priority-basse {
+    background: linear-gradient(180deg, rgba(60, 77, 58, 0.86), rgba(45, 61, 43, 0.94));
+    border-color: rgba(165, 199, 157, 0.22);
+    color: #e9f5e7;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-chat-form textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-chat-result {
+    margin-top: 0.85rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 12px;
+    border: 1px solid rgba(232, 221, 208, 0.14);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-chat-meta {
+    margin: 0 0 0.5rem;
+    color: var(--back-text-soft);
+    font-size: 0.82rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-analysis-chat-result pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: "Inter", sans-serif;
+    color: #f7f1e8;
+    font-size: 0.9rem;
+    line-height: 1.52;
+}
+
+/* ============================================ */
+/* V30 - LIST VIEW CARDS ALIGNMENT             */
+/* ============================================ */
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-panel {
+    padding: 1.35rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 1.15rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-card {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100%;
+    border-radius: 24px;
+    border: 1px solid rgba(232, 221, 208, 0.1);
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.12), transparent 34%),
+        linear-gradient(145deg, rgba(18, 23, 27, 0.98), rgba(10, 14, 18, 0.99));
+    box-shadow: 0 20px 42px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition:
+        transform var(--rs-motion-soft) var(--rs-ease-soft),
+        box-shadow var(--rs-motion-soft) var(--rs-ease-soft),
+        border-color var(--rs-motion-base) var(--rs-ease-standard);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(213, 164, 110, 0.95), rgba(111, 134, 91, 0.55), rgba(213, 164, 110, 0.18));
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(213, 164, 110, 0.22);
+    box-shadow: 0 30px 56px rgba(0, 0, 0, 0.28);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-media-wrap {
+    position: relative;
+    padding: 0.9rem 0.9rem 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-badges {
+    position: absolute;
+    top: 1.2rem;
+    left: 1.2rem;
+    right: 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    z-index: 2;
+    pointer-events: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(7, 10, 14, 0.72);
+    border: 1px solid rgba(232, 221, 208, 0.14);
+    color: #f7efe5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    backdrop-filter: blur(10px);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 176px;
+    aspect-ratio: 16 / 8;
+    border-radius: 18px;
+    border: 1px solid rgba(232, 221, 208, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(213, 164, 110, 0.16), transparent 34%),
+        linear-gradient(145deg, rgba(39, 47, 53, 0.92), rgba(17, 23, 28, 0.96));
+    overflow: hidden;
+    text-decoration: none;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--rs-motion-soft) var(--rs-ease-soft);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-card:hover .rs-showcase-media img {
+    transform: scale(1.03);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-media-neutral {
+    background:
+        radial-gradient(circle at top right, rgba(126, 139, 99, 0.14), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(213, 164, 110, 0.12), transparent 28%),
+        linear-gradient(145deg, rgba(33, 39, 44, 0.95), rgba(15, 20, 24, 0.98));
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-media-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(232, 221, 208, 0.1);
+    color: #f0e3d3;
+    font-size: 1.8rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-media-reservation {
+    display: grid;
+    justify-items: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-media-label {
+    color: #f8f3eb;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-body {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1rem 1rem 0.95rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-heading {
+    display: grid;
+    gap: 0.32rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-title {
+    margin: 0;
+    color: #f8f3eb;
+    font-size: 1.2rem;
+    font-weight: 800;
+    line-height: 1.22;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-subtitle {
+    margin: 0;
+    color: var(--back-text-soft);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-meta-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+    color: var(--back-text-soft);
+    font-size: 0.83rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-meta-line span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-metric {
+    display: grid;
+    gap: 0.26rem;
+    padding: 0.78rem 0.85rem;
+    border-radius: 16px;
+    border: 1px solid rgba(232, 221, 208, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-metric span {
+    color: var(--back-text-soft);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-metric strong {
+    color: #f8f3eb;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    padding: 0 1rem 1rem;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-footnote {
+    color: var(--back-text-soft);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-actions .rs-table-btn {
+    min-width: 124px;
+}
+
+body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-card-reservation .rs-showcase-title {
+    font-size: 1.12rem;
+}
+
+@media (max-width: 900px) {
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-panel {
+        padding: 1rem;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-badges {
+        position: static;
+        padding-bottom: 0.7rem;
+        margin-bottom: -0.2rem;
+        pointer-events: auto;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-media-wrap {
+        padding: 1rem 1rem 0;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-actions .rs-table-btn {
+        width: 100%;
+    }
+
+    body.back-mode .rs-admin-shell.rs-module-resource .rs-showcase-metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================ */
+/* V32 - DASHBOARD CHARTS (RESOURCE ONLY)      */
+/* ============================================ */
+
+.rs-admin-shell.rs-module-resource .rs-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.rs-admin-shell.rs-module-resource .rs-chart-panel {
+    min-height: 338px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+
+.rs-admin-shell.rs-module-resource .rs-chart-wrap {
+    position: relative;
+    min-height: 240px;
+}
+
+.rs-admin-shell.rs-module-resource .rs-chart-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+@media (max-width: 1100px) {
+    .rs-admin-shell.rs-module-resource .rs-charts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .rs-admin-shell.rs-module-resource .rs-charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rs-admin-shell.rs-module-resource .rs-chart-panel {
+        min-height: 300px;
+    }
+}

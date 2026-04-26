@@ -10,8 +10,19 @@ use App\Repository\TaskRepository;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 #[ORM\Table(name: 'task')]
+#[ORM\HasLifecycleCallbacks]
 class Task
 {
+    public const STATUS_TODO = 'TODO';
+    public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
+    public const STATUS_DONE = 'DONE';
+
+    public const STATUSES = [
+        self::STATUS_TODO => 'A faire',
+        self::STATUS_IN_PROGRESS => 'En cours',
+        self::STATUS_DONE => 'Terminee',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -67,7 +78,7 @@ class Task
 
     public function setStatus(string $status): self
     {
-        $this->status = $status;
+        $this->status = self::normalizeStatus($status);
         return $this;
     }
 
@@ -125,6 +136,65 @@ class Task
     {
         $this->created_at = $created_at;
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function initializeDefaults(): void
+    {
+        if ($this->status === null || $this->status === '') {
+            $this->status = self::STATUS_TODO;
+        } else {
+            $this->status = self::normalizeStatus($this->status);
+        }
+
+        if ($this->weight === null) {
+            $this->weight = 1;
+        }
+
+        if ($this->duration_days === null || $this->duration_days < 1) {
+            $this->duration_days = 1;
+        }
+
+        if ($this->created_at === null) {
+            $this->created_at = new \DateTime();
+        }
+    }
+
+    public function getStatusLabel(): string
+    {
+        return self::STATUSES[$this->getNormalizedStatus()] ?? 'Statut inconnu';
+    }
+
+    public function getStatusCssClass(): string
+    {
+        return match ($this->getNormalizedStatus()) {
+            self::STATUS_TODO => 'todo',
+            self::STATUS_IN_PROGRESS => 'in_progress',
+            self::STATUS_DONE => 'done',
+            default => 'unknown',
+        };
+    }
+
+    public function getNormalizedStatus(): string
+    {
+        return self::normalizeStatus($this->status);
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->getNormalizedStatus() === self::STATUS_DONE;
+    }
+
+    public static function normalizeStatus(?string $status): string
+    {
+        $normalized = strtoupper(trim((string) $status));
+
+        return match ($normalized) {
+            'TODO', 'A_FAIRE', 'A FAIRE', 'AFaire', 'AFAIRE', 'TO_DO' => self::STATUS_TODO,
+            'IN_PROGRESS', 'EN_COURS', 'EN COURS', 'INPROGRESS', 'IN-PROGRESS' => self::STATUS_IN_PROGRESS,
+            'DONE', 'TERMINEE', 'TERMINE', 'TERMINATED', 'COMPLETED' => self::STATUS_DONE,
+            default => self::STATUS_TODO,
+        };
     }
 
 }

@@ -11,7 +11,7 @@
 <div class="dashboard-container">
     <div class="dashboard-header">
         <div class="welcome-section">
-            <h1>Bonjour, {{ app.user ? app.user.getPrenomUser() : 'Equipe' }} <span class="wave">👋</span></h1>
+            <h1>Bonjour, {{ app.user ? app.user.getPrenomUser() : 'Equipe' }} <span class="wave">ðŸ‘‹</span></h1>
             <p>Voici ce qui se passe avec vos projets aujourd'hui</p>
         </div>
         <div class="date-badge">
@@ -184,7 +184,7 @@
                     </div>
                 </div>
                 <div class="insight-footer">
-                    <i class="fas fa-chart-pie"></i> Avancement global: <strong>50%</strong> · 4 projets actifs
+                    <i class="fas fa-chart-pie"></i> Avancement global: <strong>50%</strong> Â· 4 projets actifs
                     <div class="project-timeline">
                         <span><i class="fas fa-calendar-check"></i> Echeance: 15 mai</span>
                     </div>
@@ -236,7 +236,7 @@
                 </div>
                 <div class="resource-info">
                     <strong>Guide investissement 2025</strong>
-                    <p>PDF · 2.4 MB</p>
+                    <p>PDF Â· 2.4 MB</p>
                 </div>
                 <button class="resource-btn">
                     <i class="fas fa-download"></i>
@@ -248,7 +248,7 @@
                 </div>
                 <div class="resource-info">
                     <strong>Rapport trimestriel Q1</strong>
-                    <p>Excel · 1.8 MB</p>
+                    <p>Excel Â· 1.8 MB</p>
                 </div>
                 <button class="resource-btn">
                     <i class="fas fa-download"></i>
@@ -260,7 +260,7 @@
                 </div>
                 <div class="resource-info">
                     <strong>Enregistrement webinaire</strong>
-                    <p>MP4 · 500 MB</p>
+                    <p>MP4 Â· 500 MB</p>
                 </div>
                 <button class="resource-btn">
                     <i class="fas fa-download"></i>
@@ -280,5 +280,5 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ asset('js/back-dashboard.js') }}"></script>
+    <script src="{{ asset('js/back-dashboard.js') }}?v=20260411-shell-v2"></script>
 {% endblock %}

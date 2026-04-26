@@ -6,14 +6,16 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/back-dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
 {% block body %}
     <div class="dashboard-container">
         <div class="dashboard-header">
             <div class="welcome-section">
-                <h1>Aperçu des projets</h1>
-                <p>Voici la situation actuelle des projets et des décisions du module de gestion.</p>
+                <h1>AperÃ§u des projets</h1>
+                <p>Voici la situation actuelle des projets et des dÃ©cisions du module de gestion.</p>
             </div>
             <div class="date-badge">
                 <i class="fas fa-calendar-alt"></i>
@@ -30,7 +32,7 @@
             <div class="quick-actions-buttons">
                 <a href="{{ path('back_project_index') }}" class="quick-action-btn primary">
                     <i class="fas fa-folder-open"></i>
-                    <span>Gérer les projets</span>
+                    <span>GÃ©rer les projets</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>
                 <a href="{{ path('project_index') }}" class="quick-action-btn secondary">
@@ -56,26 +58,33 @@
                 <div class="stat-info">
                     <h3>Projets en attente</h3>
                     <div class="stat-value">{{ pending_projects }}</div>
-                    <span class="stat-trend">À traiter par le back office</span>
+                    <span class="stat-trend">Ã€ traiter par le back office</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                 <div class="stat-info">
-                    <h3>Projets acceptés</h3>
+                    <h3>Projets acceptÃ©s</h3>
                     <div class="stat-value">{{ accepted_projects }}</div>
-                    <span class="stat-trend">Validés par décision récente</span>
+                    <span class="stat-trend">ValidÃ©s par dÃ©cision rÃ©cente</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-gavel"></i></div>
                 <div class="stat-info">
-                    <h3>Décisions</h3>
+                    <h3>DÃ©cisions</h3>
                     <div class="stat-value">{{ total_decisions }}</div>
-                    <span class="stat-trend">{{ refused_projects }} projets refusés</span>
+                    <span class="stat-trend">{{ refused_projects }} projets refusÃ©s</span>
                 </div>
             </div>
         </div>
+
+        {% include 'shared/project_dashboard_block.html.twig' with {
+            dashboard: project_dashboard,
+            export_url: path('back_project_export_pdf'),
+            title: 'Pilotage global des projets',
+            description: 'Une lecture transversale du pipeline projet pour le gerant et l admin.'
+        } only %}
 
         <!-- Two Columns -->
         <div class="two-columns">
@@ -98,7 +107,7 @@
                                     <strong>{{ project.title }}</strong>
                                     <p>
                                         <i class="fas fa-user"></i> 
-                                        {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assigné' }}
+                                        {{ project.user ? project.user.getPrenomUser() ~ ' ' ~ project.user.getNomUser() : 'Non assignÃ©' }}
                                     </p>
                                 </div>
                             </div>
@@ -122,9 +131,9 @@
             <!-- Right Column: Latest Decisions -->
             <div class="card-panel">
                 <div class="panel-header">
-                    <h3><i class="fas fa-history"></i> Dernières décisions</h3>
+                    <h3><i class="fas fa-history"></i> DerniÃ¨res dÃ©cisions</h3>
                     <a href="{{ path('back_project_index') }}" class="view-link">
-                        Accéder aux projets <i class="fas fa-arrow-right"></i>
+                        AccÃ©der aux projets <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
                 <div class="dashboard-list">
@@ -136,12 +145,12 @@
                                 </div>
                                 <div class="list-item-info">
                                     <strong>{{ decision.project.title }}</strong>
-                                    <p>{{ decision.descriptionD ?: 'Sans justification détaillée.'|slice(0, 60) }}{{ decision.descriptionD|length > 60 ? '...' : '' }}</p>
+                                    <p>{{ decision.descriptionD ?: 'Sans justification dÃ©taillÃ©e.'|slice(0, 60) }}{{ decision.descriptionD|length > 60 ? '...' : '' }}</p>
                                 </div>
                             </div>
                             <div class="dashboard-list-meta">
                                 <span class="pm-status pm-status-{{ decision.project.status|lower }}">
-                                    {{ decision.getDecisionTitleLabel() ?: 'Décision' }}
+                                    {{ decision.getDecisionTitleLabel() ?: 'DÃ©cision' }}
                                 </span>
                                 <span class="list-item-date">
                                     <i class="fas fa-calendar"></i>
@@ -152,7 +161,7 @@
                     {% else %}
                         <div class="dashboard-empty">
                             <i class="fas fa-inbox"></i>
-                            <p>Aucune décision enregistrée.</p>
+                            <p>Aucune dÃ©cision enregistrÃ©e.</p>
                         </div>
                     {% endfor %}
                 </div>
@@ -163,5 +172,7 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ asset('js/project-dashboard.js') }}"></script>
     <script src="{{ asset('js/back-dashboard.js') }}"></script>
 {% endblock %}

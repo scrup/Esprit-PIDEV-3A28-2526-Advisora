@@ -13,10 +13,10 @@ use App\Repository\StrategieRepository;
 class Strategie
 {
     public const STATUS_PENDING = 'En_attente';
-    public const STATUS_APPROVED = 'Acceptée';
-    public const STATUS_REJECTED = 'Refusée';
+    public const STATUS_APPROVED = 'AcceptÃ©e';
+    public const STATUS_REJECTED = 'RefusÃ©e';
     public const STATUS_IN_PROGRESS = 'En_cours';
-    public const STATUS_UNASSIGNED = 'Non_affectée';
+    public const STATUS_UNASSIGNED = 'Non_affectÃ©e';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -52,11 +52,11 @@ class Strategie
     {
         return match ($this->statusStrategie) {
             self::STATUS_PENDING => 'En attente',
-            self::STATUS_APPROVED => 'Acceptée',
-            self::STATUS_REJECTED => 'Refusée',
+            self::STATUS_APPROVED => 'AcceptÃ©e',
+            self::STATUS_REJECTED => 'RefusÃ©e',
             self::STATUS_IN_PROGRESS => 'En cours',
-            self::STATUS_UNASSIGNED => 'Non affectée',
-            default => $this->statusStrategie ?? 'Non défini',
+            self::STATUS_UNASSIGNED => 'Non affectÃ©e',
+            default => $this->statusStrategie ?? 'Non dÃ©fini',
         };
     }
 
@@ -214,32 +214,33 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(name: 'versions', type: 'integer', nullable: false)]
-    private ?int $versions = null;
-
-    public function getVersions(): ?int
+    public function getEstimatedRoiPercent(): ?float
     {
-        return $this->versions;
+        $budget = $this->getBudgetTotal();
+        $gainAmount = $this->getGainEstime();
+
+        if ($budget === null || $budget <= 0 || $gainAmount === null) {
+            return null;
+        }
+
+        return ($gainAmount / $budget) * 100;
     }
 
-    public function setVersions(int $versions): self
-    {
-        $this->versions = $versions;
+  #[ORM\Column(name: 'DureeTerme', type: 'integer', nullable: true)]
+private ?int $DureeTerme = null;
 
-        return $this;
-    }
+public function getDureeTerme(): ?int
+{
+    return $this->DureeTerme;
+}
 
-    public function getDureeTerme(): ?int
-    {
-        return $this->versions;
-    }
+public function setDureeTerme(?int $DureeTerme): self
+{
+    $this->DureeTerme = $DureeTerme;
 
-    public function setDureeTerme(int $DureeTerme): self
-    {
-        $this->versions = $DureeTerme;
+    return $this;
+}
 
-        return $this;
-    }
 
     #[ORM\OneToMany(targetEntity: Objective::class, mappedBy: 'strategie')]
     private Collection $objectives;

@@ -5,62 +5,102 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260417-rs-v30">
 {% endblock %}
 
 {% block body %}
-    <section class="pm-admin-shell">
-        <div class="pm-admin-header">
-            <div>
-                <span class="pm-badge">Gestion reservation</span>
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+        <div class="pm-admin-header rs-header">
+            <div class="rs-header-copy back-users-title">
+                <span class="pm-badge">Back office</span>
                 <h1>Historique global des reservations</h1>
-                <p>Le gerant et l admin peuvent consulter, modifier ou supprimer toutes les reservations du module Ressource dans un ecran de suivi centralise.</p>
+                <p>Suivi centralise des reservations clients avec edition et suppression depuis une vue de gestion compacte.</p>
             </div>
-            <div class="pm-card-actions">
-                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_dashboard') }}">Retour au dashboard</a>
-                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_index') }}">Retour aux ressources</a>
-                <a class="pm-btn pm-btn-secondary" href="{{ path('resource_index') }}">Voir le front</a>
+            <div class="pm-card-actions rs-header-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_index') }}">Retour</a>
             </div>
         </div>
 
         {% include 'back/resource/_module_nav.html.twig' %}
 
-        <section class="pm-grid">
-            {% for reservation in reservations %}
-                {% set supplierLabel = reservation.supplier_company ?: reservation.supplier_name ?: 'Non assigne' %}
-                {% set clientLabel = (reservation.client_firstname ?: '') ~ ' ' ~ (reservation.client_lastname ?: '') %}
-                {% set resourceStatusLabel = reservation.resource_status ? reservation.resource_status|replace({'_': ' '})|title : 'Statut inconnu' %}
-                <article class="pm-card">
-                    <div class="pm-card-head">
-                        <span class="pm-status pm-status-{{ reservation.resource_status|default('')|lower|replace({' ':'_','-':'_'}) }}">
-                            {{ resourceStatusLabel }}
-                        </span>
-                        <span class="pm-meta">Projet #{{ reservation.project_id }}</span>
-                    </div>
-                    <h2>{{ reservation.resource_name }}</h2>
-                    <p>Projet : <strong>{{ reservation.project_title }}</strong></p>
-                    <div class="pm-meta-list pm-meta-list-vertical">
-                        <span><strong>Client :</strong> {{ clientLabel|trim is not empty ? clientLabel|trim : reservation.client_email }}</span>
-                        <span><strong>Email :</strong> {{ reservation.client_email }}</span>
-                        <span><strong>Fournisseur :</strong> {{ supplierLabel }}</span>
-                        <span><strong>Quantite reservee :</strong> {{ reservation.reserved_qty }}</span>
-                        <span><strong>Stock total :</strong> {{ reservation.resource_stock }}</span>
-                        <span><strong>Prix :</strong> {{ reservation.resource_price is not null ? reservation.resource_price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
-                    </div>
-                    <div class="pm-card-actions">
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('resource_show', {id: reservation.resource_id}) }}">Voir la ressource</a>
-                        <a class="pm-btn pm-btn-primary" href="{{ path('back_resource_reservation_edit', {projectId: reservation.project_id, resourceId: reservation.resource_id}) }}">Modifier reservation</a>
-                        <form method="post" action="{{ path('back_resource_reservation_delete', {projectId: reservation.project_id, resourceId: reservation.resource_id}) }}" onsubmit="return confirm('Supprimer cette reservation ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_reservation_' ~ reservation.project_id ~ '_' ~ reservation.resource_id) }}">
-                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
-                        </form>
-                    </div>
-                </article>
+        <section class="pm-card rs-panel rs-list-panel rs-showcase-panel">
+            <div class="pm-card-head rs-panel-head">
+                <div>
+                    <h2>Liste des reservations</h2>
+                    <p>{{ reservations|length }} reservation(s) enregistree(s)</p>
+                </div>
+            </div>
+
+            {% if reservations is not empty %}
+                <div class="rs-showcase-grid rs-showcase-grid-reservation">
+                    {% for reservation in reservations %}
+                        {% set supplierLabel = reservation.supplier_company ?: reservation.supplier_name ?: 'Non assigne' %}
+                        {% set clientLabel = (reservation.client_firstname ?: '') ~ ' ' ~ (reservation.client_lastname ?: '') %}
+                        {% set reservationProcessStatus = reservation.project_status|default('PENDING')|upper %}
+                        {% set reservationProcessLabel = reservationProcessStatus == 'ACCEPTED'
+                            ? 'Acceptee'
+                            : (reservationProcessStatus == 'REFUSED' ? 'Refusee' : 'En attente') %}
+                        <article class="rs-showcase-card rs-showcase-card-reservation">
+                            <div class="rs-showcase-media-wrap">
+                                <div class="rs-showcase-badges">
+                                    <span class="rs-showcase-chip">Projet #{{ reservation.project_id }}</span>
+                                    <span class="rs-state rs-state-{{ reservationProcessStatus|lower }} rs-state-process">
+                                        {{ reservationProcessLabel }}
+                                    </span>
+                                </div>
+                                <a class="rs-showcase-media rs-showcase-media-neutral" href="{{ path('back_resource_reservation_edit', {projectId: reservation.project_id, resourceId: reservation.resource_id}) }}">
+                                    <div class="rs-showcase-media-reservation">
+                                        <span class="rs-showcase-media-icon"><i class="fas fa-calendar-check"></i></span>
+                                        <span class="rs-showcase-media-label">{{ reservation.resource_name }}</span>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="rs-showcase-body">
+                                <div class="rs-showcase-heading">
+                                    <a class="rs-primary-link rs-showcase-title" href="{{ path('back_resource_reservation_edit', {projectId: reservation.project_id, resourceId: reservation.resource_id}) }}">{{ reservation.project_title }}</a>
+                                    <p class="rs-showcase-subtitle">{{ clientLabel|trim is not empty ? clientLabel|trim : reservation.client_email }}</p>
+                                </div>
+
+                                <div class="rs-showcase-meta-line">
+                                    <span><i class="fas fa-box-open"></i> {{ reservation.resource_name }}</span>
+                                    <span><i class="fas fa-truck"></i> {{ supplierLabel }}</span>
+                                </div>
+
+                                <div class="rs-showcase-metrics">
+                                    <div class="rs-showcase-metric">
+                                        <span>Quantite</span>
+                                        <strong>{{ reservation.reserved_qty }}</strong>
+                                    </div>
+                                    <div class="rs-showcase-metric">
+                                        <span>Stock total</span>
+                                        <strong>{{ reservation.resource_stock }}</strong>
+                                    </div>
+                                    <div class="rs-showcase-metric">
+                                        <span>Restant</span>
+                                        <strong>{{ max(0, reservation.resource_stock - reservation.reserved_qty) }}</strong>
+                                    </div>
+                                    <div class="rs-showcase-metric">
+                                        <span>Prix</span>
+                                        <strong>{{ reservation.resource_price is not null ? reservation.resource_price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rs-showcase-actions">
+                                <span class="rs-showcase-footnote">{{ reservation.client_email }}</span>
+                                <a class="pm-btn pm-btn-primary rs-table-btn" href="{{ path('back_resource_reservation_edit', {projectId: reservation.project_id, resourceId: reservation.resource_id}) }}">Traiter</a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
             {% else %}
-                <div class="pm-empty">
+                <div class="pm-empty rs-empty">
                     <h2>Aucune reservation enregistree</h2>
                     <p>Les reservations creees par les clients apparaitront ici.</p>
                 </div>
-            {% endfor %}
+            {% endif %}
         </section>
     </section>
 {% endblock %}

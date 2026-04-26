@@ -1,0 +1,181 @@
+{% extends 'base.html.twig' %}
+{# Page publication C2C: transforme une reservation client en annonce LISTED. #}
+
+{% block title %}Advisora | Publier Une Annonce{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260424-01' }}">
+{% endblock %}
+
+{% block body %}
+    <div class="mini-shop-shell is-manage-view" id="shop-publish-page">
+        <section class="mini-shop-hero">
+            <div class="mini-shop-hero-copy">
+                <span class="mini-shop-kicker"><i class="fas fa-plus-circle"></i> Publication C2C</span>
+                <h1>Publier une annonce</h1>
+                <p>
+                    L utilisateur choisit une ressource reservee, entre quantite, prix unitaire
+                    et une URL image optionnelle. Si l URL est vide, une image est generee automatiquement avec le nom exact de la ressource. Les annonces valides sont publiees en statut LISTED.
+                </p>
+                <div class="mini-shop-hero-actions">
+                    <a href="{{ path('app_shop') }}#shop-marketplace" class="shop-btn shop-btn-secondary">
+                        <i class="fas fa-store"></i>
+                        Retour boutique
+                    </a>
+                    <a href="{{ path('app_shop_my_listings') }}" class="shop-btn shop-btn-secondary">
+                        <i class="fas fa-list"></i>
+                        Mes annonces
+                    </a>
+                </div>
+                <div class="mini-shop-hero-pills">
+                    <span><i class="fas fa-user-lock"></i> Publication reservee au role CLIENT</span>
+                    <span><i class="fas fa-check-circle"></i> Quantite > 0 et prix >= 0</span>
+                    <span><i class="fas fa-layer-group"></i> Publishable = reserve - deja annonce</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="mini-shop-marketplace-layout" id="shop-publish">
+            <article class="mini-shop-panel mini-shop-management-block">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Mini Shop C2C</span>
+                        <h2>Publier depuis vos reservations</h2>
+                        <p>Selectionnez la reservation source, la quantite, le prix et une URL image optionnelle. Sans URL, le shop genere une image automatique.</p>
+                    </div>
+                    <div class="mini-shop-panel-chip">
+                        <span>Reservations publiables</span>
+                        <strong>{{ marketplace.stats.publishable_count }} ligne(s)</strong>
+                    </div>
+                </div>
+
+                <section class="mini-shop-side-stats">
+                    <div class="mini-side-stat">
+                        <span>Publiables</span>
+                        <strong>{{ marketplace.stats.publishable_count }}</strong>
+                    </div>
+                    <div class="mini-side-stat">
+                        <span>Unites</span>
+                        <strong>{{ marketplace.stats.publishable_units }}</strong>
+                    </div>
+                    <div class="mini-side-stat">
+                        <span>Mes annonces</span>
+                        <strong>{{ marketplace.stats.my_listings_count }}</strong>
+                    </div>
+                </section>
+
+                <div class="mini-shop-market-reservation-grid">
+                    {% for reservation in marketplace.publishable_reservations %}
+                        {% set publish_status_class = reservation.publishable_qty > 0 ? 'is-available' : 'is-unavailable' %}
+                        {% set publish_card_id = reservation.project_id ~ '_' ~ reservation.resource_id %}
+                        {% set reservation_image = shop_image_url(reservation.image_url, 'card') %}
+                        <article class="mini-shop-market-reservation-card">
+                            <div class="mini-shop-market-card-head">
+                                <div>
+                                    <span class="mini-panel-tag">Reservation source</span>
+                                    <h3>{{ reservation.resource_name }}</h3>
+                                </div>
+                                <span class="shop-status-badge {{ publish_status_class }}">{{ reservation.publishable_qty }} dispo</span>
+                            </div>
+
+                            <div class="mini-shop-market-card-media {% if reservation_image is empty %}is-placeholder{% endif %}">
+                                {% if reservation_image is not empty %}
+                                    <img src="{{ reservation_image }}" alt="{{ reservation.resource_name }}">
+                                {% else %}
+                                    <div class="mini-shop-market-media-fallback">
+                                        <span>{{ reservation.resource_name|slice(0, 1)|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mini-shop-cart-item-meta">
+                                <span>{{ reservation.supplier_name ?: 'Non renseigne' }}</span>
+                                <span>Projet: {{ reservation.project_title }}</span>
+                                <span>#{{ reservation.resource_id }}</span>
+                            </div>
+
+                            <div class="mini-shop-cart-item-facts">
+                                <div>
+                                    <span>Reserve</span>
+                                    <strong>{{ reservation.reserved_qty }}</strong>
+                                </div>
+                                <div>
+                                    <span>Deja liste</span>
+                                    <strong>{{ reservation.listed_qty }}</strong>
+                                </div>
+                                <div>
+                                    <span>Publier max</span>
+                                    <strong>{{ reservation.publishable_qty }}</strong>
+                                </div>
+                            </div>
+
+                            <form method="post" action="{{ path('app_shop_market_publish') }}" class="mini-shop-form mini-shop-grid" novalidate>
+                                <input type="hidden" name="_token" value="{{ csrf_token('shop_market_publish') }}">
+                                <input type="hidden" name="_redirect_page" value="publish">
+                                <input type="hidden" name="_redirect_fragment" value="shop-publish">
+                                <input type="hidden" name="project_id" value="{{ reservation.project_id }}">
+                                <input type="hidden" name="resource_id" value="{{ reservation.resource_id }}">
+
+                                <div class="mini-shop-grid mini-shop-grid-two">
+                                    <div class="mini-shop-field-group">
+                                        <label for="publish_quantity_{{ publish_card_id }}">Quantite a publier</label>
+                                        <input
+                                            id="publish_quantity_{{ publish_card_id }}"
+                                            type="number"
+                                            name="quantity"
+                                            value="1"
+                                        >
+                                    </div>
+                                    <div class="mini-shop-field-group">
+                                        <label for="publish_price_{{ publish_card_id }}">Prix unitaire (coins)</label>
+                                        <input
+                                            id="publish_price_{{ publish_card_id }}"
+                                            type="number"
+                                            name="unit_price"
+                                            value="1.000"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="mini-shop-field-group">
+                                    <label for="publish_image_{{ publish_card_id }}">Image annonce (optionnel, sinon image auto)</label>
+                                        <input
+                                            id="publish_image_{{ publish_card_id }}"
+                                            type="url"
+                                            name="image_url"
+                                            placeholder="https://... ou /uploads/mon-image.jpg"
+                                        >
+                                </div>
+
+                                <div class="mini-shop-field-group">
+                                    <label for="publish_note_{{ publish_card_id }}">Note annonce (optionnel)</label>
+                                        <input
+                                            id="publish_note_{{ publish_card_id }}"
+                                            type="text"
+                                            name="note"
+                                            placeholder="Ex: lot presque neuf, remise possible"
+                                        >
+                                </div>
+
+                                <div class="mini-shop-form-actions">
+                                    <button type="submit" class="shop-btn shop-btn-primary">
+                                        <i class="fas fa-upload"></i>
+                                        Publier annonce
+                                    </button>
+                                </div>
+                            </form>
+                        </article>
+                    {% else %}
+                        <div class="mini-shop-empty-state mini-shop-empty-state-inline">
+                            <i class="fas fa-box-open"></i>
+                            <h3>Aucune reservation publiable</h3>
+                            <p>Reservez d abord une ressource pour pouvoir la publier en C2C.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+
+        </section>
+    </div>
+{% endblock %}

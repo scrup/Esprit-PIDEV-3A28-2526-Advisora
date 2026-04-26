@@ -39,6 +39,15 @@ class Event
     #[ORM\Column(name: 'localisationEv', type: 'string', length: 190, nullable: true)]
     private ?string $localisationEv = null;
 
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?float $price = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 8, nullable: true)]
+    private ?float $latitude = null;
+
+    #[ORM\Column(type: 'decimal', precision: 11, scale: 8, nullable: true)]
+    private ?float $longitude = null;
+
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'events')]
     #[ORM\JoinColumn(name: 'idGerant', referencedColumnName: 'idUser', nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
@@ -297,5 +306,38 @@ class Event
                 ->atPath('endDateEv')
                 ->addViolation();
         }
+    }
+
+    public function getPrice(): ?float
+    {
+        return $this->price;
+    }
+
+    public function setPrice(?float $price): self
+    {
+        $this->price = $price;
+        return $this;
+    }
+
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?float $latitude): self
+    {
+        $this->latitude = $latitude;
+        return $this;
+    }
+
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?float $longitude): self
+    {
+        $this->longitude = $longitude;
+        return $this;
     }
 }

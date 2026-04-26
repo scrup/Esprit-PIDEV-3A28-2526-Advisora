@@ -34,11 +34,11 @@
 
         <div class="pm-form-card">
             <div class="pm-info-banner">
-                <strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignée à l enregistrement.' }}
+                <strong>Date de crÃ©ation :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignÃ©e Ã  l enregistrement.' }}
                 <br>
-                <strong>Dernière mise à jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
+                <strong>DerniÃ¨re mise Ã  jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
             </div>
-            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'project'}}) }}
+            {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
                 {{ form_errors(form) }}
                 <div class="pm-form-grid">
                     {{ forms.field(form.title) }}
@@ -56,9 +56,4 @@
             {{ form_end(form) }}
         </div>
     </section>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('js/project-form-validation.js') }}"></script>
 {% endblock %}

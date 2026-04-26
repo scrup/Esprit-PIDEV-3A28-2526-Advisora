@@ -1,0 +1,78 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Mon profil{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-profile-v1">
+{% endblock %}
+
+{% block body %}
+<section class="back-users-shell">
+    <div class="pm-admin-header">
+        <div class="back-users-title">
+            <span class="pm-badge">Back office</span>
+            <h1>Mon profil</h1>
+            <p>Modifiez votre nom, prénom, email, téléphone et photo de profil.</p>
+        </div>
+
+        <div class="pm-card-actions">
+            <a href="{{ path('back_user_index') }}" class="pm-btn pm-btn-secondary">Retour</a>
+        </div>
+    </div>
+
+    <div class="form-card profile-form-card">
+        <div class="profile-hero">
+            <div class="profile-avatar-large">
+                {% if userProfile.image_path %}
+                    <img src="{{ asset(userProfile.image_path) }}" alt="Photo de profil">
+                {% else %}
+                    {{ userProfile.prenomUser|slice(0, 1)|upper }}{{ userProfile.nomUser|slice(0, 1)|upper }}
+                {% endif %}
+            </div>
+
+            <div class="profile-hero-info">
+                <h2>{{ userProfile.prenomUser }} {{ userProfile.nomUser }}</h2>
+                <p>{{ userProfile.EmailUser }}</p>
+            </div>
+        </div>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            <div class="pm-form-grid">
+                <div class="pm-field">
+                    {{ form_label(form.PrenomUser, 'Prénom') }}
+                    {{ form_widget(form.PrenomUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.PrenomUser) }}</div>
+                </div>
+
+                <div class="pm-field">
+                    {{ form_label(form.nomUser, 'Nom') }}
+                    {{ form_widget(form.nomUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.nomUser) }}</div>
+                </div>
+
+                <div class="pm-field">
+                    {{ form_label(form.EmailUser, 'Email') }}
+                    {{ form_widget(form.EmailUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.EmailUser) }}</div>
+                </div>
+
+                <div class="pm-field">
+                    {{ form_label(form.NumTelUser, 'Téléphone') }}
+                    {{ form_widget(form.NumTelUser, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.NumTelUser) }}</div>
+                </div>
+
+                <div class="pm-field" style="grid-column: 1 / -1;">
+                    {{ form_label(form.profileImage, 'Photo de profil') }}
+                    {{ form_widget(form.profileImage, {'attr': {'class': 'pm-input'}}) }}
+                    <div class="pm-field-errors field-error">{{ form_errors(form.profileImage) }}</div>
+                </div>
+            </div>
+
+            <div class="pm-form-actions">
+                <button type="submit" class="save-btn">Enregistrer</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</section>
+{% endblock %}

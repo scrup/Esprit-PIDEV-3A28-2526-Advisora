@@ -23,12 +23,17 @@ final class ExchangeRateService
     private const PREVIOUS_SNAPSHOT_KEY = 'investment.exchange_rate.previous.tnd.v1';
     private const FALLBACK_TTL = 43200;
 
+    private readonly string $apiKey;
+    private readonly string $baseUrl;
+
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly CacheItemPoolInterface $cachePool,
-        private readonly string $apiKey,
-        private readonly string $baseUrl,
+        ?string $apiKey,
+        ?string $baseUrl,
     ) {
+        $this->apiKey = trim((string) $apiKey);
+        $this->baseUrl = trim((string) $baseUrl) !== '' ? trim((string) $baseUrl) : 'https://v6.exchangerate-api.com/v6';
     }
 
     /**

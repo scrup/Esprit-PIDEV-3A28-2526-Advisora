@@ -10,7 +10,7 @@
 {% block body %}
     <section class="pm-detail-shell">
         <div class="pm-detail-main">
-            <a class="pm-back-link" href="{{ path('resource_index') }}">← Retour a la liste des ressources</a>
+            <a class="pm-back-link" href="{{ path('resource_index') }}">â† Retour a la liste des ressources</a>
             <div class="pm-card pm-card-large">
                 <div class="pm-card-head">
                     <span class="pm-status pm-status-{{ resource.status|default('')|lower|replace({' ':'_','-':'_'}) }}">{{ resource.getStatusLabel() }}</span>
@@ -40,7 +40,7 @@
                 {% if can_manage_resources %}
                     <div class="pm-card-actions">
                         <a class="pm-btn pm-btn-primary" href="{{ use_back_manage ? path('resource_back_manage', {id: resource.id}) : path('resource_manage', {id: resource.id}) }}">
-                            {{ use_back_manage ? 'Traiter cette ressource' : 'Gerer cette ressource' }}
+                            {{ use_back_manage ? 'Ouvrir la fiche back office' : 'Gerer cette ressource' }}
                         </a>
                     </div>
                 {% endif %}

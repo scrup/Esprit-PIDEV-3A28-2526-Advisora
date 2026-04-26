@@ -1,0 +1,68 @@
+{% set current_route = app.request.attributes.get('_route')|default('') %}
+{% set route_params = app.request.attributes.get('_route_params')|default({}) %}
+{% set project_id = route_params.id|default(route_params.projectId|default(null)) %}
+
+{% if project_id is empty and project is defined and project.id is defined %}
+    {% set project_id = project.id %}
+{% endif %}
+
+{% if project_id is empty and strategy is defined and strategy.project is not null and strategy.project.id is defined %}
+    {% set project_id = strategy.project.id %}
+{% endif %}
+
+{% set front_toggle_url = path('app_home') %}
+{% set back_toggle_url = path('app_back') %}
+
+{% if current_route == 'app_shop' %}
+    {% set front_toggle_url = path('app_shop') %}
+{% elseif current_route in ['project_index', 'back_project_overview'] %}
+    {% set front_toggle_url = path('project_index') %}
+    {% set back_toggle_url = path('back_project_overview') %}
+{% elseif current_route == 'back_project_index' %}
+    {% set front_toggle_url = path('project_index') %}
+    {% set back_toggle_url = path('back_project_index') %}
+{% elseif current_route == 'project_show' and project_id %}
+    {% set front_toggle_url = path('project_show', {id: project_id}) %}
+    {% set back_toggle_url = path('project_back_manage', {id: project_id}) %}
+{% elseif current_route in ['project_manage', 'project_back_manage'] and project_id %}
+    {% set front_toggle_url = path('project_manage', {id: project_id}) %}
+    {% set back_toggle_url = path('project_back_manage', {id: project_id}) %}
+{% elseif current_route in ['project_edit', 'decision_new', 'decision_edit'] and project_id %}
+    {% set front_toggle_url = path('project_manage', {id: project_id}) %}
+    {% set back_toggle_url = path('project_back_manage', {id: project_id}) %}
+{% elseif current_route == 'project_new' %}
+    {% set front_toggle_url = path('project_index') %}
+    {% set back_toggle_url = path('back_project_index') %}
+{% elseif current_route starts with 'app_back_strategies' %}
+    {% set front_toggle_url = project_id ? path('project_manage', {id: project_id}) : path('project_index') %}
+    {% set back_toggle_url = path('app_back_strategies') %}
+{% endif %}
+
+<div class="back-mode-toggle-container">
+    <div
+        class="back-mode-toggle-switch"
+        data-interface-switch
+        data-current-interface="{{ interface_mode }}"
+        data-front-url="{{ front_toggle_url }}"
+        data-back-url="{{ back_toggle_url }}"
+    >
+        <input
+            type="checkbox"
+            id="backModeToggle"
+            class="back-mode-toggle-input"
+            data-interface-toggle-input
+            {% if interface_mode == 'back' %}checked{% endif %}
+        >
+        <label for="backModeToggle" class="back-mode-toggle-label">
+            <span class="back-mode-toggle-option back-mode-toggle-front">
+                <i class="fas fa-eye"></i>
+                <span>Front</span>
+            </span>
+            <span class="back-mode-toggle-option back-mode-toggle-back">
+                <i class="fas fa-chart-line"></i>
+                <span>Back</span>
+            </span>
+            <span class="back-mode-toggle-slider"></span>
+        </label>
+    </div>
+</div>

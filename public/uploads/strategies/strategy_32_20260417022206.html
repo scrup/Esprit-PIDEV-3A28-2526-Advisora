@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Playbook Strategie</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: DejaVu Sans, Arial, sans-serif;
+            color: #2f2419;
+            background: #fffdfa;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .page {
+            padding: 34px 40px 52px;
+        }
+
+        .hero {
+            padding: 28px 30px;
+            border-radius: 24px;
+            background: linear-gradient(140deg, #f7efe4 0%, #fff8ef 62%, #f4e4d2 100%);
+            border: 1px solid #eadbc9;
+            margin-bottom: 20px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: #9a7b61;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 30px;
+            line-height: 1.18;
+            color: #2c2016;
+        }
+
+        .hero-summary {
+            margin: 0;
+            font-size: 14px;
+            color: #6c5847;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: #f2e3d1;
+            color: #7a563f;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .meta-grid,
+        .dual-grid,
+        .objective-grid,
+        .phase-grid,
+        .kpi-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+
+        .meta-grid td {
+            width: 33.33%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .dual-grid td,
+        .objective-grid td,
+        .kpi-grid td {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .phase-grid td {
+            width: 33.33%;
+            vertical-align: top;
+            padding-right: 12px;
+        }
+
+        .card,
+        .section-box {
+            background: #ffffff;
+            border: 1px solid #efe3d6;
+            border-radius: 18px;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+
+        .meta-card {
+            padding: 14px 16px;
+            min-height: 88px;
+        }
+
+        .meta-label,
+        .pill {
+            display: inline-block;
+            color: #9a8a77;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .meta-label {
+            margin-bottom: 8px;
+        }
+
+        .meta-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2f2419;
+        }
+
+        .meta-detail {
+            margin-top: 6px;
+            color: #8d7765;
+            font-size: 12px;
+        }
+
+        .section {
+            margin-top: 8px;
+            margin-bottom: 18px;
+        }
+
+        .section h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #6f4d38;
+        }
+
+        .section-box {
+            padding: 18px 20px;
+        }
+
+        .panel-title {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #5a3d2c;
+        }
+
+        .paragraph {
+            margin: 0;
+            color: #4f3d30;
+        }
+
+        .subtle {
+            color: #8a7564;
+        }
+
+        .note-title {
+            margin: 0 0 8px;
+            color: #6f4d38;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .note-copy {
+            margin: 0;
+            color: #5c493c;
+        }
+
+        .note-copy + .note-title {
+            margin-top: 14px;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        li + li {
+            margin-top: 8px;
+        }
+
+        .objective-card,
+        .phase-card,
+        .kpi-card {
+            padding: 16px 18px;
+        }
+
+        .pill {
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #f6eee4;
+            color: #8f6d55;
+            margin-bottom: 10px;
+        }
+
+        .objective-title,
+        .phase-title,
+        .kpi-name {
+            margin: 0 0 8px;
+            font-size: 15px;
+            color: #2f2419;
+        }
+
+        .objective-copy,
+        .phase-copy,
+        .kpi-target,
+        .kpi-cadence {
+            margin: 0;
+            color: #5b483a;
+        }
+
+        .phase-horizon {
+            margin: 0 0 8px;
+            color: #9a7b61;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .kpi-target {
+            font-weight: 700;
+            color: #3f2f24;
+        }
+
+        .kpi-cadence {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #8a7564;
+        }
+
+        .chart-box {
+            padding-bottom: 22px;
+        }
+
+        .chart-summary {
+            margin: 0 0 16px;
+            color: #5a483a;
+        }
+
+        .chart-svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .chart-grid {
+            stroke: #e8dbcf;
+            stroke-width: 1;
+        }
+
+        .chart-axis {
+            stroke: #d7c4b2;
+            stroke-width: 1.2;
+        }
+
+        .chart-axis-label {
+            fill: #9a8a77;
+            font-size: 11px;
+        }
+
+        .chart-area {
+            fill: #ead8c6;
+            opacity: 0.7;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke: #8f5f46;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chart-point {
+            fill: #8f5f46;
+            stroke: #fffdfa;
+            stroke-width: 2;
+        }
+
+        .chart-point-value {
+            fill: #6f4d38;
+            font-size: 11px;
+            font-weight: 700;
+            text-anchor: middle;
+        }
+
+        .chart-point-label {
+            fill: #8a7564;
+            font-size: 11px;
+            text-anchor: middle;
+        }
+
+        .chart-footer {
+            margin-top: 8px;
+            overflow: hidden;
+            color: #8a7564;
+            font-size: 12px;
+        }
+
+        .chart-footer-left {
+            float: left;
+        }
+
+        .chart-footer-right {
+            float: right;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 16px;
+            border-top: 1px solid #eadfd2;
+            color: #8a7a64;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+                        
+    <div class="page">
+        <section class="hero">
+            <p class="eyebrow">Playbook strategie</p>
+            <h1>Optimisation Coûts</h1>
+            <p class="hero-summary">Cette stratégie vise à moderniser les infrastructures de paiement et les intégrations de portefeuilles numériques pour générer une optimisation significative des coûts opérationnels sur 12 mois. Malgré un budget stratégique limité à 2 000 DT, l&#039;objectif est d&#039;atteindre un gain estimé de 240 000 DT en rationalisant les processus et les technologies. Le succès dépendra d&#039;une analyse fine des dépenses actuelles, d&#039;une exécution agile des changements et d&#039;une gestion proactive des risques techniques et financiers. Ce playbook fournit une feuille de route concrète pour Chouikhi Azza et son équipe afin de maximiser le retour sur investissement de cette initiative financière.</p>
+            <div class="status">Acceptée</div>
+        </section>
+
+        <table class="meta-grid" role="presentation">
+            <tr>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Projet associe</div>
+                        <div class="meta-value">FinPay Modernization</div>
+                        <div class="meta-detail">Statut: Accepté</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Budget strategie</div>
+                        <div class="meta-value">2 000 DT</div>
+                        <div class="meta-detail">Budget projet: 125 000 DT</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Gain estime</div>
+                        <div class="meta-value">12000%</div>
+                        <div class="meta-detail">Avancement projet: 0%</div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Duree cible</div>
+                        <div class="meta-value">12 mois</div>
+                        <div class="meta-detail">Type: FINANCIERE</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Responsable strategie</div>
+                        <div class="meta-value">chouikhi azza</div>
+                        <div class="meta-detail">Client projet: One Client</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="card meta-card">
+                        <div class="meta-label">Objectifs relies</div>
+                        <div class="meta-value">0</div>
+                        <div class="meta-detail">Document genere le 17/04/2026 02:22</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+                    <section class="section">
+                <h2>Contexte et signaux</h2>
+                <table class="dual-grid" role="presentation">
+                    <tr>
+                        <td>
+                            <div class="section-box">
+                                <h3 class="note-title">Contexte projet</h3>
+                                <p class="note-copy">
+                                    Modernize payment rails and digital wallet integrations.
+                                </p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="section-box">
+                                <h3 class="note-title">Contexte strategique</h3>
+                                                                                                    <p class="note-copy">Aucune note de contexte strategique fournie.</p>
+                                                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </section>
+        
+        <section class="section">
+            <h2>Diagnostic strategique</h2>
+            <div class="section-box">
+                <p class="paragraph">Le projet FinPay Modernization, doté d&#039;un budget de 125 000 DT et à 0% d&#039;avancement, offre une opportunité unique de réviser les coûts opérationnels liés aux paiements. La tension principale réside dans l&#039;ambition d&#039;un gain de 240 000 DT avec un budget stratégie de seulement 2 000 DT, ce qui exige une approche chirurgicale et des actions à fort levier. Le point de départ est une infrastructure existante probablement coûteuse en maintenance ou en frais de transaction. Les leviers résident dans l&#039;identification des goulots d&#039;étranglement financiers, l&#039;automatisation des processus de paiement, la renégociation des termes avec les fournisseurs de services de paiement et l&#039;intégration de solutions plus efficientes en matière de portefeuilles numériques.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <table class="dual-grid" role="presentation">
+                <tr>
+                    <td>
+                        <div class="section-box">
+                            <h2>Points cles</h2>
+                            <ul>
+                                                                    <li>Un gain potentiel de 240 000 DT est visé sur 12 mois pour un investissement stratégique de 2 000 DT.</li>
+                                                                    <li>Le projet FinPay Modernization, avec un budget de 125 000 DT, est à 0% d&#039;avancement, offrant une feuille blanche pour l&#039;intégration des optimisations.</li>
+                                                                    <li>La modernisation des rails de paiement et l&#039;intégration des portefeuilles numériques sont les principaux vecteurs de réduction des coûts.</li>
+                                                                    <li>La stratégie est sous la responsabilité de Chouikhi Azza, garantissant une supervision dédiée.</li>
+                                                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="section-box">
+                            <h2>Priorites strategiques</h2>
+                            <ul>
+                                                                    <li>Rationaliser les infrastructures de paiement pour minimiser les frais de transaction et de maintenance.</li>
+                                                                    <li>Optimiser les processus opérationnels liés aux paiements via l&#039;automatisation et l&#039;intégration simplifiée.</li>
+                                                                    <li>Renégocier les contrats avec les partenaires de paiement et les fournisseurs de services pour des tarifs plus compétitifs.</li>
+                                                                    <li>Mettre en place un suivi financier rigoureux des économies réalisées et des coûts évités.</li>
+                                                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        
+        <section class="section">
+            <h2>Opportunites et creation de valeur</h2>
+            <div class="section-box">
+                <ul>
+                                            <li>Réduction significative des frais de transaction en adoptant des rails de paiement plus modernes et efficaces.</li>
+                                            <li>Optimisation des coûts de traitement par l&#039;intégration de portefeuilles numériques, réduisant les intermédiaires et les latences.</li>
+                                            <li>Possibilité de renégocier les tarifs avec les prestataires actuels ou d&#039;explorer de nouveaux partenaires plus compétitifs.</li>
+                                            <li>Automatisation des tâches manuelles répétitives dans la gestion des paiements, libérant des ressources internes.</li>
+                                    </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Projection d outcome attendu</h2>
+            <div class="section-box chart-box">
+                <p class="chart-summary">La trajectoire attendue projette une progression graduelle sur 12 mois, avec une acceleration visible autour de Mois 6 (18 000 %) avant une cible finale a Mois 12 (18 000 % de gain projete).</p>
+                                <svg class="chart-svg" viewBox="0 0 640 260" role="img" aria-label="Projection d outcome attendu de 18 000 % a 18 000 % sur 12 mois.">
+                                            <line class="chart-grid" x1="56" y1="20" x2="618" y2="20"></line>
+                        <text class="chart-axis-label" x="46" y="24" text-anchor="end">20 700 %</text>
+                                            <line class="chart-grid" x1="56" y1="68.5" x2="618" y2="68.5"></line>
+                        <text class="chart-axis-label" x="46" y="72.5" text-anchor="end">15 525 %</text>
+                                            <line class="chart-grid" x1="56" y1="117" x2="618" y2="117"></line>
+                        <text class="chart-axis-label" x="46" y="121" text-anchor="end">10 350 %</text>
+                                            <line class="chart-grid" x1="56" y1="165.5" x2="618" y2="165.5"></line>
+                        <text class="chart-axis-label" x="46" y="169.5" text-anchor="end">5 175 %</text>
+                                            <line class="chart-grid" x1="56" y1="214" x2="618" y2="214"></line>
+                        <text class="chart-axis-label" x="46" y="218" text-anchor="end">0 %</text>
+                    
+                    <line class="chart-axis" x1="56" y1="214" x2="618" y2="214"></line>
+                    <polygon class="chart-area" points="56.0,214.0 56.0,45.3 243.3,45.3 430.7,45.3 618.0,45.3 618.0,214.0"></polygon>
+                    <polyline class="chart-line" points="56.0,45.3 243.3,45.3 430.7,45.3 618.0,45.3"></polyline>
+
+                                            <circle class="chart-point" cx="56" cy="45.3" r="4.5"></circle>
+                        <text class="chart-point-value" x="56" y="33.3">18 000 %</text>
+                        <text class="chart-point-label" x="56" y="238">Mois 3</text>
+                                            <circle class="chart-point" cx="243.3" cy="45.3" r="4.5"></circle>
+                        <text class="chart-point-value" x="243.3" y="33.3">18 000 %</text>
+                        <text class="chart-point-label" x="243.3" y="238">Mois 6</text>
+                                            <circle class="chart-point" cx="430.7" cy="45.3" r="4.5"></circle>
+                        <text class="chart-point-value" x="430.7" y="33.3">18 000 %</text>
+                        <text class="chart-point-label" x="430.7" y="238">Mois 9</text>
+                                            <circle class="chart-point" cx="618" cy="45.3" r="4.5"></circle>
+                        <text class="chart-point-value" x="618" y="33.3">18 000 %</text>
+                        <text class="chart-point-label" x="618" y="238">Mois 12</text>
+                                    </svg>
+                <div class="chart-footer">
+                    <span class="chart-footer-left">Depart projete: 18 000 %</span>
+                    <span class="chart-footer-right">Projection finale: 18 000 %</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Feuille de route d execution</h2>
+            <table class="phase-grid" role="presentation">
+                <tr>
+                                            <td>
+                            <div class="card phase-card">
+                                <p class="phase-horizon">Mois 1-3</p>
+                                <h3 class="phase-title">Diagnostic &amp; Lancement Rapide</h3>
+                                <p class="phase-copy">Audit des coûts actuels, identification des quick wins, lancement des premières optimisations techniques et contractuelles.</p>
+                            </div>
+                        </td>
+                                            <td>
+                            <div class="card phase-card">
+                                <p class="phase-horizon">Mois 4-8</p>
+                                <h3 class="phase-title">Intégration &amp; Négociation Avancée</h3>
+                                <p class="phase-copy">Déploiement des nouvelles rails de paiement, intégration approfondie des wallets, renégociation des contrats fournisseurs clés et optimisation des flux.</p>
+                            </div>
+                        </td>
+                                            <td>
+                            <div class="card phase-card">
+                                <p class="phase-horizon">Mois 9-12</p>
+                                <h3 class="phase-title">Optimisation &amp; Pérennisation</h3>
+                                <p class="phase-copy">Affinement des processus, mesure des gains finaux, documentation des bonnes pratiques et mise en place d&#039;un suivi continu des performances financières.</p>
+                            </div>
+                        </td>
+                                    </tr>
+            </table>
+        </section>
+
+        <section class="section">
+            <table class="dual-grid" role="presentation">
+                <tr>
+                    <td>
+                        <div class="section-box">
+                            <h2>Risques et points de vigilance</h2>
+                            <ul>
+                                                                    <li>Budget stratégie très limité (2 000 DT) pouvant freiner l&#039;accès à des expertises externes pointues ou à des outils d&#039;analyse de marché avancés.</li>
+                                                                    <li>Résistance des fournisseurs actuels à renégocier les tarifs ou à s&#039;adapter aux nouvelles exigences, impactant les gains estimés et les délais.</li>
+                                                                    <li>Complexité technique imprévue lors de l&#039;intégration des nouvelles rails de paiement ou des portefeuilles numériques, entraînant des dépassements de budget projet ou de planning.</li>
+                                                                    <li>Manque d&#039;alignement interne ou de ressources dédiées pour la mise en œuvre rapide des actions d&#039;optimisation.</li>
+                                                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="section-box">
+                            <h2>Contre-mesures recommandees</h2>
+                            <ul>
+                                                                    <li>Prioriser les actions à ROI rapide et faible coût, et capitaliser sur l&#039;expertise interne de l&#039;équipe projet FinPay Modernization pour compenser le budget stratégie restreint.</li>
+                                                                    <li>Préparer des scénarios de négociation alternatifs avec les fournisseurs, incluant des comparatifs de marché et des solutions de repli crédibles pour maximiser notre pouvoir de négociation.</li>
+                                                                    <li>Mettre en place une phase de preuve de concept (POC) rigoureuse pour les intégrations techniques complexes avant un déploiement à grande échelle, afin de valider la faisabilité et les coûts.</li>
+                                                                    <li>Désigner un chef de projet dédié à la stratégie d&#039;optimisation des coûts, avec des objectifs clairs et une allocation de temps suffisante pour coordonner les efforts internes et externes.</li>
+                                                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        <section class="section">
+            <h2>Plan d action recommande</h2>
+            <div class="section-box">
+                <ul>
+                                            <li>Lancer un audit détaillé des frais de transaction, de maintenance et des coûts cachés des infrastructures de paiement actuelles.</li>
+                                            <li>Identifier et évaluer au moins trois fournisseurs de rails de paiement alternatifs et de solutions de portefeuilles numériques offrant des conditions plus avantageuses.</li>
+                                            <li>Négocier de nouveaux termes contractuels avec les prestataires existants ou les nouveaux sélectionnés, en visant une réduction des coûts unitaires.</li>
+                                            <li>Développer un pilote pour l&#039;intégration d&#039;une nouvelle rail de paiement ou d&#039;un portefeuille numérique à coût réduit sur un segment spécifique.</li>
+                                            <li>Mettre en place un tableau de bord de suivi des coûts opérationnels liés aux paiements et des gains réalisés, accessible en temps réel.</li>
+                                    </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Indicateurs de pilotage</h2>
+            <table class="kpi-grid" role="presentation">
+                                    <tr>
+                                                    <td>
+                                                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">Réduction des coûts de transaction par volume</h3>
+                                        <p class="kpi-target">-15% des frais de transaction par rapport au T0</p>
+                                        <p class="kpi-cadence">Cadence: Mensuel</p>
+                                    </div>
+                                                            </td>
+                                                    <td>
+                                                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">Pourcentage d&#039;automatisation des processus de paiement</h3>
+                                        <p class="kpi-target">80% des tâches manuelles liées aux paiements éliminées</p>
+                                        <p class="kpi-cadence">Cadence: Trimestriel</p>
+                                    </div>
+                                                            </td>
+                                            </tr>
+                                    <tr>
+                                                    <td>
+                                                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">Économies réalisées sur les contrats fournisseurs</h3>
+                                        <p class="kpi-target">50 000 DT d&#039;économies annuelles identifiées et validées</p>
+                                        <p class="kpi-cadence">Cadence: Trimestriel</p>
+                                    </div>
+                                                            </td>
+                                                    <td>
+                                                                    <div class="card kpi-card">
+                                        <h3 class="kpi-name">Coût moyen par transaction</h3>
+                                        <p class="kpi-target">Réduction de 0.05 DT par transaction</p>
+                                        <p class="kpi-cadence">Cadence: Mensuel</p>
+                                    </div>
+                                                            </td>
+                                            </tr>
+                            </table>
+        </section>
+
+        <div class="footer">
+            Document genere le 17/04/2026 02:22 depuis Advisora.
+        </div>
+    </div>
+</body>
+</html>

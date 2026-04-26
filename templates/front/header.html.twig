@@ -2,6 +2,7 @@
 {% set is_shop_route = current_route starts with 'app_shop' %}
 {% set is_shop_catalog_route = current_route == 'app_shop' %}
 {% set is_shop_wallet_route = current_route == 'app_shop_wallet' %}
+{% set is_client_profile_route = current_route starts with 'client_profile_' %}
 {% set shop_cart = app.session.get('shop_cart', {}) %}
 {% set shop_checkout_draft = app.session.get('shop_checkout_draft', null) %}
 {% set shop_checkout_cart = app.session.get('shop_checkout_cart', {}) %}
@@ -110,11 +111,22 @@
         </div>
 
         <div class="header-utility-actions">
+            {% if app.user %}
+                {% include 'shared/notification_center.html.twig' with {variant: 'front'} %}
+            {% endif %}
             {% if app.user and app.user.getRoleUser() in ['admin', 'gerant'] %}
                 {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'front'} %}
             {% endif %}
 
             {% if app.user and app.user.getRoleUser() == 'client' %}
+                <a
+                    class="cart-btn shop-header-icon-link {{ is_client_profile_route ? 'is-active' : '' }}"
+                    href="{{ path('client_profile_show') }}"
+                    aria-label="Mon profil"
+                    title="Mon profil"
+                >
+                    <i class="fas fa-user"></i>
+                </a>
                 <a class="cart-btn shop-header-icon-link {{ shop_wallet_mode ? 'is-active' : '' }}" href="{{ path('app_shop_wallet') }}" aria-label="Afficher wallet" title="Wallet">
                     <i class="fas fa-wallet"></i>
                 </a>

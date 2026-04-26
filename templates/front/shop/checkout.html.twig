@@ -1,0 +1,346 @@
+{% extends 'base.html.twig' %}
+{# Checkout unitaire: validation achat d une seule annonce C2C + livraison + avis. #}
+
+{% block title %}Advisora | Checkout{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260424-01' }}">
+{% endblock %}
+
+{% block body %}
+    <div class="mini-shop-shell is-market-view mini-shop-checkout-page">
+        {% set product_images = product.images|default([]) %}
+        {% set primary_image = product_images|first %}
+        {% set primary_image_display = shop_image_url(primary_image, 'detail') %}
+        {% set order_total = (product.unitPrice * quantity)|number_format(3, '.', ' ') %}
+        {% set review_count = review_summary.review_count|default(0) %}
+        {% set rating_avg = review_summary.rating_avg|default(0) %}
+        {% set rating_floor = rating_avg|round(0, 'floor') %}
+
+        <section class="mini-shop-hero">
+            <div class="mini-shop-hero-copy">
+                <span class="mini-shop-kicker"><i class="fas fa-credit-card"></i> Checkout</span>
+                <h1>Finaliser votre commande</h1>
+                <p>Validation serveur Symfony: quantite, wallet, commande, livraison puis envoi Fiabilo.</p>
+                <div class="mini-shop-hero-actions">
+                    <a href="{{ path('app_shop_market_product', {'listingId': product.idListing}) }}" class="shop-btn shop-btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour produit
+                    </a>
+                    <a href="#shop-reviews" class="shop-btn shop-btn-ghost">
+                        <i class="fas fa-star"></i>
+                        Avis clients
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        {# Vue checkout unitaire: resume produit + formulaire Symfony/Fiabilo + avis client. #}
+        <section class="mini-shop-marketplace-layout mini-shop-checkout-layout">
+            <article class="mini-shop-panel mini-shop-checkout-summary-card">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Produit</span>
+                        <h2>{{ product.resource_name ?: 'Ressource' }}</h2>
+                        <p>Vendeur {{ product.seller_name ?: 'Client' }} · {{ product.supplier_name ?: 'Non renseigne' }}</p>
+                    </div>
+                    <div class="mini-shop-panel-chip">
+                        <span>Prix unitaire</span>
+                        <strong>{{ product.unitPrice|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-checkout-spotlight">
+                    <div class="mini-shop-checkout-spotlight-copy">
+                        <span class="mini-shop-checkout-spotlight-kicker">Controle Symfony</span>
+                        <h3>Commande prete pour validation serveur</h3>
+                        <p>La quantite, le wallet et la livraison sont verifies avant creation de la commande puis transmission Fiabilo.</p>
+                    </div>
+                    <div class="mini-shop-checkout-spotlight-metrics">
+                        <div>
+                            <span>Wallet</span>
+                            <strong>{{ wallet.balance|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+                        <div>
+                            <span>Total estime</span>
+                            <strong>{{ order_total }} coins</strong>
+                        </div>
+                        <div>
+                            <span>Disponible</span>
+                            <strong>{{ product.qtyRemaining }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mini-shop-review-summary-box">
+                    <div class="mini-shop-open-stars mini-shop-open-stars-strong">
+                        {% for star in 1..5 %}
+                            <i class="fas fa-star {{ star <= rating_floor ? 'is-on' : '' }}"></i>
+                        {% endfor %}
+                    </div>
+                    <p>
+                        <strong>{{ rating_avg|number_format(2, '.', ' ') }}/5</strong>
+                        <span>({{ review_count }} avis client{{ review_count > 1 ? 's' : '' }})</span>
+                    </p>
+                </div>
+
+                <div class="mini-shop-checkout-media {% if primary_image_display is empty %}is-placeholder{% endif %}">
+                    {% if primary_image_display is not empty %}
+                        <img src="{{ primary_image_display }}" alt="{{ product.resource_name ?: 'Ressource' }}">
+                    {% else %}
+                        <div class="mini-shop-market-media-fallback">
+                            <span>{{ (product.resource_name ?: 'R')|slice(0, 1)|upper }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mini-shop-cart-item-facts">
+                    <div>
+                        <span>Disponible</span>
+                        <strong>{{ product.qtyRemaining }}</strong>
+                    </div>
+                    <div>
+                        <span>Quantite checkout</span>
+                        <strong>{{ quantity }}</strong>
+                    </div>
+                    <div>
+                        <span>Total estime</span>
+                        <strong>{{ order_total }} coins</strong>
+                    </div>
+                    <div>
+                        <span>Solde wallet</span>
+                        <strong>{{ wallet.balance|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                    <div>
+                        <span>Taux coins</span>
+                        <strong>{{ wallet.coin_rate|default(10)|number_format(3, '.', ' ') }} / 1 money</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-checkout-flow">
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 1</span>
+                        <strong>Choisir quantite et projet</strong>
+                    </div>
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 2</span>
+                        <strong>Completer la livraison</strong>
+                    </div>
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 3</span>
+                        <strong>Valider la commande</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article class="mini-shop-panel mini-shop-checkout-form-card">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Livraison Fiabilo</span>
+                        <h2>Confirmer achat et expedition</h2>
+                        <p>Champs envoyes: prix, nom, gouvernerat, ville, adresse, cp, tel, tel2, designation, nb_article, msg.</p>
+                    </div>
+                </div>
+
+                {{ form_start(checkout_form, {'action': path('app_shop_market_buy'), 'attr': {'class': 'mini-shop-form mini-shop-grid mini-shop-checkout-form', 'novalidate': 'novalidate'}}) }}
+                    <input type="hidden" name="_redirect_page" value="checkout">
+                    <input type="hidden" name="listing_id" value="{{ product.idListing }}">
+
+                    {% if checkout_form.vars.errors|length > 0 %}
+                        <div class="mini-shop-form-errors" role="alert">
+                            {{ form_errors(checkout_form) }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mini-shop-checkout-form-intro">
+                        <i class="fas fa-shield-alt"></i>
+                        <p>Tous les champs de livraison sont controles cote Symfony avant creation de la commande.</p>
+                    </div>
+
+                    <div class="mini-shop-checkout-guardrail">
+                        <strong>Lecture simple pour la validation</strong>
+                        <p>Le formulaire est decoupe en deux blocs: parametres checkout puis coordonnees livraison, avec erreurs Symfony sous chaque champ si la saisie est invalide.</p>
+                    </div>
+
+                    <div class="mini-shop-checkout-section">
+                        <h3>Parametres checkout</h3>
+                        <div class="mini-shop-grid mini-shop-grid-two">
+                            <div class="mini-shop-field-group{{ checkout_form.quantity.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.quantity, 'Quantite') }}
+                                {{ form_widget(checkout_form.quantity, {'attr': {'id': 'checkout_quantity'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.quantity) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.project_id.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.project_id, 'Projet cible') }}
+                                {{ form_widget(checkout_form.project_id, {'attr': {'id': 'checkout_project_id'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.project_id) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.topup_provider.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.topup_provider, 'Fournisseur recharge auto') }}
+                                {{ form_widget(checkout_form.topup_provider, {'attr': {'id': 'checkout_topup_provider'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.topup_provider) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mini-shop-checkout-section">
+                        <h3>Coordonnees livraison</h3>
+                        <div class="mini-shop-grid mini-shop-grid-three mini-shop-checkout-grid">
+                            <div class="mini-shop-field-group{{ checkout_form.recipient_name.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.recipient_name, 'Destinataire') }}
+                                {{ form_widget(checkout_form.recipient_name, {'attr': {'id': 'checkout_recipient'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.recipient_name) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.governorate.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.governorate, 'Gouvernorat') }}
+                                {{ form_widget(checkout_form.governorate, {'attr': {'id': 'checkout_governorate'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.governorate) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.city.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.city, 'Ville') }}
+                                {{ form_widget(checkout_form.city, {'attr': {'id': 'checkout_city'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.city) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.postal_code.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.postal_code, 'Code postal') }}
+                                {{ form_widget(checkout_form.postal_code, {'attr': {'id': 'checkout_cp'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.postal_code) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.phone.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.phone, 'Telephone') }}
+                                {{ form_widget(checkout_form.phone, {'attr': {'id': 'checkout_phone'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.phone) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.phone2.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.phone2, 'Telephone 2') }}
+                                {{ form_widget(checkout_form.phone2, {'attr': {'id': 'checkout_phone2'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.phone2) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group mini-shop-field-span-2{{ checkout_form.address_line.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.address_line, 'Adresse') }}
+                                {{ form_widget(checkout_form.address_line, {'attr': {'id': 'checkout_address'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.address_line) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group mini-shop-field-span-3{{ checkout_form.delivery_note.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.delivery_note, 'Message livraison') }}
+                                {{ form_widget(checkout_form.delivery_note, {'attr': {'id': 'checkout_note'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.delivery_note) }}</div>
+                                <small class="mini-shop-field-help">Optionnel, utile pour faciliter la livraison.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mini-shop-form-actions mini-shop-checkout-actions">
+                        <button type="submit" class="shop-btn shop-btn-primary">
+                            <i class="fas fa-check-circle"></i>
+                            Confirmer achat
+                        </button>
+                    </div>
+                {{ form_end(checkout_form) }}
+            </article>
+        </section>
+
+        <section class="mini-shop-showcase" id="shop-reviews">
+            <div class="mini-shop-showcase-head">
+                <div>
+                    <span class="mini-panel-tag">Avis clients</span>
+                    <h2>Avis clients sur cette annonce</h2>
+                    <p>Chaque client connecte peut partager une note et un commentaire.</p>
+                </div>
+                <div class="mini-shop-panel-chip">
+                    <span>Note moyenne</span>
+                    <strong>{{ rating_avg|number_format(2, '.', ' ') }}/5</strong>
+                </div>
+            </div>
+
+            {% if client_review %}
+                <article class="mini-shop-panel mini-shop-review-cta-panel">
+                    <div class="mini-shop-panel-chip mini-shop-review-chip">
+                        <span>Votre avis</span>
+                        <strong>{{ client_review.stars }}/5 deja publie</strong>
+                    </div>
+                    {% if client_review.comment %}
+                        <p class="mini-shop-market-note">{{ client_review.comment }}</p>
+                    {% endif %}
+                </article>
+            {% else %}
+                <article class="mini-shop-panel mini-shop-review-cta-panel">
+                    <form method="post" action="{{ path('app_shop_review_submit') }}" class="mini-shop-form mini-shop-grid mini-shop-review-inline-form" novalidate>
+                        <input type="hidden" name="_token" value="{{ csrf_token('shop_review_submit') }}">
+                        <input type="hidden" name="_redirect_page" value="checkout">
+                        <input type="hidden" name="listing_id" value="{{ product.idListing }}">
+                        <input type="hidden" name="checkout_quantity" value="{{ quantity }}">
+                        {% if reviewable_order %}
+                            <input type="hidden" name="order_id" value="{{ reviewable_order.idOrder }}">
+                        {% endif %}
+
+                        <div class="mini-shop-panel-chip mini-shop-review-chip">
+                            <span>{{ reviewable_order ? 'Commande livree' : 'Avis client' }}</span>
+                            <strong>{{ reviewable_order ? ('Commande #' ~ reviewable_order.idOrder ~ ' liee a votre avis') : 'Ajoutez une note et un commentaire' }}</strong>
+                        </div>
+
+                        <div class="mini-shop-grid mini-shop-grid-two">
+                            <div class="mini-shop-field-group">
+                                <label for="checkout_review_stars">Note</label>
+                                <select id="checkout_review_stars" name="stars">
+                                    <option value="5">5 - Excellent</option>
+                                    <option value="4">4 - Tres bien</option>
+                                    <option value="3">3 - Correct</option>
+                                    <option value="2">2 - Faible</option>
+                                    <option value="1">1 - Mauvais</option>
+                                </select>
+                            </div>
+                            <div class="mini-shop-field-group">
+                                <label for="checkout_review_comment">Commentaire</label>
+                                <input
+                                    id="checkout_review_comment"
+                                    type="text"
+                                    name="comment"
+                                    placeholder="Votre avis sur cette annonce"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="mini-shop-form-actions">
+                            <button type="submit" class="shop-btn shop-btn-primary">
+                                <i class="fas fa-star"></i>
+                                Envoyer mon avis
+                            </button>
+                        </div>
+                    </form>
+                </article>
+            {% endif %}
+
+            <div class="mini-shop-review-list">
+                {% for review in reviews_page %}
+                    <article class="mini-shop-review-card">
+                        <div class="mini-shop-review-card-head">
+                            <div class="mini-shop-open-stars mini-shop-open-stars-strong">
+                                {% for star in 1..5 %}
+                                    <i class="fas fa-star {{ star <= review.stars ? 'is-on' : '' }}"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="mini-shop-review-date">{{ review.createdAt|date('Y-m-d H:i') }}</span>
+                        </div>
+                        <p class="mini-shop-review-author">{{ review.reviewer_name ?: 'Client' }}</p>
+                        {% if review.comment %}
+                            <p class="mini-shop-market-note">{{ review.comment }}</p>
+                        {% endif %}
+                    </article>
+                {% else %}
+                    <div class="mini-shop-empty-state mini-shop-empty-state-inline">
+                        <i class="fas fa-star"></i>
+                        <h3>Aucun avis client</h3>
+                        <p>Les premiers retours clients apparaitront ici.</p>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if reviews_page is defined %}
+                <div class="mini-shop-pagination-wrap">
+                    {{ knp_pagination_render(reviews_page) }}
+                </div>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

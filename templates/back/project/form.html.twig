@@ -5,6 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
 {% macro field(field) %}
@@ -27,18 +28,18 @@
             <div>
                 <span class="pm-badge">{{ page_badge|default('Back office') }}</span>
                 <h1>{{ page_title }}</h1>
-                <p>{{ page_message|default('Le propriétaire du projet est associé automatiquement à l utilisateur connecté.') }}</p>
+                <p>{{ page_message|default('Le propriÃ©taire du projet est associÃ© automatiquement Ã  l utilisateur connectÃ©.') }}</p>
             </div>
             <a class="pm-btn pm-btn-secondary" href="{{ project.id ? path(back_route|default('project_back_manage'), {id: project.id}) : path(back_route|default('project_index')) }}">Retour</a>
         </div>
 
         <div class="pm-form-card">
             <div class="pm-info-banner">
-                <strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignée à l enregistrement.' }}
+                <strong>Date de crÃ©ation :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignÃ©e Ã  l enregistrement.' }}
                 <br>
-                <strong>Dernière mise à jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
+                <strong>DerniÃ¨re mise Ã  jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
             </div>
-            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'project'}}) }}
+            {{ form_start(form, {attr: {novalidate: 'novalidate', 'data-skip-validation': 'true'}}) }}
                 {{ form_errors(form) }}
                 <div class="pm-form-grid">
                     {{ forms.field(form.title) }}
@@ -56,9 +57,4 @@
             {{ form_end(form) }}
         </div>
     </section>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('js/project-form-validation.js') }}"></script>
 {% endblock %}

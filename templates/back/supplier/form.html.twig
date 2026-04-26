@@ -5,10 +5,12 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260417-rs-v29">
 {% endblock %}
 
 {% macro field(field) %}
-    <div class="pm-field {% if field.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
+    <div class="pm-field rs-form-field {% if field.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
         {{ form_label(field) }}
         {{ form_widget(field) }}
         {% if field.vars.help %}
@@ -22,25 +24,32 @@
 
 {% block body %}
     {% import _self as forms %}
-    <section class="pm-admin-shell">
-        <div class="pm-admin-header">
-            <div>
-                <span class="pm-badge">{{ page_badge|default('Gestion fournisseur') }}</span>
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+        <div class="pm-admin-header rs-header">
+            <div class="rs-header-copy back-users-title">
+                <span class="pm-badge">Back office</span>
                 <h1>{{ page_title }}</h1>
                 <p>{{ page_message|default('Renseignez les informations du fournisseur.') }}</p>
             </div>
-            <a class="pm-btn pm-btn-secondary" href="{{ supplier.id ? path(back_route|default('supplier_back_manage'), {id: supplier.id}) : path('back_supplier_index') }}">Retour</a>
+            <div class="pm-card-actions rs-header-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ supplier.id ? path(back_route|default('supplier_back_manage'), {id: supplier.id}) : path('back_supplier_index') }}">Retour</a>
+            </div>
         </div>
 
-        <div class="pm-form-card">
-            <div class="pm-info-banner">
-                <strong>Etat fournisseur :</strong> {{ supplier.id ? supplier.getStatusLabel() : 'Sera determine apres enregistrement.' }}
-                <br>
-                <strong>Ressources rattachees :</strong> {{ supplier.id ? supplier.resources|length : 0 }}
+        <section class="pm-form-card rs-panel rs-form-panel">
+            <div class="pm-section-head rs-panel-head">
+                <div>
+                    <h2>Saisie</h2>
+                    <p>Informations generales et coordonnees du fournisseur.</p>
+                </div>
             </div>
-            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'supplier'}}) }}
+            <div class="rs-form-meta">
+                <span><strong>Etat fournisseur :</strong> {{ supplier.id ? supplier.getStatusLabel() : 'Sera determine apres enregistrement.' }}</span>
+                <span><strong>Ressources rattachees :</strong> {{ supplier.id ? supplier.resources|length : 0 }}</span>
+            </div>
+            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form rs-form', 'data-validation-form': 'supplier'}}) }}
                 {{ form_errors(form) }}
-                <div class="pm-form-grid">
+                <div class="rs-form-grid">
                     {{ forms.field(form.nomFr) }}
                     {{ forms.field(form.quantite) }}
                     {{ forms.field(form.fournisseur) }}
@@ -48,12 +57,12 @@
                     {{ forms.field(form.localisationFr) }}
                     {{ forms.field(form.numTelFr) }}
                 </div>
-                <div class="pm-form-actions">
-                    {{ form_row(form.save) }}
+                <div class="pm-form-actions rs-form-actions">
+                    {{ form_widget(form.save, {attr: {class: 'pm-btn pm-btn-primary'}}) }}
                     <a class="pm-btn pm-btn-secondary" href="{{ supplier.id ? path(back_route|default('supplier_back_manage'), {id: supplier.id}) : path('back_supplier_index') }}">Annuler</a>
                 </div>
             {{ form_end(form) }}
-        </div>
+        </section>
     </section>
 {% endblock %}
 

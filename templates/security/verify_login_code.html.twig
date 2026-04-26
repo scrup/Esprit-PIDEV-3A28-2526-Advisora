@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Vérification{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+<section class="pm-login-shell">
+    <div class="pm-login-card">
+        <span class="pm-badge">Double vérification</span>
+        <h1>Vérifiez votre connexion</h1>
+        <p style="margin-bottom: 16px; color: #6b7280;">
+            Un code de sécurité a été envoyé à <strong>{{ email }}</strong>.
+        </p>
+
+        {% for message in app.flashes('success') %}
+            <div class="flash-message flash-success">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="flash-message flash-error">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post" class="pm-login-form" novalidate>
+            <label for="code">Code de vérification</label>
+            <input
+                type="text"
+                id="code"
+                name="code"
+                inputmode="numeric"
+                maxlength="6"
+                placeholder="Entrez le code à 6 chiffres"
+                autocomplete="one-time-code"
+            >
+
+            <button class="pm-btn pm-btn-primary pm-btn-block" type="submit">
+                Vérifier et se connecter
+            </button>
+        </form>
+
+        <form method="post" action="{{ path('app_login_resend_code') }}" style="margin-top: 12px;">
+            <button class="pm-btn pm-btn-secondary pm-btn-block" type="submit">
+                Renvoyer le code
+            </button>
+        </form>
+
+        <div style="margin-top: 12px; text-align: center;">
+            <a href="{{ path('app_login_cancel_otp') }}">Retour à la connexion</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

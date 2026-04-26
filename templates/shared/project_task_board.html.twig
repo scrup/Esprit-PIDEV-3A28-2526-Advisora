@@ -1,0 +1,159 @@
+<article class="pm-card pm-card-large pm-task-shell" data-task-board="{{ can_move_tasks ? 'enabled' : 'readonly' }}">
+    <div class="pm-task-hero">
+        <div class="pm-task-hero-copy">
+            <span class="pm-task-board-badge">Task workspace</span>
+            <h2>Taches du projet</h2>
+            <p class="pm-section-text">
+                Organisez les taches dans un kanban clair et deplacez-les entre les colonnes pour suivre l avancement du projet.
+                {% if can_move_tasks %}Glissez-deposez une carte pour changer son statut instantanement.{% endif %}
+            </p>
+        </div>
+        <div class="pm-task-stats">
+            <div class="pm-task-stat-card">
+                <span class="pm-task-stat-label">Tasks</span>
+                <strong class="pm-task-stat-value">{{ task_board.total }}</strong>
+                <span class="pm-task-stat-note">sur ce projet</span>
+            </div>
+            <div class="pm-task-stat-card">
+                <span class="pm-task-stat-label">Progress</span>
+                <strong class="pm-task-stat-value">{{ task_board.progress|number_format(0, '.', ' ') }}%</strong>
+                <span class="pm-task-stat-note">ponderee</span>
+            </div>
+        </div>
+    </div>
+
+    {% if task_readonly_hint %}
+        <div class="pm-info-banner">
+            <strong>Lecture seule :</strong> {{ task_readonly_hint }}
+        </div>
+    {% endif %}
+
+    <div class="pm-task-progress-card">
+        <div class="pm-task-progress-meta">
+            <div>
+                <span class="pm-task-progress-kicker">Project progress</span>
+                <strong>{{ task_board.progress|number_format(2, '.', ' ') }}%</strong>
+            </div>
+            <span class="pm-task-progress-caption">Based on completed task weight</span>
+        </div>
+        <div class="pm-progress-track">
+            <span class="pm-progress-bar" style="width: {{ task_board.progress|number_format(2, '.', ' ') }}%;"></span>
+        </div>
+        <div class="pm-task-counter-row">
+            <span>To Do : {{ task_board.counts['TODO']|default(0) }}</span>
+            <span>In Progress : {{ task_board.counts['IN_PROGRESS']|default(0) }}</span>
+            <span>Done : {{ task_board.counts['DONE']|default(0) }}</span>
+        </div>
+    </div>
+
+    <div class="pm-task-board-layout">
+        <div class="pm-task-columns">
+            {% for status, label in {'TODO': 'To Do', 'IN_PROGRESS': 'In Progress', 'DONE': 'Done'} %}
+                <section class="pm-task-column pm-task-column-{{ status|lower }}" data-task-column="{{ status }}">
+                    <header class="pm-task-column-head">
+                        <div>
+                            <h3>{{ label }}</h3>
+                            <span class="pm-task-column-count" data-task-count>{{ task_board.counts[status]|default(0) }} tache(s)</span>
+                        </div>
+                        <span class="pm-task-column-dot"></span>
+                    </header>
+
+                    <div class="pm-task-list" data-task-dropzone="{{ status }}">
+                        {% for task in task_board.columns[status]|default([]) %}
+                            <article
+                                class="pm-task-card {% if editing_task and editing_task.id == task.id %}pm-task-card-active{% endif %}"
+                                data-task-card
+                                data-task-id="{{ task.id }}"
+                                data-task-status="{{ task.getNormalizedStatus() }}"
+                                data-move-url="{{ path('project_task_move', {id: project.id, taskId: task.id}) }}"
+                                data-move-token="{{ csrf_token('move_task_' ~ project.id ~ '_' ~ task.id) }}"
+                                draggable="{{ can_move_tasks ? 'true' : 'false' }}"
+                            >
+                                <span class="pm-task-card-accent pm-task-card-accent-{{ task.statusCssClass }}"></span>
+                                <div class="pm-task-card-head">
+                                    <span class="pm-task-status pm-task-status-{{ task.statusCssClass }}">{{ task.statusLabel }}</span>
+                                    <span class="pm-task-weight">Poids {{ task.weight }}</span>
+                                </div>
+                                <strong class="pm-task-title">{{ task.title }}</strong>
+                                <div class="pm-task-card-meta">
+                                    <span>Task #{{ task.id }}</span>
+                                    {% if task.created_at %}
+                                        <span>Updated {{ task.created_at|date('d/m/Y') }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="pm-task-card-footer">
+                                    <span class="pm-task-drag-hint">
+                                        {% if can_move_tasks %}
+                                            Glisser pour changer le statut
+                                        {% else %}
+                                            Lecture seule
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <div class="pm-card-actions pm-task-card-actions">
+                                    {% if can_manage_tasks %}
+                                        <a class="pm-btn pm-btn-secondary pm-task-edit-btn" href="{{ path(management_route, {id: project.id, task: task.id}) }}">Modifier</a>
+                                        <form method="post" action="{{ path('project_task_delete', {id: project.id, taskId: task.id}) }}" onsubmit="return confirm('Supprimer cette tache ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_task_' ~ project.id ~ '_' ~ task.id) }}">
+                                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                                        </form>
+                                    {% elseif can_move_tasks %}
+                                        <button class="pm-btn pm-btn-secondary" type="button" disabled>Statut uniquement</button>
+                                    {% else %}
+                                        <button class="pm-btn pm-btn-secondary" type="button" disabled>Lecture seule</button>
+                                    {% endif %}
+                                </div>
+                            </article>
+                        {% else %}
+                            <p class="pm-empty-text" data-task-empty>Aucune tache dans cette colonne.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+        </div>
+
+        {% if can_manage_tasks %}
+            <section class="pm-task-form-panel">
+                <div class="pm-task-form-head">
+                    <div>
+                        <span class="pm-task-form-kicker">{{ editing_task ? 'Editing mode' : 'Create task' }}</span>
+                        <h3>{{ editing_task ? 'Modifier la tache' : 'Ajouter une tache' }}</h3>
+                        <p class="pm-section-text pm-task-form-text">
+                            {{ editing_task ? 'Mettez a jour la tache selectionnee puis enregistrez les changements.' : 'Ajoutez une nouvelle tache pour ce projet.' }}
+                        </p>
+                    </div>
+                    {% if editing_task %}
+                        <a class="pm-btn pm-btn-secondary pm-task-form-cancel" href="{{ path(management_route, {id: project.id}) }}">Reset</a>
+                    {% endif %}
+                </div>
+
+                {{ form_start(task_form, { attr: { novalidate: 'novalidate' } }) }}
+                    <input type="hidden" name="task_id" value="{{ editing_task ? editing_task.id : '' }}">
+                    {{ form_errors(task_form) }}
+                    <div class="pm-task-form-grid">
+                        <div class="pm-field {% if task_form.title.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
+                            {{ form_label(task_form.title) }}
+                            {{ form_widget(task_form.title) }}
+                            <div class="pm-field-errors">{{ form_errors(task_form.title) }}</div>
+                        </div>
+                        <div class="pm-field {% if task_form.status.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
+                            {{ form_label(task_form.status) }}
+                            {{ form_widget(task_form.status) }}
+                            <div class="pm-field-errors">{{ form_errors(task_form.status) }}</div>
+                        </div>
+                        <div class="pm-field {% if task_form.weight.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
+                            {{ form_label(task_form.weight) }}
+                            {{ form_widget(task_form.weight) }}
+                            <div class="pm-field-errors">{{ form_errors(task_form.weight) }}</div>
+                        </div>
+                    </div>
+                    <div class="pm-form-actions pm-task-form-actions">
+                        {{ form_row(task_form.save) }}
+                    </div>
+                {{ form_end(task_form) }}
+            </section>
+        {% endif %}
+    </div>
+</article>

@@ -5,13 +5,17 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Repository\UserRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-use App\Repository\UserRepository;
-
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'user')]
+#[UniqueEntity(fields: ['NumTelUser'], message: 'Ce numero de telephone existe deja.')]
+#[UniqueEntity(fields: ['EmailUser'], message: 'Cet email existe deja.')]
+#[UniqueEntity(fields: ['cin'], message: 'Ce CIN existe deja.')]
+
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -408,6 +412,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'user')]
+    private Collection $bookings;
+
+    /**
+     * @return Collection<int, Booking>
+     */
+    public function getBookings(): Collection
+    {
+        if (!$this->bookings instanceof Collection) {
+            $this->bookings = new ArrayCollection();
+        }
+        return $this->bookings;
+    }
+
+    public function addBooking(Booking $booking): self
+    {
+        if (!$this->getBookings()->contains($booking)) {
+            $this->getBookings()->add($booking);
+        }
+        return $this;
+    }
+
+    public function removeBooking(Booking $booking): self
+    {
+        $this->getBookings()->removeElement($booking);
+        return $this;
+    }
+
     #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'user')]
     private Collection $projects;
 
@@ -467,6 +499,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Userlog::class, mappedBy: 'user')]
     private Collection $userlogs;
 
+    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'recipient')]
+    private Collection $receivedNotifications;
+
     /**
      * @return Collection<int, Userlog>
      */
@@ -489,6 +524,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeUserlog(Userlog $userlog): self
     {
         $this->getUserlogs()->removeElement($userlog);
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getReceivedNotifications(): Collection
+    {
+        if (!$this->receivedNotifications instanceof Collection) {
+            $this->receivedNotifications = new ArrayCollection();
+        }
+
+        return $this->receivedNotifications;
+    }
+
+    public function addReceivedNotification(Notification $notification): self
+    {
+        if (!$this->getReceivedNotifications()->contains($notification)) {
+            $this->getReceivedNotifications()->add($notification);
+            $notification->setRecipient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReceivedNotification(Notification $notification): self
+    {
+        if ($this->getReceivedNotifications()->removeElement($notification) && $notification->getRecipient() === $this) {
+            $notification->setRecipient(null);
+        }
+
         return $this;
     }
 

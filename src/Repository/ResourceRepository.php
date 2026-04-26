@@ -81,4 +81,19 @@ class ResourceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function existsByName(string $name, ?int $excludeId = null): bool
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->select('COUNT(r.idRs)')
+            ->andWhere('LOWER(r.nomRs) = LOWER(:name)')
+            ->setParameter('name', trim($name));
+
+        if ($excludeId !== null) {
+            $qb->andWhere('r.idRs <> :excludeId')
+                ->setParameter('excludeId', $excludeId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
 }

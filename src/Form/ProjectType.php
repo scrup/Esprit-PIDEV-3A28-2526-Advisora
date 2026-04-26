@@ -12,7 +12,9 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice as AssertChoice;
 use Symfony\Component\Validator\Constraints\GreaterThan;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ProjectType extends AbstractType
@@ -30,6 +32,12 @@ class ProjectType extends AbstractType
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Le titre du projet est requis.']),
+                    new Length([
+                        'min' => 3,
+                        'minMessage' => 'Le titre du projet doit contenir au moins 3 caracteres.',
+                        'max' => 160,
+                        'maxMessage' => 'Le titre du projet ne doit pas depasser 160 caracteres.',
+                    ]),
                 ],
             ])
             ->add('legacyType', TextType::class, [
@@ -42,6 +50,12 @@ class ProjectType extends AbstractType
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'Le type du projet est requis.']),
+                    new Length([
+                        'min' => 2,
+                        'minMessage' => 'Le type du projet doit contenir au moins 2 caracteres.',
+                        'max' => 100,
+                        'maxMessage' => 'Le type du projet ne doit pas depasser 100 caracteres.',
+                    ]),
                 ],
             ])
             ->add('legacyBudget', NumberType::class, [
@@ -55,10 +69,10 @@ class ProjectType extends AbstractType
                     'step' => '0.01',
                     'data-validation-label' => 'Budget',
                 ],
-                'help' => 'Si vous saisissez un budget, il doit être strictement supérieur à 0.',
+                'help' => 'Si vous saisissez un budget, il doit Ãªtre strictement supÃ©rieur Ã  0.',
                 'constraints' => [
                     new NotBlank(['message' => 'Le budget est requis.']),
-                    new GreaterThan(['value' => 0, 'message' => 'Le budget doit être strictement supérieur à 0.']),
+                    new GreaterThan(['value' => 0, 'message' => 'Le budget doit Ãªtre strictement supÃ©rieur Ã  0.']),
                 ],
             ])
             ->add('description', TextareaType::class, [
@@ -66,23 +80,29 @@ class ProjectType extends AbstractType
                 'required' => true,
                 'attr' => [
                     'rows' => 5,
-                    'placeholder' => 'Décrivez l objectif du projet, son contexte et ses priorités.',
+                    'placeholder' => 'DÃ©crivez l objectif du projet, son contexte et ses prioritÃ©s.',
                     'maxlength' => 2000,
                     'data-validation-label' => 'Description',
                 ],
                 'constraints' => [
                     new NotBlank(['message' => 'La description est requise.']),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'La description doit contenir au moins 10 caracteres.',
+                        'max' => 2000,
+                        'maxMessage' => 'La description ne doit pas depasser 2000 caracteres.',
+                    ]),
                 ],
             ])
             ->add('startDate', DateType::class, [
-                'label' => 'Date de création',
+                'label' => 'Date de crÃ©ation',
                 'required' => false,
                 'widget' => 'single_text',
                 'disabled' => true,
                 'attr' => [
-                    'data-validation-label' => 'Date de création',
+                    'data-validation-label' => 'Date de crÃ©ation',
                 ],
-                'help' => 'Date technique de création du projet, renseignée automatiquement.',
+                'help' => 'Date technique de crÃ©ation du projet, renseignÃ©e automatiquement.',
             ]);
 
         if ($options['include_status']) {
@@ -94,9 +114,13 @@ class ProjectType extends AbstractType
                 'attr' => [
                     'data-validation-label' => 'Statut',
                 ],
-                'help' => 'État actuel du projet dans la plateforme.',
+                'help' => 'Ã‰tat actuel du projet dans la plateforme.',
                 'constraints' => [
                     new NotBlank(['message' => 'Le statut du projet est requis.']),
+                    new AssertChoice([
+                        'choices' => array_keys(Project::STATUSES),
+                        'message' => 'Le statut du projet selectionne est invalide.',
+                    ]),
                 ],
             ]);
         }

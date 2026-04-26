@@ -1,0 +1,330 @@
+header:
+  ticker:
+    subtitle: "Tunisian Dinar (TND) - Live exchange rates"
+  logo:
+    alt: "Advisora Logo"
+    subtitle: "Strategic consulting and monitoring"
+  nav:
+    aria: "Main navigation"
+    home: "Home"
+    shop: "Shop"
+    project: "Project"
+    investments: "Investments"
+    events: "Events"
+    resources: "Resources"
+    solutions: "Solutions"
+    why_us: "Why choose us?"
+    reviews: "Testimonials"
+  auth:
+    login: "Login"
+    logout: "Logout"
+    get_started: "Get Started"
+  lang:
+    fr: "French"
+    en: "English"
+
+cart:
+  open: "Open cart"
+  title: "My cart"
+  empty: "Your cart is empty"
+  total: "Total"
+  checkout: "Proceed to checkout ->"
+
+home:
+  meta:
+    title: "Advisora | Smart financial consulting"
+
+  common:
+    learn_more: "Learn more →"
+
+  hero:
+    badge: "Next-generation financial consulting"
+    title: "Informed decisions for sustainable growth"
+    description: "Combine the power of AI with human expertise to turn your data into concrete opportunities."
+    cta: "Discover our solutions"
+    image_alt: "Financial analysis"
+    floating_card: "Average performance +32%"
+    stats:
+      assets: "Assets under advisory"
+      clients: "Satisfied clients"
+      awards: "Excellence awards"
+
+  about:
+    title: "Who are we?"
+    intro: "We are here to guide you and achieve your financial goals with excellence and integrity."
+    description: "Founded in 2012, Advisora is a next-generation financial consulting firm that combines cutting-edge technology with human expertise. Our mission: democratize access to premium financial advice through artificial intelligence and predictive analytics."
+    commitment_title: "Our commitment"
+    commitment_text: "Support every client with transparency, innovation, and measurable results."
+    image_alt: "Our team"
+    badge: "+42% average client ROI"
+    stats:
+      experience: "years of expertise"
+      companies: "companies supported"
+      rating: "average client rating"
+
+  solutions:
+    title_before: "Smart solutions for"
+    title_highlight: "growth"
+    subtitle: "From predictive modeling to risk management — we help you succeed."
+    cards:
+      analytics:
+        title: "Smart analytics"
+        text: "Interactive dashboards with real-time KPI tracking and market signals."
+      ai:
+        title: "AI strategy engine"
+        text: "Tailor-made investment strategies powered by machine learning."
+      risk:
+        title: "Risk & compliance"
+        text: "Proactive risk assessment and automated regulatory compliance tools."
+      wealth:
+        title: "Wealth acceleration"
+        text: "Portfolio optimization for high-net-worth clients with tax-efficient models."
+
+  whyus:
+    title_before: "Why"
+    title_highlight: "choose us?"
+    subtitle: "Discover the measurable impact of our support on your financial performance."
+    cards:
+      performance:
+        title: "Proven performance"
+        text: "Our clients see an average improvement of <strong>+42%</strong> in profitability within the first 12 months."
+      time:
+        title: "Valuable time savings"
+        text: "Analytics automation reduces time spent on financial reporting by <strong>70%</strong>."
+      security:
+        title: "Maximum security"
+        text: "Bank-level data protection and certified GDPR compliance."
+    charts:
+      roi:
+        title: "Projected ROI growth"
+        note: "With Advisora vs traditional strategy - 5-year projection"
+      risk:
+        title: "Risk reduction"
+        note: "Decrease in portfolio volatility after support"
+    predictions:
+      roi: "Average return on investment"
+      success: "Strategic success rate"
+      recommend: "Clients who recommend us"
+
+  reviews:
+    title_before: "What our"
+    title_highlight: "clients say"
+    subtitle: "Authentic feedback from leaders who trusted us."
+    cards:
+      elena:
+        quote: "“Advisora transformed our asset allocation. Real-time alerts and AI insights gave us a clear competitive advantage.”"
+        role: "CFO, FinCore"
+      james:
+        quote: "“Exceptional strategic tools. Our ROI increased by 27% in 6 months thanks to their dashboard and personalized recommendations.”"
+        role: "Strategy Director"
+      priya:
+        quote: "“Modern, elegant, and incredibly insightful. Predictive analytics helped us avoid major losses and optimize our investments.”"
+        role: "Investment Director"
+
+  cta:
+    title: "Ready to transform your financial approach?"
+    text: "Join the companies that trust Advisora for sustainable, high-performance growth."
+    button: "Schedule a demo →"
+shop:
+  meta:
+    title: "Advisora | Shop"
+  hero:
+    badge: "Advisora Shop"
+    title_before: "Financial tools"
+    title_highlight: "tailored to you"
+    description: "Discover our selection of products and services to optimize your investments and drive your growth."
+    image_alt: "Shopping experience"
+    floating_card: "Instant delivery"
+  section:
+    title_before: "Our"
+    title_highlight: "products"
+    subtitle: "Solutions designed to meet your financial needs"
+  filters:
+    all: "All"
+    analytics: "Analytics"
+    strategy: "Strategies"
+    training: "Training"
+back:
+  dashboard:
+    meta:
+      title: "Advisora | Dashboard"
+    hero:
+      eyebrow: "Executive dashboard"
+      title: "Back-office control center"
+      description: "Track projects, strategies, events, resources, and investments from a single control view."
+    search:
+      aria: "Search"
+      placeholder: "Search for a module or an indicator"
+    today: "Today"
+    user_area: "Back office"
+
+    cards:
+      active_projects:
+        label: "Active projects"
+        meta: "accepted"
+      pending_projects:
+        label: "Pending projects"
+        meta: "rejected"
+      decisions:
+        label: "Decisions made"
+        meta: "Global history"
+      volume:
+        label: "Committed volume"
+        meta: "investment(s)"
+
+    strategy_analysis:
+      eyebrow: "Strategic analysis"
+      title: "Strategic performance"
+      description: "Visualization of accepted strategies and consolidated success rate."
+      accepted: "accepted"
+      refused: "rejected"
+      success: "success"
+      empty_title: "No series available"
+      empty_text: "The chart will appear once an accepted strategy has a usable validation date."
+
+    investment_summary:
+      eyebrow: "Investment summary"
+      title: "Committed portfolio"
+      max: "max"
+      tiles:
+        investments: "Investments"
+        events: "Upcoming events"
+        resources_available: "Available resources"
+        resources_linked: "Linked resources"
+
+    allocation:
+      eyebrow: "Distribution"
+      title: "Investment allocation"
+      empty: "No investment data available."
+
+    projects:
+      eyebrow: "Projects"
+      title: "Recent projects"
+      link: "See all"
+      progress: "Progress"
+      empty: "No recent project."
+
+    decisions:
+      eyebrow: "Decisions"
+      title: "Latest decisions"
+      link: "History"
+      empty: "No recent decision."
+
+    events:
+      eyebrow: "Events"
+      title: "Upcoming events"
+      link: "Calendar"
+      start: "Start"
+      empty: "No event scheduled."
+
+    resources:
+      eyebrow: "Resources"
+      title: "Recent resources"
+      link: "Open"
+      stock: "Stock"
+      empty: "No recent resource."
+footer:
+  logo_alt: "Advisora Logo"
+  brand_text: "Intelligent financial ecosystem<br>© 2026 All rights reserved"
+  platform:
+    title: "Platform"
+    links: "Analytics<br>Strategies<br>API Access<br>Pricing"
+  resources:
+    title: "Resources"
+    links: "Blog<br>Case studies<br>Webinars<br>Documentation"
+  newsletter:
+    title: "Newsletter"
+    placeholder: "Your business email"
+    button: "Subscribe"
+    note: "Receive our weekly insights, no spam."
+project:
+  meta:
+    title: "Advisora | Projects"
+
+  hero:
+    badge: "Project Management"
+    title: "Track Advisora's strategic projects"
+    description_client: "View only your projects and the decisions made on your initiatives."
+    description_all: "View project status and the decisions made for each initiative."
+    add: "Add a project"
+    login_manage: "Log in to manage"
+
+  filters:
+    search: "Search"
+    search_placeholder: "Title, description, type, status, or ID..."
+    status: "Status"
+    type: "Type"
+    all: "All"
+    min_budget: "Min budget"
+    max_budget: "Max budget"
+    min: "Min"
+    max: "Max"
+    apply: "Filter"
+    reset: "Reset"
+
+  card:
+    project_number: "Project"
+    no_description: "No description for this project."
+    type: "Type"
+    budget: "Budget"
+    creation: "Created"
+    not_specified: "Not specified"
+    not_specified_female: "Not specified"
+    decisions: "decision(s)"
+
+  strategies:
+    badge: "Proposed strategies"
+    text: "Review the strategies linked to this project and, for the owning client, choose whether to accept or reject them."
+
+  playbook:
+    language: "Playbook language"
+    choose_language: "Choose playbook language"
+    french: "French"
+    english: "English"
+    download: "Download playbook"
+    generating: "Generating..."
+    download_simple: "Download"
+
+  strategy:
+    rejection_reason: "Reason for rejection"
+    rejected_client: "This strategy was rejected by the client."
+    approved_client: "This strategy was accepted by the client."
+    pending_client_decision: "Waiting for the client's decision."
+    confirmed: "Decision confirmed."
+    already_saved: "Your choice has already been saved for this strategy."
+    confirm_accept: "Confirm acceptance of this strategy? This decision will be final."
+    accept: "Accept"
+    reject: "Reject"
+    confirm_reject: "Confirm rejection of this strategy? This decision will be final."
+    justification_required: "Justification required"
+    justification_placeholder: "Explain why this strategy should be rejected."
+    justification_help: "The rejection reason must be between 10 and 255 characters."
+    confirm_reject_button: "Confirm rejection"
+    type: "Type"
+    duration: "Duration"
+    months: "months"
+    budget: "Budget"
+    estimated_gain: "Estimated gain"
+    objectives: "Objectives"
+
+  actions:
+    view_detail: "View details"
+    manage: "Manage"
+    process: "Process"
+
+  empty:
+    title: "No project yet"
+    text: "Start by creating your first strategic project from the projects area."
+
+  js:
+    invalid_json: "The server returned a non-JSON response"
+    launch_error: "Unable to start PDF generation"
+    failed: "PDF generation failed."
+    unexpected: "Unexpected PDF response."
+    error: "Error"
+    fr_loading: "Generation en cours..."
+    fr_html: "Open printable version"
+    fr_pdf: "Download PDF"
+    en_loading: "Generating playbook..."
+    en_html: "Open printable version"
+    en_pdf: "Download PDF"

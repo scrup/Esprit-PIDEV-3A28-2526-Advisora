@@ -5,6 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
 {% macro field(field) %}
@@ -47,6 +48,9 @@
                     {{ forms.field(form.capaciteEvnt) }}
                     {{ forms.field(form.startDateEv) }}
                     {{ forms.field(form.endDateEv) }}
+                    {{ forms.field(form.price) }}
+                    {{ forms.field(form.latitude) }}
+                    {{ forms.field(form.longitude) }}
                 </div>
                 {{ forms.field(form.descriptionEv) }}
                 <div class="pm-form-actions">

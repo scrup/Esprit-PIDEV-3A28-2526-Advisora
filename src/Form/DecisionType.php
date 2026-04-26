@@ -12,6 +12,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class DecisionType extends AbstractType
@@ -44,42 +46,56 @@ class DecisionType extends AbstractType
 
         $builder
             ->add('decisionTitle', ChoiceType::class, [
-                'label' => 'Statut de la décision',
+                'label' => 'Statut de la dÃ©cision',
                 'required' => true,
                 'choices' => [
                     'En attente' => Decision::STATUS_PENDING,
-                    'Accepté' => Decision::STATUS_ACTIVE,
-                    'Refusé' => Decision::STATUS_REFUSED,
+                    'AcceptÃ©' => Decision::STATUS_ACTIVE,
+                    'RefusÃ©' => Decision::STATUS_REFUSED,
                 ],
-                'placeholder' => 'Choisir une décision',
+                'placeholder' => 'Choisir une dÃ©cision',
                 'attr' => [
-                    'data-validation-label' => 'Statut de la décision',
+                    'data-validation-label' => 'Statut de la dÃ©cision',
                 ],
-                'help' => 'Choisissez si le projet reste en attente, est accepté ou est refusé.',
+                'help' => 'Choisissez si le projet reste en attente, est acceptÃ© ou est refusÃ©.',
                 'constraints' => [
-                    new NotBlank(['message' => 'Le statut de la décision est requis.']),
+                    new NotBlank(['message' => 'Le statut de la dÃ©cision est requis.']),
+                    new Choice([
+                        'choices' => [
+                            Decision::STATUS_PENDING,
+                            Decision::STATUS_ACTIVE,
+                            Decision::STATUS_REFUSED,
+                        ],
+                        'message' => 'Le statut de la decision selectionne est invalide.',
+                    ]),
                 ],
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Justification de la décision',
+                'label' => 'Justification de la dÃ©cision',
                 'required' => true,
                 'attr' => [
                     'rows' => 5,
-                    'placeholder' => 'Expliquez pourquoi le projet est accepté, refusé ou laissé en attente.',
+                    'placeholder' => 'Expliquez pourquoi le projet est acceptÃ©, refusÃ© ou laissÃ© en attente.',
                     'maxlength' => 2000,
-                    'data-validation-label' => 'Justification de la décision',
+                    'data-validation-label' => 'Justification de la dÃ©cision',
                 ],
                 'constraints' => [
-                    new NotBlank(['message' => 'La justification de la décision est requise.']),
+                    new NotBlank(['message' => 'La justification de la dÃ©cision est requise.']),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'La justification doit contenir au moins 10 caracteres.',
+                        'max' => 2000,
+                        'maxMessage' => 'La justification ne doit pas depasser 2000 caracteres.',
+                    ]),
                 ],
             ])
             ->add('decisionDate', DateType::class, [
-                'label' => 'Date de décision',
+                'label' => 'Date de dÃ©cision',
                 'required' => true,
                 'widget' => 'single_text',
                 'disabled' => true,
                 'attr' => [
-                    'data-validation-label' => 'Date de décision',
+                    'data-validation-label' => 'Date de dÃ©cision',
                 ],
             ])
             ->add('save', SubmitType::class, [
@@ -94,7 +110,7 @@ class DecisionType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Decision::class,
-            'submit_label' => 'Enregistrer la décision',
+            'submit_label' => 'Enregistrer la dÃ©cision',
             'project' => null,
         ]);
 

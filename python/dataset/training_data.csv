@@ -1,0 +1,114 @@
+budgetProj,typeProj,avancementProj,stateProj,descriptionProj,nomStrategie
+4200,E-commerce,5,PENDING,Améliorer la visibilité de la boutique et attirer de nouveaux clients,Pénétration de marché
+4800,Service,8,PENDING,Mettre en place un programme de fidélisation avec points et récompenses,Fidélisation client
+5300,E-commerce,12,PENDING,Automatiser le réassort et la gestion des stocks pour gagner en efficacité,Optimisation opérationnelle
+5900,Service,15,PENDING,Réduire les coûts de livraison en renégociant les contrats transporteurs,Réduction des coûts
+6200,E-commerce,10,PENDING,Refonte du parcours utilisateur pour augmenter le taux de conversion,Expérience utilisateur premium
+6800,Service,20,PENDING,Standardiser les processus pour devenir le moins cher du marché,Low-cost / domination par les coûts
+7100,E-commerce,18,PENDING,Déployer un CRM et automatiser les campagnes email,Transformation digitale
+7500,Service,22,PENDING,Sous-traiter la gestion administrative et la paie à un prestataire,Externalisation stratégique
+8200,E-commerce,25,PENDING,Lancer un programme de parrainage et des offres personnalisées,Fidélisation client
+9000,Service,10,PENDING,S'associer avec une entreprise de logistique pour mutualiser les tournées,Partenariat et alliance
+14500,E-commerce,30,PENDING,Ouvrir des entrepôts dans trois nouvelles régions pour livrer plus vite,Expansion géographique
+15500,IT,32,PENDING,Moderniser les services internes avec automatisation et outils cloud,Transformation digitale
+16200,E-commerce,35,PENDING,Lancer une nouvelle catégorie de produits complémentaire à l'offre existante,Diversification horizontale
+17800,IT,28,PENDING,Optimiser les requêtes base de données et le caching pour réduire les temps de réponse,Optimisation opérationnelle
+18500,Service,40,PENDING,Personnaliser l'interface client avec IA pour anticiper les besoins,Expérience utilisateur premium
+19200,IT,42,PENDING,Remplacer les logiciels propriétaires coûteux par des solutions open source,Réduction des coûts
+21000,Service,38,PENDING,Mettre en place des cycles de développement courts et des rétrospectives hebdomadaires,Agilité et réactivité
+22500,IT,45,PENDING,Passer l'infrastructure complète en conteneurs et orchestration Kubernetes,Transformation digitale
+23800,Service,44,PENDING,Confier la hotline et le support niveau 1 à un centre de services externe,Externalisation stratégique
+24500,IT,50,PENDING,Développer une nouvelle application mobile pour les techniciens terrain,Développement de produit
+31000,Industrie,65,ACCEPTED,Automatiser la chaîne d'assemblage avec des robots collaboratifs,Optimisation opérationnelle
+32500,Finance,70,ACCEPTED,Mettre l'entreprise en conformité réglementaire et réduire les risques,Conformité et risques
+33800,Industrie,68,ACCEPTED,Racheter un fournisseur de matières premières pour contrôler les coûts,Intégration verticale
+35000,Finance,72,ACCEPTED,Optimiser les processus de validation et supprimer les doublons,Réduction des coûts
+38500,Industrie,60,PENDING,Mettre en place la méthode Lean Six Sigma sur toute la production,Excellence opérationnelle
+41000,Finance,55,PENDING,Digitaliser l'octroi de crédits avec un moteur de décision automatique,Transformation digitale
+43200,Industrie,62,PENDING,Installer des panneaux solaires et recycler les déchets de production,Durabilité et RSE
+45800,Finance,58,PENDING,Automatiser les contrôles anti-blanchiment et les déclarations réglementaires,Conformité et risques
+47000,Industrie,75,ACCEPTED,Déployer un système MES et des indicateurs temps réel,Excellence opérationnelle
+49500,Finance,80,ACCEPTED,Lancer une offre bancaire grand public avec frais réduits pour gagner des parts de marché,Pénétration de marché
+61000,IT,10,PENDING,Créer une plateforme SaaS de gestion de projet pour PME,Développement de produit
+63500,Cloud,12,PENDING,Migrer les applications critiques vers des instances serverless,Transformation digitale
+66800,IT,15,PENDING,Intégrer des modèles de langage pour automatiser le support client,Développement de produit
+69000,Cloud,18,PENDING,Ouvrir des régions cloud en Asie et en Amérique latine,Expansion géographique
+72500,IT,20,PENDING,Passer en méthode Scrum avec des livraisons bi-hebdomadaires,Agilité et réactivité
+75000,Cloud,8,PENDING,Mettre en place une architecture zero trust et un chiffrement généralisé,Conformité et risques
+78200,IT,22,PENDING,Réécrire les services les plus lents en Go pour améliorer le débit,Optimisation opérationnelle
+81000,Cloud,14,PENDING,Passer à une facturation à l'usage et supprimer les instances inutilisées,Réduction des coûts
+84500,IT,16,PENDING,Lancer un outil d'analyse prédictive pour les ventes B2B,Développement de produit
+88000,Cloud,19,PENDING,Devenir partenaire officiel d'un hyperscaler pour revendre ses services,Partenariat et alliance
+92000,Industrie,25,PENDING,Acheter une start-up dans l'emballage éco-responsable pour élargir les marchés,Diversification horizontale
+95500,Logistique,28,PENDING,Optimiser le chargement des camions avec un algorithme de packing,Optimisation opérationnelle
+102000,Industrie,30,PENDING,Développer une nouvelle gamme de batteries recyclables,Développement de produit
+108000,Logistique,32,PENDING,Créer des hubs logistiques en Afrique et au Moyen-Orient,Expansion géographique
+115000,Industrie,35,PENDING,Remplacer les énergies fossiles par de l'hydrogène vert,Durabilité et RSE
+122000,Logistique,40,PENDING,Proposer des prix d'appel sur le dernier kilomètre pour capter les particuliers,Pénétration de marché
+135000,Industrie,42,PENDING,Lancer un nouveau procédé de fabrication additive métal,Développement de produit
+148000,Logistique,38,PENDING,Mutualiser les tournées avec des concurrents pour réduire les coûts,Réduction des coûts
+155000,Industrie,45,PENDING,Créer une offre sans concurrence sur le marché des composites biodégradables,Stratégie océan bleu
+170000,Logistique,50,PENDING,Racheter un transporteur routier national pour contrôler toute la chaîne,Partenariat et alliance
+21000,IT,85,ACCEPTED,Céder les activités non stratégiques (hébergement mutualisé) pour se concentrer sur le noyau,Recentrage sur le cœur de métier
+24500,Service,90,ACCEPTED,Former les managers à la transmission et créer un vivier de talents internes,Excellence opérationnelle
+28000,Cloud,95,ACCEPTED,Finaliser la migration des 200 dernières applications vers le cloud,Transformation digitale
+65000,IT,88,ACCEPTED,Livrer la version 2.0 de la plateforme avec les fonctionnalités demandées par les grands comptes,Développement de produit
+72000,Cloud,100,ACCEPTED,Stabiliser les SLAs à 99,99% et automatiser les runbooks,Excellence opérationnelle
+11000,Service,5,REFUSED,Se lancer dans le B2C sans étude de marché préalable (projet refusé),Diversification horizontale
+16500,E-commerce,12,REFUSED,Baisser les prix de 30% sans maîtriser les coûts (stratégie risquée refusée),Low-cost / domination par les coûts
+32000,IT,2,REFUSED,Vouloir tout migrer en cloud en 3 mois sans plan de contingence (refusé),Transformation digitale
+45000,Logistique,8,REFUSED,Supprimer tous les stocks tampons sans prévoir les pics d'activité (refusé),Réduction des coûts
+55000,Cloud,0,REFUSED,Ouvrir des datacenters en Russie et en Iran (risque géopolitique, refusé),Expansion géographique
+12000,Service,4,REFUSED,Signer un partenariat exclusif avec un prestataire non fiable (refusé),Partenariat et alliance
+18000,IT,10,REFUSED,Développer une blockchain interne sans cas d'usage clair (projet refusé),Développement de produit
+39000,Finance,3,REFUSED,Lancer un produit dérivé toxique sans couverture (refusé par le conseil),Conformité et risques
+42000,Industrie,0,REFUSED,Fermer la maintenance préventive pour économiser (décision refusée),Réduction des coûts
+15000,E-commerce,2,REFUSED,Proposer une carte de fidélité sans budget marketing (projet mal préparé, refusé),Fidélisation client
+4700,Service,9,PENDING,Former des équipes autonomes et supprimer les validations hiérarchiques,Agilité et réactivité
+5500,E-commerce,14,PENDING,Lancer une campagne d'affiliation sur les réseaux sociaux pour recruter de nouveaux clients,Pénétration de marché
+6000,Service,17,PENDING,Confier le développement de la plateforme e-learning à une ESN externe,Externalisation stratégique
+6500,E-commerce,11,PENDING,Améliorer le design et l'accessibilité pour réduire le taux de rebond,Expérience utilisateur premium
+7400,Service,26,PENDING,Mettre en place une carte de fidélité avec cashback et offres exclusives,Fidélisation client
+7900,E-commerce,20,PENDING,Optimiser les temps de chargement des pages et le référencement technique,Optimisation opérationnelle
+8600,Service,28,PENDING,Négocier les abonnements SaaS et mutualiser les licences,Réduction des coûts
+9300,E-commerce,31,PENDING,Installer un chatbot et un système de recommandation produit,Transformation digitale
+9800,Service,13,PENDING,Co-développer une solution de visioconférence avec un éditeur de logiciel,Partenariat et alliance
+10500,IT,35,PENDING,Construire un outil de gestion de projet collaboratif pour les équipes distribuées,Développement de produit
+11200,E-commerce,38,PENDING,Ouvrir des points de retrait en drive dans 50 nouvelles villes,Expansion géographique
+12000,IT,40,PENDING,Mettre en place des sauvegardes chiffrées et un plan de reprise d'activité,Conformité et risques
+12800,Service,43,PENDING,Certifier les processus ISO 9001 et mettre en place des audits qualité,Excellence opérationnelle
+13500,IT,46,PENDING,Utiliser des serveurs reconditionnés et du matériel d'occasion pour baisser les CAPEX,Low-cost / domination par les coûts
+14200,Service,48,PENDING,Remplacer les déplacements pros par de la visio et réduire l'empreinte carbone,Durabilité et RSE
+15000,IT,52,PENDING,Créer une marketplace B2B sans commission pour se différencier des concurrents,Stratégie océan bleu
+15800,Service,55,PENDING,Arrêter les activités annexes (conseil) pour se concentrer sur le logiciel métier,Recentrage sur le cœur de métier
+16500,IT,58,PENDING,Racheter un éditeur de base de données pour maîtriser toute la stack technique,Intégration verticale
+17300,Service,60,PENDING,Lancer une offre de conciergerie pour entreprise en plus du support IT existant,Diversification horizontale
+18000,IT,62,PENDING,Proposer une version gratuite limitée pour attirer les PME,Pénétration de marché
+30500,Industrie,64,PENDING,Mettre en place un programme de satisfaction fournisseurs avec récompenses,Fidélisation client (B2B)
+32000,Finance,66,PENDING,Automatiser les déclarations fiscales et les contrôles de conformité,Conformité et risques
+34000,Industrie,68,PENDING,Centraliser les achats et renégocier les contrats matières premières,Réduction des coûts
+36000,Finance,70,PENDING,Remplacer le système bancaire legacy par une architecture microservices,Transformation digitale
+38000,Industrie,72,PENDING,Mettre en place un système de suggestions d'amélioration continue pour les opérateurs,Excellence opérationnelle
+40000,Finance,74,PENDING,Créer une application d'épargne automatisée pour jeunes actifs,Développement de produit
+42000,Industrie,76,PENDING,Installer des capteurs IoT pour réduire la consommation électrique des usines,Durabilité et RSE
+44000,Finance,78,PENDING,S'associer avec une fintech pour proposer des prêts instantanés,Partenariat et alliance
+46000,Industrie,80,PENDING,Ouvrir une usine en Pologne pour servir l'Europe centrale,Expansion géographique
+48000,Finance,82,PENDING,Lancer une offre bancaire 100% en ligne sans agences,Low-cost / domination par les coûts
+51000,IT,85,ACCEPTED,Automatiser les tests non fonctionnels et la chaîne de déploiement,Optimisation opérationnelle
+54000,Cloud,88,ACCEPTED,Mettre en place des équipes cross-fonctionnelles avec des cycles de 2 semaines,Agilité et réactivité
+57000,IT,90,ACCEPTED,Remplacer les bases de données propriétaires par du PostgreSQL mutualisé,Réduction des coûts
+60000,Cloud,92,ACCEPTED,Déployer des dashboards SLO/error budget et automatiser les rollbacks,Excellence opérationnelle
+63000,IT,94,ACCEPTED,Proposer une offre de cloud souverain aux collectivités locales,Pénétration de marché
+66000,Cloud,96,ACCEPTED,Migrer les dernières VM physiques vers des conteneurs éphémères,Transformation digitale
+69000,IT,98,ACCEPTED,Mettre en place un NPS et des actions correctives pour les clients mécontents,Fidélisation client
+71000,Cloud,99,ACCEPTED,Refondre la console d'administration pour une interface intuitive,Expérience utilisateur premium
+13000,Service,7,REFUSED,Lancer une offre trop disruptive sans client pilote (projet refusé),Stratégie océan bleu
+19000,E-commerce,15,REFUSED,Vendre des produits non conformes aux normes environnementales (refusé),Durabilité et RSE
+27000,IT,5,REFUSED,Vendre la division logiciel pour se concentrer sur le conseil (refusé car trop risqué),Recentrage sur le cœur de métier
+35000,Logistique,12,REFUSED,Racheter un transporteur aérien sans synergies évidentes (refusé),Intégration verticale
+47000,Cloud,3,REFUSED,Externaliser toute la sécurité chez un prestataire non certifié (refusé),Externalisation stratégique
+14000,Service,6,REFUSED,Passer au full remote sans outillage ni process (projet refusé),Agilité et réactivité
+20000,IT,18,REFUSED,Stockager des données clients sans consentement explicite (refusé RGPD),Conformité et risques
+37000,Finance,7,REFUSED,Signer un partenariat avec un crypto-exchange non régulé (refusé),Partenariat et alliance
+43000,Industrie,4,REFUSED,Lancer une ligne de trottinettes électriques sans étude de marché (refusé),Diversification horizontale
+52000,Logistique,20,REFUSED,Proposer une carte de fidélité sans avantages réels (refusé par le comité),Fidélisation client

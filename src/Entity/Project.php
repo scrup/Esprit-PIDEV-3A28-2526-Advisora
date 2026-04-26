@@ -18,8 +18,8 @@ class Project
 
     public const STATUSES = [
         self::STATUS_PENDING => 'En attente',
-        self::STATUS_ACCEPTED => 'Accepté',
-        self::STATUS_REFUSED => 'Refusé',
+        self::STATUS_ACCEPTED => 'AcceptÃ©',
+        self::STATUS_REFUSED => 'RefusÃ©',
     ];
 
     #[ORM\Id]
@@ -328,6 +328,7 @@ class Project
     {
         if (!$this->tasks->contains($task)) {
             $this->tasks->add($task);
+            $task->setProject($this);
         }
 
         return $this;
@@ -335,7 +336,9 @@ class Project
 
     public function removeTask(Task $task): self
     {
-        $this->tasks->removeElement($task);
+        if ($this->tasks->removeElement($task) && $task->getProject() === $this) {
+            $task->setProject(null);
+        }
 
         return $this;
     }

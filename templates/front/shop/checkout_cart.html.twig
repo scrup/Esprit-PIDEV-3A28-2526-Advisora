@@ -1,0 +1,253 @@
+{% extends 'base.html.twig' %}
+{# Checkout panier C2C global: paiement unique pour plusieurs annonces du panier. #}
+
+{% block title %}Advisora | Checkout Panier{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260424-01' }}">
+{% endblock %}
+
+{% block body %}
+    {% set cart_items = checkout_cart_items|default([]) %}
+    {% set cart_stats = checkout_cart_stats|default({'items_count': 0, 'units_count': 0, 'subtotal': 0}) %}
+    {% set subtotal = cart_stats.subtotal|default(0) %}
+    {% set wallet_balance = wallet.balance|default(0) %}
+    {% set balance_after = wallet_balance - subtotal %}
+
+    <div class="mini-shop-shell is-market-view mini-shop-checkout-page">
+        <section class="mini-shop-hero">
+            <div class="mini-shop-hero-copy">
+                <span class="mini-shop-kicker"><i class="fas fa-credit-card"></i> Checkout panier C2C</span>
+                <h1>Payer toutes les annonces en une seule fois</h1>
+                <p>Validation serveur Symfony: total du panier, wallet, commandes, livraisons et synchronisation Fiabilo.</p>
+                <div class="mini-shop-hero-actions">
+                    <a href="{{ path('app_shop') }}#shop-cart-drawer" class="shop-btn shop-btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour panier
+                    </a>
+                    <a href="{{ path('app_shop') }}#shop-marketplace" class="shop-btn shop-btn-ghost">
+                        <i class="fas fa-store"></i>
+                        Retour boutique
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        {# Vue checkout panier: une colonne synthese, une colonne formulaire Symfony/Fiabilo. #}
+        <section class="mini-shop-marketplace-layout mini-shop-checkout-layout">
+            <article class="mini-shop-panel mini-shop-checkout-summary-card">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Panier C2C</span>
+                        <h2>Recapitulatif global</h2>
+                        <p>{{ cart_stats.items_count|default(0) }} ligne(s), {{ cart_stats.units_count|default(0) }} unite(s).</p>
+                    </div>
+                    <div class="mini-shop-panel-chip">
+                        <span>Total panier</span>
+                        <strong>{{ subtotal|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-checkout-spotlight">
+                    <div class="mini-shop-checkout-spotlight-copy">
+                        <span class="mini-shop-checkout-spotlight-kicker">Validation prof</span>
+                        <h3>Le checkout panier verifie toutes les annonces avant achat</h3>
+                        <p>Avant la commande finale, Symfony recalcule le panier, controle le wallet et prepare une seule saisie livraison pour toutes les lignes.</p>
+                    </div>
+                    <div class="mini-shop-checkout-spotlight-metrics">
+                        <div>
+                            <span>Wallet</span>
+                            <strong>{{ wallet_balance|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+                        <div>
+                            <span>Total panier</span>
+                            <strong>{{ subtotal|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+                        <div>
+                            <span>Apres achat</span>
+                            <strong>{{ balance_after|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mini-shop-cart-item-facts">
+                    <div>
+                        <span>Lignes</span>
+                        <strong>{{ cart_stats.items_count|default(0) }}</strong>
+                    </div>
+                    <div>
+                        <span>Unites</span>
+                        <strong>{{ cart_stats.units_count|default(0) }}</strong>
+                    </div>
+                    <div>
+                        <span>Solde wallet</span>
+                        <strong>{{ wallet_balance|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                    <div>
+                        <span>Apres achat</span>
+                        <strong>{{ balance_after|number_format(3, '.', ' ') }} coins</strong>
+                    </div>
+                    <div>
+                        <span>Taux coins</span>
+                        <strong>{{ wallet.coin_rate|default(10)|number_format(3, '.', ' ') }} / 1 money</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-checkout-flow">
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 1</span>
+                        <strong>Relire les lignes du panier</strong>
+                    </div>
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 2</span>
+                        <strong>Verifier wallet + projet</strong>
+                    </div>
+                    <div class="mini-shop-checkout-flow-step">
+                        <span>Etape 3</span>
+                        <strong>Valider commande et livraison</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-cart-list">
+                    {% for item in cart_items %}
+                        {# Chaque carte montre exactement ce que Symfony va acheter pour cette annonce. #}
+                        <article class="mini-shop-c2c-cart-card">
+                            <div class="mini-shop-cart-item-head">
+                                <div>
+                                    <span class="mini-panel-tag">Annonce #{{ item.listing_id }}</span>
+                                    <h3>{{ item.resource_name }}</h3>
+                                </div>
+                                <span class="shop-status-badge is-available">LISTED</span>
+                            </div>
+
+                            <div class="mini-shop-cart-item-meta">
+                                <span>{{ item.supplier_name }}</span>
+                                <span>Vendeur: {{ item.seller_name }}</span>
+                            </div>
+
+                            <div class="mini-shop-cart-item-facts">
+                                <div>
+                                    <span>Prix unit.</span>
+                                    <strong>{{ item.unit_price|number_format(3, '.', ' ') }} coins</strong>
+                                </div>
+                                <div>
+                                    <span>Quantite</span>
+                                    <strong>{{ item.quantity }}</strong>
+                                </div>
+                                <div>
+                                    <span>Disponible</span>
+                                    <strong>{{ item.available }}</strong>
+                                </div>
+                                <div>
+                                    <span>Total</span>
+                                    <strong>{{ item.line_total|number_format(3, '.', ' ') }} coins</strong>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="mini-shop-panel mini-shop-checkout-form-card">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Livraison Fiabilo</span>
+                        <h2>Confirmer le paiement global</h2>
+                        <p>Un seul checkout pour toutes les lignes du panier C2C.</p>
+                    </div>
+                </div>
+
+                {{ form_start(checkout_form, {'action': path('app_shop_market_buy_cart'), 'attr': {'class': 'mini-shop-form mini-shop-grid mini-shop-checkout-form', 'novalidate': 'novalidate'}}) }}
+                    <input type="hidden" name="_redirect_page" value="checkout_cart">
+
+                    {% if checkout_form.vars.errors|length > 0 %}
+                        <div class="mini-shop-form-errors" role="alert">
+                            {{ form_errors(checkout_form) }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mini-shop-checkout-form-intro">
+                        <i class="fas fa-shield-alt"></i>
+                        <p>Checkout global controle cote Symfony: toutes les lignes seront validees avant execution.</p>
+                    </div>
+
+                    <div class="mini-shop-checkout-guardrail">
+                        <strong>Ce que le prof peut verifier ici</strong>
+                        <p>Le meme formulaire Symfony pilote le projet, la recharge auto et les coordonnees livraison. Les erreurs de saisie restent affichees sous chaque champ.</p>
+                    </div>
+
+                    <div class="mini-shop-checkout-section">
+                        <h3>Parametres checkout</h3>
+                        <div class="mini-shop-grid mini-shop-grid-two">
+                            <div class="mini-shop-field-group{{ checkout_form.project_id.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.project_id, 'Projet cible') }}
+                                {{ form_widget(checkout_form.project_id, {'attr': {'id': 'checkout_cart_project_id'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.project_id) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.topup_provider.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.topup_provider, 'Fournisseur recharge auto') }}
+                                {{ form_widget(checkout_form.topup_provider, {'attr': {'id': 'checkout_cart_topup_provider'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.topup_provider) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mini-shop-checkout-section">
+                        <h3>Coordonnees livraison</h3>
+                        <div class="mini-shop-grid mini-shop-grid-three mini-shop-checkout-grid">
+                            <div class="mini-shop-field-group{{ checkout_form.recipient_name.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.recipient_name, 'Destinataire') }}
+                                {{ form_widget(checkout_form.recipient_name, {'attr': {'id': 'checkout_cart_recipient'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.recipient_name) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.governorate.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.governorate, 'Gouvernorat') }}
+                                {{ form_widget(checkout_form.governorate, {'attr': {'id': 'checkout_cart_governorate'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.governorate) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.city.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.city, 'Ville') }}
+                                {{ form_widget(checkout_form.city, {'attr': {'id': 'checkout_cart_city'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.city) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.postal_code.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.postal_code, 'Code postal') }}
+                                {{ form_widget(checkout_form.postal_code, {'attr': {'id': 'checkout_cart_cp'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.postal_code) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.phone.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.phone, 'Telephone') }}
+                                {{ form_widget(checkout_form.phone, {'attr': {'id': 'checkout_cart_phone'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.phone) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group{{ checkout_form.phone2.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.phone2, 'Telephone 2') }}
+                                {{ form_widget(checkout_form.phone2, {'attr': {'id': 'checkout_cart_phone2'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.phone2) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group mini-shop-field-span-2{{ checkout_form.address_line.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.address_line, 'Adresse') }}
+                                {{ form_widget(checkout_form.address_line, {'attr': {'id': 'checkout_cart_address'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.address_line) }}</div>
+                            </div>
+                            <div class="mini-shop-field-group mini-shop-field-span-3{{ checkout_form.delivery_note.vars.valid ? '' : ' is-invalid' }}">
+                                {{ form_label(checkout_form.delivery_note, 'Message livraison') }}
+                                {{ form_widget(checkout_form.delivery_note, {'attr': {'id': 'checkout_cart_note'}}) }}
+                                <div class="mini-shop-field-errors">{{ form_errors(checkout_form.delivery_note) }}</div>
+                                <small class="mini-shop-field-help">Optionnel, utile pour guider le livreur.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mini-shop-form-actions mini-shop-checkout-actions">
+                        <button type="submit" class="shop-btn shop-btn-primary">
+                            <i class="fas fa-check-circle"></i>
+                            Payer tout le panier ({{ subtotal|number_format(3, '.', ' ') }} coins)
+                        </button>
+                    </div>
+                {{ form_end(checkout_form) }}
+            </article>
+        </section>
+    </div>
+{% endblock %}

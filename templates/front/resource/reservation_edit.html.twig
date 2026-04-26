@@ -16,6 +16,7 @@
                 <p>Mettez a jour la quantite ou changez le projet lie a cette ressource. Seules vos reservations sont modifiables ici.</p>
             </div>
             <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_shop') }}">Retour a la boutique</a>
                 <a class="pm-btn pm-btn-secondary" href="{{ path('resource_reservations') }}">Retour a mes reservations</a>
                 <a class="pm-btn pm-btn-secondary" href="{{ path('resource_show', {id: reservation.resource_id}) }}">Voir la ressource</a>
             </div>

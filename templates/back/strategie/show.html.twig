@@ -6,6 +6,7 @@
     {{ parent() }}
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
 {% block body %}
@@ -37,6 +38,20 @@
                 {{ strategy.statusLabel }}
             </span>
         </div>
+
+        {% include 'back/strategie/_admin_decision_panel.html.twig' with {strategy: strategy} %}
+
+        {% if strategy.statusStrategie == constant('App\\Entity\\Strategie::STATUS_REJECTED') %}
+            <div class="strategy-rejection-note strategy-rejection-note-show">
+                <span class="material-symbols-outlined">comment</span>
+                <div>
+                    <strong>Justification du refus</strong>
+                    <p>{{ strategy.justification ?: 'Aucune justification n a ete enregistree pour ce refus.' }}</p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% include 'back/strategie/_project_spotlight.html.twig' with {strategy: strategy, compact: false} %}
 
         <div class="show-grid">
             <div class="info-section">
@@ -72,19 +87,25 @@
                 <div class="info-list">
                     <div class="info-item">
                         <span class="info-label">Budget total</span>
-                        <span class="info-value">{{ strategy.budgetTotal|number_format(0, ',', ' ') }} EUR</span>
+                        <span class="info-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Gain estime</span>
-                        <span class="info-value {{ strategy.gainEstime >= 0 ? 'positive' : 'negative' }}">
-                            {{ strategy.gainEstime >= 0 ? '+' : '' }}{{ strategy.gainEstime }}%
+                        <span class="info-value {{ strategy.gainEstime is not null and strategy.gainEstime >= 0 ? 'positive' : 'negative' }}">
+                            {{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ROI estime</span>
+                        <span class="info-value {{ strategy.estimatedRoiPercent is not null and strategy.estimatedRoiPercent >= 0 ? 'positive' : 'negative' }}">
+                            {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, ',', ' ') ~ '%' : 'Non defini' }}
                         </span>
                     </div>
                 </div>
             </div>
 
             <div class="info-section full-width">
-                <h3>Justification</h3>
+                <h3>{{ strategy.statusStrategie == constant('App\\Entity\\Strategie::STATUS_REJECTED') ? 'Justification du refus' : 'Justification' }}</h3>
                 <div class="info-text">
                     {{ strategy.justification ?: 'Aucune justification fournie' }}
                 </div>
@@ -94,16 +115,6 @@
                 <h3>Actualites liees</h3>
                 <div class="info-text">
                     {{ strategy.news ?: 'Aucune actualite liee' }}
-                </div>
-            </div>
-
-            <div class="info-section">
-                <h3>Projet associe</h3>
-                <div class="info-list">
-                    <div class="info-item">
-                        <span class="info-label">Projet</span>
-                        <span class="info-value">{{ strategy.project ? strategy.project.idProj : 'Non associe' }}</span>
-                    </div>
                 </div>
             </div>
 

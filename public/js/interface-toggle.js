@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const switchContainer = document.querySelector('[data-interface-switch]');
-    const modeToggle = switchContainer?.querySelector('.js-interface-toggle');
+    const modeToggle = switchContainer?.querySelector('[data-interface-toggle-input], .js-interface-toggle');
     const modeBadge = document.querySelector('[data-mode-badge]');
 
     if (!switchContainer || !modeToggle) {
