@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\ResourceMarketListingRepository;
 
@@ -113,7 +114,11 @@ class ResourceMarketListing
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $note = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     public function getNote(): ?string
     {
@@ -179,6 +184,13 @@ class ResourceMarketListing
     public function setUpdatedAt(\DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
         return $this;
     }
 

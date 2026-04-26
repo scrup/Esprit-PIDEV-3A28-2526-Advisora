@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\InvestmentRepository;
 
@@ -42,7 +43,11 @@ class Investment
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $commentaireInv = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     private ?string $durationEstimateLabel = null;
 
@@ -329,6 +334,13 @@ class Investment
         $stored = implode("\n", $parts);
 
         return $stored !== '' ? $stored : null;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
+        return $this;
     }
 
 }

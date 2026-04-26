@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale|default('fr') }}">
 <head>
     {% set public_base = app.request.basePath %}
     {% set current_route = app.request.get('_route')|default('') %}
@@ -43,6 +43,7 @@
 
     <!-- JavaScript disabled on shop routes (app_shop*) -->
     <script src="{{ public_base ~ '/js/notifications.js' }}"></script>
+    <script src="{{ public_base ~ '/js/header-menu.js?v=20260426-01' }}"></script>
     {% if not is_shop_route %}
         <script src="{{ public_base ~ '/js/main.js' }}"></script>
         <script src="{{ public_base ~ '/js/interface-toggle.js' }}"></script>

@@ -146,9 +146,18 @@
                 {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
                     {% include 'shared/project_acceptance_estimate.html.twig' with { estimate: estimate } only %}
                 {% endif %}
+                <div class="pm-card-actions">
+                    {% if app.user and app.user.roleUser in ['admin', 'gerant'] %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('strategie_recommandation', {id: project.id}) }}">
+                            Recommander une strategie
+                        </a>
+                    {% endif %}
+                </div>
 
                 {% if project.strategies|length > 0 %}
-                    <div class="pm-project-strategies pm-project-strategies-inline">
+                    {% set strategy_page_size = 5 %}
+                    {% set strategy_total_pages = (project.strategies|length / strategy_page_size)|round(0, 'ceil') %}
+                    <div class="pm-project-strategies pm-project-strategies-inline" data-strategy-pagination-block data-page-size="{{ strategy_page_size }}">
                         <div class="pm-section-head">
                             <div>
                                 <span class="pm-badge">Strategies proposees</span>
@@ -156,10 +165,11 @@
                             </div>
                             <span class="pm-history-count">{{ project.strategies|length }}</span>
                         </div>
+                        
 
-                        <div class="pm-strategy-list pm-strategy-list-inline">
+                        <div class="pm-strategy-list pm-strategy-list-inline" data-strategy-pagination-list>
                             {% for strategy in project.strategies %}
-                                <section class="pm-strategy-card pm-strategy-card-inline">
+                                <section class="pm-strategy-card pm-strategy-card-inline" data-strategy-pagination-item>
                                 {# Inside the loop for project.strategies, after strategy status check #}
 {% if strategy.statusStrategie == strategy_statuses.approved %}
     <div class="pm-strategy-pdf-action" data-strategy-id="{{ strategy.idStrategie }}">
@@ -198,6 +208,7 @@
                                                 {% endif %}
                                             </p>
                                         </div>
+                                        
 
                                         {% if can_client_decide_strategies and app.user and project.user and project.user.idUser == app.user.idUser %}
                                             {% if strategy_decision_taken %}
@@ -230,6 +241,7 @@
                                             {% endif %}
                                         {% endif %}
                                     </div>
+                                    
 
                                     <div class="pm-strategy-meta">
                                         <span><strong>{{ 'project.strategy.type'|trans }} :</strong> {{ strategy.type ?: ('project.card.not_specified'|trans) }}</span>
@@ -238,9 +250,15 @@
                                         <span><strong>{{ 'project.strategy.estimated_gain'|trans }} :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
                                         <span><strong>ROI :</strong> {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, '.', ' ') ~ '%' : ('project.card.not_specified'|trans) }}</span>
                                         <span><strong>{{ 'project.strategy.objectives'|trans }} :</strong> {{ strategy.objectives|length }}</span>
-                                        {% if strategy.lockedAt and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
-                                            {% set strategy_deadline = strategy.lockedAt|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
-                                            <span class="pm-countdown" data-strategy-countdown data-end-at="{{ strategy_deadline|date('c') }}">
+                                        {% set strategy_countdown_start = strategy.statusStrategie == strategy_statuses.approved ? strategy.lockedAt : null %}
+                                        {% if strategy_countdown_start and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
+                                            {% set strategy_deadline = (strategy_countdown_start|date('c'))|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
+                                            <span
+                                                class="pm-countdown"
+                                                data-strategy-countdown
+                                                data-start-at="{{ strategy_countdown_start|date('c') }}"
+                                                data-end-at="{{ strategy_deadline|date('c') }}"
+                                            >
                                                 <strong>Fin de periode dans :</strong>
                                                 <span class="pm-countdown-value" data-countdown-value>--:--:--</span>
                                             </span>
@@ -249,6 +267,19 @@
                                 </section>
                             {% endfor %}
                         </div>
+                        {% if strategy_total_pages > 1 %}
+                            <nav class="pm-strategy-pagination" data-strategy-pagination>
+                                <button class="pm-btn pm-btn-secondary pm-pagination-btn" type="button" data-pagination-action="prev" aria-label="Page precedente">
+                                    <i class="fas fa-chevron-left"></i>
+                                    <span>Precedent</span>
+                                </button>
+                                <span class="pm-strategy-page-indicator" data-pagination-indicator>Page 1 / {{ strategy_total_pages }}</span>
+                                <button class="pm-btn pm-btn-secondary pm-pagination-btn" type="button" data-pagination-action="next" aria-label="Page suivante">
+                                    <span>Suivant</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </nav>
+                        {% endif %}
                     </div>
                 {% endif %}
 
@@ -289,6 +320,62 @@
 
                 return title || heading || bodyText.slice(0, 220);
             };
+
+            const formatCountdownValue = (remainingSeconds) => {
+                const totalSeconds = Math.max(0, Math.floor(remainingSeconds));
+                const days = Math.floor(totalSeconds / 86400);
+                const hours = Math.floor((totalSeconds % 86400) / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                if (days > 0) {
+                    return `${days}j ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+                }
+
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            };
+
+            const initStrategyCountdowns = () => {
+                const countdownElements = Array.from(document.querySelectorAll('[data-strategy-countdown]'));
+                if (countdownElements.length === 0) {
+                    return;
+                }
+
+                const updateCountdown = (element) => {
+                    const displayElement = element.querySelector('[data-countdown-value], [data-countdown-display]');
+                    if (!displayElement) {
+                        return;
+                    }
+
+                    const endAtRaw = element.dataset.endAt || '';
+                    const endDate = new Date(endAtRaw);
+                    if (Number.isNaN(endDate.getTime())) {
+                        displayElement.textContent = '--:--:--';
+                        return;
+                    }
+
+                    const now = new Date();
+                    const remainingSeconds = (endDate.getTime() - now.getTime()) / 1000;
+
+                    if (remainingSeconds <= 0) {
+                        element.classList.add('is-expired');
+                        displayElement.textContent = 'Expiree';
+                        return;
+                    }
+
+                    element.classList.remove('is-expired');
+                    displayElement.textContent = formatCountdownValue(remainingSeconds);
+                };
+
+                const refresh = () => {
+                    countdownElements.forEach(updateCountdown);
+                };
+
+                refresh();
+                window.setInterval(refresh, 1000);
+            };
+
+            initStrategyCountdowns();
 
             document.querySelectorAll('.pdf-generate-btn').forEach((button) => {
                 button.addEventListener('click', async (event) => {
@@ -372,6 +459,55 @@
                         alert('Erreur: ' + error.message);
                     }
                 });
+            });
+
+            document.querySelectorAll('[data-strategy-pagination-block]').forEach((block) => {
+                const list = block.querySelector('[data-strategy-pagination-list]');
+                const controls = block.querySelector('[data-strategy-pagination]');
+                const items = list ? Array.from(list.querySelectorAll('[data-strategy-pagination-item]')) : [];
+                const pageSize = Math.max(1, Number(block.dataset.pageSize || 5));
+                const totalPages = Math.ceil(items.length / pageSize);
+
+                if (!list || !controls || totalPages <= 1) {
+                    return;
+                }
+
+                const previousButton = controls.querySelector('[data-pagination-action="prev"]');
+                const nextButton = controls.querySelector('[data-pagination-action="next"]');
+                const indicator = controls.querySelector('[data-pagination-indicator]');
+
+                if (!previousButton || !nextButton || !indicator) {
+                    return;
+                }
+
+                let currentPage = 1;
+
+                const renderPage = () => {
+                    items.forEach((item, index) => {
+                        const itemPage = Math.floor(index / pageSize) + 1;
+                        item.hidden = itemPage !== currentPage;
+                    });
+
+                    indicator.textContent = `Page ${currentPage} / ${totalPages}`;
+                    previousButton.disabled = currentPage === 1;
+                    nextButton.disabled = currentPage === totalPages;
+                };
+
+                previousButton.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        renderPage();
+                    }
+                });
+
+                nextButton.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        currentPage += 1;
+                        renderPage();
+                    }
+                });
+
+                renderPage();
             });
         });
     </script>

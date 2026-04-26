@@ -1,8 +1,7 @@
 {% set current_route = app.request.get('_route')|default('') %}
 {% set is_shop_route = current_route starts with 'app_shop' %}
 {% set is_shop_catalog_route = current_route == 'app_shop' %}
-{% set is_shop_wallet_route = current_route == 'app_shop_wallet' %}
-{% set is_client_profile_route = current_route starts with 'client_profile_' %}
+{% set user_role = app.user ? app.user.getRoleUser() : null %}
 {% set shop_cart = app.session.get('shop_cart', {}) %}
 {% set shop_checkout_draft = app.session.get('shop_checkout_draft', null) %}
 {% set shop_checkout_cart = app.session.get('shop_checkout_cart', {}) %}
@@ -11,7 +10,6 @@
     {% set shop_checkout_count = 1 %}
 {% endif %}
 {% set shop_cart_count = (shop_cart|length) + shop_checkout_count %}
-{% set shop_wallet_mode = is_shop_wallet_route %}
 {% set home_solutions_href = current_route == 'app_home' ? '#solutions' : path('app_home') ~ '#solutions' %}
 {% set home_whyus_href = current_route == 'app_home' ? '#whyus' : path('app_home') ~ '#whyus' %}
 {% set home_reviews_href = current_route == 'app_home' ? '#reviews' : path('app_home') ~ '#reviews' %}
@@ -54,20 +52,35 @@
 </div>
 
 <header id="header" class="site-header">
-    <a href="{{ path('app_home') }}" class="logo header-brand">
-        <img src="{{ app.request.basePath ~ '/assets/logo.png' }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
-        <span class="logo-copy">
-            <span class="logo-title">Advisora</span>
-            <span class="logo-subtitle">Conseil et suivi strategique</span>
-        </span>
-    </a>
+    <div class="header-left">
+        <button
+            class="hamburger"
+            type="button"
+            aria-label="Ouvrir le menu"
+            aria-expanded="false"
+            aria-controls="front-main-nav"
+            data-header-toggle
+        >
+            &#9776;
+        </button>
 
-    <nav class="header-nav" aria-label="Navigation principale">
+        <a href="{{ path('app_home') }}" class="logo header-brand">
+            <img src="{{ app.request.basePath ~ '/assets/logo.png' }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
+            <span class="logo-copy">
+                <span class="logo-title">Advisora</span>
+                <span class="logo-subtitle">Conseil et suivi strategique</span>
+            </span>
+        </a>
+    </div>
+
+    <nav id="front-main-nav" class="header-nav" aria-label="Main" data-header-nav>
         <a href="{{ path('app_home') }}" class="nav-link {% if current_route == 'app_home' %}active{% endif %}">Accueil</a>
         <a href="{{ path('app_shop') }}" class="nav-link {% if is_shop_route %}active{% endif %}">Boutique</a>
         <a href="{{ path('project_index') }}" class="nav-link {% if current_route starts with 'project_' %}active{% endif %}">Projet</a>
-        {% if app.user and app.user.getRoleUser() == 'client' %}
+        {% if app.user and user_role == 'client' %}
             <a href="{{ path('investment_index') }}" class="nav-link {% if current_route starts with 'investment_' or current_route starts with 'transaction_' %}active{% endif %}">Investissements</a>
+        {% elseif app.user and user_role in ['admin', 'gerant'] %}
+            <a href="{{ path('back_investment_index') }}" class="nav-link {% if current_route starts with 'back_investment' or current_route starts with 'back_transaction' %}active{% endif %}">Investissements</a>
         {% endif %}
         <a href="{{ path('event_index') }}" class="nav-link {% if current_route starts with 'event_' %}active{% endif %}">Evenements</a>
         <a href="{{ path('resource_index') }}" class="nav-link {% if current_route starts with 'resource_' %}active{% endif %}">Ressources</a>
@@ -76,7 +89,7 @@
         <a href="{{ home_reviews_href }}" class="nav-link">Temoignages</a>
     </nav>
 
-    <div class="header-actions">
+    <div class="header-actions" data-header-actions>
         <div class="header-lang-tools">
             <div class="lang-switcher">
                 {% set current_route_name = app.request.attributes.get('_route')|default('app_home') %}
@@ -99,47 +112,29 @@
             </div>
         </div>
 
-        <div class="header-primary-actions">
-            {% if app.user %}
-                <form method="post" action="{{ path('app_logout') }}" class="header-auth-form">
-                    <button class="btn btn-outline" type="submit"><i class="fas fa-right-from-bracket"></i> Deconnexion</button>
-                </form>
-            {% else %}
-                <a class="btn btn-outline" id="loginBtn" href="{{ path('app_login') }}"><i class="far fa-user"></i> Connexion</a>
-            {% endif %}
-            <button class="btn btn-primary" id="getStartedBtn">Commencer</button>
-        </div>
-
-        <div class="header-utility-actions">
+        <div class="user-tools">
             {% if app.user %}
                 {% include 'shared/notification_center.html.twig' with {variant: 'front'} %}
-            {% endif %}
-            {% if app.user and app.user.getRoleUser() in ['admin', 'gerant'] %}
-                {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'front'} %}
-            {% endif %}
 
-            {% if app.user and app.user.getRoleUser() == 'client' %}
-                <a
-                    class="cart-btn shop-header-icon-link {{ is_client_profile_route ? 'is-active' : '' }}"
-                    href="{{ path('client_profile_show') }}"
-                    aria-label="Mon profil"
-                    title="Mon profil"
-                >
-                    <i class="fas fa-user"></i>
-                </a>
-                <a class="cart-btn shop-header-icon-link {{ shop_wallet_mode ? 'is-active' : '' }}" href="{{ path('app_shop_wallet') }}" aria-label="Afficher wallet" title="Wallet">
-                    <i class="fas fa-wallet"></i>
-                </a>
-            {% endif %}
+                {% if user_role in ['admin', 'gerant'] %}
+                    {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'front'} %}
+                {% endif %}
 
-            <a
-                class="cart-btn"
-                href="{{ is_shop_catalog_route ? '#shop-cart-drawer' : path('app_shop') ~ '#shop-cart-drawer' }}"
-                aria-label="Ouvrir le panier"
-            >
-                <i class="fas fa-shopping-cart"></i>
-                <span class="cart-count" id="cartCount">{{ shop_cart_count }}</span>
-            </a>
+                {% include 'components/user_dropdown.html.twig' %}
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn btn-outline">Connexion</a>
+                <button class="btn btn-primary" id="getStartedBtn">Commencer</button>
+            {% endif %}
         </div>
+
+        <a
+            class="cart-btn"
+            href="{{ is_shop_catalog_route ? '#shop-cart-drawer' : path('app_shop') ~ '#shop-cart-drawer' }}"
+            aria-label="Cart ({{ shop_cart_count }})"
+            data-cart-toggle
+        >
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">{{ shop_cart_count }}</span>
+        </a>
     </div>
 </header>

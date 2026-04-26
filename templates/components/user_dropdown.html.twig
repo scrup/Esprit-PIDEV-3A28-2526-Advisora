@@ -1,0 +1,55 @@
+{% set user_role = app.user.getRoleUser()|default('client') %}
+{% set profile_href = user_role == 'client' ? path('client_profile_show') : path('back_user_profile') %}
+{% set investment_href = user_role == 'client' ? path('investment_index') : path('back_investment_index') %}
+{% set dashboard_href = user_role in ['admin', 'gerant'] ? path('app_back') : path('app_home') %}
+{% set first_name = app.user.getPrenomUser()|default('') %}
+{% set last_name = app.user.getNomUser()|default('') %}
+{% set full_name = (first_name ~ ' ' ~ last_name)|trim %}
+{% set initial_seed = full_name is not empty ? full_name : app.user.getEmailUser()|default('U') %}
+{% set avatar_initial = initial_seed|slice(0, 1)|upper %}
+{% set role_label = user_role|replace({'admin': 'Admin', 'gerant': 'Gerant', 'client': 'Client'}) %}
+
+<div class="user-dropdown" data-user-dropdown>
+    <button
+        type="button"
+        class="user-dropdown-toggle"
+        data-user-dropdown-toggle
+        aria-expanded="false"
+        aria-haspopup="true"
+    >
+        <span class="user-avatar">{{ avatar_initial }}</span>
+        <span class="user-meta">
+            <strong>{{ full_name is not empty ? full_name : 'Mon compte' }}</strong>
+            <small>{{ role_label }}</small>
+        </span>
+        <i class="fas fa-chevron-down" aria-hidden="true"></i>
+    </button>
+
+    <div class="user-dropdown-menu" data-user-dropdown-menu hidden>
+        <a href="{{ profile_href }}" class="user-dropdown-link">
+            <i class="fas fa-user"></i>
+            <span>Mon profil</span>
+        </a>
+
+        
+
+        {% if user_role == 'client' %}
+            <a href="{{ path('app_shop_wallet') }}" class="user-dropdown-link">
+                <i class="fas fa-wallet"></i>
+                <span>Wallet</span>
+            </a>
+        {% else %}
+            <a href="{{ dashboard_href }}" class="user-dropdown-link">
+                <i class="fas fa-gauge-high"></i>
+                <span>Back office</span>
+            </a>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_logout') }}" class="user-dropdown-logout">
+            <button type="submit" class="user-dropdown-link user-dropdown-logout-btn">
+                <i class="fas fa-right-from-bracket"></i>
+                <span>Deconnexion</span>
+            </button>
+        </form>
+    </div>
+</div>

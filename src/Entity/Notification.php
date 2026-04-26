@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
 #[ORM\Table(
@@ -27,9 +28,11 @@ class Notification
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Gedmo\Translatable]
     private ?string $title = null;
 
     #[ORM\Column(type: 'text')]
+    #[Gedmo\Translatable]
     private ?string $description = null;
 
     #[ORM\Column(type: 'text')]
@@ -51,6 +54,9 @@ class Notification
     #[ORM\JoinColumn(name: 'recipient_id', referencedColumnName: 'idUser', nullable: true, onDelete: 'CASCADE')]
     private ?User $recipient = null;
 
+    #[Gedmo\Locale]
+    private ?string $locale = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -59,7 +65,6 @@ class Notification
     public function setId(int $id): self
     {
         $this->id = $id;
-
         return $this;
     }
 
@@ -71,7 +76,6 @@ class Notification
     public function setTitle(string $title): self
     {
         $this->title = $title;
-
         return $this;
     }
 
@@ -83,7 +87,6 @@ class Notification
     public function setDescription(string $description): self
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -95,7 +98,6 @@ class Notification
     public function setSpokenText(string $spokenText): self
     {
         $this->spokenText = $spokenText;
-
         return $this;
     }
 
@@ -107,7 +109,6 @@ class Notification
     public function setEventType(string $eventType): self
     {
         $this->eventType = $eventType;
-
         return $this;
     }
 
@@ -133,7 +134,6 @@ class Notification
     public function setIsRead(bool $isRead): self
     {
         $this->isRead = $isRead;
-
         return $this;
     }
 
@@ -145,7 +145,6 @@ class Notification
     public function setTargetProjectId(?int $targetProjectId): self
     {
         $this->targetProjectId = $targetProjectId;
-
         return $this;
     }
 
@@ -157,11 +156,8 @@ class Notification
     public function setRecipient(?User $recipient): self
     {
         $this->recipient = $recipient;
-
         return $this;
     }
-
-    // Backward-compat aliases (legacy naming)
 
     public function getDateNotification(): ?\DateTimeInterface
     {
@@ -182,5 +178,10 @@ class Notification
     {
         return $this->setTargetProjectId($target_project_id);
     }
-}
 
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+        return $this;
+    }
+}

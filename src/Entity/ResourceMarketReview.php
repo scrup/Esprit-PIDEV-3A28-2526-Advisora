@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\ResourceMarketReviewRepository;
 
@@ -57,7 +58,11 @@ class ResourceMarketReview
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $comment = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     public function getComment(): ?string
     {
@@ -109,6 +114,13 @@ class ResourceMarketReview
     public function setReviewerUserId(?int $reviewerUserId): self
     {
         $this->reviewerUserId = $reviewerUserId;
+        return $this;
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
         return $this;
     }
 

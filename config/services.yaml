@@ -26,6 +26,8 @@ parameters:
     project_estimation_fallback_provider: '%env(default::string:PROJECT_ESTIMATION_FALLBACK_PROVIDER)%'
     openai_api_base_url: 'https://api.openai.com/v1'
     openai_estimation_model: 'gpt-4o-mini'
+    languagetool_api_url: '%env(default::string:LANGUAGETOOL_API_URL)%'
+    languagetool_language: '%env(default::string:LANGUAGETOOL_LANGUAGE)%'
 
 services:
     # default configuration for services in *this* file
@@ -80,10 +82,19 @@ services:
             $baseUrl: '%gemini_api_base_url%'
             $model: '%gemini_model%'
 
+    App\Service\PythonRecommendationService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Service\FailoverProjectEstimationAnalyzer:
         arguments:
             $primaryProvider: '%project_estimation_provider%'
             $fallbackProvider: '%project_estimation_fallback_provider%'
+
+    App\Service\FrenchSpellCorrector:
+        arguments:
+            $endpoint: '%languagetool_api_url%'
+            $defaultLanguage: '%languagetool_language%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 use App\Repository\TaskRepository;
 
@@ -55,7 +56,11 @@ class Task
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Gedmo\Translatable]
     private ?string $title = null;
+
+    #[Gedmo\Locale]
+    private ?string $locale = null;
 
     public function getTitle(): ?string
     {
@@ -195,6 +200,13 @@ class Task
             'DONE', 'TERMINEE', 'TERMINE', 'TERMINATED', 'COMPLETED' => self::STATUS_DONE,
             default => self::STATUS_TODO,
         };
+    }
+
+    public function setTranslatableLocale(string $locale): self
+    {
+        $this->locale = $locale;
+
+        return $this;
     }
 
 }

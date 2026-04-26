@@ -6,6 +6,7 @@ use App\Repository\EventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -19,9 +20,11 @@ class Event
     private ?int $idEv = null;
 
     #[ORM\Column(name: 'titleEv', type: 'string', length: 160)]
+    #[Gedmo\Translatable]
     private ?string $titleEv = null;
 
     #[ORM\Column(name: 'descriptionEv', type: 'text', nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $descriptionEv = null;
 
     #[ORM\Column(name: 'startDateEv', type: 'datetime')]
@@ -37,6 +40,7 @@ class Event
     private ?int $capaciteEvnt = 0;
 
     #[ORM\Column(name: 'localisationEv', type: 'string', length: 190, nullable: true)]
+    #[Gedmo\Translatable]
     private ?string $localisationEv = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Strategie;
+use App\Entity\Project;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -21,7 +22,11 @@ class StrategieRepository extends ServiceEntityRepository
     /**
      * @return Strategie[]
      */
-    public function findBackOfficeStrategies(array $filters = [], string $sortBy = 'created_at', string $direction = 'DESC'): array
+    public function findBackOfficeStrategies(
+        array $filters = [],
+        string $sortBy = 'created_at',
+        string $direction = 'DESC'
+    ): array
     {
         if (!in_array($direction, ['ASC', 'DESC'], true)) {
             $direction = 'DESC';
@@ -119,9 +124,161 @@ class StrategieRepository extends ServiceEntityRepository
         ];
     }
 
+    /**
+     * @return array<int, array{idStrategie: int, nomStrategie: string, type: ?string, gainEstime: ?float, DureeTerme: ?int}>
+     */
+    public function findRecommendationCandidates(): array
+    {
+        $rows = $this->createQueryBuilder('s')
+            ->select(
+                's.idStrategie AS idStrategie',
+                's.nomStrategie AS nomStrategie',
+                's.type AS type',
+                's.gainEstime AS gainEstime',
+                's.DureeTerme AS DureeTerme',
+                's.CreatedAtS AS createdAtS'
+            )
+            ->andWhere('s.nomStrategie IS NOT NULL')
+            ->andWhere('s.project IS NULL')
+            ->orderBy('s.CreatedAtS', 'DESC')
+            ->addOrderBy('s.idStrategie', 'DESC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $candidatesByKey = [];
+
+        foreach ($rows as $row) {
+            $name = trim((string) ($row['nomStrategie'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $key = mb_strtolower($name);
+            if (!isset($candidatesByKey[$key])) {
+                $candidatesByKey[$key] = [
+                    'idStrategie' => (int) ($row['idStrategie'] ?? 0),
+                    'nomStrategie' => $name,
+                    'type' => $this->normalizeNullableString($row['type'] ?? null),
+                    'gainEstime' => $this->toNullableFloat($row['gainEstime'] ?? null),
+                    'DureeTerme' => $this->toNullableInt($row['DureeTerme'] ?? null),
+                ];
+                continue;
+            }
+
+            if ($candidatesByKey[$key]['type'] === null) {
+                $candidatesByKey[$key]['type'] = $this->normalizeNullableString($row['type'] ?? null);
+            }
+
+            if ($candidatesByKey[$key]['gainEstime'] === null) {
+                $candidatesByKey[$key]['gainEstime'] = $this->toNullableFloat($row['gainEstime'] ?? null);
+            }
+
+            if ($candidatesByKey[$key]['DureeTerme'] === null) {
+                $candidatesByKey[$key]['DureeTerme'] = $this->toNullableInt($row['DureeTerme'] ?? null);
+            }
+        }
+
+        return array_values($candidatesByKey);
+    }
+
+    public function findAssignedDuplicateByName(string $name, ?int $excludeStrategyId = null): ?Strategie
+    {
+        $normalizedName = mb_strtolower(trim($name));
+        if ($normalizedName === '') {
+            return null;
+        }
+
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.project', 'p')
+            ->addSelect('p')
+            ->andWhere('LOWER(s.nomStrategie) = :normalizedName')
+            ->andWhere('s.project IS NOT NULL')
+            ->setParameter('normalizedName', $normalizedName)
+            ->orderBy('s.idStrategie', 'DESC')
+            ->setMaxResults(1);
+
+        if ($excludeStrategyId !== null && $excludeStrategyId > 0) {
+            $qb
+                ->andWhere('s.idStrategie != :excludeStrategyId')
+                ->setParameter('excludeStrategyId', $excludeStrategyId);
+        }
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    public function findDuplicateByNameForProject(
+        string $name,
+        ?Project $project,
+        ?int $excludeStrategyId = null
+    ): ?Strategie {
+        $normalizedName = mb_strtolower(trim($name));
+        if ($normalizedName === '') {
+            return null;
+        }
+
+        $qb = $this->createQueryBuilder('s')
+            ->andWhere('LOWER(TRIM(s.nomStrategie)) = :normalizedName')
+            ->setParameter('normalizedName', $normalizedName)
+            ->orderBy('s.idStrategie', 'DESC')
+            ->setMaxResults(1);
+
+        if ($project instanceof Project) {
+            $qb
+                ->andWhere('s.project = :project')
+                ->setParameter('project', $project);
+        } else {
+            $qb->andWhere('s.project IS NULL');
+        }
+
+        if ($excludeStrategyId !== null && $excludeStrategyId > 0) {
+            $qb
+                ->andWhere('s.idStrategie != :excludeStrategyId')
+                ->setParameter('excludeStrategyId', $excludeStrategyId);
+        }
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
     private function formatDateLabel(\DateTimeImmutable $date): string
     {
         return $date->format('d/m/Y');
+    }
+
+    private function normalizeNullableString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = trim((string) $value);
+
+        return $normalized !== '' ? $normalized : null;
+    }
+
+    private function toNullableFloat(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        return (float) $value;
+    }
+
+    private function toNullableInt(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        return (int) round((float) $value);
     }
 
     private function createBackOfficeListQueryBuilder(array $filters): QueryBuilder
@@ -133,6 +290,20 @@ class StrategieRepository extends ServiceEntityRepository
             ->leftJoin('s.objectives', 'o')
             ->addSelect('p', 'u', 'o');
 
+        // Keep the latest strategy for each (project, normalized name) pair to avoid
+        // showing historical duplicates created before duplicate guards were added.
+        $qb->andWhere(
+            's.idStrategie = (
+                SELECT MAX(s2.idStrategie)
+                FROM App\Entity\Strategie s2
+                WHERE LOWER(TRIM(s2.nomStrategie)) = LOWER(TRIM(s.nomStrategie))
+                  AND (
+                    (s2.project IS NULL AND s.project IS NULL)
+                    OR s2.project = s.project
+                  )
+            )'
+        );
+
         $searchQuery = trim((string) ($filters['query'] ?? ''));
         if ($searchQuery !== '') {
             $normalizedSearch = '%' . mb_strtolower($searchQuery) . '%';
@@ -140,7 +311,6 @@ class StrategieRepository extends ServiceEntityRepository
                 'LOWER(s.nomStrategie) LIKE :search',
                 'LOWER(COALESCE(s.type, \'\')) LIKE :search',
                 'LOWER(COALESCE(s.justification, \'\')) LIKE :search',
-                'LOWER(COALESCE(s.news, \'\')) LIKE :search',
                 'LOWER(COALESCE(p.titleProj, \'\')) LIKE :search',
                 'LOWER(COALESCE(p.descriptionProj, \'\')) LIKE :search',
                 'LOWER(COALESCE(o.nomObj, \'\')) LIKE :search',

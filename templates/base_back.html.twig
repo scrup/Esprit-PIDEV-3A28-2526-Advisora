@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale|default('fr') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,55 +7,123 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/back-base.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/notifications.css') }}">
     {% block stylesheets %}{% endblock %}
 </head>
 <body class="back-mode">
-<header class="back-header">
-    <a href="{{ path('app_back') }}" class="logo back-brand">
-        <img src="{{ asset('assets/logo.png') }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
-        <span class="back-brand-copy">
-            <span class="back-brand-title">Advisora</span>
-            <span class="back-brand-subtitle">Pilotage du back office</span>
-        </span>
-        <span class="mode-badge" id="modeBadge" data-mode-badge>Back Office</span>
-    </a>
+{% set current_route = app.request.get('_route') %}
+<div class="back-app-shell" data-back-app>
+    <aside class="back-sidebar" data-back-sidebar>
+        <div class="back-sidebar-inner">
+            <a href="{{ path('app_back') }}" class="back-brand">
+                <img src="{{ asset('assets/logo.png') }}" alt="Advisora Logo" class="back-logo-image" onerror="this.style.display='none'">
+                <span class="back-brand-copy">
+                    <span class="back-brand-title">Advisora</span>
+                    <span class="back-brand-subtitle">Pilotage du back office</span>
+                </span>
+            </a>
 
-    {% set current_route = app.request.get('_route') %}
+            <nav class="back-sidebar-nav" aria-label="Navigation back office">
+                <a href="{{ path('app_back') }}" class="back-sidebar-link {% if current_route == 'app_back' %}active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Accueil</span>
+                </a>
+                <a href="{{ path('back_project_overview') }}" class="back-sidebar-link {% if current_route in ['back_project_overview', 'back_project_index', 'project_back_manage', 'project_edit'] or current_route starts with 'decision_' %}active{% endif %}">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Projets</span>
+                </a>
+                <a href="{{ path('app_back_strategies') }}" class="back-sidebar-link {% if current_route starts with 'app_back_strategies' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Strategies</span>
+                </a>
+                <a href="{{ path('back_event_index') }}" class="back-sidebar-link {% if current_route in ['back_event_index', 'event_new', 'event_edit', 'event_back_manage', 'back_event_bookings'] or current_route starts with 'back_event_booking_' %}active{% endif %}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Evenements</span>
+                </a>
+                <a href="{{ path('back_resource_dashboard') }}" class="back-sidebar-link {% if current_route starts with 'back_resource' or current_route starts with 'back_supplier' or current_route in ['resource_back_manage', 'resource_edit', 'resource_new', 'supplier_back_manage', 'supplier_edit', 'supplier_new'] %}active{% endif %}">
+                    <i class="fas fa-book"></i>
+                    <span>Ressources</span>
+                </a>
+                <a href="{{ path('back_investment_index') }}" class="back-sidebar-link {% if current_route starts with 'back_investment' or current_route starts with 'back_transaction' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Investissements</span>
+                </a>
+                <a href="{{ path('back_user_index') }}" class="back-sidebar-link {% if current_route starts with 'back_user_' %}active{% endif %}">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Utilisateurs</span>
+                </a>
+            </nav>
 
-    <nav class="back-nav" aria-label="Navigation back office">
-        <a href="{{ path('app_back') }}" class="back-nav-link {% if current_route == 'app_back' %}active{% endif %}"><i class="fas fa-home"></i> Accueil</a>
-        <a href="{{ path('back_project_overview') }}" class="back-nav-link {% if current_route in ['back_project_overview', 'back_project_index', 'project_back_manage', 'project_edit'] or current_route starts with 'decision_' %}active{% endif %}"><i class="fas fa-folder-open"></i> Projets</a>
-        <a href="{{ path('app_back_strategies') }}" class="back-nav-link {% if current_route starts with 'app_back_strategies' %}active{% endif %}"><i class="fas fa-chart-line"></i> Strategies</a>
-        <a href="{{ path('back_event_index') }}" class="back-nav-link {% if current_route in ['back_event_index', 'event_new', 'event_edit', 'event_back_manage', 'back_event_bookings'] or current_route starts with 'back_event_booking_' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Evenements</a>
-        <a href="{{ path('back_resource_dashboard') }}" class="back-nav-link {% if current_route starts with 'back_resource' or current_route starts with 'back_supplier' or current_route in ['resource_back_manage', 'resource_edit', 'resource_new', 'supplier_back_manage', 'supplier_edit', 'supplier_new'] %}active{% endif %}"><i class="fas fa-book"></i> Ressources</a>
-        <a href="{{ path('back_investment_index') }}" class="back-nav-link {% if current_route starts with 'back_investment' or current_route starts with 'back_transaction' %}active{% endif %}"><i class="fas fa-chart-simple"></i> Investissements</a>
-        <a href="#" onclick="return false;" aria-disabled="true" class="back-nav-link back-nav-link-disabled"><i class="fas fa-user"></i> Profil</a>
-        <a href="{{ path('back_user_index') }}" class="back-nav-link {% if current_route starts with 'back_user_' %}active{% endif %}"><i class="fas fa-users-cog"></i> Utilisateurs</a>
-    </nav>
-
-    <div class="header-actions">
-        <div class="header-utility-actions">
-            {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'back'} %}
-
-            <div class="user-info">
-                <i class="fas fa-user-circle"></i>
-                <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
+            <div class="back-sidebar-footer">
+                <span class="back-sidebar-footnote">Navigation centrale</span>
+                <p>Toutes les gestions du back office sont accessibles depuis cette barre laterale.</p>
             </div>
         </div>
+    </aside>
 
-        {% if app.user %}
-            <form method="post" action="{{ path('app_logout') }}" class="logout-form-inline">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-                <button type="submit" class="btn-logout" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Deconnecter</span>
+    <button class="back-sidebar-overlay" type="button" data-sidebar-overlay aria-label="Fermer la navigation"></button>
+
+    <div class="back-main-shell">
+        <header class="back-topbar">
+            <div class="back-topbar-left">
+                <button class="back-sidebar-toggle" type="button" data-sidebar-toggle aria-label="Ouvrir la navigation">
+                    <i class="fas fa-bars"></i>
                 </button>
-            </form>
-        {% endif %}
-    </div>
-</header>
+                <div class="back-topbar-brand">
+                    <span class="back-topbar-eyebrow">Advisora</span>
+                    <strong>Back Office</strong>
+                    <span class="back-mode-badge" id="modeBadge" data-mode-badge>Mode Back</span>
+                </div>
+            </div>
 
-<main>
+            <div class="back-topbar-actions">
+                {% include 'shared/back_interface_toggle.html.twig' with {interface_mode: 'back'} %}
+                {% if app.user %}
+                    {% include 'shared/notification_center.html.twig' with {variant: 'back'} %}
+                {% endif %}
+
+                {% set current_route_name = app.request.attributes.get('_route')|default('app_back') %}
+                {% set route_params = app.request.attributes.get('_route_params', {}) %}
+                {% set query_params = app.request.query.all() %}
+                {% set fr_params = route_params|merge(query_params)|merge({'_locale': 'fr'}) %}
+                {% set en_params = route_params|merge(query_params)|merge({'_locale': 'en'}) %}
+
+                <div class="back-lang-switcher" aria-label="Choisir la langue">
+                    <a href="{{ path(current_route_name, fr_params) }}"
+                       class="back-lang-option {{ app.request.locale == 'fr' ? 'active' : '' }}"
+                       aria-label="Francais">
+                        FR
+                    </a>
+                    <span class="back-lang-divider">|</span>
+                    <a href="{{ path(current_route_name, en_params) }}"
+                       class="back-lang-option {{ app.request.locale == 'en' ? 'active' : '' }}"
+                       aria-label="English">
+                        EN
+                    </a>
+                </div>
+
+                <a href="{{ path('back_user_profile') }}" class="back-user-chip">
+                    {% if app.user and app.user.image_path %}
+                        <img src="{{ asset(app.user.image_path) }}" alt="Profil" class="back-user-chip-avatar">
+                    {% else %}
+                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                    {% endif %}
+                    <span>{{ app.user ? app.user.getPrenomUser() : 'Invite' }}</span>
+                </a>
+
+                {% if app.user %}
+                    <form method="post" action="{{ path('app_logout') }}" class="logout-form-inline">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                        <button type="submit" class="btn-logout" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Deconnecter</span>
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </header>
+
+        <main>
     {% for message in app.flashes('success') %}
         <div class="flash-message flash-success back-flash">{{ message }}</div>
     {% endfor %}
@@ -63,11 +131,15 @@
         <div class="flash-message flash-error back-flash">{{ message }}</div>
     {% endfor %}
     {% block body %}{% endblock %}
-</main>
+        </main>
+    </div>
+</div>
 
 {% block javascripts %}
     <script src="{{ asset('js/form-validation.js') }}"></script>
+    <script src="{{ asset('js/back-layout.js') }}"></script>
     <script src="{{ asset('js/interface-toggle.js') }}"></script>
+    <script src="{{ asset('js/notifications.js') }}"></script>
 {% endblock %}
 </body>
 </html>

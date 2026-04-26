@@ -18,6 +18,7 @@
 {% endblock %}
 
 {% block body %}
+{% set currentLocale = app.request.locale|lower starts with 'en' ? 'en' : 'fr' %}
 <div class="form-container">
     <div class="form-header">
         <div class="header-left">
@@ -40,6 +41,10 @@
                     Remplissez le formulaire ci-dessous pour creer une nouvelle strategie d'investissement.
                 {% endif %}
             </p>
+            <p style="margin-top:8px;font-size:.9rem;color:#7b8493;">
+                Langue d edition active: <strong>{{ currentLocale|upper }}</strong>.
+                Utilisez le switch FR/EN en haut pour modifier la traduction de cette langue.
+            </p>
         </div>
     </div>
 
@@ -47,7 +52,9 @@
         {{ form_start(form, {'attr': {
             'class': 'strategy-form',
             'novalidate': 'novalidate',
-            'data-skip-validation': 'true'
+            'data-skip-validation': 'true',
+            'data-spellcheck-url': path('app_back_strategies_spellcheck'),
+            'data-spellcheck-language': 'fr'
         }}) }}
 
         {% if form.vars.errors|length > 0 %}
@@ -67,10 +74,12 @@
                             'class': 'form-input',
                             'placeholder': 'Ex: Expansion Marche Euro',
                             'maxlength': 255,
-                            'required': 'required'
+                            'required': 'required',
+                            'data-live-spellcheck': 'nomStrategie'
                         }}) }}
                     </div>
                     <div class="form-helper">Donnez un nom clair et descriptif a votre strategie</div>
+                    <div class="form-helper" data-spellcheck-status-for="{{ form.nomStrategie.vars.id }}" style="display:none;"></div>
                     <div class="field-errors">
                         {{ form_errors(form.nomStrategie) }}
                     </div>
@@ -241,4 +250,130 @@
         {{ form_end(form) }}
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('.strategy-form[data-spellcheck-url]');
+            if (!form) {
+                return;
+            }
+
+            const spellcheckUrl = form.dataset.spellcheckUrl || '';
+            const language = form.dataset.spellcheckLanguage || 'fr';
+            if (spellcheckUrl === '') {
+                return;
+            }
+
+            const fields = Array.from(form.querySelectorAll('[data-live-spellcheck]'));
+            if (fields.length === 0) {
+                return;
+            }
+
+            const timers = new Map();
+            const controllers = new Map();
+            const minLength = 4;
+
+            const getStatusElement = (input) => {
+                if (!input || !input.id) {
+                    return null;
+                }
+
+                return form.querySelector(`[data-spellcheck-status-for="${input.id}"]`);
+            };
+
+            const showStatus = (input, message, tone = 'info') => {
+                const status = getStatusElement(input);
+                if (!status) {
+                    return;
+                }
+
+                status.textContent = message;
+                status.style.display = message ? 'block' : 'none';
+                status.style.color = tone === 'error' ? '#b54747' : '#5f6b7a';
+            };
+
+            const runSpellcheck = async (input) => {
+                const field = input.dataset.liveSpellcheck || '';
+                const text = input.value || '';
+                if (field === '') {
+                    return;
+                }
+
+                if (text.trim().length < minLength) {
+                    showStatus(input, '');
+                    return;
+                }
+
+                const previousController = controllers.get(input);
+                if (previousController) {
+                    previousController.abort();
+                }
+
+                const controller = new AbortController();
+                controllers.set(input, controller);
+
+                const body = new URLSearchParams({
+                    field,
+                    text,
+                    language
+                });
+
+                try {
+                    const response = await fetch(spellcheckUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: body.toString(),
+                        signal: controller.signal
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const payload = await response.json();
+                    if (!payload || payload.status !== 'ok' || typeof payload.corrected !== 'string') {
+                        return;
+                    }
+
+                    if (payload.changed === true && payload.corrected !== input.value) {
+                        input.value = payload.corrected;
+                        showStatus(input, 'Correction auto appliquee.');
+                        return;
+                    }
+
+                    showStatus(input, '');
+                } catch (error) {
+                    if (error && error.name === 'AbortError') {
+                        return;
+                    }
+
+                    showStatus(input, 'Correction indisponible pour le moment.', 'error');
+                }
+            };
+
+            const scheduleSpellcheck = (input) => {
+                const previousTimer = timers.get(input);
+                if (previousTimer) {
+                    window.clearTimeout(previousTimer);
+                }
+
+                const timer = window.setTimeout(() => {
+                    runSpellcheck(input);
+                }, 650);
+
+                timers.set(input, timer);
+            };
+
+            fields.forEach((field) => {
+                field.addEventListener('input', () => scheduleSpellcheck(field));
+                field.addEventListener('blur', () => runSpellcheck(field));
+            });
+        });
+    </script>
 {% endblock %}

@@ -1,8 +1,7 @@
 stof_doctrine_extensions:
-    default_locale: fr_FR
+    default_locale: fr
     orm:
         default:
-            timestampable: true
+            translatable: true
             sluggable: true
             softdeleteable: true
-
