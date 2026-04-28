@@ -1,6 +1,6 @@
 {% extends 'base_back.html.twig' %}
 
-{% block title %}Advisora | Gestion des evenements{% endblock %}
+{% block title %}Advisora | {{ 'event.back.index.meta_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -12,13 +12,13 @@
     <section class="pm-admin-shell">
         <div class="pm-admin-header">
             <div>
-                <span class="pm-badge">Back office</span>
-                <h1>Gestion des evenements</h1>
-                <p>Administrez les evenements relies au schema reel de la table `events`.</p>
+                <span class="pm-badge">{{ 'event.back.common.badge'|trans }}</span>
+                <h1>{{ 'event.back.index.heading'|trans }}</h1>
+                <p>{{ 'event.back.index.subtitle'|trans }}</p>
             </div>
             <div class="pm-card-actions">
-                <a class="pm-btn pm-btn-primary" href="{{ path('event_new') }}">Ajouter un evenement</a>
-                <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">Retour au tableau de bord</a>
+                <a class="pm-btn pm-btn-primary" href="{{ path('event_new') }}">{{ 'event.back.index.add_event'|trans }}</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('app_back') }}">{{ 'event.back.index.back_dashboard'|trans }}</a>
             </div>
         </div>
 
@@ -27,16 +27,16 @@
         <div class="pm-form-card pm-filter-card">
             <form method="get" class="pm-filter-grid">
                 <div>
-                    <label for="q">Recherche</label>
-                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Titre, organisateur, lieu...">
+                    <label for="q">{{ 'event.back.common.search'|trans }}</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="{{ 'event.back.index.search_placeholder'|trans }}">
                 </div>
                 <div>
-                    <label for="manager">Gerant</label>
-                    <input id="manager" type="text" name="manager" value="{{ filters.manager }}" placeholder="Nom ou email">
+                    <label for="manager">{{ 'event.back.common.manager'|trans }}</label>
+                    <input id="manager" type="text" name="manager" value="{{ filters.manager }}" placeholder="{{ 'event.back.index.manager_placeholder'|trans }}">
                 </div>
                 <div class="pm-filter-actions">
-                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
-                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_index') }}">Reinitialiser</a>
+                    <button class="pm-btn pm-btn-primary" type="submit">{{ 'event.common.filter'|trans }}</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_index') }}">{{ 'event.common.reset'|trans }}</a>
                 </div>
             </form>
         </div>
@@ -46,32 +46,32 @@
                 <article class="pm-card">
                     <div class="pm-card-head">
                         <span class="pm-status pm-status-{{ event.getTimelineStatus() }}">{{ event.getTimelineLabel() }}</span>
-                        <span class="pm-meta">Evenement #{{ event.id }}</span>
+                        <span class="pm-meta">{{ 'event.common.event_number'|trans }} #{{ event.id }}</span>
                     </div>
                     <h2>{{ event.title }}</h2>
-                    <p>{{ event.description ?: 'Aucune description disponible.' }}</p>
+                    <p>{{ event.description ?: ('event.common.no_description'|trans) }}</p>
                     <div class="pm-meta-list pm-meta-list-vertical">
-                        <span><strong>Organisateur :</strong> {{ event.organizerName ?: 'Non renseigne' }}</span>
-                        <span><strong>Lieu :</strong> {{ event.location ?: 'Non renseigne' }}</span>
-                        <span><strong>Debut :</strong> {{ event.startDate ? event.startDate|date('d/m/Y H:i') : 'Non renseigne' }}</span>
-                        <span><strong>Fin :</strong> {{ event.endDate ? event.endDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
-                        <span><strong>Gerant :</strong> {{ event.getManagerDisplayName() }}</span>
-                        <span><strong>Tickets reserves :</strong> {{ event.reservedTickets }}</span>
+                        <span><strong>{{ 'event.common.organizer'|trans }} :</strong> {{ event.organizerName ?: ('event.common.not_provided'|trans) }}</span>
+                        <span><strong>{{ 'event.common.location'|trans }} :</strong> {{ event.location ?: ('event.common.not_provided'|trans) }}</span>
+                        <span><strong>{{ 'event.back.common.start'|trans }} :</strong> {{ event.startDate ? event.startDate|date('d/m/Y H:i') : ('event.common.not_provided'|trans) }}</span>
+                        <span><strong>{{ 'event.back.common.end'|trans }} :</strong> {{ event.endDate ? event.endDate|date('d/m/Y H:i') : ('event.common.not_provided_female'|trans) }}</span>
+                        <span><strong>{{ 'event.back.common.manager'|trans }} :</strong> {{ event.getManagerDisplayName() }}</span>
+                        <span><strong>{{ 'event.back.common.reserved_tickets'|trans }} :</strong> {{ event.reservedTickets }}</span>
                     </div>
                     <div class="pm-card-actions">
-                        <a class="pm-btn pm-btn-primary" href="{{ path('event_back_manage', {id: event.id}) }}">Gerer</a>
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_edit', {id: event.id}) }}">Modifier</a>
-                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: event.id}) }}">Voir en front</a>
-                        <form method="post" action="{{ path('event_delete', {id: event.id}) }}" onsubmit="return confirm('Supprimer cet evenement ?');">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('event_back_manage', {id: event.id}) }}">{{ 'event.common.manage'|trans }}</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_edit', {id: event.id}) }}">{{ 'event.common.edit'|trans }}</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: event.id}) }}">{{ 'event.back.index.view_front'|trans }}</a>
+                        <form method="post" action="{{ path('event_delete', {id: event.id}) }}" onsubmit="return confirm('{{ 'event.back.common.confirm_delete_event'|trans }}');">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
-                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                            <button class="pm-btn pm-btn-danger" type="submit">{{ 'event.common.delete'|trans }}</button>
                         </form>
                     </div>
                 </article>
             {% else %}
                 <div class="pm-empty">
-                    <h2>Aucun evenement ne correspond aux filtres</h2>
-                    <p>Ajoutez un evenement ou modifiez votre recherche.</p>
+                    <h2>{{ 'event.back.index.empty.title'|trans }}</h2>
+                    <p>{{ 'event.back.index.empty.text'|trans }}</p>
                 </div>
             {% endfor %}
         </section>

@@ -29,7 +29,7 @@
                 <h1>{{ page_title }}</h1>
                 <p>{{ page_message }}</p>
             </div>
-            <a class="pm-btn pm-btn-secondary" href="{{ back_route == 'investment_manage' and investment.id ? path(back_route, {id: investment.id}) : path(back_route) }}">Retour</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ back_route == 'investment_manage' and investment.id ? path(back_route, {id: investment.id}) : path(back_route) }}">{{ 'investment.common.back'|trans }}</a>
         </div>
 
         {% include 'front/investment/_module_nav.html.twig' %}
@@ -46,12 +46,12 @@
 
         <div class="pm-form-card">
             <div class="pm-info-banner" data-selected-project-banner>
-                <strong>Projet preselectionne :</strong> <span data-selected-project-title>{{ project ? project.title : 'Aucun pour le moment' }}</span><br>
-                <strong>ID projet :</strong> <span data-selected-project-id>{{ project ? '#' ~ project.id : 'A selectionner' }}</span><br>
-                <strong>Budget projet :</strong> <span data-selected-project-budget>{{ project and project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span><br>
-                <strong>Secteur :</strong> <span data-selected-project-sector>{{ project and project.legacyType ? project.legacyType : 'Non renseigne' }}</span><br>
-                <strong>Statut :</strong> <span data-selected-project-status>{{ project ? project.statusLabel : 'Non renseigne' }}</span><br>
-                <strong>Projets disponibles :</strong> {{ projects_count|default(0) }}
+                <strong>{{ 'investment.form.selected_project'|trans }} :</strong> <span data-selected-project-title>{{ project ? project.title : ('investment.form.none_yet'|trans) }}</span><br>
+                <strong>{{ 'investment.form.project_id'|trans }} :</strong> <span data-selected-project-id>{{ project ? '#' ~ project.id : ('investment.form.to_select'|trans) }}</span><br>
+                <strong>{{ 'investment.form.project_budget'|trans }} :</strong> <span data-selected-project-budget>{{ project and project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : ('investment.common.not_specified'|trans) }}</span><br>
+                <strong>{{ 'investment.common.sector'|trans }} :</strong> <span data-selected-project-sector>{{ project and project.legacyType ? project.legacyType : ('investment.common.not_provided'|trans) }}</span><br>
+                <strong>{{ 'investment.form.status'|trans }} :</strong> <span data-selected-project-status>{{ project ? project.statusLabel : ('investment.common.not_provided'|trans) }}</span><br>
+                <strong>{{ 'investment.form.available_projects'|trans }} :</strong> {{ projects_count|default(0) }}
             </div>
             {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'investment'}}) }}
                 {{ form_errors(form) }}

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Advisora | Inscription confirmee{% endblock %}
+{% block title %}Advisora | {{ 'event.cart_confirmed.meta_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -12,16 +12,16 @@
 {% block body %}
 <div class="cart-shell">
     <div class="cart-confirmed">
-        <div class="cart-confirmed-icon">✓</div>
-        <h1>Inscription confirmee !</h1>
-        <p>Votre paiement a ete accepte et vos inscriptions ont ete enregistrees avec succes.</p>
-        <p class="cart-confirmed-sub">Vous recevrez une confirmation par email. Vos billets sont disponibles dans votre espace personnel.</p>
+        <div class="cart-confirmed-icon">?</div>
+        <h1>{{ 'event.cart_confirmed.heading'|trans }}</h1>
+        <p>{{ 'event.cart_confirmed.text'|trans }}</p>
+        <p class="cart-confirmed-sub">{{ 'event.cart_confirmed.subtext'|trans }}</p>
         <div class="cart-confirmed-actions">
             <a class="pm-btn pm-btn-primary" href="{{ path('event_my_bookings') }}">
-                <i class="fas fa-ticket"></i> Voir mes inscriptions
+                <i class="fas fa-ticket"></i> {{ 'event.cart_confirmed.view_bookings'|trans }}
             </a>
             <a class="pm-btn pm-btn-secondary" href="{{ path('event_index') }}">
-                Retour aux evenements
+                {{ 'event.cart_confirmed.back_events'|trans }}
             </a>
         </div>
     </div>

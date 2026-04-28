@@ -286,6 +286,17 @@ body {
     transform: translateY(-1px);
 }
 
+.pm-btn-ghost {
+    background: transparent;
+    color: var(--pm-terracotta-dark);
+    border: 1px dashed rgba(195, 125, 93, 0.55);
+}
+
+.pm-btn-ghost:hover {
+    background: rgba(195, 125, 93, 0.08);
+    border-color: var(--pm-terracotta);
+}
+
 .pm-btn-danger {
     background: linear-gradient(135deg, #d68b6e, #c46c56);
     color: #fff;

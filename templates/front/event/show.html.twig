@@ -11,38 +11,38 @@
 {% block body %}
     <section class="pm-detail-shell">
         <div class="pm-detail-main">
-            <a class="pm-back-link" href="{{ path('event_index') }}">â† Retour aux evenements</a>
+            <a class="pm-back-link" href="{{ path('event_index') }}">? {{ 'event.show.back'|trans }}</a>
             <div class="pm-card pm-card-large">
                 <div class="pm-card-head">
                     <span class="pm-status pm-status-{{ event.getTimelineStatus() }}">{{ event.getTimelineLabel() }}</span>
                     {% if event.price %}
-                        <span class="ev-price-tag">{{ event.price|number_format(2, '.', ' ') }} TND / ticket</span>
+                        <span class="ev-price-tag">{{ event.price|number_format(2, '.', ' ') }} TND / {{ 'event.common.ticket'|trans }}</span>
                     {% else %}
-                        <span class="ev-price-tag ev-price-free">Gratuit</span>
+                        <span class="ev-price-tag ev-price-free">{{ 'event.common.free'|trans }}</span>
                     {% endif %}
                 </div>
                 <h1>{{ event.title }}</h1>
-                <p>{{ event.description ?: 'Aucune description disponible.' }}</p>
+                <p>{{ event.description ?: ('event.common.no_description'|trans) }}</p>
 
                 <ul class="ev-meta-chips">
-                    <li><i class="fas fa-user-tie"></i> {{ event.organizerName ?: 'Non renseigne' }}</li>
-                    <li><i class="fas fa-location-dot"></i> {{ event.location ?: 'Non renseigne' }}</li>
+                    <li><i class="fas fa-user-tie"></i> {{ event.organizerName ?: ('event.common.not_provided'|trans) }}</li>
+                    <li><i class="fas fa-location-dot"></i> {{ event.location ?: ('event.common.not_provided'|trans) }}</li>
                     <li><i class="fas fa-calendar-plus"></i> {{ event.startDate ? event.startDate|date('d/m/Y H:i') : 'N/A' }}</li>
                     <li><i class="fas fa-calendar-check"></i> {{ event.endDate ? event.endDate|date('d/m/Y H:i') : 'N/A' }}</li>
-                    <li><i class="fas fa-users"></i> {{ event.reservedTickets }}/{{ event.capacity }} inscrits</li>
+                    <li><i class="fas fa-users"></i> {{ event.reservedTickets }}/{{ event.capacity }} {{ 'event.index.cards.registered'|trans }}</li>
                     <li class="{{ event.remainingTickets == 0 ? 'ev-chip-full' : '' }}">
                         <i class="fas fa-chair"></i>
-                        {% if event.remainingTickets == 0 %}Complet{% else %}{{ event.remainingTickets }} place{{ event.remainingTickets != 1 ? 's' : '' }} restante{{ event.remainingTickets != 1 ? 's' : '' }}{% endif %}
+                        {% if event.remainingTickets == 0 %}{{ 'event.common.full'|trans }}{% else %}{{ event.remainingTickets }} {{ 'event.show.remaining'|trans({'%count%': event.remainingTickets}) }}{% endif %}
                     </li>
                 </ul>
 
                 {% if can_manage_events %}
                     <div class="pm-card-actions">
                         <a class="pm-btn pm-btn-primary" href="{{ path('event_back_manage', {id: event.id}) }}">
-                            <i class="fas fa-cog"></i> Gerer cet evenement
+                            <i class="fas fa-cog"></i> {{ 'event.show.manage_event'|trans }}
                         </a>
                         <a class="pm-btn pm-btn-secondary" href="{{ path('event_edit', {id: event.id}) }}">
-                            <i class="fas fa-pen"></i> Modifier
+                            <i class="fas fa-pen"></i> {{ 'event.common.edit'|trans }}
                         </a>
                     </div>
                 {% endif %}
@@ -52,28 +52,28 @@
         <aside class="pm-detail-side">
             <div class="pm-card">
                 <div class="pm-current-decision">
-                    <span class="pm-badge">Organisateur</span>
+                    <span class="pm-badge">{{ 'event.show.organizer_badge'|trans }}</span>
                     <strong style="display:block; margin-top:0.5rem;">{{ event.getManagerDisplayName() }}</strong>
                 </div>
 
                 {% if app.user and can_book_events %}
                     <div class="pm-form-card pm-reservation-box" style="margin-top: 1.25rem;">
                         <div class="pm-current-decision pm-reservation-intro">
-                            <span class="pm-badge">Inscription</span>
+                            <span class="pm-badge">{{ 'event.show.booking_badge'|trans }}</span>
                             {% if existing_booking %}
-                                <strong style="display:block; margin-top:0.5rem;">Vous etes deja inscrit</strong>
-                                <p style="margin-top:0.4rem;">Statut : <span class="pm-status pm-status-{{ existing_booking.workflowStatusCssClass }}">{{ existing_booking.workflowStatusLabel }}</span></p>
+                                <strong style="display:block; margin-top:0.5rem;">{{ 'event.show.already_booked'|trans }}</strong>
+                                <p style="margin-top:0.4rem;">{{ 'event.show.status'|trans }} : <span class="pm-status pm-status-{{ existing_booking.workflowStatusCssClass }}">{{ existing_booking.workflowStatusLabel }}</span></p>
                                 {% if event.price %}
                                     <p style="margin-top:0.25rem; font-size:0.85rem; color:var(--pm-muted);">
-                                        {{ existing_booking.ticketCount }} ticket{{ existing_booking.ticketCount != 1 ? 's' : '' }}
+                                        {{ existing_booking.ticketCount }} {{ 'event.common.ticket_count'|trans({'%count%': existing_booking.ticketCount}) }}
                                         &mdash; {{ (event.price * existing_booking.ticketCount)|number_format(2, '.', ' ') }} TND
                                     </p>
                                 {% endif %}
                             {% else %}
-                                <strong style="display:block; margin-top:0.5rem;">Inscription ouverte</strong>
+                                <strong style="display:block; margin-top:0.5rem;">{{ 'event.show.booking_open'|trans }}</strong>
                                 {% if event.price %}
                                     <p style="margin-top:0.25rem; font-size:0.85rem; color:var(--pm-muted);">
-                                        <i class="fas fa-tag"></i> {{ event.price|number_format(2, '.', ' ') }} TND par ticket
+                                        <i class="fas fa-tag"></i> {{ event.price|number_format(2, '.', ' ') }} TND {{ 'event.show.per_ticket'|trans }}
                                     </p>
                                 {% endif %}
                             {% endif %}
@@ -81,36 +81,36 @@
                         <div class="pm-card-actions">
                             {% if existing_booking %}
                                 <a class="pm-btn pm-btn-primary" href="{{ path('event_booking_edit', {id: existing_booking.id}) }}">
-                                    {{ existing_booking.isPending ? 'Modifier mon inscription' : 'Consulter mon inscription' }}
+                                    {{ existing_booking.isPending ? ('event.show.edit_my_booking'|trans) : ('event.show.view_my_booking'|trans) }}
                                 </a>
                             {% elseif event.remainingTickets > 0 %}
                                 <form method="post" action="{{ path('event_add_to_cart', {id: event.id}) }}" style="width:100%;">
                                     <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.75rem;">
-                                        <label style="font-size:0.85rem; font-weight:600; color:var(--pm-muted); white-space:nowrap;">Tickets :</label>
+                                        <label style="font-size:0.85rem; font-weight:600; color:var(--pm-muted); white-space:nowrap;">{{ 'event.common.tickets'|trans }} :</label>
                                         <input type="number" name="quantity" value="1" min="1" max="{{ event.remainingTickets }}"
                                             style="width:70px; border:1.5px solid #e8e0d5; border-radius:12px; padding:0.5rem 0.75rem; font:inherit; font-weight:700; text-align:center;">
                                     </div>
                                     <input type="hidden" name="redirect" value="cart">
                                     <button type="submit" class="pm-btn pm-btn-primary" style="width:100%;">
-                                        <i class="fas fa-cart-plus"></i> Ajouter au panier
+                                        <i class="fas fa-cart-plus"></i> {{ 'event.show.add_to_cart'|trans }}
                                     </button>
                                 </form>
                             {% else %}
-                                <span class="ev-full-badge">Evenement complet</span>
+                                <span class="ev-full-badge">{{ 'event.show.event_full'|trans }}</span>
                             {% endif %}
-                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_cart') }}"><i class="fas fa-shopping-cart"></i> Mon panier</a>
-                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_my_bookings') }}">Mes inscriptions</a>
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_cart') }}"><i class="fas fa-shopping-cart"></i> {{ 'event.index.actions.my_cart'|trans }}</a>
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_my_bookings') }}">{{ 'event.index.actions.my_bookings'|trans }}</a>
                         </div>
                     </div>
                 {% elseif not app.user %}
                     <div class="pm-form-card" style="margin-top: 1.25rem;">
                         <div class="pm-current-decision">
-                            <span class="pm-badge">Connexion requise</span>
-                            <strong style="display:block; margin-top:0.5rem;">Connectez-vous pour vous inscrire</strong>
-                            <p style="margin-top:0.4rem;">Les clients authentifies peuvent reserver des tickets.</p>
+                            <span class="pm-badge">{{ 'event.show.login_required_badge'|trans }}</span>
+                            <strong style="display:block; margin-top:0.5rem;">{{ 'event.show.login_required_title'|trans }}</strong>
+                            <p style="margin-top:0.4rem;">{{ 'event.show.login_required_text'|trans }}</p>
                         </div>
                         <div class="pm-card-actions">
-                            <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter</a>
+                            <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">{{ 'event.index.actions.login'|trans }}</a>
                         </div>
                     </div>
                 {% endif %}

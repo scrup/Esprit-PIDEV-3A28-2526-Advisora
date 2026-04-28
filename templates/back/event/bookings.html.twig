@@ -1,6 +1,6 @@
 {% extends 'base_back.html.twig' %}
 
-{% block title %}Advisora | Inscriptions evenement{% endblock %}
+{% block title %}Advisora | {{ 'event.back.bookings.meta_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -12,11 +12,11 @@
     <section class="pm-admin-shell">
         <div class="pm-admin-header">
             <div>
-                <span class="pm-badge">Back office</span>
-                <h1>Inscriptions aux evenements</h1>
-                <p>Consultez toutes les reservations enregistrees dans la table `bookings`.</p>
+                <span class="pm-badge">{{ 'event.back.common.badge'|trans }}</span>
+                <h1>{{ 'event.back.bookings.heading'|trans }}</h1>
+                <p>{{ 'event.back.bookings.subtitle'|trans }}</p>
             </div>
-            <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_index') }}">Retour aux evenements</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_index') }}">{{ 'event.back.bookings.back_events'|trans }}</a>
         </div>
 
         {% include 'back/event/_module_nav.html.twig' %}
@@ -24,12 +24,12 @@
         <div class="pm-form-card pm-filter-card">
             <form method="get" class="pm-filter-grid">
                 <div>
-                    <label for="q">Recherche</label>
-                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Client, email, evenement...">
+                    <label for="q">{{ 'event.back.common.search'|trans }}</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="{{ 'event.back.bookings.search_placeholder'|trans }}">
                 </div>
                 <div class="pm-filter-actions">
-                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
-                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_bookings') }}">Reinitialiser</a>
+                    <button class="pm-btn pm-btn-primary" type="submit">{{ 'event.common.filter'|trans }}</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_bookings') }}">{{ 'event.common.reset'|trans }}</a>
                 </div>
             </form>
         </div>
@@ -39,39 +39,39 @@
                 <article class="pm-card">
                     <div class="pm-card-head">
                         <span class="pm-status pm-status-{{ booking.workflowStatusCssClass }}">{{ booking.workflowStatusLabel }}</span>
-                        <span class="pm-meta">Booking #{{ booking.id }}</span>
+                        <span class="pm-meta">{{ 'event.back.bookings.booking_number'|trans }} #{{ booking.id }}</span>
                     </div>
-                    <h2>{{ booking.event ? booking.event.title : 'Evenement indisponible' }}</h2>
-                    <p>{{ booking.event and booking.event.description ? booking.event.description : 'Aucune description disponible.' }}</p>
+                    <h2>{{ booking.event ? booking.event.title : ('event.common.event_unavailable'|trans) }}</h2>
+                    <p>{{ booking.event and booking.event.description ? booking.event.description : ('event.common.no_description'|trans) }}</p>
                     <div class="pm-meta-list pm-meta-list-vertical">
-                        <span><strong>Client :</strong> {{ booking.getClientDisplayName() }}</span>
-                        <span><strong>Email :</strong> {{ booking.user ? booking.user.getEmailUser() : 'Non renseigne' }}</span>
-                        <span><strong>Organisateur :</strong> {{ booking.event ? booking.event.organizerName : 'Non renseigne' }}</span>
-                        <span><strong>Date reservation :</strong> {{ booking.bookingDate ? booking.bookingDate|date('d/m/Y H:i') : 'Non renseignee' }}</span>
-                        <span><strong>Nombre de tickets :</strong> {{ booking.ticketCount }}</span>
-                        <span><strong>Total stocke :</strong> {{ booking.totalPrixBk|number_format(2, '.', ' ') }} TND</span>
+                        <span><strong>{{ 'event.back.bookings.client'|trans }} :</strong> {{ booking.getClientDisplayName() }}</span>
+                        <span><strong>{{ 'event.back.bookings.email'|trans }} :</strong> {{ booking.user ? booking.user.getEmailUser() : ('event.common.not_provided'|trans) }}</span>
+                        <span><strong>{{ 'event.common.organizer'|trans }} :</strong> {{ booking.event ? booking.event.organizerName : ('event.common.not_provided'|trans) }}</span>
+                        <span><strong>{{ 'event.back.bookings.booking_date'|trans }} :</strong> {{ booking.bookingDate ? booking.bookingDate|date('d/m/Y H:i') : ('event.common.not_provided_female'|trans) }}</span>
+                        <span><strong>{{ 'event.back.manage.ticket_count'|trans }} :</strong> {{ booking.ticketCount }}</span>
+                        <span><strong>{{ 'event.back.manage.total_stored'|trans }} :</strong> {{ booking.totalPrixBk|number_format(2, '.', ' ') }} TND</span>
                     </div>
                     <div class="pm-card-actions">
                         {% if booking.event %}
-                            <a class="pm-btn pm-btn-primary" href="{{ path('event_back_manage', {id: booking.event.id}) }}">Ouvrir l evenement</a>
-                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: booking.event.id}) }}">Voir le front</a>
+                            <a class="pm-btn pm-btn-primary" href="{{ path('event_back_manage', {id: booking.event.id}) }}">{{ 'event.back.bookings.open_event'|trans }}</a>
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: booking.event.id}) }}">{{ 'event.back.index.view_front'|trans }}</a>
                         {% endif %}
                         {% if booking.isPending %}
                             <form method="post" action="{{ path('back_event_booking_accept', {id: booking.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('accept_booking_' ~ booking.id) }}">
-                                <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                                <button class="pm-btn pm-btn-primary" type="submit">{{ 'event.back.manage.accept'|trans }}</button>
                             </form>
                             <form method="post" action="{{ path('back_event_booking_refuse', {id: booking.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('refuse_booking_' ~ booking.id) }}">
-                                <button class="pm-btn pm-btn-danger" type="submit">Refuser</button>
+                                <button class="pm-btn pm-btn-danger" type="submit">{{ 'event.back.manage.refuse'|trans }}</button>
                             </form>
                         {% endif %}
                     </div>
                 </article>
             {% else %}
                 <div class="pm-empty">
-                    <h2>Aucune inscription ne correspond aux filtres</h2>
-                    <p>Le module affichera ici les reservations clientes des evenements.</p>
+                    <h2>{{ 'event.back.bookings.empty.title'|trans }}</h2>
+                    <p>{{ 'event.back.bookings.empty.text'|trans }}</p>
                 </div>
             {% endfor %}
         </section>

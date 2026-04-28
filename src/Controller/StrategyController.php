@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\StrategyPlaybookLocalizationService;
 use App\Service\GeminiStrategyGeneratorService;
 use App\Service\PythonRecommendationService;
+use App\Service\NotificationService;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Service\AutoTranslator;
 use App\Service\FrenchSpellCorrector;
@@ -84,7 +85,7 @@ final class StrategyController extends AbstractController
         ],
         'approved' => [
             'value' => Strategie::STATUS_APPROVED,
-            'label' => 'Approuvees',
+            'label' => 'Acceptees',
         ],
         'rejected' => [
             'value' => Strategie::STATUS_REJECTED,
@@ -585,14 +586,19 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
     $this->addFlash(
         'success',
         $status === Strategie::STATUS_APPROVED
-            ? 'Decision administrateur enregistree : strategie approuvee.'
+            ? 'Decision administrateur enregistree : strategie acceptee.'
             : 'Decision administrateur enregistree : strategie refusee.'
     );
 
     return $this->redirectToStrategyReferer($request);
 }
     #[Route('/projects/strategies/{id}/decision', name: 'project_strategy_decision', methods: ['POST'])]
-    public function updateStatus(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
+    public function updateStatus(
+        Request $request,
+        Strategie $strategy,
+        EntityManagerInterface $entityManager,
+        NotificationService $notificationService
+    ): Response
     {
         $user = $this->getCurrentUser();
         if (!$this->canClientDecideStrategy($strategy, $user)) {
@@ -638,6 +644,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
         $previousStatus = $strategy->getStatusStrategie();
         $strategy->setStatusStrategie($status);
         $this->syncLockedAtWithStatus($strategy, $previousStatus);
+        $notificationService->notifyClientStrategyDecision($strategy, $status);
         $entityManager->flush();
 
         $this->addFlash(

@@ -4,53 +4,53 @@
             <summary class="pm-analysis-trigger">
                 <span class="pm-btn pm-btn-primary">
                     <i class="fas fa-chart-line"></i>
-                    <span>Voir prediction d investissement</span>
+                    <span>{{ 'investment.prediction.view'|trans }}</span>
                 </span>
             </summary>
 
             <div class="pm-analysis-body">
                 <div class="pm-analysis-head">
                     <div>
-                        <span class="pm-badge">Prediction client</span>
-                        <h2>Lecture business du projet</h2>
+                        <span class="pm-badge">{{ 'investment.prediction.badge'|trans }}</span>
+                        <h2>{{ 'investment.prediction.business_read'|trans }}</h2>
                         <p>{{ prediction.sectorOutlook }}</p>
                     </div>
                     <div class="pm-analysis-score-panel">
                         <span class="pm-prediction-badge pm-prediction-badge-{{ prediction.recommendationBadgeClass }}">{{ prediction.recommendationLabel }}</span>
                         <strong>{{ prediction.scorePercent }}/100</strong>
-                        <span>Score global</span>
+                        <span>{{ 'investment.prediction.global_score'|trans }}</span>
                     </div>
                 </div>
 
                 <div class="pm-analysis-badge-row">
                     <span class="pm-analysis-chip">{{ prediction.sectorLabel }}</span>
-                    <span class="pm-analysis-chip">Projet: {{ prediction.projectType }}</span>
-                    <span class="pm-analysis-chip">Tunisie</span>
-                    <span class="pm-analysis-chip">Historiques: {{ prediction.similarProjectsCount }}</span>
+                    <span class="pm-analysis-chip">{{ 'investment.prediction.project_chip'|trans }}: {{ prediction.projectType }}</span>
+                    <span class="pm-analysis-chip">{{ 'investment.prediction.country'|trans }}</span>
+                    <span class="pm-analysis-chip">{{ 'investment.prediction.history_count'|trans }}: {{ prediction.similarProjectsCount }}</span>
                 </div>
 
                 <div class="pm-analysis-metric-grid">
                     <article class="pm-analysis-metric">
-                        <span class="pm-analysis-metric-label">Recommendation</span>
+                        <span class="pm-analysis-metric-label">{{ 'investment.prediction.recommendation'|trans }}</span>
                         <strong class="pm-analysis-metric-value">{{ prediction.recommendationLabel }}</strong>
-                        <span class="pm-analysis-metric-note">Lecture simple pour le client</span>
+                        <span class="pm-analysis-metric-note">{{ 'investment.prediction.simple_read'|trans }}</span>
                     </article>
                     <article class="pm-analysis-metric">
-                        <span class="pm-analysis-metric-label">ROI ajuste</span>
+                        <span class="pm-analysis-metric-label">{{ 'investment.prediction.adjusted_roi'|trans }}</span>
                         <strong class="pm-analysis-metric-value {{ prediction.macroAnalysis.adjustedRoi >= 0 ? 'is-positive' : 'is-negative' }}">
                             {{ prediction.macroAnalysis.adjustedRoi|number_format(2, '.', ' ') }}%
                         </strong>
-                        <span class="pm-analysis-metric-note">Base brute {{ prediction.macroAnalysis.grossRoi|number_format(2, '.', ' ') }}%</span>
+                        <span class="pm-analysis-metric-note">{{ 'investment.prediction.raw_base'|trans }} {{ prediction.macroAnalysis.grossRoi|number_format(2, '.', ' ') }}%</span>
                     </article>
                     <article class="pm-analysis-metric">
-                        <span class="pm-analysis-metric-label">Risque macro</span>
+                        <span class="pm-analysis-metric-label">{{ 'investment.prediction.macro_risk'|trans }}</span>
                         <strong class="pm-analysis-metric-value">{{ prediction.macroAnalysis.riskLevelLabel }}</strong>
-                        <span class="pm-analysis-metric-note">Score {{ prediction.macroAnalysis.score|number_format(1, '.', ' ') }}/100</span>
+                        <span class="pm-analysis-metric-note">{{ 'investment.prediction.score'|trans }} {{ prediction.macroAnalysis.score|number_format(1, '.', ' ') }}/100</span>
                     </article>
                     <article class="pm-analysis-metric">
-                        <span class="pm-analysis-metric-label">Taux secteur</span>
+                        <span class="pm-analysis-metric-label">{{ 'investment.prediction.sector_rate'|trans }}</span>
                         <strong class="pm-analysis-metric-value">{{ prediction.acceptanceRatePercent }}%</strong>
-                        <span class="pm-analysis-metric-note">Historique projets similaires</span>
+                        <span class="pm-analysis-metric-note">{{ 'investment.prediction.similar_projects_history'|trans }}</span>
                     </article>
                 </div>
 
@@ -67,7 +67,7 @@
                     <summary class="pm-analysis-trigger-secondary">
                         <span class="pm-btn pm-btn-secondary">
                             <i class="fas fa-magnifying-glass-chart"></i>
-                            <span>Voir plus de details</span>
+                            <span>{{ 'investment.prediction.more_details'|trans }}</span>
                         </span>
                     </summary>
 
@@ -85,24 +85,24 @@
 
                     <div class="pm-analysis-macro-board">
                         <article class="pm-analysis-mini-stat">
-                            <span>Inflation</span>
+                            <span>{{ 'investment.prediction.inflation'|trans }}</span>
                             <strong>{{ prediction.macroAnalysis.data.inflation|number_format(2, '.', ' ') }}%</strong>
                             <small>{{ prediction.macroAnalysis.data.inflationYear }}</small>
                         </article>
                         <article class="pm-analysis-mini-stat">
-                            <span>PIB reel</span>
+                            <span>{{ 'investment.prediction.real_gdp'|trans }}</span>
                             <strong>{{ prediction.macroAnalysis.data.gdpGrowth|number_format(2, '.', ' ') }}%</strong>
                             <small>{{ prediction.macroAnalysis.data.gdpGrowthYear }}</small>
                         </article>
                         <article class="pm-analysis-mini-stat">
-                            <span>Taux de credit</span>
+                            <span>{{ 'investment.prediction.lending_rate'|trans }}</span>
                             <strong>{{ prediction.macroAnalysis.data.lendingRate|number_format(2, '.', ' ') }}%</strong>
                             <small>
-                                {{ prediction.macroAnalysis.data.lendingEstimated ? 'BCT ' : '' }}{{ prediction.macroAnalysis.data.lendingRateYear }}
+                                {{ prediction.macroAnalysis.data.lendingEstimated ? ('investment.prediction.bct_prefix'|trans) : '' }}{{ prediction.macroAnalysis.data.lendingRateYear }}
                             </small>
                         </article>
                         <article class="pm-analysis-mini-stat">
-                            <span>Prime de risque</span>
+                            <span>{{ 'investment.prediction.risk_premium'|trans }}</span>
                             <strong>{{ prediction.macroAnalysis.riskPremium|number_format(2, '.', ' ') }}%</strong>
                             <small>{{ prediction.macroAnalysis.riskLevelLabel }}</small>
                         </article>
@@ -110,25 +110,25 @@
 
                     <div class="pm-analysis-metric-grid pm-analysis-metric-grid-secondary">
                         <article class="pm-analysis-metric">
-                            <span class="pm-analysis-metric-label">Macro readiness</span>
+                            <span class="pm-analysis-metric-label">{{ 'investment.prediction.macro_readiness'|trans }}</span>
                             <strong class="pm-analysis-metric-value">{{ prediction.macroReadinessScore }}%</strong>
-                            <span class="pm-analysis-metric-note">Impact Tunisie + sensibilite du secteur</span>
+                            <span class="pm-analysis-metric-note">{{ 'investment.prediction.macro_impact_note'|trans }}</span>
                         </article>
                         <article class="pm-analysis-metric">
-                            <span class="pm-analysis-metric-label">Budget fit</span>
+                            <span class="pm-analysis-metric-label">{{ 'investment.prediction.budget_fit'|trans }}</span>
                             <strong class="pm-analysis-metric-value">{{ prediction.budgetFitScore }}%</strong>
                             <span class="pm-analysis-metric-note">
                                 {% if prediction.medianAcceptedBudget is not null %}
-                                    Mediane acceptee: {{ prediction.medianAcceptedBudget|number_format(2, '.', ' ') }} TND
+                                    {{ 'investment.prediction.accepted_median'|trans }}: {{ prediction.medianAcceptedBudget|number_format(2, '.', ' ') }} TND
                                 {% else %}
-                                    Reference globale utilisee
+                                    {{ 'investment.prediction.global_reference'|trans }}
                                 {% endif %}
                             </span>
                         </article>
                         <article class="pm-analysis-metric">
-                            <span class="pm-analysis-metric-label">Projet readiness</span>
+                            <span class="pm-analysis-metric-label">{{ 'investment.prediction.project_readiness'|trans }}</span>
                             <strong class="pm-analysis-metric-value">{{ prediction.projectReadinessScore }}%</strong>
-                            <span class="pm-analysis-metric-note">Qualite du dossier et lisibilite du projet</span>
+                            <span class="pm-analysis-metric-note">{{ 'investment.prediction.project_quality_note'|trans }}</span>
                         </article>
                     </div>
 

@@ -26,18 +26,18 @@
     <section class="pm-admin-shell">
         <div class="pm-admin-header">
             <div>
-                <span class="pm-badge">{{ page_badge|default('Back office') }}</span>
+                <span class="pm-badge">{{ page_badge|default('event.back.common.badge'|trans) }}</span>
                 <h1>{{ page_title }}</h1>
-                <p>{{ page_message|default('Le gerant createur est associe automatiquement a l utilisateur connecte.') }}</p>
+                <p>{{ page_message|default('event.back.form.default_message'|trans) }}</p>
             </div>
-            <a class="pm-btn pm-btn-secondary" href="{{ event.id ? path(back_route|default('event_back_manage'), {id: event.id}) : path('back_event_index') }}">Retour</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ event.id ? path(back_route|default('event_back_manage'), {id: event.id}) : path('back_event_index') }}">{{ 'event.common.back'|trans }}</a>
         </div>
 
         {% include 'back/event/_module_nav.html.twig' %}
 
         <div class="pm-form-card">
             <div class="pm-info-banner">
-                <strong>Gerant rattache :</strong> {{ event.user ? event.getManagerDisplayName() : 'Sera renseigne a l enregistrement.' }}
+                <strong>{{ 'event.back.form.linked_manager'|trans }} :</strong> {{ event.user ? event.getManagerDisplayName() : ('event.back.form.manager_set_on_save'|trans) }}
             </div>
             {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form'}}) }}
                 {{ form_errors(form) }}

@@ -375,7 +375,7 @@ final class InvestmentController extends AbstractController
         }
     }
 
-    #[Route('/investments/history', name: 'investment_history', methods: ['GET'])]
+     #[Route('/investments/history', name: 'investment_history', methods: ['GET'])]
     public function history(Request $request, InvestmentRepository $investmentRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $user = $this->getCurrentUser();

@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Notification;
 use App\Entity\Project;
+use App\Entity\Strategie;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -96,6 +97,47 @@ class NotificationService
                 'Decision ajoutee',
                 sprintf('Une nouvelle decision a ete ajoutee sur le projet %s.', $project->getTitle() ?: 'Projet sans titre'),
                 sprintf('Nouvelle decision ajoutee sur le projet %s.', $project->getTitle() ?: 'sans titre'),
+                Notification::EVENT_DECISION_ADDED,
+                $project->getId()
+            );
+        }
+    }
+
+    public function notifyClientStrategyDecision(Strategie $strategy, string $status): void
+    {
+        $project = $strategy->getProject();
+        if (!$project instanceof Project) {
+            return;
+        }
+
+        $projectTitle = $project->getTitle() ?: 'Projet sans titre';
+        $strategyName = trim((string) $strategy->getNomStrategie());
+        if ($strategyName === '') {
+            $strategyName = 'Strategie sans nom';
+        }
+
+        $isApproved = $status === Strategie::STATUS_APPROVED;
+        $decisionLabel = $isApproved ? 'acceptee' : 'refusee';
+        $title = $isApproved ? 'Strategie acceptee par le client' : 'Strategie refusee par le client';
+        $description = sprintf(
+            'Le client a %s la strategie "%s" du projet %s.',
+            $decisionLabel,
+            $strategyName,
+            $projectTitle
+        );
+        $spokenText = sprintf(
+            'Decision client enregistree. La strategie %s du projet %s est %s.',
+            $strategyName,
+            $projectTitle,
+            $decisionLabel
+        );
+
+        foreach ($this->userRepository->findAdminsAndGerants() as $recipient) {
+            $this->createNotification(
+                $recipient,
+                $title,
+                $description,
+                $spokenText,
                 Notification::EVENT_DECISION_ADDED,
                 $project->getId()
             );

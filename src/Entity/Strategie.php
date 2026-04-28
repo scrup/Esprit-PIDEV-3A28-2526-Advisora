@@ -13,10 +13,10 @@ use App\Repository\StrategieRepository;
 class Strategie
 {
     public const STATUS_PENDING = 'En_attente';
-    public const STATUS_APPROVED = 'AcceptÃ©e';
-    public const STATUS_REJECTED = 'RefusÃ©e';
+    public const STATUS_APPROVED = 'Acceptée';
+    public const STATUS_REJECTED = 'Refusée';
     public const STATUS_IN_PROGRESS = 'En_cours';
-    public const STATUS_UNASSIGNED = 'Non_affectÃ©e';
+    public const STATUS_UNASSIGNED = 'Non_affectée';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -52,11 +52,11 @@ class Strategie
     {
         return match ($this->statusStrategie) {
             self::STATUS_PENDING => 'En attente',
-            self::STATUS_APPROVED => 'AcceptÃ©e',
-            self::STATUS_REJECTED => 'RefusÃ©e',
+            self::STATUS_APPROVED => 'Acceptée',
+            self::STATUS_REJECTED => 'Refusée',
             self::STATUS_IN_PROGRESS => 'En cours',
-            self::STATUS_UNASSIGNED => 'Non affectÃ©e',
-            default => $this->statusStrategie ?? 'Non dÃ©fini',
+            self::STATUS_UNASSIGNED => 'Non affectée',
+            default => $this->statusStrategie ?? 'Non défini',
         };
     }
 
