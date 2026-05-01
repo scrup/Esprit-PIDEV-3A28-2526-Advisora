@@ -52,10 +52,10 @@ class LibreTranslateService
     public function translateBatch(array $texts, string $targetLang, ?string $sourceLang = 'auto'): array
     {
         if ($texts === [] || $targetLang === '' || ($sourceLang !== null && $targetLang === $sourceLang)) {
-            return array_values($texts);
+            return $texts;
         }
 
-        $translated = array_values($texts);
+        $translated = $texts;
         $pending = [];
 
         foreach ($translated as $index => $text) {

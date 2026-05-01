@@ -7,10 +7,12 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Security\Authenticator\OAuth2Authenticator;
+use League\OAuth2\Client\Provider\GoogleUser;
 use League\OAuth2\Client\Token\AccessToken;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -44,6 +46,9 @@ class GoogleAuthenticator extends OAuth2Authenticator
             new UserBadge($accessToken->getToken(), function () use ($client, $accessToken): User {
                 /** @var AccessToken $accessToken */
                 $googleUser = $client->fetchUserFromToken($accessToken);
+                if (!$googleUser instanceof GoogleUser) {
+                    throw new CustomUserMessageAuthenticationException('Le profil Google retourne est invalide.');
+                }
                 $email = mb_strtolower(trim((string) $googleUser->getEmail()));
 
                 if ($email === '') {
@@ -136,7 +141,10 @@ class GoogleAuthenticator extends OAuth2Authenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         $message = $exception->getMessageKey();
-        $request->getSession()->getFlashBag()->add('error', $message);
+        $session = $request->getSession();
+        if ($session instanceof FlashBagAwareSessionInterface) {
+            $session->getFlashBag()->add('error', $message);
+        }
 
         return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }

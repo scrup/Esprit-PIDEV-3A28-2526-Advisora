@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\BookingRepository;
 use Doctrine\ORM\Mapping as ORM;
-
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 #[ORM\Table(name: 'bookings')]
 class Booking
@@ -22,17 +21,17 @@ class Booking
     private ?\DateTimeInterface $bookingDate = null;
 
     #[ORM\Column(name: 'numTicketBk', type: 'integer', options: ['default' => 1])]
-    private ?int $numTicketBk = 1;
+    private int $numTicketBk = 1;
 
-    #[ORM\Column(name: 'totalPrixBk', type: 'float', options: ['default' => 0])]
-    private ?float $totalPrixBk = 0.0;
+    #[ORM\Column(name: 'totalPrixBk', type: 'decimal', precision: 10, scale: 2, options: ['default' => '0.00'])]
+    private string $totalPrixBk = '0.00';
 
     #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(name: 'idEv', referencedColumnName: 'idEv', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'idEv', nullable: false, onDelete: 'CASCADE')]
     private ?Event $event = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     private ?string $workflowStatus = null;
@@ -78,7 +77,7 @@ class Booking
 
     public function getTicketCount(): int
     {
-        return (int) ($this->numTicketBk ?? 0);
+        return $this->numTicketBk;
     }
 
     public function setNumTicketBk(int $numTicketBk): self
@@ -90,12 +89,12 @@ class Booking
 
     public function getTotalPrixBk(): ?float
     {
-        return $this->totalPrixBk;
+        return (float) $this->totalPrixBk;
     }
 
-    public function setTotalPrixBk(float $totalPrixBk): self
+    public function setTotalPrixBk(int|float|string $totalPrixBk): self
     {
-        $this->totalPrixBk = $totalPrixBk;
+        $this->totalPrixBk = number_format((float) $totalPrixBk, 2, '.', '');
 
         return $this;
     }

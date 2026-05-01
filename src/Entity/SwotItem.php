@@ -30,7 +30,7 @@ class SwotItem
     }
 
     #[ORM\ManyToOne(targetEntity: Strategie::class, inversedBy: 'swotItems')]
-    #[ORM\JoinColumn(name: 'strategie_id', referencedColumnName: 'idStrategie')]
+    #[ORM\JoinColumn(name: 'strategie_id', referencedColumnName: 'idStrategie', nullable: false, onDelete: 'CASCADE')]
     private ?Strategie $strategie = null;
 
     public function getStrategie(): ?Strategie

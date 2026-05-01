@@ -116,7 +116,7 @@ trait ShopMarketplaceActionsTrait
                 $maxQuantity
             );
             $reviewsPage = $paginator->paginate(
-                $reviewData['reviews'] ?? [],
+                $reviewData['reviews'],
                 max(1, (int) $request->query->get('review_page', 1)),
                 4,
                 ['pageParameterName' => 'review_page']
@@ -129,7 +129,7 @@ trait ShopMarketplaceActionsTrait
                 'projects' => $projects,
                 'wallet' => $pageData['wallet'] ?? ['balance' => 0, 'pending_topups' => []],
                 'quantity' => $quantity,
-                'review_summary' => $reviewData['summary'] ?? ['review_count' => 0, 'rating_avg' => 0.0, 'distribution' => []],
+                'review_summary' => $reviewData['summary'],
                 'client_review' => $reviewData['client_review'] ?? null,
                 'reviewable_order' => $reviewData['reviewable_order'] ?? null,
                 'reviews_page' => $reviewsPage,
@@ -219,7 +219,7 @@ trait ShopMarketplaceActionsTrait
         // Le "checkout panier" execute les annonces du panier C2C en sequence.
         // Chaque ligne cree sa propre commande/livraison cote metier.
         $checkoutCartState = $this->buildCheckoutCartState($request, $marketplaceService, $client);
-        $checkoutItems = is_array($checkoutCartState['items'] ?? null) ? $checkoutCartState['items'] : [];
+        $checkoutItems = $checkoutCartState['items'];
         $pageData = $marketplaceService->buildPageData($client, '');
         $projects = is_array($pageData['projects'] ?? null) ? $pageData['projects'] : [];
 
@@ -239,7 +239,7 @@ trait ShopMarketplaceActionsTrait
 
             return $this->render('front/shop/checkout_cart.html.twig', [
                 'checkout_cart_items' => $checkoutItems,
-                'checkout_cart_stats' => $checkoutCartState['stats'] ?? ['items_count' => 0, 'units_count' => 0, 'subtotal' => 0.0],
+                'checkout_cart_stats' => $checkoutCartState['stats'],
                 'projects' => $projects,
                 'wallet' => $pageData['wallet'] ?? ['balance' => 0.0, 'pending_topups' => [], 'coin_rate' => $marketplaceService->getCoinRate()],
                 'checkout_form' => $checkoutForm->createView(),
@@ -278,7 +278,7 @@ trait ShopMarketplaceActionsTrait
 
         $walletData = $pageData['wallet'] ?? [];
         $walletBalance = round((float) ($walletData['balance'] ?? 0.0), 3);
-        $requiredCoins = round((float) (($checkoutCartState['stats']['subtotal'] ?? 0.0)), 3);
+        $requiredCoins = round((float) $checkoutCartState['stats']['subtotal'], 3);
         $missingCoins = round(max(0.0, $requiredCoins - $walletBalance), 3);
 
         if ($missingCoins > 0.000001) {
@@ -324,9 +324,9 @@ trait ShopMarketplaceActionsTrait
         }
 
         $batch = $this->executeCheckoutCartBatch($client, $marketplaceService, $checkoutCart, $projectId, $delivery);
-        $results = is_array($batch['results'] ?? null) ? $batch['results'] : [];
+        $results = $batch['results'];
         $reviewListingId = 0;
-        $remainingCart = $this->normalizeCheckoutCart($batch['remaining_cart'] ?? []);
+        $remainingCart = $this->normalizeCheckoutCart($batch['remaining_cart']);
 
         $this->saveCheckoutCart($request, $remainingCart);
 

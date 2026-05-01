@@ -1,0 +1,9 @@
+doctrine_doctor:
+    enabled: true
+    profiler:
+        show_in_toolbar: true
+    analyzers:
+        n_plus_one:
+            threshold: 5
+        slow_query:
+            threshold: 100

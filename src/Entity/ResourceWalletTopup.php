@@ -57,31 +57,31 @@ class ResourceWalletTopup
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $amountMoney = null;
+    #[ORM\Column(type: 'decimal', precision: 14, scale: 3, nullable: false)]
+    private ?string $amountMoney = null;
 
     public function getAmountMoney(): ?float
     {
-        return $this->amountMoney;
+        return $this->amountMoney !== null ? (float) $this->amountMoney : null;
     }
 
-    public function setAmountMoney(float $amountMoney): self
+    public function setAmountMoney(int|float|string $amountMoney): self
     {
-        $this->amountMoney = $amountMoney;
+        $this->amountMoney = number_format((float) $amountMoney, 3, '.', '');
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $coinAmount = null;
+    #[ORM\Column(type: 'decimal', precision: 14, scale: 3, nullable: false)]
+    private ?string $coinAmount = null;
 
     public function getCoinAmount(): ?float
     {
-        return $this->coinAmount;
+        return $this->coinAmount !== null ? (float) $this->coinAmount : null;
     }
 
-    public function setCoinAmount(float $coinAmount): self
+    public function setCoinAmount(int|float|string $coinAmount): self
     {
-        $this->coinAmount = $coinAmount;
+        $this->coinAmount = number_format((float) $coinAmount, 3, '.', '');
         return $this;
     }
 

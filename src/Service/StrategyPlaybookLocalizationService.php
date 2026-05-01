@@ -15,6 +15,11 @@ class StrategyPlaybookLocalizationService
      */
     private const SUPPORTED_LANGUAGES = ['fr', 'en'];
 
+    public function __construct(
+        private readonly ?LibreTranslateService $translator = null,
+    ) {
+    }
+
     public function normalizeLanguage(?string $language): string
     {
         $language = strtolower(trim((string) $language));
@@ -176,7 +181,11 @@ class StrategyPlaybookLocalizationService
      */
     public function localizeMessages(array $messages, string $language): array
     {
-        return array_values($messages);
+        if ($language === 'fr' || $messages === [] || $this->translator === null) {
+            return $messages;
+        }
+
+        return $this->translator->translateBatch($messages, $language, 'fr');
     }
 
     /**
@@ -207,7 +216,7 @@ class StrategyPlaybookLocalizationService
             'actions',
         ] as $field) {
             if (isset($localized[$field]) && is_array($localized[$field])) {
-                $localized[$field] = array_values($localized[$field]);
+                $localized[$field] = $this->localizeMessages($localized[$field], $language);
             }
         }
 
@@ -364,7 +373,11 @@ class StrategyPlaybookLocalizationService
             return $trimmed;
         }
 
-        return $trimmed;
+        if ($this->translator === null) {
+            return $trimmed;
+        }
+
+        return $this->translator->translate($trimmed, $language, 'fr');
     }
 
     private function firstNonEmpty(?string $value, string $fallback): string

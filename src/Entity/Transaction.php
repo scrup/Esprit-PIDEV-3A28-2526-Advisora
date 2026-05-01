@@ -127,7 +127,7 @@ class Transaction
     }
 
     #[ORM\ManyToOne(targetEntity: Investment::class, inversedBy: 'transactions')]
-    #[ORM\JoinColumn(name: 'idInv', referencedColumnName: 'idInv')]
+    #[ORM\JoinColumn(name: 'investment_id', referencedColumnName: 'idInv', nullable: false, onDelete: 'CASCADE')]
     private ?Investment $investment = null;
 
     public function getInvestment(): ?Investment

@@ -7,11 +7,16 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Gedmo\Mapping\Annotation as Gedmo;
 use App\Repository\StrategieRepository;
-
 #[ORM\Entity(repositoryClass: StrategieRepository::class)]
 #[ORM\Table(name: 'strategies')]
 class Strategie
 {
+    public function __construct()
+    {
+        $this->objectives = new ArrayCollection();
+        $this->swotItems = new ArrayCollection();
+    }
+
     public const STATUS_PENDING = 'En_attente';
     public const STATUS_APPROVED = 'Acceptée';
     public const STATUS_REJECTED = 'Refusée';
@@ -103,7 +108,7 @@ class Strategie
    
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'strategies')]
-    #[ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj')]
+    #[ORM\JoinColumn(name: 'project_id', referencedColumnName: 'idProj', nullable: true, onDelete: 'CASCADE')]
     private ?Project $project = null;
 
     public function getProject(): ?Project
@@ -118,7 +123,7 @@ class Strategie
     }
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'strategies')]
-    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
 
     public function getUser(): ?User
@@ -169,6 +174,8 @@ class Strategie
     #[Gedmo\Locale]
     private ?string $locale = null;
 
+    private ?string $news = null;
+
     public function getType(): ?string
     {
         return $this->type;
@@ -180,17 +187,29 @@ class Strategie
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $budgetTotal = null;
+    public function getNews(): ?string
+    {
+        return $this->news;
+    }
+
+    public function setNews(?string $news): self
+    {
+        $this->news = $news;
+
+        return $this;
+    }
+    #[ORM\Column(name: 'budgetTotal', type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $budgetTotal = null;
 
     public function getBudgetTotal(): ?float
     {
-        return $this->budgetTotal;
+        return $this->budgetTotal !== null ? (float) $this->budgetTotal : null;
     }
+    
 
-    public function setBudgetTotal(?float $budgetTotal): self
+    public function setBudgetTotal(int|float|string|null $budgetTotal): self
     {
-        $this->budgetTotal = $budgetTotal;
+        $this->budgetTotal = $budgetTotal !== null ? number_format((float) $budgetTotal, 2, '.', '') : null;
         return $this;
     }
 
@@ -243,7 +262,7 @@ public function getDureeTerme(): ?int
     }
 
 
-    #[ORM\OneToMany(targetEntity: Objective::class, mappedBy: 'strategie')]
+    #[ORM\OneToMany(targetEntity: Objective::class, mappedBy: 'strategie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $objectives;
 
     /**
@@ -251,9 +270,6 @@ public function getDureeTerme(): ?int
      */
     public function getObjectives(): Collection
     {
-        if (!$this->objectives instanceof Collection) {
-            $this->objectives = new ArrayCollection();
-        }
         return $this->objectives;
     }
 
@@ -261,6 +277,7 @@ public function getDureeTerme(): ?int
     {
         if (!$this->getObjectives()->contains($objective)) {
             $this->getObjectives()->add($objective);
+            $objective->setStrategie($this);
         }
         return $this;
     }
@@ -271,7 +288,7 @@ public function getDureeTerme(): ?int
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: SwotItem::class, mappedBy: 'strategie')]
+    #[ORM\OneToMany(targetEntity: SwotItem::class, mappedBy: 'strategie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $swotItems;
 
     /**
@@ -279,9 +296,6 @@ public function getDureeTerme(): ?int
      */
     public function getSwotItems(): Collection
     {
-        if (!$this->swotItems instanceof Collection) {
-            $this->swotItems = new ArrayCollection();
-        }
         return $this->swotItems;
     }
 
@@ -289,6 +303,7 @@ public function getDureeTerme(): ?int
     {
         if (!$this->getSwotItems()->contains($swotItem)) {
             $this->getSwotItems()->add($swotItem);
+            $swotItem->setStrategie($this);
         }
         return $this;
     }

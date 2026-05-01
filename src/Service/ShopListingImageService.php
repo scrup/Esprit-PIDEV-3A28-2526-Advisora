@@ -147,7 +147,7 @@ final class ShopListingImageService
     {
         try {
             $cloudinary = new Cloudinary($cloudinaryUrl);
-            $result = $cloudinary->uploadApi->upload($uploadedFile->getPathname(), [
+            $result = $cloudinary->uploadApi()->upload($uploadedFile->getPathname(), [
                 'folder' => self::CLOUDINARY_FOLDER,
                 'public_id' => $publicStem,
                 'overwrite' => false,

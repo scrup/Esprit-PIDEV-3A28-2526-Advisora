@@ -239,7 +239,7 @@ final class ProjectController extends AbstractController
             $entityManager->persist($project);
             $entityManager->flush();
 
-            if ($user?->getRoleUser() === 'client') {
+            if ($user->getRoleUser() === 'client') {
                 $notificationService->notifyProjectCreated($project);
                 $entityManager->flush();
             }
@@ -762,9 +762,7 @@ final class ProjectController extends AbstractController
     private function removeProjectTechnicalDependencies(Project $project, EntityManagerInterface $entityManager): void
     {
         foreach ($project->getDecisions()->toArray() as $decision) {
-            if ($decision instanceof Decision) {
-                $entityManager->remove($decision);
-            }
+            $entityManager->remove($decision);
         }
 
         $project->getResources()->clear();

@@ -45,7 +45,7 @@ class Notification
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private ?bool $isRead = false;
+    private bool $isRead = false;
 
     #[ORM\Column(name: 'target_project_id', type: 'integer', nullable: true)]
     private ?int $targetProjectId = null;

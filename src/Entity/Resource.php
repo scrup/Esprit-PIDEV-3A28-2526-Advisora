@@ -23,6 +23,11 @@ class Resource
         self::STATUS_UNAVAILABLE => 'Indisponible',
     ];
 
+    public function __construct()
+    {
+        $this->projects = new ArrayCollection();
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idRs', type: 'integer')]
@@ -164,9 +169,6 @@ class Resource
      */
     public function getProjects(): Collection
     {
-        if (!$this->projects instanceof Collection) {
-            $this->projects = new ArrayCollection();
-        }
         return $this->projects;
     }
 

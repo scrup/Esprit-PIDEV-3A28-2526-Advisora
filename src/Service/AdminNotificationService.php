@@ -43,10 +43,6 @@ class AdminNotificationService
         }
 
         foreach ($this->userRepository->findInactiveGerants($cutoff) as $gerant) {
-            if (!$gerant instanceof User) {
-                continue;
-            }
-
             $displayName = $this->buildUserDisplayName($gerant);
             $title = sprintf('Gerant inactif (%d jours) - %s', $inactiveDays, $displayName);
             $lastActivity = $gerant->getLast_activity_at();
@@ -59,10 +55,6 @@ class AdminNotificationService
             );
 
             foreach ($admins as $admin) {
-                if (!$admin instanceof User) {
-                    continue;
-                }
-
                 if ($this->notificationRepository->existsUnreadForRecipientAndTitle($admin, $title)) {
                     continue;
                 }
@@ -98,10 +90,6 @@ class AdminNotificationService
         $created = 0;
 
         foreach ($admins as $admin) {
-            if (!$admin instanceof User) {
-                continue;
-            }
-
             if ($this->notificationRepository->existsForRecipientTitleDescriptionOnDate($admin, $title, $description, $date)) {
                 continue;
             }

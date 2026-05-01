@@ -169,7 +169,7 @@ final class BookingController extends AbstractController
             }
 
             $requestedTickets = max(1, $booking->getTicketCount());
-            $remainingTickets = ($event->getCapacity() ?? 0) - $bookingRepository->countReservedTicketsForEvent($event, $booking);
+            $remainingTickets = $event->getCapacity() - $bookingRepository->countReservedTicketsForEvent($event, $booking);
 
             if ($requestedTickets > $remainingTickets) {
                 $form->get('numTicketBk')->addError(new FormError(sprintf(

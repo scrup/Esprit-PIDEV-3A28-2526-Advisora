@@ -63,10 +63,10 @@ class Project
     private ?float $avancementProj = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projects')]
-    #[ORM\JoinColumn(name: 'idClient', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
-    #[ORM\OneToMany(targetEntity: Decision::class, mappedBy: 'project')]
+    #[ORM\OneToMany(targetEntity: Decision::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['dateDecision' => 'DESC', 'idD' => 'DESC'])]
     private Collection $decisions;
 

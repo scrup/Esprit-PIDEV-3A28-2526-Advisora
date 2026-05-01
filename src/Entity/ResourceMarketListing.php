@@ -99,17 +99,17 @@ class ResourceMarketListing
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $unitPrice = null;
+    #[ORM\Column(type: 'decimal', precision: 12, scale: 3, nullable: false)]
+    private ?string $unitPrice = null;
 
     public function getUnitPrice(): ?float
     {
-        return $this->unitPrice;
+        return $this->unitPrice !== null ? (float) $this->unitPrice : null;
     }
 
-    public function setUnitPrice(float $unitPrice): self
+    public function setUnitPrice(int|float|string $unitPrice): self
     {
-        $this->unitPrice = $unitPrice;
+        $this->unitPrice = number_format((float) $unitPrice, 3, '.', '');
         return $this;
     }
 

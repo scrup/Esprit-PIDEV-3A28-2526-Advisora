@@ -98,7 +98,7 @@ class Objective
     }
 
     #[ORM\ManyToOne(targetEntity: Strategie::class, inversedBy: 'objectives')]
-    #[ORM\JoinColumn(name: 'ids', referencedColumnName: 'idStrategie')]
+    #[ORM\JoinColumn(name: 'strategie_id', referencedColumnName: 'idStrategie', nullable: false, onDelete: 'CASCADE')]
     private ?Strategie $strategie = null;
 
     #[Assert\NotNull(message: 'La strategie associee est obligatoire.')]

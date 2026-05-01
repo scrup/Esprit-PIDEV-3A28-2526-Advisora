@@ -16,6 +16,11 @@ class Cataloguefournisseur
     public const STATUS_ACTIVE = 'active';
     public const STATUS_EMPTY = 'empty';
 
+    public function __construct()
+    {
+        $this->resources = new ArrayCollection();
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idFr', type: 'integer')]
@@ -130,9 +135,6 @@ class Cataloguefournisseur
      */
     public function getResources(): Collection
     {
-        if (!$this->resources instanceof Collection) {
-            $this->resources = new ArrayCollection();
-        }
         return $this->resources;
     }
 

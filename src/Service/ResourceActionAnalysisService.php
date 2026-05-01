@@ -365,10 +365,10 @@ class ResourceActionAnalysisService
 
         $supplierRisks = [];
         foreach ($supplierHealth as $supplierName => $supplierStat) {
-            $resourceCount = max(1, (int) ($supplierStat['resources_count'] ?? 1));
-            $criticalCount = (int) ($supplierStat['critical_count'] ?? 0);
-            $unavailableCount = (int) ($supplierStat['unavailable_count'] ?? 0);
-            $overstockCount = (int) ($supplierStat['overstock_count'] ?? 0);
+            $resourceCount = max(1, (int) $supplierStat['resources_count']);
+            $criticalCount = (int) $supplierStat['critical_count'];
+            $unavailableCount = (int) $supplierStat['unavailable_count'];
+            $overstockCount = (int) $supplierStat['overstock_count'];
 
             $riskScore = (($criticalCount * 2.0) + ($unavailableCount * 2.2) + ($overstockCount * 1.0)) / $resourceCount;
             $isSupplierRisk = $resourceCount >= 2 && ($riskScore >= 1.35 || $criticalCount >= 2 || $unavailableCount >= 1);
@@ -495,4 +495,3 @@ class ResourceActionAnalysisService
         return null;
     }
 }
-

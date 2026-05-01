@@ -37,26 +37,26 @@ class Event
     private ?string $organisateurName = null;
 
     #[ORM\Column(name: 'capaciteEvnt', type: 'integer', options: ['default' => 0])]
-    private ?int $capaciteEvnt = 0;
+    private int $capaciteEvnt = 0;
 
     #[ORM\Column(name: 'localisationEv', type: 'string', length: 190, nullable: true)]
     #[Gedmo\Translatable]
     private ?string $localisationEv = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?float $price = null;
+    private ?string $price = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 8, nullable: true)]
-    private ?float $latitude = null;
+    private ?string $latitude = null;
 
     #[ORM\Column(type: 'decimal', precision: 11, scale: 8, nullable: true)]
-    private ?float $longitude = null;
+    private ?string $longitude = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'events')]
     #[ORM\JoinColumn(name: 'idGerant', referencedColumnName: 'idUser', nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
 
-    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'event')]
+    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'event', orphanRemoval: true)]
     private Collection $bookings;
 
     public function __construct()
@@ -173,7 +173,7 @@ class Event
 
     public function getCapacity(): int
     {
-        return (int) ($this->capaciteEvnt ?? 0);
+        return $this->capaciteEvnt;
     }
 
     public function setCapaciteEvnt(int $capaciteEvnt): self
@@ -232,9 +232,7 @@ class Event
 
     public function removeBooking(Booking $booking): self
     {
-        if ($this->bookings->removeElement($booking) && $booking->getEvent() === $this) {
-            $booking->setEvent(null);
-        }
+        $this->bookings->removeElement($booking);
 
         return $this;
     }
@@ -314,34 +312,34 @@ class Event
 
     public function getPrice(): ?float
     {
-        return $this->price;
+        return $this->price !== null ? (float) $this->price : null;
     }
 
-    public function setPrice(?float $price): self
+    public function setPrice(int|float|string|null $price): self
     {
-        $this->price = $price;
+        $this->price = $price !== null ? number_format((float) $price, 2, '.', '') : null;
         return $this;
     }
 
     public function getLatitude(): ?float
     {
-        return $this->latitude;
+        return $this->latitude !== null ? (float) $this->latitude : null;
     }
 
-    public function setLatitude(?float $latitude): self
+    public function setLatitude(int|float|string|null $latitude): self
     {
-        $this->latitude = $latitude;
+        $this->latitude = $latitude !== null ? number_format((float) $latitude, 8, '.', '') : null;
         return $this;
     }
 
     public function getLongitude(): ?float
     {
-        return $this->longitude;
+        return $this->longitude !== null ? (float) $this->longitude : null;
     }
 
-    public function setLongitude(?float $longitude): self
+    public function setLongitude(int|float|string|null $longitude): self
     {
-        $this->longitude = $longitude;
+        $this->longitude = $longitude !== null ? number_format((float) $longitude, 8, '.', '') : null;
         return $this;
     }
 }

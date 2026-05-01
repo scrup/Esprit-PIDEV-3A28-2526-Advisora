@@ -134,7 +134,7 @@ final class WorldBankService
         }
 
         $payload = $response->toArray(false);
-        if (!is_array($payload) || count($payload) < 2) {
+        if (count($payload) < 2) {
             throw new \RuntimeException(sprintf('Structure World Bank inattendue pour %s.', $indicator));
         }
 

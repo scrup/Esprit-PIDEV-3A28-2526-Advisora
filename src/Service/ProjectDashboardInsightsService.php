@@ -65,16 +65,16 @@ final class ProjectDashboardInsightsService
             ++$budgetCount;
         }
 
-        $acceptedProjects = $statusCounters[Project::STATUS_ACCEPTED] ?? 0;
-        $decisionTotal = $acceptedProjects + ($statusCounters[Project::STATUS_REFUSED] ?? 0);
+        $acceptedProjects = $statusCounters[Project::STATUS_ACCEPTED];
+        $decisionTotal = $acceptedProjects + $statusCounters[Project::STATUS_REFUSED];
 
         return [
             'scope' => $scope,
             'summary' => [
                 'total_projects' => $totalProjects,
-                'pending_projects' => $statusCounters[Project::STATUS_PENDING] ?? 0,
+                'pending_projects' => $statusCounters[Project::STATUS_PENDING],
                 'accepted_projects' => $acceptedProjects,
-                'refused_projects' => $statusCounters[Project::STATUS_REFUSED] ?? 0,
+                'refused_projects' => $statusCounters[Project::STATUS_REFUSED],
                 'total_budget' => round($totalBudget, 2),
                 'average_budget' => $budgetCount > 0 ? round($totalBudget / $budgetCount, 2) : 0.0,
                 'active_types' => count($typeCounters),
@@ -84,9 +84,9 @@ final class ProjectDashboardInsightsService
                 'status' => [
                     'labels' => ['En attente', 'Acceptes', 'Refuses'],
                     'values' => [
-                        $statusCounters[Project::STATUS_PENDING] ?? 0,
-                        $statusCounters[Project::STATUS_ACCEPTED] ?? 0,
-                        $statusCounters[Project::STATUS_REFUSED] ?? 0,
+                        $statusCounters[Project::STATUS_PENDING],
+                        $statusCounters[Project::STATUS_ACCEPTED],
+                        $statusCounters[Project::STATUS_REFUSED],
                     ],
                 ],
                 'types' => [
@@ -100,9 +100,9 @@ final class ProjectDashboardInsightsService
                 'budgets' => [
                     'labels' => ['En attente', 'Acceptes', 'Refuses'],
                     'values' => [
-                        $averageBudgets[Project::STATUS_PENDING] ?? 0.0,
-                        $averageBudgets[Project::STATUS_ACCEPTED] ?? 0.0,
-                        $averageBudgets[Project::STATUS_REFUSED] ?? 0.0,
+                        $averageBudgets[Project::STATUS_PENDING],
+                        $averageBudgets[Project::STATUS_ACCEPTED],
+                        $averageBudgets[Project::STATUS_REFUSED],
                     ],
                 ],
             ],
@@ -173,7 +173,7 @@ final class ProjectDashboardInsightsService
             '12' => 'Dec',
         ];
 
-        $month = $months[$date->format('m')] ?? $date->format('m');
+        $month = $months[$date->format('m')];
 
         return sprintf('%s %s', $month, $date->format('Y'));
     }

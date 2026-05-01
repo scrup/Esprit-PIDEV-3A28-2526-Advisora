@@ -2,6 +2,8 @@
 
 use App\Kernel;
 
+date_default_timezone_set(getenv('APP_TIMEZONE') ?: 'Africa/Lagos');
+
 require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
 return static function (array $context) {

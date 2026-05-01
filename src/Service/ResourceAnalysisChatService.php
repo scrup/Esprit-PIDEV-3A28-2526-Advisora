@@ -54,7 +54,7 @@ class ResourceAnalysisChatService
         'confiance',
     ];
 
-    private ?string $apiKey;
+    private string $apiKey;
     private string $model;
     private string $baseUrl;
     private int $maxTokens;
@@ -92,7 +92,7 @@ class ResourceAnalysisChatService
         // Fallback deterministic immediat pour rester robuste en production.
         $fallback = $this->buildLocalAnswer($analysis, $question);
 
-        if ($this->apiKey === null || $this->apiKey === '') {
+        if ($this->apiKey === '') {
             return $fallback;
         }
 

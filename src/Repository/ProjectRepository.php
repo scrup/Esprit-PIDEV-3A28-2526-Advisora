@@ -31,7 +31,7 @@ class ProjectRepository extends ServiceEntityRepository
             ->orderBy('p.createdAtProj', 'DESC')
             ->addOrderBy('p.idProj', 'DESC');
 
-        if (!$canSeeAll && $user) {
+        if (!$canSeeAll) {
             $qb->andWhere('p.user = :user')
                 ->setParameter('user', $user);
         }
@@ -68,8 +68,11 @@ class ProjectRepository extends ServiceEntityRepository
                 ->setParameter('max', (float) $filters['max_price']);
         }
 
-        return $qb->getQuery()->getResult();
-    }
+        return $qb
+            ->setMaxResults(12)
+            ->getQuery()
+            ->getResult(); 
+        }
 
     public function findDistinctFrontTypes(?\App\Entity\User $user = null, bool $canSeeAll = false): array
     {
@@ -83,7 +86,7 @@ class ProjectRepository extends ServiceEntityRepository
             ->andWhere('TRIM(p.typeProj) != \'\'')
             ->orderBy('p.typeProj', 'ASC');
 
-        if (!$canSeeAll && $user) {
+        if (!$canSeeAll) {
             $qb->andWhere('p.user = :user')
                 ->setParameter('user', $user);
         }
@@ -97,25 +100,27 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     // convenience methods used elsewhere
-    public function findAllOrdered(): array
+    public function findAllOrdered(int $limit = 50): array
     {
         return $this->createQueryBuilder('p')
             ->orderBy('p.createdAtProj', 'DESC')
             ->addOrderBy('p.idProj', 'DESC')
+            ->setMaxResults(max(1, $limit))
             ->getQuery()
             ->getResult();
     }
 
-    public function findByOwnerOrdered(\App\Entity\User $user): array
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.user = :user')
-            ->setParameter('user', $user)
-            ->orderBy('p.createdAtProj', 'DESC')
-            ->addOrderBy('p.idProj', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
+    public function findByOwnerOrdered(\App\Entity\User $user, int $limit = 50): array
+{
+    return $this->createQueryBuilder('p')
+        ->andWhere('p.user = :user')
+        ->setParameter('user', $user)
+        ->orderBy('p.createdAtProj', 'DESC')
+        ->addOrderBy('p.idProj', 'DESC')
+        ->setMaxResults(max(1, $limit))
+        ->getQuery()
+        ->getResult();
+}
 
     public function findBackOfficeProjects(array $filters = []): array
     {
@@ -152,8 +157,11 @@ class ProjectRepository extends ServiceEntityRepository
                 ->setParameter('owner', $owner);
         }
 
-        return $qb->getQuery()->getResult();
-    }
+        return $qb
+            ->setMaxResults(100)
+            ->getQuery()
+            ->getResult();
+        }
 
     public function findOneVisibleWithDecisions(int $id, ?\App\Entity\User $user = null, bool $canSeeAll = false): ?Project
     {
@@ -430,10 +438,6 @@ class ProjectRepository extends ServiceEntityRepository
         ];
 
         foreach ($projects as $project) {
-            if (!$project instanceof Project) {
-                continue;
-            }
-
             $status = $project->getStatus() ?? Project::STATUS_PENDING;
             if (!array_key_exists($status, $counters)) {
                 continue;
@@ -455,10 +459,6 @@ class ProjectRepository extends ServiceEntityRepository
         $counters = [];
 
         foreach ($projects as $project) {
-            if (!$project instanceof Project) {
-                continue;
-            }
-
             $type = trim((string) $project->getLegacyType());
             $label = $type !== '' ? $type : 'Non precise';
             $counters[$label] = ($counters[$label] ?? 0) + 1;
@@ -486,7 +486,7 @@ class ProjectRepository extends ServiceEntityRepository
         }
 
         foreach ($projects as $project) {
-            if (!$project instanceof Project || !$project->getStartDate() instanceof \DateTimeInterface) {
+            if (!$project->getStartDate() instanceof \DateTimeInterface) {
                 continue;
             }
 
@@ -515,10 +515,6 @@ class ProjectRepository extends ServiceEntityRepository
         ];
 
         foreach ($projects as $project) {
-            if (!$project instanceof Project) {
-                continue;
-            }
-
             $status = $project->getStatus() ?? Project::STATUS_PENDING;
             if (!isset($totals[$status])) {
                 continue;

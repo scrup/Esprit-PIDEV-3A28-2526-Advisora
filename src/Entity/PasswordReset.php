@@ -28,17 +28,33 @@ class PasswordReset
         return $this;
     }
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $user_id = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
+    private ?User $user = null;
 
     public function getUser_id(): ?int
     {
-        return $this->user_id;
+        return $this->user?->getIdUser();
     }
 
     public function setUser_id(int $user_id): self
     {
-        $this->user_id = $user_id;
+        $user = new User();
+        $user->setIdUser($user_id);
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+
         return $this;
     }
 

@@ -10,6 +10,8 @@ use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use SensitiveParameter;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'user')]
@@ -19,6 +21,18 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public function __construct()
+    {
+        $this->decisions = new ArrayCollection();
+        $this->events = new ArrayCollection();
+        $this->investments = new ArrayCollection();
+        $this->bookings = new ArrayCollection();
+        $this->projects = new ArrayCollection();
+        $this->strategies = new ArrayCollection();
+        $this->userlogs = new ArrayCollection();
+        $this->receivedNotifications = new ArrayCollection();
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idUser', type: 'integer')]
@@ -63,15 +77,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @Ignore
+     * @JsonIgnore
+     */
     #[ORM\Column(type: 'string', nullable: false)]
     private ?string $passwordUser = null;
 
+    /**
+     * @Ignore
+     * @JsonIgnore
+     */
     public function getPasswordUser(): ?string
     {
         return $this->passwordUser;
     }
 
-    public function setPasswordUser(string $passwordUser): self
+    public function setPasswordUser(#[SensitiveParameter] string $passwordUser): self
     {
         $this->passwordUser = $passwordUser;
         return $this;
@@ -170,6 +192,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // No temporary sensitive data stored on the entity.
     }
 
+    /**
+     * @Ignore
+     * @JsonIgnore
+     */
     public function getPassword(): ?string
     {
         return $this->passwordUser;
@@ -249,15 +275,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @Ignore
+     * @JsonIgnore
+     */
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $totp_secret = null;
 
+    /**
+     * @Ignore
+     * @JsonIgnore
+     */
     public function getTotp_secret(): ?string
     {
         return $this->totp_secret;
     }
 
-    public function setTotp_secret(?string $totp_secret): self
+    public function setTotp_secret(#[SensitiveParameter] ?string $totp_secret): self
     {
         $this->totp_secret = $totp_secret;
         return $this;
@@ -341,9 +375,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getDecisions(): Collection
     {
-        if (!$this->decisions instanceof Collection) {
-            $this->decisions = new ArrayCollection();
-        }
         return $this->decisions;
     }
 
@@ -369,9 +400,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getEvents(): Collection
     {
-        if (!$this->events instanceof Collection) {
-            $this->events = new ArrayCollection();
-        }
         return $this->events;
     }
 
@@ -397,9 +425,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getInvestments(): Collection
     {
-        if (!$this->investments instanceof Collection) {
-            $this->investments = new ArrayCollection();
-        }
         return $this->investments;
     }
 
@@ -425,9 +450,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getBookings(): Collection
     {
-        if (!$this->bookings instanceof Collection) {
-            $this->bookings = new ArrayCollection();
-        }
         return $this->bookings;
     }
 
@@ -453,9 +475,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getProjects(): Collection
     {
-        if (!$this->projects instanceof Collection) {
-            $this->projects = new ArrayCollection();
-        }
         return $this->projects;
     }
 
@@ -481,9 +500,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getStrategies(): Collection
     {
-        if (!$this->strategies instanceof Collection) {
-            $this->strategies = new ArrayCollection();
-        }
         return $this->strategies;
     }
 
@@ -504,7 +520,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Userlog::class, mappedBy: 'user')]
     private Collection $userlogs;
 
-    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'recipient')]
+    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'recipient', cascade: ['remove'])]
     private Collection $receivedNotifications;
 
     /**
@@ -512,9 +528,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserlogs(): Collection
     {
-        if (!$this->userlogs instanceof Collection) {
-            $this->userlogs = new ArrayCollection();
-        }
         return $this->userlogs;
     }
 
@@ -537,10 +550,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getReceivedNotifications(): Collection
     {
-        if (!$this->receivedNotifications instanceof Collection) {
-            $this->receivedNotifications = new ArrayCollection();
-        }
-
         return $this->receivedNotifications;
     }
 

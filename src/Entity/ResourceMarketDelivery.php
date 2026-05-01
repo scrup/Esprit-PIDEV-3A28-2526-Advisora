@@ -156,17 +156,17 @@ class ResourceMarketDelivery
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $totalPrice = null;
+    #[ORM\Column(type: 'decimal', precision: 12, scale: 3, nullable: false)]
+    private ?string $totalPrice = null;
 
     public function getTotalPrice(): ?float
     {
-        return $this->totalPrice;
+        return $this->totalPrice !== null ? (float) $this->totalPrice : null;
     }
 
-    public function setTotalPrice(float $totalPrice): self
+    public function setTotalPrice(int|float|string $totalPrice): self
     {
-        $this->totalPrice = $totalPrice;
+        $this->totalPrice = number_format((float) $totalPrice, 3, '.', '');
         return $this;
     }
 

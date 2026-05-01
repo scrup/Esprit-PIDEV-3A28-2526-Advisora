@@ -128,7 +128,7 @@ final class ShopGeneratedImageService
             return null;
         }
 
-        $normalizedContentType = strtolower(trim(explode(';', $contentType)[0] ?? ''));
+        $normalizedContentType = strtolower(trim(explode(';', $contentType)[0]));
         $extension = self::EXTENSIONS_BY_MIME[$normalizedContentType] ?? null;
         if ($extension === null) {
             return null;

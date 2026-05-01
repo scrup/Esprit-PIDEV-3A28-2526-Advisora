@@ -84,8 +84,8 @@ trait ShopWalletActionsTrait
                     $topupProvider = strtoupper((string) ($pending['topup_provider'] ?? 'STRIPE'));
 
                     $batch = $this->executeCheckoutCartBatch($client, $marketplaceService, $pendingCart, $projectId, $delivery);
-                    $results = is_array($batch['results'] ?? null) ? $batch['results'] : [];
-                    $remainingCart = $this->normalizeCheckoutCart($batch['remaining_cart'] ?? []);
+                    $results = $batch['results'];
+                    $remainingCart = $this->normalizeCheckoutCart($batch['remaining_cart']);
                     $this->saveCheckoutCart($request, $remainingCart);
 
                     if ($results !== []) {
@@ -217,8 +217,8 @@ trait ShopWalletActionsTrait
                     $topupProvider = strtoupper((string) ($pending['topup_provider'] ?? 'STRIPE'));
 
                     $batch = $this->executeCheckoutCartBatch($client, $marketplaceService, $pendingCart, $projectId, $delivery);
-                    $results = is_array($batch['results'] ?? null) ? $batch['results'] : [];
-                    $remainingCart = $this->normalizeCheckoutCart($batch['remaining_cart'] ?? []);
+                    $results = $batch['results'];
+                    $remainingCart = $this->normalizeCheckoutCart($batch['remaining_cart']);
                     $this->saveCheckoutCart($request, $remainingCart);
 
                     if ($results !== []) {

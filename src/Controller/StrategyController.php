@@ -195,10 +195,10 @@ final class StrategyController extends AbstractController
 
         try {
             $result = $frenchSpellCorrector->correctWithStatus($text, $language !== '' ? $language : 'fr');
-            $status = (string) ($result['status'] ?? 'ok');
-            $corrected = (string) ($result['corrected'] ?? $text);
-            $changed = (bool) ($result['changed'] ?? false);
-            $errorMessage = isset($result['error']) ? (string) $result['error'] : '';
+            $status = $result['status'];
+            $corrected = $result['corrected'];
+            $changed = $result['changed'];
+            $errorMessage = (string) ($result['error'] ?? '');
 
             if ($status !== 'ok') {
                 return $this->json([
@@ -739,9 +739,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
                     'lang' => $language,
                 ];
 
-                if ($messages !== []) {
-                    $payload['message'] = implode(' ', $messages);
-                }
+                $payload['message'] = implode(' ', $messages);
 
                 return $this->json($payload);
             }
@@ -929,7 +927,14 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
 
     private function calculateEstimatedGainAmount(Strategie $strategy): ?float
     {
-        return $strategy->getGainEstime();
+        $budget = $strategy->getBudgetTotal();
+        $estimatedGainPercent = $strategy->getGainEstime();
+
+        if ($budget === null || $estimatedGainPercent === null) {
+            return null;
+        }
+
+        return ($budget * $estimatedGainPercent) / 100;
     }
 
     private function getCurrentUser(): ?User
@@ -960,7 +965,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
             return false;
         }
 
-        return $project->getUser()?->getIdUser() === $user->getIdUser();
+        return $project->getUser()->getIdUser() === $user->getIdUser();
     }
 
     private function canGenerateStrategyPdf(Strategie $strategy, ?User $user): bool

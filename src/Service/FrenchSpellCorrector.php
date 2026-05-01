@@ -3,7 +3,6 @@
 namespace App\Service;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 
 class FrenchSpellCorrector
 {
@@ -35,7 +34,7 @@ class FrenchSpellCorrector
     {
         $result = $this->correctWithStatus($text, $language);
 
-        return (string) ($result['corrected'] ?? $text);
+        return $result['corrected'];
     }
 
     /**
@@ -70,7 +69,7 @@ class FrenchSpellCorrector
                     'enabledOnly' => 'false',
                 ],
             ]);
-        } catch (GuzzleException|\Throwable $exception) {
+        } catch (\Throwable $exception) {
             return [
                 'status' => 'unavailable',
                 'corrected' => $text,
@@ -219,7 +218,7 @@ class FrenchSpellCorrector
                 ? mb_substr($value, $start, null, 'UTF-8')
                 : mb_substr($value, $start, $length, 'UTF-8');
 
-            return $result === false ? '' : $result;
+            return $result;
         }
 
         if ($length === null) {

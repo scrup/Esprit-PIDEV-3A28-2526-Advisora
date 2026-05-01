@@ -44,11 +44,11 @@ class Decision
     private ?\DateTimeInterface $dateDecision = null;
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'decisions')]
-    #[ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'project_id', referencedColumnName: 'idProj', nullable: false, onDelete: 'CASCADE')]
     private ?Project $project = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'decisions')]
-    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false)]
     private ?User $user = null;
 
     public function getIdD(): ?int
@@ -148,7 +148,12 @@ class Decision
 
     public function getDecisionTitleLabel(): string
     {
-        return self::STATUSES[$this->getDecisionTitle() ?? ''] ?? ((string) ($this->getDecisionTitle() ?? ''));
+        return match ($this->getDecisionTitle()) {
+            self::STATUS_ACTIVE => 'AcceptÃ©',
+            self::STATUS_REFUSED => 'RefusÃ©',
+            self::STATUS_PENDING => 'En attente',
+            default => (string) ($this->getDecisionTitle() ?? ''),
+        };
     }
 
     public function getProject(): ?Project

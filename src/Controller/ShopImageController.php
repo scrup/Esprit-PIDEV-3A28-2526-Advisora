@@ -28,11 +28,11 @@ final class ShopImageController extends AbstractController
         $resourceName = $this->resolveResourceName($connection, $resourceId, $slug);
         $generated = $generatedImageService->resolveGeneratedImage($resourceId, $resourceName);
 
-        if (($generated['source'] ?? '') === 'api' && is_string($generated['path'] ?? null) && $generated['path'] !== '') {
-            $response = new BinaryFileResponse((string) $generated['path']);
+        if ($generated['source'] === 'api' && $generated['path'] !== '') {
+            $response = new BinaryFileResponse($generated['path']);
             $response->setPublic();
             $response->setMaxAge(604800);
-            $response->headers->set('Content-Type', (string) ($generated['content_type'] ?? 'image/jpeg'));
+            $response->headers->set('Content-Type', $generated['content_type']);
 
             return $response;
         }

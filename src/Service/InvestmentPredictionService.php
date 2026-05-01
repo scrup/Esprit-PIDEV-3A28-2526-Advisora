@@ -56,7 +56,7 @@ final class InvestmentPredictionService
     {
         $candidates = array_values(array_filter(
             $projects,
-            static fn (mixed $project): bool => $project instanceof Project && $project->getStatus() !== Project::STATUS_REFUSED
+            static fn (Project $project): bool => $project->getStatus() !== Project::STATUS_REFUSED
         ));
 
         if ($candidates === [] || $limit <= 0) {
@@ -83,21 +83,18 @@ final class InvestmentPredictionService
         usort(
             $recommendations,
             static function (array $left, array $right): int {
-                $scoreDiff = ($right['rankingScore'] ?? 0) <=> ($left['rankingScore'] ?? 0);
+                $scoreDiff = $right['rankingScore'] <=> $left['rankingScore'];
                 if ($scoreDiff !== 0) {
                     return $scoreDiff;
                 }
 
-                $roiDiff = ($right['projectedRoi'] ?? 0.0) <=> ($left['projectedRoi'] ?? 0.0);
+                $roiDiff = $right['projectedRoi'] <=> $left['projectedRoi'];
                 if ($roiDiff !== 0) {
                     return $roiDiff;
                 }
 
-                $leftProject = $left['project'] ?? null;
-                $rightProject = $right['project'] ?? null;
-                if (!$leftProject instanceof Project || !$rightProject instanceof Project) {
-                    return 0;
-                }
+                $leftProject = $left['project'];
+                $rightProject = $right['project'];
 
                 return ($rightProject->getId() ?? 0) <=> ($leftProject->getId() ?? 0);
             }
@@ -125,10 +122,6 @@ final class InvestmentPredictionService
 
         $allMatchingTypes = [];
         foreach ($projects as $project) {
-            if (!$project instanceof Project) {
-                continue;
-            }
-
             $sectorProfile = $this->sectorResolver->resolve(trim((string) $project->getLegacyType()));
             $allMatchingTypes = [...$allMatchingTypes, ...$sectorProfile['matching_types']];
         }
@@ -287,13 +280,10 @@ final class InvestmentPredictionService
         ];
 
         foreach ($matchingTypes as $type) {
-            $stats = $statsByType[$type] ?? null;
-            if (!is_array($stats)) {
-                continue;
-            }
+            $stats = $statsByType[$type] ?? ['accepted' => 0, 'refused' => 0, 'total' => 0];
 
-            $sum['accepted'] += (int) ($stats['accepted'] ?? 0);
-            $sum['refused'] += (int) ($stats['refused'] ?? 0);
+            $sum['accepted'] += $stats['accepted'];
+            $sum['refused'] += $stats['refused'];
         }
 
         $sum['total'] = $sum['accepted'] + $sum['refused'];
@@ -312,13 +302,13 @@ final class InvestmentPredictionService
         $merged = [];
 
         foreach ($matchingTypes as $type) {
-            if (!isset($budgetsByType[$type]) || !is_array($budgetsByType[$type])) {
+            if (!isset($budgetsByType[$type])) {
                 continue;
             }
 
             foreach ($budgetsByType[$type] as $budget) {
-                if ((float) $budget > 0) {
-                    $merged[] = (float) $budget;
+                if ($budget > 0) {
+                    $merged[] = $budget;
                 }
             }
         }

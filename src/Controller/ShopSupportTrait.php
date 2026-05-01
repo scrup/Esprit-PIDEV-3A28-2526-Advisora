@@ -396,7 +396,7 @@ trait ShopSupportTrait
     private function parseReservationKey(string $reservationKey): array
     {
         $parts = explode(':', $reservationKey, 2);
-        $projectId = isset($parts[0]) && ctype_digit($parts[0]) ? (int) $parts[0] : 0;
+        $projectId = ctype_digit($parts[0]) ? (int) $parts[0] : 0;
         $resourceId = isset($parts[1]) && ctype_digit($parts[1]) ? (int) $parts[1] : 0;
 
         if ($projectId <= 0 || $resourceId <= 0) {

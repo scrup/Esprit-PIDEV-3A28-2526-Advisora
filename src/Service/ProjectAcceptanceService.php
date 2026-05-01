@@ -45,7 +45,7 @@ class ProjectAcceptanceService
     {
         $pendingProjects = array_values(array_filter(
             $pendingProjects,
-            static fn (mixed $project): bool => $project instanceof Project && $project->getStatus() === Project::STATUS_PENDING
+            static fn (Project $project): bool => $project->getStatus() === Project::STATUS_PENDING
         ));
 
         if ($pendingProjects === []) {

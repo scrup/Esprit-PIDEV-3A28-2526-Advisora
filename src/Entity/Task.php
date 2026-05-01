@@ -195,7 +195,7 @@ class Task
         $normalized = strtoupper(trim((string) $status));
 
         return match ($normalized) {
-            'TODO', 'A_FAIRE', 'A FAIRE', 'AFaire', 'AFAIRE', 'TO_DO' => self::STATUS_TODO,
+            'TODO', 'A_FAIRE', 'A FAIRE', 'AFAIRE', 'TO_DO' => self::STATUS_TODO,
             'IN_PROGRESS', 'EN_COURS', 'EN COURS', 'INPROGRESS', 'IN-PROGRESS' => self::STATUS_IN_PROGRESS,
             'DONE', 'TERMINEE', 'TERMINE', 'TERMINATED', 'COMPLETED' => self::STATUS_DONE,
             default => self::STATUS_TODO,

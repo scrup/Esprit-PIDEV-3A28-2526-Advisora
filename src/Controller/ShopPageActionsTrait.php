@@ -141,7 +141,7 @@ trait ShopPageActionsTrait
             max(1, (int) ($product['qtyRemaining'] ?? 1))
         );
         $reviewsPage = $paginator->paginate(
-            $reviewData['reviews'] ?? [],
+            $reviewData['reviews'],
             max(1, (int) $request->query->get('review_page', 1)),
             5,
             ['pageParameterName' => 'review_page']
@@ -150,7 +150,7 @@ trait ShopPageActionsTrait
         return $this->render('front/shop/product.html.twig', [
             'product' => $product,
             'checkout_cart_quantity' => $checkoutCartQuantity,
-            'review_summary' => $reviewData['summary'] ?? ['review_count' => 0, 'rating_avg' => 0.0, 'distribution' => []],
+            'review_summary' => $reviewData['summary'],
             'client_review' => $reviewData['client_review'] ?? null,
             'reviewable_order' => $reviewData['reviewable_order'] ?? null,
             'reviews_page' => $reviewsPage,
@@ -162,7 +162,7 @@ trait ShopPageActionsTrait
     {
         $client = $this->requireClient();
         $checkoutCartState = $this->buildCheckoutCartState($request, $marketplaceService, $client);
-        $checkoutItems = is_array($checkoutCartState['items'] ?? null) ? $checkoutCartState['items'] : [];
+        $checkoutItems = $checkoutCartState['items'];
 
         if ($checkoutItems === []) {
             $this->addFlash('error', 'Votre panier checkout est vide.');
@@ -199,7 +199,7 @@ trait ShopPageActionsTrait
 
         return $this->render('front/shop/checkout_cart.html.twig', [
             'checkout_cart_items' => $checkoutItems,
-            'checkout_cart_stats' => $checkoutCartState['stats'] ?? ['items_count' => 0, 'units_count' => 0, 'subtotal' => 0.0],
+            'checkout_cart_stats' => $checkoutCartState['stats'],
             'projects' => $projects,
             'wallet' => $pageData['wallet'] ?? ['balance' => 0.0, 'pending_topups' => [], 'coin_rate' => $marketplaceService->getCoinRate()],
             'checkout_form' => $checkoutForm->createView(),
@@ -228,7 +228,7 @@ trait ShopPageActionsTrait
         $maxQuantity = max(1, (int) $product['qtyRemaining']);
         $quantity = min($requestedQuantity, $maxQuantity);
         $reviewsPage = $paginator->paginate(
-            $reviewData['reviews'] ?? [],
+            $reviewData['reviews'],
             max(1, (int) $request->query->get('review_page', 1)),
             4,
             ['pageParameterName' => 'review_page']
@@ -252,7 +252,7 @@ trait ShopPageActionsTrait
             'projects' => $projects,
             'wallet' => $pageData['wallet'] ?? ['balance' => 0, 'pending_topups' => []],
             'quantity' => $quantity,
-            'review_summary' => $reviewData['summary'] ?? ['review_count' => 0, 'rating_avg' => 0.0, 'distribution' => []],
+            'review_summary' => $reviewData['summary'],
             'client_review' => $reviewData['client_review'] ?? null,
             'reviewable_order' => $reviewData['reviewable_order'] ?? null,
             'reviews_page' => $reviewsPage,

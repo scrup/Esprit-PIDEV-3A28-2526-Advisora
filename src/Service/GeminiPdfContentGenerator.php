@@ -58,7 +58,7 @@ class GeminiPdfContentGenerator
                 }
             }
 
-            if (!isset($decoded) || !is_array($decoded)) {
+            if (!isset($decoded)) {
                 $this->lastGenerationWarning = $this->buildGenerationWarning($exception);
 
                 return $this->buildFallbackContent($strategy, $project);
@@ -276,8 +276,8 @@ class GeminiPdfContentGenerator
         $strategyOwner = $strategy->getUser()
             ? trim(sprintf(
                 '%s %s',
-                (string) $strategy->getUser()?->getPrenomUser(),
-                (string) $strategy->getUser()?->getNomUser()
+                (string) $strategy->getUser()->getPrenomUser(),
+                (string) $strategy->getUser()->getNomUser()
             ))
             : 'Non defini';
         $objectives = [];
@@ -643,15 +643,15 @@ class GeminiPdfContentGenerator
         $projectOwner = $project?->getUser()
             ? trim(sprintf(
                 '%s %s',
-                (string) $project->getUser()?->getPrenomUser(),
-                (string) $project->getUser()?->getNomUser()
+                (string) $project->getUser()->getPrenomUser(),
+                (string) $project->getUser()->getNomUser()
             ))
             : 'Non defini';
         $strategyOwner = $strategy->getUser()
             ? trim(sprintf(
                 '%s %s',
-                (string) $strategy->getUser()?->getPrenomUser(),
-                (string) $strategy->getUser()?->getNomUser()
+                (string) $strategy->getUser()->getPrenomUser(),
+                (string) $strategy->getUser()->getNomUser()
             ))
             : 'Non defini';
 
@@ -1009,7 +1009,7 @@ class GeminiPdfContentGenerator
         $yTicks = [];
 
         for ($tickIndex = 0; $tickIndex < $tickCount; ++$tickIndex) {
-            $ratio = $tickCount > 1 ? $tickIndex / ($tickCount - 1) : 0;
+            $ratio = $tickIndex / ($tickCount - 1);
             $value = $maxValue * (1 - $ratio);
             $yTicks[] = [
                 'label' => $this->formatOutcomeValueWithUnit($value),
@@ -1199,7 +1199,14 @@ class GeminiPdfContentGenerator
 
     private function calculateEstimatedGainAmount(Strategie $strategy): ?float
     {
-        return $strategy->getGainEstime();
+        $budget = $strategy->getBudgetTotal();
+        $estimatedGainPercent = $strategy->getGainEstime();
+
+        if ($budget === null || $estimatedGainPercent === null) {
+            return null;
+        }
+
+        return ($budget * $estimatedGainPercent) / 100;
     }
 
     private function calculateEstimatedRoiPercent(Strategie $strategy): ?float
@@ -1211,7 +1218,7 @@ class GeminiPdfContentGenerator
             return null;
         }
 
-        return ($gainAmount / $budget) * 100;
+        return $strategy->getGainEstime();
     }
 
     private function formatAmount(?float $amount): string
@@ -1289,7 +1296,7 @@ class GeminiPdfContentGenerator
     {
         $delays = self::TRANSIENT_RETRY_DELAYS_MS;
 
-        return $delays[$attempt - 1] ?? ($delays[array_key_last($delays)] ?? 0);
+        return $delays[$attempt - 1] ?? $delays[array_key_last($delays)];
     }
 
     private function isTemporaryGeminiFailure(\Throwable $exception): bool

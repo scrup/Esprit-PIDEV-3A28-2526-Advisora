@@ -56,31 +56,31 @@ class ResourceWalletTxn
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $amountCoins = null;
+    #[ORM\Column(type: 'decimal', precision: 14, scale: 3, nullable: false)]
+    private ?string $amountCoins = null;
 
     public function getAmountCoins(): ?float
     {
-        return $this->amountCoins;
+        return $this->amountCoins !== null ? (float) $this->amountCoins : null;
     }
 
-    public function setAmountCoins(float $amountCoins): self
+    public function setAmountCoins(int|float|string $amountCoins): self
     {
-        $this->amountCoins = $amountCoins;
+        $this->amountCoins = number_format((float) $amountCoins, 3, '.', '');
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $balanceAfter = null;
+    #[ORM\Column(type: 'decimal', precision: 14, scale: 3, nullable: false)]
+    private ?string $balanceAfter = null;
 
     public function getBalanceAfter(): ?float
     {
-        return $this->balanceAfter;
+        return $this->balanceAfter !== null ? (float) $this->balanceAfter : null;
     }
 
-    public function setBalanceAfter(float $balanceAfter): self
+    public function setBalanceAfter(int|float|string $balanceAfter): self
     {
-        $this->balanceAfter = $balanceAfter;
+        $this->balanceAfter = number_format((float) $balanceAfter, 3, '.', '');
         return $this;
     }
 

@@ -28,17 +28,17 @@ class ResourceWalletAccount
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: false)]
-    private ?float $balanceCoins = null;
+    #[ORM\Column(type: 'decimal', precision: 14, scale: 3, nullable: false)]
+    private ?string $balanceCoins = null;
 
     public function getBalanceCoins(): ?float
     {
-        return $this->balanceCoins;
+        return $this->balanceCoins !== null ? (float) $this->balanceCoins : null;
     }
 
-    public function setBalanceCoins(float $balanceCoins): self
+    public function setBalanceCoins(int|float|string $balanceCoins): self
     {
-        $this->balanceCoins = $balanceCoins;
+        $this->balanceCoins = number_format((float) $balanceCoins, 3, '.', '');
         return $this;
     }
 

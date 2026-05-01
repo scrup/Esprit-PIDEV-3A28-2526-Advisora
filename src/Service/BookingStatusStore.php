@@ -78,7 +78,7 @@ class BookingStatusStore
         $data = $this->readAll();
 
         foreach ($bookings as $booking) {
-            if (!$booking instanceof Booking || $booking->getId() === null) {
+            if ($booking->getId() === null) {
                 continue;
             }
 

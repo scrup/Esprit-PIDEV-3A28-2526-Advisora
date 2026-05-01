@@ -59,7 +59,7 @@ final class ExchangeRateService
             try {
                 $freshSnapshot = $this->fetchLatestSnapshot($baseCurrency);
 
-                if (is_array($currentSnapshot) && ($currentSnapshot['updated_at_unix'] ?? 0) !== ($freshSnapshot['updated_at_unix'] ?? 0)) {
+                if (is_array($currentSnapshot) && ($currentSnapshot['updated_at_unix'] ?? 0) !== $freshSnapshot['updated_at_unix']) {
                     $previousSnapshotItem->set($currentSnapshot)->expiresAfter(604800);
                     $this->cachePool->save($previousSnapshotItem);
                     $previousSnapshot = $currentSnapshot;

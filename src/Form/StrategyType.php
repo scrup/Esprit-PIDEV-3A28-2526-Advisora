@@ -19,10 +19,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class StrategyType extends AbstractType
 {
-    private const MAX_DURATION_MONTHS = 600;
-    private const MAX_BUDGET_TOTAL = 1000000000;
-    private const MAX_GAIN_PERCENTAGE = 1000;
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $typeValues = $this->enumValues(TypeStrategie::cases());
@@ -64,6 +60,10 @@ class StrategyType extends AbstractType
                     new Assert\PositiveOrZero([
                         'message' => 'Le budget total doit etre superieur ou egal a 0.',
                     ]),
+                    new Assert\LessThanOrEqual([
+                        'value' => 1000000000,
+                        'message' => 'Le budget total ne doit pas depasser 1 000 000 000.',
+                    ]),
                 ],
             ])
             ->add('gainEstime', NumberType::class, [
@@ -72,6 +72,10 @@ class StrategyType extends AbstractType
                 'constraints' => [
                     new Assert\PositiveOrZero([
                         'message' => 'Le gain estime doit etre superieur ou egal a 0.',
+                    ]),
+                    new Assert\LessThanOrEqual([
+                        'value' => 1000,
+                        'message' => 'Le gain estime ne doit pas depasser 1000.',
                     ]),
                 ],
             ])
@@ -85,6 +89,10 @@ class StrategyType extends AbstractType
                     new Assert\GreaterThan([
                         'value' => 0,
                         'message' => 'La duree doit etre strictement superieure a 0.',
+                    ]),
+                    new Assert\LessThanOrEqual([
+                        'value' => 600,
+                        'message' => 'La duree ne doit pas depasser 600 mois.',
                     ]),
                 ],
             ])

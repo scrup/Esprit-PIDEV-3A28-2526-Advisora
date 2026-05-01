@@ -270,7 +270,7 @@ abstract class AbstractProjectEstimationAnalyzer implements ProjectEstimationAna
             }
         }
 
-        return array_values(array_slice($items, 0, 3));
+        return array_slice($items, 0, 3);
     }
 
     protected function normalizeVerdict(mixed $value): string

@@ -176,7 +176,7 @@ class Investment
     }
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'investments')]
-    #[ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj')]
+    #[ORM\JoinColumn(name: 'project_id', referencedColumnName: 'idProj', nullable: false, onDelete: 'CASCADE')]
     private ?Project $project = null;
 
     public function getProject(): ?Project
@@ -191,7 +191,7 @@ class Investment
     }
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'investments')]
-    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     public function getUser(): ?User
@@ -213,9 +213,6 @@ class Investment
      */
     public function getTransactions(): Collection
     {
-        if (!$this->transactions instanceof Collection) {
-            $this->transactions = new ArrayCollection();
-        }
         return $this->transactions;
     }
 
@@ -268,7 +265,7 @@ class Investment
             return ($right->getId() ?? 0) <=> ($left->getId() ?? 0);
         });
 
-        return $transactions[0] ?? null;
+        return $transactions[0];
     }
 
     public function getLatestTransactionStatus(): ?string
@@ -281,10 +278,6 @@ class Investment
         $total = 0.0;
 
         foreach ($this->getTransactions() as $transaction) {
-            if (!$transaction instanceof Transaction) {
-                continue;
-            }
-
             // Failed/refused transactions do not consume the investment capacity.
             if ($transaction->isFailed()) {
                 continue;
@@ -300,7 +293,7 @@ class Investment
     {
         $latestTransaction = $this->getLatestTransaction();
 
-        return !$latestTransaction instanceof Transaction || $latestTransaction->isPending();
+        return $latestTransaction === null || $latestTransaction->isPending();
     }
 
     public function isLockedForClient(): bool
@@ -320,7 +313,7 @@ class Investment
 
         $pattern = '/^\[DURATION\](.*?)\[\/DURATION\](?:\R(.*))?$/s';
         if (preg_match($pattern, $raw, $matches) === 1) {
-            $duration = trim((string) ($matches[1] ?? ''));
+            $duration = trim((string) $matches[1]);
             $comment = trim((string) ($matches[2] ?? ''));
 
             return [

@@ -38,7 +38,6 @@ final class ClientMarketplaceService
     private const DEFAULT_COIN_RATE = 10.0;
     private const FIABILO_API_URL = '';
     private const FIABILO_API_TOKEN = '';
-    private const STRIPE_PUBLIC_KEY = '';
     private const STRIPE_SECRET_KEY = '';
     private const STRIPE_CURRENCY = 'eur';
 
@@ -175,7 +174,7 @@ final class ClientMarketplaceService
             );
         }
 
-        $row['image_url'] = $images[0] ?? null;
+        $row['image_url'] = $images[0];
         $row['images'] = $images;
 
         return $this->hydrateAccountDisplayNames($row);
@@ -388,7 +387,7 @@ final class ClientMarketplaceService
             $buyerReserved = $this->currentReservedForProjectResource($connection, $resolvedBuyerProjectId, $resourceId);
 
             $walletBalances = $this->lockWalletBalances($connection, $buyerUserId, $sellerUserId);
-            $buyerBalance = (float) ($walletBalances['buyer'] ?? 0.0);
+            $buyerBalance = $walletBalances['buyer'];
             if ($buyerBalance + 0.000001 < $totalPrice) {
                 throw new InsufficientWalletException(
                     round($totalPrice - $buyerBalance, 3),
@@ -557,7 +556,7 @@ final class ClientMarketplaceService
                         $cancelUrl
                     );
                     $paymentUrl = $stripeSession['url'] ?? null;
-                    $externalRef = $stripeSession['id'] ?? null;
+                    $externalRef = $stripeSession['id'];
 
                     $connection->update('resource_wallet_topup', [
                         'externalRef' => $externalRef,
@@ -1633,7 +1632,7 @@ final class ClientMarketplaceService
         \Stripe\Stripe::setApiKey(self::STRIPE_SECRET_KEY);
         $session = \Stripe\Checkout\Session::retrieve($sessionId);
 
-        return is_array($session) ? $session : $session->toArray();
+        return $session->toArray();
     }
 
     private function resolveTopupProvider(string $provider): string
@@ -1674,11 +1673,11 @@ final class ClientMarketplaceService
             ];
         }
 
-        $message = $this->sanitizeText($fiabiloResponse['message'] ?? null, 250) ?: 'Erreur Fiabilo';
-        $trackingCode = $this->sanitizeText($fiabiloResponse['tracking_code'] ?? null, 120);
-        $labelUrl = $this->sanitizeText($fiabiloResponse['label_url'] ?? null, 480);
+        $message = $this->sanitizeText($fiabiloResponse['message'], 250) ?: 'Erreur Fiabilo';
+        $trackingCode = $this->sanitizeText($fiabiloResponse['tracking_code'], 120);
+        $labelUrl = $this->sanitizeText($fiabiloResponse['label_url'], 480);
 
-        if (($fiabiloResponse['success'] ?? false) === true) {
+        if ($fiabiloResponse['success']) {
             if ($trackingCode === null || $trackingCode === '') {
                 $trackingCode = sprintf('FIABILO-%d-%d', $orderId, $deliveryId);
             }
@@ -1698,11 +1697,11 @@ final class ClientMarketplaceService
         }
 
         return [
-            'success' => (bool) ($fiabiloResponse['success'] ?? false),
+            'success' => $fiabiloResponse['success'],
             'message' => $message,
             'tracking_code' => $trackingCode,
             'label_url' => $labelUrl,
-            'raw_response' => $fiabiloResponse['raw_response'] ?? null,
+            'raw_response' => $fiabiloResponse['raw_response'],
         ];
     }
 
@@ -1759,7 +1758,7 @@ final class ClientMarketplaceService
             $responseBody = is_string($raw) ? $raw : '';
 
             $statusCode = 0;
-            $headers = $http_response_header ?? [];
+            $headers = $http_response_header;
             foreach ($headers as $headerLine) {
                 if (preg_match('/^HTTP\/\d\.\d\s+(\d{3})/i', (string) $headerLine, $matches) === 1) {
                     $statusCode = (int) $matches[1];
@@ -1774,7 +1773,7 @@ final class ClientMarketplaceService
         $trackingCode = $decoded['tracking_code'];
         $labelUrl = $decoded['label_url'];
 
-        if ($statusCode !== null && $statusCode >= 400) {
+        if ($statusCode >= 400) {
             $isSuccess = false;
             $message = 'HTTP ' . $statusCode . ' - ' . ($message !== '' ? $message : 'Reponse Fiabilo invalide');
         }
@@ -1810,7 +1809,7 @@ final class ClientMarketplaceService
 
         $asQuery = [];
         parse_str(str_replace([';', "\n"], ['&', '&'], $body), $asQuery);
-        if (is_array($asQuery) && $asQuery !== []) {
+        if ($asQuery !== []) {
             return $this->extractFiabiloFields($asQuery);
         }
 
