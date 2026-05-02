@@ -1,0 +1,113 @@
+{% if pageCount > 1 %}
+    <nav class="strategy-pagination-nav" role="navigation" aria-label="Pagination des strategies">
+        <ul class="pagination strategy-pagination-list">
+            {% if current > 1 %}
+                <li class="page-item strategy-page-item-edge">
+                    <a class="page-link strategy-page-link-edge" href="{{ path(route, knp_pagination_query(query, 1, options)) }}" aria-label="Aller a la premiere page">
+                        <span class="material-symbols-outlined" aria-hidden="true">first_page</span>
+                        <span class="strategy-page-label">Debut</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item strategy-page-item-edge disabled">
+                    <span class="page-link strategy-page-link-edge">
+                        <span class="material-symbols-outlined" aria-hidden="true">first_page</span>
+                        <span class="strategy-page-label">Debut</span>
+                    </span>
+                </li>
+            {% endif %}
+
+            {% if previous is defined %}
+                <li class="page-item strategy-page-item-nav">
+                    <a class="page-link strategy-page-link-nav" rel="prev" href="{{ path(route, knp_pagination_query(query, previous, options)) }}" aria-label="Aller a la page precedente">
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+                        <span class="strategy-page-label">Precedent</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item strategy-page-item-nav disabled">
+                    <span class="page-link strategy-page-link-nav">
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+                        <span class="strategy-page-label">Precedent</span>
+                    </span>
+                </li>
+            {% endif %}
+
+            {% if startPage > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ path(route, knp_pagination_query(query, 1, options)) }}">1</a>
+                </li>
+                {% if startPage == 3 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ path(route, knp_pagination_query(query, 2, options)) }}">2</a>
+                    </li>
+                {% elseif startPage > 2 %}
+                    <li class="page-item disabled ellipsis">
+                        <span class="page-link">&hellip;</span>
+                    </li>
+                {% endif %}
+            {% endif %}
+
+            {% for page in pagesInRange %}
+                {% if page != current %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ path(route, knp_pagination_query(query, page, options)) }}" aria-label="Aller a la page {{ page }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ page }}</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pageCount > endPage %}
+                {% if pageCount > (endPage + 1) %}
+                    {% if pageCount > (endPage + 2) %}
+                        <li class="page-item disabled ellipsis">
+                            <span class="page-link">&hellip;</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path(route, knp_pagination_query(query, pageCount - 1, options)) }}">{{ pageCount - 1 }}</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ path(route, knp_pagination_query(query, pageCount, options)) }}">{{ pageCount }}</a>
+                </li>
+            {% endif %}
+
+            {% if next is defined %}
+                <li class="page-item strategy-page-item-nav">
+                    <a class="page-link strategy-page-link-nav" rel="next" href="{{ path(route, knp_pagination_query(query, next, options)) }}" aria-label="Aller a la page suivante">
+                        <span class="strategy-page-label">Suivant</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item strategy-page-item-nav disabled">
+                    <span class="page-link strategy-page-link-nav">
+                        <span class="strategy-page-label">Suivant</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    </span>
+                </li>
+            {% endif %}
+
+            {% if current < pageCount %}
+                <li class="page-item strategy-page-item-edge">
+                    <a class="page-link strategy-page-link-edge" href="{{ path(route, knp_pagination_query(query, pageCount, options)) }}" aria-label="Aller a la derniere page">
+                        <span class="strategy-page-label">Fin</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">last_page</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item strategy-page-item-edge disabled">
+                    <span class="page-link strategy-page-link-edge">
+                        <span class="strategy-page-label">Fin</span>
+                        <span class="material-symbols-outlined" aria-hidden="true">last_page</span>
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

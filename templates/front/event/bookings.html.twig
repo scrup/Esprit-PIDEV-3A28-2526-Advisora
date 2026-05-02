@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ 'event.bookings.meta_title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">{{ 'event.bookings.badge'|trans }}</span>
+            <h1>{{ 'event.bookings.heading'|trans }}</h1>
+            <p>{{ 'event.bookings.count_text'|trans({'%count%': bookings|length}) }}</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-secondary" href="{{ path('event_index') }}">
+                <i class="fas fa-calendar"></i> {{ 'event.bookings.view_events'|trans }}
+            </a>
+            {% if bookings|length > 0 %}
+            <a class="pm-btn pm-btn-primary" href="{{ path('event_bookings_export_pdf') }}" target="_blank">
+                <i class="fas fa-file-pdf"></i> {{ 'event.bookings.export_pdf'|trans }}
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="pm-grid">
+        {% for booking in bookings %}
+            <article class="pm-card ev-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ booking.workflowStatusCssClass }}">{{ booking.workflowStatusLabel }}</span>
+                    {% if booking.event and booking.event.price %}
+                        <span class="ev-price-tag">{{ booking.event.price|number_format(2, '.', ' ') }} TND/{{ 'event.common.ticket'|trans }}</span>
+                    {% elseif booking.event %}
+                        <span class="ev-price-tag ev-price-free">{{ 'event.common.free'|trans }}</span>
+                    {% endif %}
+                </div>
+                <h2>{{ booking.event ? booking.event.title : ('event.common.event_unavailable'|trans) }}</h2>
+                <p>{{ booking.event and booking.event.description ? (booking.event.description|length > 100 ? booking.event.description|slice(0,100) ~ '…' : booking.event.description) : ('event.common.no_description'|trans) }}</p>
+
+                <ul class="ev-meta-chips">
+                    {% if booking.event and booking.event.organizerName %}
+                        <li><i class="fas fa-user-tie"></i> {{ booking.event.organizerName }}</li>
+                    {% endif %}
+                    {% if booking.event and booking.event.location %}
+                        <li><i class="fas fa-location-dot"></i> {{ booking.event.location }}</li>
+                    {% endif %}
+                    {% if booking.event and booking.event.startDate %}
+                        <li><i class="fas fa-calendar"></i> {{ booking.event.startDate|date('d/m/Y H:i') }}</li>
+                    {% endif %}
+                    <li><i class="fas fa-ticket"></i> {{ booking.ticketCount }} {{ 'event.common.ticket_count'|trans({'%count%': booking.ticketCount}) }}</li>
+                    <li><i class="fas fa-clock"></i> {{ 'event.bookings.booked_on'|trans }} {{ booking.bookingDate ? booking.bookingDate|date('d/m/Y') : 'N/A' }}</li>
+                    {% if booking.totalPrixBk > 0 %}
+                        <li><i class="fas fa-coins"></i> {{ booking.totalPrixBk|number_format(2, '.', ' ') }} TND</li>
+                    {% endif %}
+                </ul>
+
+                <div class="pm-card-actions">
+                    {% if booking.event %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: booking.event.id}) }}">
+                            <i class="fas fa-eye"></i> {{ 'event.bookings.view_event'|trans }}
+                        </a>
+                    {% endif %}
+                    {% if booking.isPending %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('event_booking_edit', {id: booking.id}) }}">
+                            <i class="fas fa-pen"></i> {{ 'event.common.edit'|trans }}
+                        </a>
+                        <form method="post" action="{{ path('event_booking_delete', {id: booking.id}) }}" onsubmit="return confirm('{{ 'event.bookings.confirm_delete'|trans }}');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_booking_' ~ booking.id) }}">
+                            <button class="pm-btn pm-btn-danger" type="submit">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    {% else %}
+                        <span class="pm-empty-text">{{ 'event.bookings.locked'|trans }}</span>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>{{ 'event.bookings.empty.title'|trans }}</h2>
+                <p>{{ 'event.bookings.empty.text'|trans }}</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

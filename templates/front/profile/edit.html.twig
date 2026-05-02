@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Modifier mon profil{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Espace client</span>
+            <h1>Modifier mon profil</h1>
+            <p>Modifiez votre nom, email, telephone et photo de profil.</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-secondary" href="{{ path('client_profile_show') }}">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="pm-grid pm-profile-grid">
+        <article class="pm-card pm-profile-card">
+            <div class="pm-profile-head">
+                <div class="pm-profile-avatar">
+                    {% if userProfile.image_path %}
+                        <img src="{{ asset(userProfile.image_path) }}" alt="Photo de profil">
+                    {% else %}
+                        <span>
+                            {{ userProfile.prenomUser|slice(0, 1)|upper }}{{ userProfile.nomUser|slice(0, 1)|upper }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="pm-profile-identity">
+                    <h2>{{ userProfile.prenomUser }} {{ userProfile.nomUser }}</h2>
+                    <p>{{ userProfile.EmailUser }}</p>
+                </div>
+            </div>
+
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                <div class="pm-form-grid pm-profile-form-grid">
+                    <div class="pm-field">
+                        {{ form_label(form.PrenomUser, 'Prenom') }}
+                        {{ form_widget(form.PrenomUser, {'attr': {'class': 'pm-input'}}) }}
+                        <div class="pm-field-errors">{{ form_errors(form.PrenomUser) }}</div>
+                    </div>
+
+                    <div class="pm-field">
+                        {{ form_label(form.nomUser, 'Nom') }}
+                        {{ form_widget(form.nomUser, {'attr': {'class': 'pm-input'}}) }}
+                        <div class="pm-field-errors">{{ form_errors(form.nomUser) }}</div>
+                    </div>
+
+                    <div class="pm-field">
+                        {{ form_label(form.EmailUser, 'Email') }}
+                        {{ form_widget(form.EmailUser, {'attr': {'class': 'pm-input'}}) }}
+                        <div class="pm-field-errors">{{ form_errors(form.EmailUser) }}</div>
+                    </div>
+
+                    <div class="pm-field">
+                        {{ form_label(form.NumTelUser, 'Telephone') }}
+                        {{ form_widget(form.NumTelUser, {'attr': {'class': 'pm-input'}}) }}
+                        <div class="pm-field-errors">{{ form_errors(form.NumTelUser) }}</div>
+                    </div>
+
+                    <div class="pm-field">
+                        <label for="readonly_cin">CIN (lecture seule)</label>
+                        <input id="readonly_cin" class="pm-input" value="{{ userProfile.cin ?: '' }}" readonly>
+                    </div>
+
+                    <div class="pm-field">
+                        <label for="readonly_birth">Date de naissance (lecture seule)</label>
+                        <input id="readonly_birth" class="pm-input" value="{{ userProfile.dateNUser ? userProfile.dateNUser|date('d/m/Y') : '' }}" readonly>
+                    </div>
+
+                    <div class="pm-field" style="grid-column: 1 / -1;">
+                        {{ form_label(form.profileImage, 'Photo de profil') }}
+                        {{ form_widget(form.profileImage, {'attr': {'class': 'pm-input', 'accept': 'image/*'}}) }}
+                        <div class="pm-field-errors">{{ form_errors(form.profileImage) }}</div>
+                    </div>
+                </div>
+
+                <div class="pm-form-actions pm-profile-actions">
+                    <button type="submit" class="pm-btn pm-btn-primary">
+                        <i class="fas fa-floppy-disk"></i>
+                        <span>Enregistrer</span>
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </article>
+    </section>
+{% endblock %}
+

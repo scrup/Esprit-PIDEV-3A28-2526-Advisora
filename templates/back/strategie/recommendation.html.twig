@@ -1,0 +1,126 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Recommendation de strategie{% endblock %}
+
+{% block body %}
+<section class="recommendation-page">
+    <div class="recommendation-shell">
+        <div class="recommendation-head">
+            <p class="recommendation-eyebrow">Strategie intelligente</p>
+            <h1>Recommendation de strategie</h1>
+            <p class="recommendation-project">
+                Projet cible:
+                <strong>{{ projet.titleProj ?? 'Projet sans titre' }}</strong>
+            </p>
+        </div>
+
+        <article class="recommendation-highlight card">
+            <h2>{{ strategie.nomStrategie ?? 'Strategie recommandee' }}</h2>
+            <p class="recommendation-type">
+                Type:
+                <span>{{ strategie.type ?? 'Non defini' }}</span>
+            </p>
+
+            <div class="recommendation-kpis">
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">Budget total</span>
+                    <strong>{{ (strategie.budgetTotal ?? 0)|number_format(2, '.', ' ') }}</strong>
+                </div>
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">Gain estime</span>
+                    <strong>{{ strategie.gainEstime is not null ? strategie.gainEstime|number_format(2, '.', ' ') ~ ' TND' : 'Non defini' }}</strong>
+                </div>
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">ROI estime</span>
+                    <strong>{{ strategie.estimatedRoiPercent is not null ? strategie.estimatedRoiPercent|number_format(2, '.', ' ') ~ '%' : 'Non defini' }}</strong>
+                </div>
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">Duree</span>
+                    <strong>{{ strategie.dureeTerme ?? 0 }} mois</strong>
+                </div>
+                <div class="recommendation-kpi">
+                    <span class="recommendation-kpi-label">Statut</span>
+                    <strong>{{ strategie.statusStrategie ?? 'En_attente' }}</strong>
+                </div>
+            </div>
+
+            {% set can_recommendation_decide = can_recommendation_decide|default(app.user and app.user.roleUser in ['admin', 'gerant']) %}
+
+            <section class="recommendation-decision">
+                <h3>Confirmer cette strategie</h3>
+
+                {% if not can_recommendation_decide %}
+                    <p class="recommendation-decision-hint">
+                        Seul un gerant ou un administrateur peut confirmer cette recommandation.
+                    </p>
+                {% else %}
+                    <p class="recommendation-decision-hint">
+                        Cette strategie est seulement en apercu. Elle ne sera enregistree qu apres confirmation et passera en statut "En_cours" lors de l acceptation.
+                        Si vous voulez une alternative, utilisez le bouton Gemini pour generer un nouvel apercu.
+                    </p>
+
+                    <div class="recommendation-decision-actions">
+                        <form method="post" action="{{ path('strategie_recommandation_auto_generate', {'id': projet.id}) }}" onsubmit="return confirm('Generer un nouvel apercu de strategie avec Gemini ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('recommendation_auto_generate_' ~ projet.id) }}">
+                            <button type="submit" class="recommendation-btn recommendation-btn-gemini">
+                                Generer une autre strategie (Gemini)
+                            </button>
+                        </form>
+
+                        <form method="post" action="{{ path('strategie_recommandation_decision', {'id': projet.id}) }}" onsubmit="return confirm('Confirmer et enregistrer cette strategie ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('recommendation_decision_' ~ projet.id) }}">
+                            <input type="hidden" name="decision" value="accept">
+                            <button type="submit" class="recommendation-btn recommendation-btn-accept">
+                                Confirmer et enregistrer
+                            </button>
+                        </form>
+
+                        <details class="recommendation-refuse-box">
+                            <summary class="recommendation-btn recommendation-btn-refuse">Refuser la strategie</summary>
+                            <form method="post" action="{{ path('strategie_recommandation_decision', {'id': projet.id}) }}" class="recommendation-refuse-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('recommendation_decision_' ~ projet.id) }}">
+                                <input type="hidden" name="decision" value="reject">
+                                <label for="justification_preview_{{ projet.id }}">Justification optionnelle du refus</label>
+                                <textarea
+                                    id="justification_preview_{{ projet.id }}"
+                                    name="justification"
+                                    rows="4"
+                                    minlength="0"
+                                    maxlength="255"
+                                    placeholder="Optionnel: expliquez pourquoi vous refusez cette recommandation."
+                                ></textarea>
+                                <button type="submit" class="recommendation-btn recommendation-btn-refuse-submit">
+                                    Confirmer le refus
+                                </button>
+                            </form>
+                        </details>
+                    </div>
+                {% endif %}
+            </section>
+        </article>
+
+        {% if recommendation.top_3 is defined and recommendation.top_3 is not empty %}
+            <section class="recommendation-top card">
+                <h3>Top suggestions</h3>
+                <ul>
+                    {% for candidate in recommendation.top_3 %}
+                        <li>
+                            <div>
+                                <strong>{{ candidate.label ?? 'Strategie' }}</strong>
+                                <span>{{ candidate.type ?? 'Type inconnu' }}</span>
+                            </div>
+                            <span class="recommendation-score">
+                                {{ ((candidate.score ?? 0) * 100)|number_format(1, '.', ' ') }}%
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+
+
+    

@@ -1,0 +1,139 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des ressources{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260417-rs-v30">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+        <div class="pm-admin-header rs-header">
+            <div class="rs-header-copy back-users-title">
+                <span class="pm-badge">Back office</span>
+                <h1>Gestion des ressources</h1>
+                <p>Catalogue interne des ressources du back office, organise pour la consultation, la maintenance et le suivi du stock.</p>
+            </div>
+            <div class="pm-card-actions rs-header-actions">
+                <a class="pm-btn pm-btn-primary" href="{{ path('resource_new') }}">Ajouter une ressource</a>
+            </div>
+        </div>
+
+        {% include 'back/resource/_module_nav.html.twig' %}
+
+        <section class="pm-form-card pm-filter-card rs-panel rs-toolbar-panel">
+            <form method="get" class="pm-filter-grid rs-filter-form rs-filter-grid" data-auto-filter-form>
+                <div class="rs-field">
+                    <label for="q">Recherche</label>
+                    <input id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Nom de la ressource">
+                </div>
+                <div class="rs-field">
+                    <label for="status">Statut</label>
+                    <select id="status" name="status">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="rs-field">
+                    <label for="supplier_id">Fournisseur</label>
+                    <select id="supplier_id" name="supplier_id">
+                        <option value="">Tous les fournisseurs</option>
+                        {% for supplier in suppliers %}
+                            {% set supplierLabel = supplier.fournisseur ?: supplier.nomFr %}
+                            <option value="{{ supplier.idFr }}" {% if filters.supplier_id == supplier.idFr %}selected{% endif %}>{{ supplierLabel }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="pm-filter-actions rs-toolbar-actions">
+                    <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_index') }}">Reinitialiser</a>
+                </div>
+            </form>
+        </section>
+
+        <section class="pm-card rs-panel rs-list-panel rs-showcase-panel">
+            <div class="pm-card-head rs-panel-head">
+                <div>
+                    <h2>Liste des ressources</h2>
+                    <p>{{ resources|length }} enregistrement(s) affiche(s)</p>
+                </div>
+            </div>
+
+            {% if resources is not empty %}
+                <div class="rs-showcase-grid rs-showcase-grid-resource">
+                    {% for resource in resources %}
+                        {% set stock = stock_snapshots[resource.id] ?? {'reserved': 0, 'available': resource.quantity ?? 0} %}
+                        <article class="rs-showcase-card rs-showcase-card-resource">
+                            <div class="rs-showcase-media-wrap">
+                                <div class="rs-showcase-badges">
+                                    <span class="rs-showcase-chip">Reference #{{ resource.id }}</span>
+                                    <span class="rs-state rs-state-{{ resource.status|default('')|lower }}">
+                                        {{ resource.getStatusLabel() }}
+                                    </span>
+                                </div>
+                                <a class="rs-showcase-media" href="{{ path('resource_back_manage', {id: resource.id}) }}">
+                                    {% if resource.primaryImageUrl %}
+                                        <img src="{{ resource.primaryImageUrl }}" alt="{{ resource.name }}">
+                                    {% else %}
+                                        <span class="rs-showcase-media-icon"><i class="fas fa-box-open"></i></span>
+                                    {% endif %}
+                                </a>
+                            </div>
+
+                            <div class="rs-showcase-body">
+                                <div class="rs-showcase-heading">
+                                    <a class="rs-primary-link rs-showcase-title" href="{{ path('resource_back_manage', {id: resource.id}) }}">{{ resource.name }}</a>
+                                    <p class="rs-showcase-subtitle">{{ resource.getSupplierDisplayName() }}</p>
+                                </div>
+
+                                <div class="rs-showcase-meta-line">
+                                    <span><i class="fas fa-warehouse"></i> Stock total {{ resource.quantity }}</span>
+                                    <span><i class="fas fa-link"></i> {{ resource.projects|length }} reservation(s)</span>
+                                </div>
+
+                                <div class="rs-showcase-metrics">
+                                    <div class="rs-showcase-metric">
+                                        <span>Disponible</span>
+                                        <strong>{{ stock.available }}</strong>
+                                    </div>
+                                    <div class="rs-showcase-metric">
+                                        <span>Reserve</span>
+                                        <strong>{{ stock.reserved }}</strong>
+                                    </div>
+                                    <div class="rs-showcase-metric">
+                                        <span>Prix</span>
+                                        <strong>{{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</strong>
+                                    </div>
+                                    <div class="rs-showcase-metric">
+                                        <span>Fiche</span>
+                                        <strong>Back office</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rs-showcase-actions">
+                                <span class="rs-showcase-footnote">Catalogue interne</span>
+                                <a class="pm-btn pm-btn-primary rs-table-btn" href="{{ path('resource_back_manage', {id: resource.id}) }}">Traiter</a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="pm-empty rs-empty">
+                    <h2>Aucune ressource ne correspond aux filtres</h2>
+                    <p>Essayez de modifier la recherche ou de reinitialiser les filtres.</p>
+                </div>
+            {% endif %}
+        </section>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/resource-filters.js') }}"></script>
+{% endblock %}

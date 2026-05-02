@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% macro field(field) %}
+    <div class="pm-field {% if field.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
+        {{ form_label(field) }}
+        {{ form_widget(field) }}
+        {% if field.vars.help %}
+            <div class="pm-field-help">{{ form_help(field) }}</div>
+        {% endif %}
+        <div class="pm-field-errors" data-field-errors>
+            {{ form_errors(field) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% block body %}
+    {% import _self as forms %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">{{ 'event.booking_form.badge'|trans }}</span>
+                <h1>{{ page_title }}</h1>
+                <p>{{ 'event.booking_form.subtitle'|trans }}</p>
+            </div>
+            <a class="pm-btn pm-btn-secondary" href="{{ back_route == 'event_show' ? path(back_route, {id: event.id}) : path(back_route) }}">{{ 'event.common.back'|trans }}</a>
+        </div>
+
+        <div class="pm-form-card">
+            <div class="pm-info-banner">
+                <strong>{{ 'event.common.event'|trans }} :</strong> {{ event.title }}<br>
+                <strong>{{ 'event.common.organizer'|trans }} :</strong> {{ event.organizerName ?: ('event.common.not_provided'|trans) }}<br>
+                <strong>{{ 'event.common.location'|trans }} :</strong> {{ event.location ?: ('event.common.not_provided'|trans) }}<br>
+                <strong>{{ 'event.booking_form.remaining_seats'|trans }} :</strong> {{ event.remainingTickets }}
+                {% if booking.id %}
+                    <br><strong>{{ 'event.show.status'|trans }} :</strong> <span class="pm-status pm-status-{{ booking.workflowStatusCssClass }}">{{ booking.workflowStatusLabel }}</span>
+                {% endif %}
+            </div>
+            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form'}}) }}
+                {{ form_errors(form) }}
+                <div class="pm-form-grid">
+                    {{ forms.field(form.numTicketBk) }}
+                </div>
+                <div class="pm-form-actions">
+                    {{ form_row(form.save) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion des utilisateurs{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+{% endblock %}
+
+{% block body %}
+<section class="back-users-shell">
+    <div class="pm-admin-header">
+        <div class="back-users-title">
+            <span class="pm-badge">Back office</span>
+            <h1>Gestion des utilisateurs</h1>
+            <p>GÃ©rez les comptes, les rÃ´les et les accÃ¨s avec une interface plus moderne et visuelle.</p>
+        </div>
+
+        <div class="pm-card-actions">
+            <a href="{{ path('app_back') }}" class="pm-btn pm-btn-secondary">Retour</a>
+            <a href="{{ path('back_user_new') }}" class="pm-btn pm-btn-primary">Ajouter un utilisateur</a>
+        </div>
+    </div>
+
+    <div class="users-overview-grid">
+        <div class="users-stat-card">
+            <span>Total</span>
+            <strong>{{ users|length }}</strong>
+            <small>Utilisateurs enregistrÃ©s</small>
+        </div>
+
+        <div class="users-stat-card">
+            <span>Admins</span>
+            <strong>{{ users|filter(u => u.roleUser|upper == 'ADMIN')|length }}</strong>
+            <small>AccÃ¨s complet</small>
+        </div>
+
+        <div class="users-stat-card">
+            <span>GÃ©rants</span>
+            <strong>{{ users|filter(u => u.roleUser|upper == 'GERANT')|length }}</strong>
+            <small>Gestion intermÃ©diaire</small>
+        </div>
+
+        <div class="users-stat-card">
+            <span>Clients</span>
+            <strong>{{ users|filter(u => u.roleUser|upper == 'CLIENT')|length }}</strong>
+            <small>AccÃ¨s standard</small>
+        </div>
+    </div>
+<div class="users-toolbar-modern">
+    <form method="get" action="{{ path('back_user_index') }}" class="users-filter-form">
+        <div class="users-filter-group users-search-group">
+            <label for="search">Recherche</label>
+            <input
+                type="text"
+                id="search"
+                name="search"
+                value="{{ currentSearch|default('') }}"
+                placeholder="Nom, prenom, email, telephone..."
+                class="users-search-input"
+            >
+        </div>
+
+        <div class="users-filter-group">
+            <label for="sort">Tri</label>
+            <select id="sort" name="sort">
+                <option value="idUser" {{ currentSort == 'idUser' ? 'selected' : '' }}>Par ID</option>
+                <option value="roleUser" {{ currentSort == 'roleUser' ? 'selected' : '' }}>Par rÃ´le</option>
+                <option value="dateNUser" {{ currentSort == 'dateNUser' ? 'selected' : '' }}>Par date de naissance</option>
+            </select>
+        </div>
+
+        <div class="users-filter-group">
+            <label for="direction">Ordre</label>
+            <select id="direction" name="direction">
+                <option value="ASC" {{ currentDirection == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                <option value="DESC" {{ currentDirection == 'DESC' ? 'selected' : '' }}>DÃ©croissant</option>
+            </select>
+        </div>
+
+        <button type="submit" class="pm-btn pm-btn-primary">Appliquer</button>
+        <a href="{{ path('back_user_index') }}" class="pm-btn pm-btn-secondary">Reset</a>
+    </form>
+</div>
+
+    <div class="users-card-grid">
+        {% for user in users %}
+            <article class="user-card-modern">
+            <div class="user-card-top">
+    <div class="user-avatar">
+        {% if user.image_path %}
+            <img src="{{ asset(user.image_path) }}" alt="{{ user.prenomUser }} {{ user.nomUser }}">
+        {% else %}
+            {{ user.prenomUser|slice(0, 1)|upper }}{{ user.nomUser|slice(0, 1)|upper }}
+        {% endif %}
+    </div>
+                     <div class="user-main-info">
+                        <h3>{{ user.prenomUser }} {{ user.nomUser }}</h3>
+                        <p>{{ user.EmailUser }}</p>
+                    </div>
+
+                    <div class="user-role-zone">
+                        {% if user.roleUser|upper == 'ADMIN' %}
+                            <span class="role-badge role-admin">ADMIN</span>
+                        {% elseif user.roleUser|upper == 'GERANT' %}
+                            <span class="role-badge role-gerant">GERANT</span>
+                        {% else %}
+                            <span class="role-badge role-client">CLIENT</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="user-card-body">
+                    <div class="user-meta-item">
+                        <span class="meta-label">ID</span>
+                        <strong>#{{ user.idUser }}</strong>
+                    </div>
+
+                    <div class="user-meta-item">
+                        <span class="meta-label">Date naissance</span>
+                        <strong>{{ user.dateNUser ? user.dateNUser|date('d/m/Y') : '-' }}</strong>
+                    </div>
+
+                    <div class="user-meta-item">
+                        <span class="meta-label">CIN</span>
+                        <strong>{{ user.cin ?: '-' }}</strong>
+                    </div>
+
+                    <div class="user-meta-item">
+                        <span class="meta-label">TÃ©lÃ©phone</span>
+                        <strong>{{ user.NumTelUser ?: '-' }}</strong>
+                    </div>
+                </div>
+
+                <div class="user-card-actions">
+                    <a href="{{ path('back_user_edit', {idUser: user.idUser}) }}" class="user-action-btn">
+                        Modifier
+                    </a>
+
+                    <form method="post" action="{{ path('back_user_delete', {idUser: user.idUser}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.idUser) }}">
+                        <button type="submit" class="user-action-btn danger" onclick="return confirm('Supprimer cet utilisateur ?');">
+                            Supprimer
+                        </button>
+                    </form>
+                </div>
+            </article>
+        {% else %}
+            <div class="empty-users-state">
+                <h3>Aucun utilisateur trouvÃ©</h3>
+                <p>Ajoutez votre premier utilisateur pour commencer.</p>
+                <a href="{{ path('back_user_new') }}" class="pm-btn pm-btn-primary">Ajouter un utilisateur</a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ 'event.index.meta_title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('event-calendar');
+            if (!calendarEl) return;
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listMonth'
+                },
+                buttonText: {
+                    today: "{{ 'event.index.calendar.today'|trans }}",
+                    month: '{{ 'event.index.calendar.month'|trans }}',
+                    week: '{{ 'event.index.calendar.week'|trans }}',
+                    list: '{{ 'event.index.calendar.list'|trans }}'
+                },
+                height: 'auto',
+                events: '{{ path('event_calendar_data') }}',
+                eventColor: '#c37d5d',
+                eventBorderColor: '#a86447',
+                eventTextColor: '#fff',
+                eventDisplay: 'block',
+                dayMaxEvents: 3,
+                eventClick: function (info) {
+                    info.jsEvent.preventDefault();
+                    if (info.event.url) {
+                        window.location.href = info.event.url;
+                    }
+                },
+                eventDidMount: function (info) {
+                    info.el.title = info.event.title;
+                },
+                loading: function (isLoading) {
+                    var loader = document.getElementById('calendar-loader');
+                    if (loader) loader.style.display = isLoading ? 'flex' : 'none';
+                }
+            });
+            calendar.render();
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero ev-hero">
+        <div>
+            <span class="pm-badge">{{ 'event.common.badge'|trans }}</span>
+            <h1>{{ 'event.index.heading'|trans }}</h1>
+            <p>{{ 'event.index.subtitle'|trans }}</p>
+        </div>
+        <div class="pm-actions">
+            {% if app.user and can_manage_events %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('back_event_index') }}">
+                    <i class="fas fa-cog"></i> {{ 'event.index.actions.back_office'|trans }}
+                </a>
+            {% elseif app.user and can_book_events %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('event_my_bookings') }}">
+                    <i class="fas fa-ticket"></i> {{ 'event.index.actions.my_bookings'|trans }}
+                </a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('event_cart') }}">
+                    <i class="fas fa-shopping-cart"></i> {{ 'event.index.actions.my_cart'|trans }}
+                </a>
+            {% else %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">
+                    <i class="fas fa-sign-in-alt"></i> {{ 'event.index.actions.login'|trans }}
+                </a>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if recommendations %}
+    <section class="ev-ai-section">
+        <div class="ev-ai-header">
+            <div class="ev-ai-title">
+                <span class="ev-ai-icon">?</span>
+                <div>
+                    <h2>{{ 'event.index.ai.title'|trans }}</h2>
+                    <p>{{ 'event.index.ai.subtitle'|trans }}</p>
+                </div>
+            </div>
+            <span class="ev-ai-badge">{{ 'event.index.ai.badge'|trans }}</span>
+        </div>
+        <div class="ev-ai-grid">
+            {% for rec in recommendations %}
+                {% set existingBooking = existing_bookings[rec.id]|default(null) %}
+                <article class="ev-ai-card">
+                    <div class="ev-ai-card-top">
+                        <span class="pm-status pm-status-{{ rec.getTimelineStatus() }}">{{ rec.getTimelineLabel() }}</span>
+                        {% if rec.price %}
+                            <span class="ev-price-tag">{{ rec.price|number_format(2, '.', ' ') }} TND</span>
+                        {% else %}
+                            <span class="ev-price-tag ev-price-free">{{ 'event.common.free'|trans }}</span>
+                        {% endif %}
+                    </div>
+                    <h3>{{ rec.title }}</h3>
+                    <p class="ev-ai-desc">{{ rec.description|length > 90 ? rec.description|slice(0, 90) ~ '…' : rec.description ?: ('event.common.no_description_short'|trans) }}</p>
+                    <ul class="ev-meta-chips">
+                        {% if rec.organizerName %}
+                            <li><i class="fas fa-user-tie"></i> {{ rec.organizerName }}</li>
+                        {% endif %}
+                        {% if rec.location %}
+                            <li><i class="fas fa-location-dot"></i> {{ rec.location }}</li>
+                        {% endif %}
+                        {% if rec.startDate %}
+                            <li><i class="fas fa-calendar"></i> {{ rec.startDate|date('d/m/Y') }}</li>
+                        {% endif %}
+                        <li><i class="fas fa-chair"></i> {{ rec.remainingTickets }} {{ 'event.common.remaining_places'|trans({'%count%': rec.remainingTickets}) }}</li>
+                    </ul>
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: rec.id}) }}">{{ 'event.common.view'|trans }}</a>
+                        {% if can_book_events and rec.remainingTickets > 0 and not existingBooking %}
+                            <form method="post" action="{{ path('event_add_to_cart', {id: rec.id}) }}" style="display:inline;">
+                                <input type="hidden" name="quantity" value="1">
+                                <input type="hidden" name="redirect" value="events">
+                                <button type="submit" class="pm-btn pm-btn-primary"><i class="fas fa-cart-plus"></i> {{ 'event.common.add'|trans }}</button>
+                            </form>
+                        {% elseif existingBooking %}
+                            <span class="pm-status pm-status-{{ existingBooking.workflowStatusCssClass }}">{{ existingBooking.workflowStatusLabel }}</span>
+                        {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="ev-filter-section">
+        <form method="get" action="{{ path('event_index') }}" class="ev-filter-form">
+            <div class="ev-filter-fields">
+                <div class="pm-field">
+                    <label for="filter_q"><i class="fas fa-search"></i> {{ 'event.index.filters.search'|trans }}</label>
+                    <input id="filter_q" type="search" name="q" value="{{ filters.q }}" placeholder="{{ 'event.index.filters.search_placeholder'|trans }}">
+                </div>
+                <div class="pm-field">
+                    <label for="filter_location"><i class="fas fa-map-pin"></i> {{ 'event.index.filters.location'|trans }}</label>
+                    <input id="filter_location" type="text" name="location" value="{{ filters.location }}" placeholder="{{ 'event.index.filters.location_placeholder'|trans }}">
+                </div>
+            </div>
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit"><i class="fas fa-filter"></i> {{ 'event.common.filter'|trans }}</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('event_index') }}">{{ 'event.common.reset'|trans }}</a>
+            </div>
+        </form>
+    </section>
+
+    <div class="ev-cards-wrapper">
+        <div class="pm-grid">
+            {% for event in events %}
+                {% set existingBooking = existing_bookings[event.id]|default(null) %}
+                <article class="pm-card ev-card">
+                    <div class="pm-card-head">
+                        <span class="pm-status pm-status-{{ event.getTimelineStatus() }}">{{ event.getTimelineLabel() }}</span>
+                        {% if event.price %}
+                            <span class="ev-price-tag">{{ event.price|number_format(2, '.', ' ') }} TND</span>
+                        {% else %}
+                            <span class="ev-price-tag ev-price-free">{{ 'event.common.free'|trans }}</span>
+                        {% endif %}
+                    </div>
+                    <h2>{{ event.title }}</h2>
+                    <p>{{ event.description|length > 100 ? event.description|slice(0, 100) ~ '…' : event.description ?: ('event.common.no_description'|trans) }}</p>
+                    <ul class="ev-meta-chips">
+                        {% if event.organizerName %}
+                            <li><i class="fas fa-user-tie"></i> {{ event.organizerName }}</li>
+                        {% endif %}
+                        {% if event.location %}
+                            <li><i class="fas fa-location-dot"></i> {{ event.location }}</li>
+                        {% endif %}
+                        <li><i class="fas fa-calendar-plus"></i> {{ event.startDate ? event.startDate|date('d/m/Y H:i') : 'N/A' }}</li>
+                        <li><i class="fas fa-calendar-check"></i> {{ event.endDate ? event.endDate|date('d/m/Y H:i') : 'N/A' }}</li>
+                        <li><i class="fas fa-users"></i> {{ event.reservedTickets }}/{{ event.capacity }} {{ 'event.index.cards.registered'|trans }}</li>
+                        <li class="{{ event.remainingTickets == 0 ? 'ev-chip-full' : '' }}">
+                            <i class="fas fa-chair"></i>
+                            {% if event.remainingTickets == 0 %}
+                                {{ 'event.common.full'|trans }}
+                            {% else %}
+                                {{ event.remainingTickets }} {{ 'event.common.remaining_places'|trans({'%count%': event.remainingTickets}) }}
+                            {% endif %}
+                        </li>
+                    </ul>
+                    <div class="pm-card-actions">
+                        <a class="pm-btn pm-btn-primary" href="{{ path('event_show', {id: event.id}) }}">{{ 'event.index.cards.view_detail'|trans }}</a>
+                        {% if app.user and can_manage_events %}
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('event_back_manage', {id: event.id}) }}">{{ 'event.common.manage'|trans }}</a>
+                        {% elseif app.user and can_book_events %}
+                            {% if existingBooking %}
+                                <span class="pm-status pm-status-{{ existingBooking.workflowStatusCssClass }}">{{ existingBooking.workflowStatusLabel }}</span>
+                                <a class="pm-btn pm-btn-secondary" href="{{ path('event_booking_edit', {id: existingBooking.id}) }}">
+                                    {{ existingBooking.isPending ? ('event.common.edit'|trans) : ('event.common.view_booking'|trans) }}
+                                </a>
+                            {% elseif event.remainingTickets > 0 %}
+                                <form method="post" action="{{ path('event_add_to_cart', {id: event.id}) }}" style="display:inline;">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <input type="hidden" name="redirect" value="events">
+                                    <button type="submit" class="pm-btn pm-btn-secondary"><i class="fas fa-cart-plus"></i> {{ 'event.common.add'|trans }}</button>
+                                </form>
+                            {% else %}
+                                <span class="ev-full-badge">{{ 'event.common.full'|trans }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </article>
+            {% else %}
+                <div class="pm-empty">
+                    <h2>{{ 'event.index.empty.title'|trans }}</h2>
+                    <p>{{ 'event.index.empty.text'|trans }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <section class="ev-calendar-section">
+        <div class="ev-calendar-header">
+            <div>
+                <span class="pm-badge">{{ 'event.index.calendar.badge'|trans }}</span>
+                <h2>{{ 'event.index.calendar.title'|trans }}</h2>
+                <p>{{ 'event.index.calendar.subtitle'|trans }}</p>
+            </div>
+        </div>
+        <div class="ev-calendar-wrap">
+            <div id="calendar-loader" class="ev-calendar-loader" style="display:none;">
+                <div class="progress-circle"></div>
+                <span>{{ 'event.index.calendar.loading'|trans }}</span>
+            </div>
+            <div id="event-calendar"></div>
+        </div>
+    </section>
+
+{% endblock %}

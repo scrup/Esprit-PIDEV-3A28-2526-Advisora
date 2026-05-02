@@ -1,0 +1,204 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Analyse ressources{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260421-rs-analysis-v1">
+    {% if is_running %}
+        <meta http-equiv="refresh" content="3">
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+        <div class="pm-admin-header rs-header">
+            <div class="rs-header-copy back-users-title">
+                <span class="pm-badge">Back office</span>
+                <h1>Analyse intelligente des ressources</h1>
+                <p>Signaux metier, actions prioritaires, KPI et export du plan d action.</p>
+            </div>
+            <div class="pm-card-actions rs-header-actions">
+                <form method="post" action="{{ path('back_resource_analysis_run') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('run_resource_analysis') }}">
+                    <button class="pm-btn pm-btn-primary" type="submit">Analyser</button>
+                </form>
+            </div>
+        </div>
+
+        {% include 'back/resource/_module_nav.html.twig' %}
+
+        {% if is_running %}
+            <section class="pm-card rs-panel rs-analysis-status">
+                <div class="rs-analysis-alert rs-analysis-alert-info">
+                    Analyse en cours en arriere-plan. La page se met a jour automatiquement.
+                </div>
+            </section>
+        {% endif %}
+
+        {% if analysis_error %}
+            <section class="pm-card rs-panel rs-analysis-status">
+                <div class="rs-analysis-alert rs-analysis-alert-danger">
+                    Echec analyse: {{ analysis_error.message|default('Erreur inconnue') }}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if analysis %}
+            <section class="users-overview-grid rs-stat-grid">
+                <article class="users-stat-card rs-stat-box">
+                    <span>Stock critique</span>
+                    <strong>{{ analysis.kpis.stock_critique|default(0) }}</strong>
+                </article>
+                <article class="users-stat-card rs-stat-box">
+                    <span>Surstock</span>
+                    <strong>{{ analysis.kpis.surstock|default(0) }}</strong>
+                </article>
+                <article class="users-stat-card rs-stat-box">
+                    <span>Prix anormal</span>
+                    <strong>{{ analysis.kpis.prix_anormal|default(0) }}</strong>
+                </article>
+                <article class="users-stat-card rs-stat-box">
+                    <span>Fournisseurs a risque</span>
+                    <strong>{{ analysis.kpis.fournisseurs_a_risque|default(0) }}</strong>
+                </article>
+            </section>
+
+            <section class="pm-card rs-panel rs-analysis-summary">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Synthese globale</h2>
+                        <p>Generee le {{ analysis.generated_at|default('')|date('d/m/Y H:i:s') }}</p>
+                    </div>
+                </div>
+                <p class="rs-analysis-headline">{{ analysis.summary.headline|default('Aucune synthese disponible.') }}</p>
+                <p class="rs-analysis-narrative">{{ analysis.summary.narrative|default('') }}</p>
+            </section>
+
+            <section class="pm-form-card pm-filter-card rs-panel rs-toolbar-panel">
+                <form method="get" class="pm-filter-grid rs-filter-form rs-filter-grid">
+                    <div class="rs-field">
+                        <label for="priority">Priorite</label>
+                        <select id="priority" name="priority">
+                            <option value="">Toutes</option>
+                            <option value="haute" {% if priority_filter == 'haute' %}selected{% endif %}>Haute</option>
+                            <option value="moyenne" {% if priority_filter == 'moyenne' %}selected{% endif %}>Moyenne</option>
+                            <option value="basse" {% if priority_filter == 'basse' %}selected{% endif %}>Basse</option>
+                        </select>
+                    </div>
+                    <div class="rs-field">
+                        <label for="action_code">Code action</label>
+                        <select id="action_code" name="action_code">
+                            <option value="">Tous les codes</option>
+                            {% for code in available_action_codes %}
+                                <option value="{{ code }}" {% if action_code_filter == code %}selected{% endif %}>{{ code }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="pm-filter-actions rs-toolbar-actions">
+                        <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_analysis') }}">Reinitialiser</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_analysis_export_csv', {priority: priority_filter, action_code: action_code_filter}) }}">Exporter CSV</a>
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_analysis_export_pdf', {priority: priority_filter, action_code: action_code_filter}) }}">Exporter PDF metier</a>
+                    </div>
+                </form>
+            </section>
+
+            <section class="pm-card rs-panel rs-list-panel">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Actions recommandees</h2>
+                        <p>{{ filtered_actions|length }} action(s) apres filtres</p>
+                    </div>
+                </div>
+
+                {% if filtered_actions is not empty %}
+                    <div class="back-user-table-shell rs-table-wrap">
+                        <table class="back-user-table rs-table rs-analysis-table">
+                            <thead>
+                                <tr>
+                                    <th>Priorite</th>
+                                    <th>Code action</th>
+                                    <th>Ressource</th>
+                                    <th>Fournisseur</th>
+                                    <th>Impact metier</th>
+                                    <th>Justification</th>
+                                    <th>Confiance</th>
+                                    <th>Delai</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for action in filtered_actions %}
+                                    <tr class="back-user-row">
+                                        <td>
+                                            <span class="rs-state rs-analysis-priority rs-analysis-priority-{{ action.priority|default('basse') }}">
+                                                {{ action.priority|default('basse')|capitalize }}
+                                            </span>
+                                        </td>
+                                        <td><strong>{{ action.action_code|default('N/A') }}</strong></td>
+                                        <td>
+                                            {{ action.resource_name|default('Ressource') }}
+                                            {% if action.resource_id is not null %}
+                                                <span class="rs-secondary-text">#{{ action.resource_id }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ action.supplier_name|default('Non renseigne') }}</td>
+                                        <td>{{ action.impact_metier|default('') }}</td>
+                                        <td>{{ action.justification|default('') }}</td>
+                                        <td>{{ action.confidence_pct|default(0) }}%</td>
+                                        <td>{{ action.delay|default('N/A') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="pm-empty rs-empty">
+                        <h2>Aucune action ne correspond aux filtres</h2>
+                        <p>Essayez d enlever un filtre ou relancez l analyse.</p>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="pm-card rs-panel rs-analysis-chat" id="analysis-chat">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Chat analyse (low-token)</h2>
+                        <p>Questions metier rapides a partir des KPI et des actions prioritaires.</p>
+                    </div>
+                </div>
+                <form method="post" action="{{ path('back_resource_analysis_chat') }}" class="rs-form rs-analysis-chat-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('resource_analysis_chat') }}">
+                    <input type="hidden" name="priority" value="{{ priority_filter }}">
+                    <input type="hidden" name="action_code" value="{{ action_code_filter }}">
+                    <div class="rs-field">
+                        <label for="question">Question</label>
+                        <textarea id="question" name="question" rows="3" placeholder="Ex: Quelle est la priorite immediate pour reduire le risque stock ?"></textarea>
+                    </div>
+                    <div class="rs-toolbar-actions">
+                        <button class="pm-btn pm-btn-primary" type="submit">Envoyer au chat</button>
+                    </div>
+                </form>
+
+                {% if chat_result %}
+                    <div class="rs-analysis-chat-result">
+                        <p class="rs-analysis-chat-meta">
+                            Derniere question ({{ chat_result.at|default('') }}):
+                            <strong>{{ chat_result.question|default('') }}</strong>
+                        </p>
+                        <pre>{{ chat_result.answer|default('') }}</pre>
+                    </div>
+                {% endif %}
+            </section>
+        {% else %}
+            <section class="pm-card rs-panel rs-list-panel">
+                <div class="pm-empty rs-empty">
+                    <h2>Aucune analyse disponible</h2>
+                    <p>Cliquez sur <strong>Analyser</strong> pour lancer le moteur de priorisation.</p>
+                </div>
+            </section>
+        {% endif %}
+    </section>
+{% endblock %}

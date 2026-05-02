@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ 'investment.manage.meta_title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">{{ 'investment.manage.badge'|trans }}</span>
+                <h1>{{ 'investment.common.item_number'|trans }} #{{ investment.id }}</h1>
+                <p>
+                    {{ 'investment.manage.linked_project'|trans }} : <strong>{{ investment.project ? investment.project.title : ('investment.common.project_unavailable'|trans) }}</strong>.
+                    {% if latest_transaction and not can_edit_investment %}
+                        {{ 'investment.manage.locked_by_transaction'|trans({'%status%': latest_transaction.statusLabel|lower}) }}.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('investment_index') }}">{{ 'investment.common.back_to_list'|trans }}</a>
+                {% if can_edit_investment %}
+                    <a class="pm-btn pm-btn-primary" href="{{ path('investment_edit', {id: investment.id}) }}">{{ 'investment.common.edit'|trans }}</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% include 'front/investment/_module_nav.html.twig' %}
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>{{ 'investment.manage.info_title'|trans }}</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>{{ 'investment.common.project'|trans }} :</strong> {{ investment.project ? investment.project.title : ('investment.common.not_provided'|trans) }}</span>
+                    <span><strong>{{ 'investment.common.sector'|trans }} :</strong> {{ investment.project and investment.project.legacyType ? investment.project.legacyType : ('investment.common.not_provided'|trans) }}</span>
+                    <span><strong>{{ 'investment.common.comment'|trans }} :</strong> {{ investment.commentaireInv ?: ('investment.common.no_comment_short'|trans) }}</span>
+                    <span><strong>{{ 'investment.common.duration'|trans }} :</strong> {{ investment.durationEstimateDisplay }}</span>
+                    <span><strong>{{ 'investment.manage.min_amount'|trans }} :</strong> {{ investment.bud_minInv|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</span>
+                    <span><strong>{{ 'investment.manage.max_amount'|trans }} :</strong> {{ investment.bud_maxInv|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</span>
+                </div>
+                {% if can_delete_investment %}
+                    <form method="post" action="{{ path('investment_delete', {id: investment.id}) }}" onsubmit="return confirm('{{ 'investment.manage.confirm_delete_investment'|trans }}');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_investment_' ~ investment.id) }}">
+                        <button class="pm-btn pm-btn-danger" type="submit">{{ 'investment.manage.delete_investment'|trans }}</button>
+                    </form>
+                {% endif %}
+            </article>
+
+            <article class="pm-card">
+                <h2>{{ 'investment.manage.transactions_title'|trans }}</h2>
+                {% if investment.transactions is not empty %}
+                    {% for transaction in investment.transactions %}
+                        <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(195, 125, 93, 0.16);">
+                            <div class="pm-current-decision">
+                                <span class="pm-badge">{{ 'investment.manage.transaction_badge'|trans }}</span>
+                                <strong>{{ transaction.statusLabel }}</strong>
+                                <span>{{ transaction.DateTransac ? transaction.DateTransac|date('d/m/Y') : ('investment.manage.unknown_date'|trans) }}</span>
+                                <p>{{ 'investment.manage.amount'|trans }} : {{ transaction.MontantTransac|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</p>
+                            </div>
+                            <div class="pm-meta-list pm-meta-list-vertical" style="margin-bottom: 12px;">
+                                <span><strong>{{ 'investment.common.type'|trans }} :</strong> {{ transaction.type ?: ('investment.common.not_provided'|trans) }}</span>
+                            </div>
+                            <div class="pm-card-actions">
+                                {% if transaction.isPending %}
+                                    <a class="pm-btn pm-btn-primary" href="{{ path('transaction_edit', {id: transaction.id}) }}">{{ 'investment.manage.edit_transaction'|trans }}</a>
+                                    <form method="post" action="{{ path('transaction_delete', {id: transaction.id}) }}" onsubmit="return confirm('{{ 'investment.manage.confirm_delete_transaction'|trans }}');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_transaction_' ~ transaction.id) }}">
+                                        <button class="pm-btn pm-btn-danger" type="submit">{{ 'investment.manage.delete_transaction'|trans }}</button>
+                                    </form>
+                                {% else %}
+                                    <span class="pm-empty-text">{{ 'investment.manage.transaction_read_only'|trans }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <div class="pm-card-actions">
+                        {% if can_create_transaction %}
+                            <a class="pm-btn pm-btn-primary" href="{{ path('transaction_new', {id: investment.id}) }}">{{ 'investment.manage.add_another_transaction'|trans }}</a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="pm-empty-text">{{ 'investment.manage.no_transactions'|trans }}</p>
+                    {% if can_create_transaction %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('transaction_new', {id: investment.id}) }}">{{ 'investment.manage.add_transaction'|trans }}</a>
+                    {% endif %}
+                {% endif %}
+            </article>
+        </div>
+
+        {% include 'front/investment/_prediction_card.html.twig' with {
+            prediction: prediction,
+            prediction_error: prediction_error
+        } only %}
+    </section>
+{% endblock %}

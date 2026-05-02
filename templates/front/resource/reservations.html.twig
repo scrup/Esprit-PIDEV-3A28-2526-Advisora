@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Mes reservations{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Reservation Ressource</span>
+            <h1>Mes reservations de ressources</h1>
+            <p>Retrouvez toutes les ressources liees a vos projets et supprimez une reservation si elle n est plus necessaire.</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-primary" href="{{ path('app_shop') }}">Retour a la boutique</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('resource_index') }}">Catalogue ressources</a>
+        </div>
+    </section>
+
+    <section class="pm-grid">
+        {% for reservation in reservations %}
+            {% set supplierLabel = reservation.supplier_company ?: reservation.supplier_name ?: 'Non assigne' %}
+            {% set resourceStatusLabel = reservation.resource_status ? reservation.resource_status|replace({'_': ' '})|title : 'Statut inconnu' %}
+            {% set projectStatusLabel = reservation.project_status ? reservation.project_status|replace({'_': ' '})|title : 'Non precise' %}
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ reservation.resource_status|default('')|lower|replace({' ':'_','-':'_'}) }}">
+                        {{ resourceStatusLabel }}
+                    </span>
+                    <span class="pm-meta">Projet #{{ reservation.project_id }}</span>
+                </div>
+
+                <h2>{{ reservation.resource_name }}</h2>
+                <p>Projet lie : <strong>{{ reservation.project_title }}</strong></p>
+
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Fournisseur :</strong> {{ supplierLabel }}</span>
+                    <span><strong>Quantite reservee :</strong> {{ reservation.reserved_qty }}</span>
+                    <span><strong>Stock total :</strong> {{ reservation.resource_stock }}</span>
+                    <span><strong>Prix :</strong> {{ reservation.resource_price is not null ? reservation.resource_price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><strong>Statut projet :</strong> {{ projectStatusLabel }}</span>
+                </div>
+
+                <div class="pm-card-actions">
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('resource_show', {id: reservation.resource_id}) }}">Voir la ressource</a>
+                    <a class="pm-btn pm-btn-primary" href="{{ path('resource_reservation_edit', {projectId: reservation.project_id, resourceId: reservation.resource_id}) }}">Modifier</a>
+                    <form method="post" action="{{ path('resource_reservation_delete', {projectId: reservation.project_id, resourceId: reservation.resource_id}) }}" onsubmit="return confirm('Supprimer cette reservation ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_reservation_' ~ reservation.project_id ~ '_' ~ reservation.resource_id) }}">
+                        <button class="pm-btn pm-btn-danger" type="submit">Supprimer la reservation</button>
+                    </form>
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>Aucune reservation pour le moment</h2>
+                <p>Choisissez une ressource dans le catalogue et liez-la a un projet pour creer votre premiere reservation.</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

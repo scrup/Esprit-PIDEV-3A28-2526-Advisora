@@ -1,0 +1,121 @@
+{% extends 'base.html.twig' %}
+{# Page gestion annonces vendeur: suivi statut et annulation des annonces LISTED. #}
+
+{% block title %}Advisora | Mes Annonces{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260424-01' }}">
+{% endblock %}
+
+{% block body %}
+    <div class="mini-shop-shell is-manage-view" id="shop-my-listings-page">
+        <section class="mini-shop-hero">
+            <div class="mini-shop-hero-copy">
+                <span class="mini-shop-kicker"><i class="fas fa-list"></i> Mes annonces</span>
+                <h1>Gestion de vos annonces publiees</h1>
+                <p>
+                    Cette page affiche toutes vos annonces C2C (LISTED, SOLD_OUT, CANCELLED),
+                    avec possibilite d annuler uniquement les annonces encore LISTED.
+                </p>
+                <div class="mini-shop-hero-actions">
+                    <a href="{{ path('app_shop') }}#shop-marketplace" class="shop-btn shop-btn-secondary">
+                        <i class="fas fa-store"></i>
+                        Retour boutique
+                    </a>
+                    <a href="{{ path('app_shop_publish') }}" class="shop-btn shop-btn-secondary">
+                        <i class="fas fa-plus-circle"></i>
+                        Publier une annonce
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="mini-shop-marketplace-layout" id="shop-my-listings">
+            <article class="mini-shop-panel">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Mes annonces</span>
+                        <h2>Gestion rapide de vos annonces publiees</h2>
+                    </div>
+                    <div class="mini-shop-panel-chip">
+                        <span>Total</span>
+                        <strong>{{ marketplace.stats.my_listings_count }} annonce(s)</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-market-listing-grid">
+                    {% for listing in marketplace.my_listings %}
+                        {% set my_listing_status_class = listing.status == 'LISTED'
+                            ? 'is-available'
+                            : (listing.status == 'SOLD_OUT' ? 'is-reserved' : 'is-unavailable') %}
+                        {% set my_listing_image = shop_image_url(listing.image_url, 'card') %}
+                        <article class="mini-shop-market-listing-card mini-shop-market-own-card">
+                            <div class="mini-shop-market-card-head">
+                                <div>
+                                    <span class="mini-panel-tag">Mon annonce #{{ listing.idListing }}</span>
+                                    <h3>{{ listing.resource_name ?: 'Ressource' }}</h3>
+                                </div>
+                                <span class="shop-status-badge {{ my_listing_status_class }}">{{ listing.status }}</span>
+                            </div>
+
+                            <div class="mini-shop-open-media {% if my_listing_image is empty %}is-placeholder{% endif %}">
+                                {% if my_listing_image is not empty %}
+                                    <img src="{{ my_listing_image }}" alt="{{ listing.resource_name ?: 'Ressource' }}">
+                                {% else %}
+                                    <div class="mini-shop-market-media-fallback">
+                                        <span>{{ (listing.resource_name ?: 'R')|slice(0, 1)|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mini-shop-cart-item-meta">
+                                <span>{{ listing.supplier_name ?: 'Non renseigne' }}</span>
+                                <span>Projet #{{ listing.idProj }}</span>
+                                <span>Ref #{{ listing.idRs }}</span>
+                            </div>
+
+                            <div class="mini-shop-cart-item-facts">
+                                <div>
+                                    <span>Initial</span>
+                                    <strong>{{ listing.qtyInitial }}</strong>
+                                </div>
+                                <div>
+                                    <span>Restant</span>
+                                    <strong>{{ listing.qtyRemaining }}</strong>
+                                </div>
+                                <div>
+                                    <span>Prix</span>
+                                    <strong>{{ listing.unitPrice|number_format(3, '.', ' ') }} coins</strong>
+                                </div>
+                                <div>
+                                    <span>MAJ</span>
+                                    <strong>{{ listing.updatedAt|date('Y-m-d') }}</strong>
+                                </div>
+                            </div>
+
+                            {% if listing.status == 'LISTED' %}
+                                <form method="post" action="{{ path('app_shop_market_cancel') }}" class="mini-shop-form-actions">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('shop_market_cancel') }}">
+                                    <input type="hidden" name="_redirect_page" value="my_listings">
+                                    <input type="hidden" name="_redirect_fragment" value="shop-my-listings">
+                                    <input type="hidden" name="listing_id" value="{{ listing.idListing }}">
+                                    <button type="submit" class="shop-btn shop-btn-danger">
+                                        <i class="fas fa-ban"></i>
+                                        Annuler annonce
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </article>
+                    {% else %}
+                        <div class="mini-shop-empty-state mini-shop-empty-state-inline">
+                            <i class="fas fa-upload"></i>
+                            <h3>Aucune annonce publiee</h3>
+                            <p>Publiez une reservation pour commencer a vendre dans le mini shop C2C.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </section>
+    </div>
+{% endblock %}

@@ -1,0 +1,10 @@
+knpu_oauth2_client:
+    clients:
+        google_main:
+            type: google
+            client_id: '%env(default::string:OAUTH_GOOGLE_CLIENT_ID)%'
+            client_secret: '%env(default::string:OAUTH_GOOGLE_CLIENT_SECRET)%'
+            # Can be either a route name (default) or a full URL.
+            # Useful to fix Google "redirect_uri_mismatch" when host/port/scheme differ (localhost vs 127.0.0.1, https vs http, etc.).
+            redirect_route: '%env(default::string:OAUTH_GOOGLE_REDIRECT_URI)%'
+            redirect_params: {}

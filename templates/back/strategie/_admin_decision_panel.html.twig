@@ -1,0 +1,43 @@
+{% set canAdminDecideStrategy = app.user and app.user.getRoleUser() == 'admin' and strategy.statusStrategie == constant('App\\Entity\\Strategie::STATUS_PENDING') %}
+
+{% if canAdminDecideStrategy %}
+    <div class="strategy-admin-decision">
+        <div class="strategy-admin-decision-copy">
+            <p class="strategy-admin-decision-eyebrow">Decision administrateur</p>
+            <strong>Cette strategie est actuellement en attente.</strong>
+            <p>Seul un administrateur peut confirmer l acceptation ou enregistrer un refus motive.</p>
+        </div>
+
+        <div class="strategy-admin-decision-actions">
+            <form method="post" action="{{ path('app_back_strategies_decision', {id: strategy.idStrategie}) }}" class="strategy-admin-decision-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_strategy_decision_' ~ strategy.idStrategie) }}">
+                <input type="hidden" name="status" value="{{ constant('App\\Entity\\Strategie::STATUS_APPROVED') }}">
+                <button type="submit" class="btn-admin-decision btn-admin-decision-approve">
+                    Accepter
+                </button>
+            </form>
+
+            <details class="strategy-admin-reject-panel">
+                <summary class="btn-admin-decision btn-admin-decision-reject">Refuser</summary>
+                <form method="post" action="{{ path('app_back_strategies_decision', {id: strategy.idStrategie}) }}" class="strategy-admin-reject-form" novalidate>
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_strategy_decision_' ~ strategy.idStrategie) }}">
+                    <input type="hidden" name="status" value="{{ constant('App\\Entity\\Strategie::STATUS_REJECTED') }}">
+
+                    <label for="admin_strategy_reject_{{ strategy.idStrategie }}">Justification obligatoire</label>
+                    <textarea
+                        id="admin_strategy_reject_{{ strategy.idStrategie }}"
+                        name="justification"
+                        rows="4"
+                        required
+                        minlength="10"
+                        maxlength="255"
+                        placeholder="Expliquez pourquoi cette strategie doit etre refusee."
+                    ></textarea>
+                    <p class="strategy-admin-help">Le refus doit etre motive entre 10 et 255 caracteres.</p>
+
+                    <button type="submit" class="strategy-admin-submit">Confirmer le refus</button>
+                </form>
+            </details>
+        </div>
+    </div>
+{% endif %}

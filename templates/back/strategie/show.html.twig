@@ -1,0 +1,193 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Detail de la strategie{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+{% endblock %}
+
+{% block body %}
+<div class="show-container">
+    <div class="show-header">
+        <a href="{{ path('app_back_strategies') }}" class="back-link">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Retour aux strategies
+        </a>
+        <div class="header-actions">
+            <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="btn-edit">
+                <span class="material-symbols-outlined">edit</span>
+                Modifier
+            </a>
+            <form method="post" action="{{ path('app_back_strategies_delete', {id: strategy.idStrategie}) }}" onsubmit="return confirm('Supprimer cette strategie ?')" style="display: inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ strategy.idStrategie) }}">
+                <button type="submit" class="btn-delete">
+                    <span class="material-symbols-outlined">delete</span>
+                    Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="show-card">
+        <div class="show-title">
+            <h1>{{ strategy.nomStrategie }}</h1>
+            <span class="status-badge {{ strategy.statusCssClass }}">
+                {{ strategy.statusLabel }}
+            </span>
+        </div>
+
+        {% include 'back/strategie/_admin_decision_panel.html.twig' with {strategy: strategy} %}
+
+        {% if strategy.statusStrategie == constant('App\\Entity\\Strategie::STATUS_REJECTED') %}
+            <div class="strategy-rejection-note strategy-rejection-note-show">
+                <span class="material-symbols-outlined">comment</span>
+                <div>
+                    <strong>Justification du refus</strong>
+                    <p>{{ strategy.justification ?: 'Aucune justification n a ete enregistree pour ce refus.' }}</p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% include 'back/strategie/_project_spotlight.html.twig' with {strategy: strategy, compact: false} %}
+
+        <div class="show-grid">
+            <div class="info-section">
+                <h3>Informations generales</h3>
+                <div class="info-list">
+                    <div class="info-item">
+                        <span class="info-label">Nom de la strategie</span>
+                        <span class="info-value">{{ strategy.nomStrategie }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Duree</span>
+                        <span class="info-value">{{ strategy.DureeTerme }} mois</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Type</span>
+                        <span class="info-value">{{ strategy.type ?? 'Non defini' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Date de creation</span>
+                        <span class="info-value">{{ strategy.CreatedAtS ? strategy.CreatedAtS|date('d/m/Y H:i') : 'Non defini' }}</span>
+                    </div>
+                    {% if strategy.lockedAt %}
+                    <div class="info-item">
+                        <span class="info-label">Acceptee le</span>
+                        <span class="info-value">{{ strategy.lockedAt|date('d/m/Y H:i') }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Aspects financiers</h3>
+                <div class="info-list">
+                    <div class="info-item">
+                        <span class="info-label">Budget total</span>
+                        <span class="info-value">{{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Gain estime</span>
+                        <span class="info-value {{ strategy.gainEstime is not null and strategy.gainEstime >= 0 ? 'positive' : 'negative' }}">
+                            {{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(0, ',', ' ') ~ ' DT' : 'Non defini' }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ROI estime</span>
+                        <span class="info-value {{ strategy.estimatedRoiPercent is not null and strategy.estimatedRoiPercent >= 0 ? 'positive' : 'negative' }}">
+                            {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, ',', ' ') ~ '%' : 'Non defini' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section full-width">
+                <h3>{{ strategy.statusStrategie == constant('App\\Entity\\Strategie::STATUS_REJECTED') ? 'Justification du refus' : 'Justification' }}</h3>
+                <div class="info-text">
+                    {{ strategy.justification ?: 'Aucune justification fournie' }}
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Utilisateur associe</h3>
+                <div class="info-list">
+                    <div class="info-item">
+                        <span class="info-label">Utilisateur</span>
+                        <span class="info-value">{{ strategy.user ? strategy.user.idUser : 'Non associe' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% set swotStrengths = strategy.swotItems|filter(item => (item.type|default('')|lower) in ['strength', 'force', 'forces']) %}
+            {% set swotWeaknesses = strategy.swotItems|filter(item => (item.type|default('')|lower) in ['weakness', 'weaknesses', 'faiblesse', 'faiblesses']) %}
+            {% set swotOpportunities = strategy.swotItems|filter(item => (item.type|default('')|lower) in ['opportunity', 'opportunities', 'opportunite', 'opportunites']) %}
+            {% set swotThreats = strategy.swotItems|filter(item => (item.type|default('')|lower) in ['threat', 'threats', 'menace', 'menaces']) %}
+
+            <div class="info-section full-width">
+                <h3>Analyse SWOT</h3>
+                {% if strategy.swotItems|length > 0 %}
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="info-label">Forces</span>
+                            <span class="info-value">
+                                {% if swotStrengths|length > 0 %}
+                                    {% for item in swotStrengths %}
+                                        • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    Aucune
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Faiblesses</span>
+                            <span class="info-value">
+                                {% if swotWeaknesses|length > 0 %}
+                                    {% for item in swotWeaknesses %}
+                                        • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    Aucune
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Opportunites</span>
+                            <span class="info-value">
+                                {% if swotOpportunities|length > 0 %}
+                                    {% for item in swotOpportunities %}
+                                        • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    Aucune
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Menaces</span>
+                            <span class="info-value">
+                                {% if swotThreats|length > 0 %}
+                                    {% for item in swotThreats %}
+                                        • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    Aucune
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="info-text">Aucune analyse SWOT n est encore renseignee pour cette strategie.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="show-actions">
+            <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="btn-primary">Modifier la strategie</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

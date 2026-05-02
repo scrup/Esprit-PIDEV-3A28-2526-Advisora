@@ -1,0 +1,8 @@
+<div class="pm-card pm-card-actions" style="margin-top: 1.5rem;">
+    <a class="pm-btn {% if app.request.get('_route') in ['back_event_index', 'event_new', 'event_edit', 'event_back_manage'] %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_event_index') }}">
+        {{ 'event.back.nav.events'|trans }}
+    </a>
+    <a class="pm-btn {% if app.request.get('_route') == 'back_event_bookings' %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_event_bookings') }}">
+        {{ 'event.back.nav.bookings'|trans }}
+    </a>
+</div>

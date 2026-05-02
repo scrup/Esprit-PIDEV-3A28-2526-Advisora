@@ -1,0 +1,178 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ project.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/project-tts.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+    <section class="pm-detail-shell">
+        <div class="pm-detail-main">
+            <a class="pm-back-link" href="{{ path('project_index') }}">&larr; Retour a la liste des projets</a>
+            <div class="pm-card pm-card-large">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
+                    <span class="pm-meta">Projet #{{ project.id }}</span>
+                </div>
+                <h1>{{ project.title }}</h1>
+                <p>{{ project.description ?: 'Aucune description disponible.' }}</p>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non precise' }}</span>
+                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-calendar-plus"></i> Date de creation : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
+                    <span><i class="fas fa-calendar-check"></i> Derniere mise a jour : {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Non disponible' }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-sitemap"></i> Decisions : {{ project.decisions|length }}</span>
+                    <span><i class="fas fa-tasks"></i> Taches : {{ task_board.total }}</span>
+                    <span><i class="fas fa-chart-line"></i> Avancement : {{ task_board.progress|number_format(2, '.', ' ') }}%</span>
+                </div>
+                <div class="pm-card-actions">
+                    <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.summary }}">
+                        <i class="fas fa-volume-up"></i>
+                        <span data-project-tts-label>Ecouter</span>
+                    </button>
+                    {% if tts_messages.refusal_reason is defined %}
+                        <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.refusal_reason }}">
+                            <i class="fas fa-headphones"></i>
+                            <span data-project-tts-label>Pourquoi refuse ?</span>
+                        </button>
+                    {% endif %}
+                    {% if can_manage_project or can_manage_decisions %}
+                        <a class="pm-btn pm-btn-primary" href="{{ use_back_manage ? path('project_back_manage', {id: project.id}) : path('project_manage', {id: project.id}) }}">
+                            {{ use_back_manage ? 'Traiter ce projet' : 'Gerer ce projet' }}
+                        </a>
+                        {% if app.user and app.user.getRoleUser() == 'client' %}
+                            <a class="pm-btn pm-btn-secondary" href="{{ path('investment_new', {id: project.id}) }}">Investir sur ce projet</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="pm-card pm-card-large pm-task-summary-card">
+                <div class="pm-section-head pm-task-summary-head">
+                    <div class="pm-task-summary-copy">
+                        <span class="pm-badge">Taches</span>
+                        <h2>Suivi operationnel</h2>
+                        <p class="pm-section-text">Lecture rapide des taches du projet selon leur avancement operationnel.</p>
+                    </div>
+                    {% if can_access_task_board %}
+                        <a class="pm-btn pm-btn-secondary pm-task-summary-link" href="{{ use_back_manage ? path('project_back_manage', {id: project.id}) : path('project_manage', {id: project.id}) }}">Ouvrir le tableau des taches</a>
+                    {% endif %}
+                </div>
+
+                <div class="pm-task-summary-stats">
+                    <article class="pm-task-summary-stat">
+                        <span class="pm-task-summary-stat-label">A faire</span>
+                        <strong class="pm-task-summary-stat-value">{{ task_board.counts['TODO']|default(0) }}</strong>
+                        <span class="pm-task-summary-stat-note">tache(s)</span>
+                    </article>
+                    <article class="pm-task-summary-stat">
+                        <span class="pm-task-summary-stat-label">En cours</span>
+                        <strong class="pm-task-summary-stat-value">{{ task_board.counts['IN_PROGRESS']|default(0) }}</strong>
+                        <span class="pm-task-summary-stat-note">tache(s)</span>
+                    </article>
+                    <article class="pm-task-summary-stat">
+                        <span class="pm-task-summary-stat-label">Terminee</span>
+                        <strong class="pm-task-summary-stat-value">{{ task_board.counts['DONE']|default(0) }}</strong>
+                        <span class="pm-task-summary-stat-note">tache(s)</span>
+                    </article>
+                </div>
+
+                <div class="pm-task-progress-card pm-task-summary-progress">
+                    <div class="pm-task-progress-meta">
+                        <span>Progression ponderee</span>
+                        <strong>{{ task_board.progress|number_format(2, '.', ' ') }}%</strong>
+                    </div>
+                    <div class="pm-progress-track">
+                        <span class="pm-progress-bar" style="width: {{ task_board.progress|number_format(2, '.', ' ') }}%;"></span>
+                    </div>
+                    <div class="pm-task-counter-row">
+                        <span>A faire : {{ task_board.counts['TODO']|default(0) }}</span>
+                        <span>En cours : {{ task_board.counts['IN_PROGRESS']|default(0) }}</span>
+                        <span>Terminee : {{ task_board.counts['DONE']|default(0) }}</span>
+                    </div>
+                </div>
+
+                <div class="pm-task-preview-grid">
+                    {% for status, label in {'TODO': 'A faire', 'IN_PROGRESS': 'En cours', 'DONE': 'Terminee'} %}
+                        <section class="pm-task-preview-column pm-task-column-{{ status|lower }}">
+                            <header class="pm-task-preview-head">
+                                <div>
+                                    <h3>{{ label }}</h3>
+                                    <span>{{ task_board.counts[status]|default(0) }} tache(s)</span>
+                                </div>
+                                <span class="pm-task-column-dot"></span>
+                            </header>
+                            <div class="pm-task-preview-list">
+                                {% for task in task_board.columns[status]|default([])|slice(0, 3) %}
+                                    <article class="pm-task-preview-card">
+                                        <div class="pm-task-card-head pm-task-preview-card-head">
+                                            <span class="pm-task-status pm-task-status-{{ task.statusCssClass }}">{{ task.statusLabel }}</span>
+                                            <span class="pm-task-weight">Poids {{ task.weight }}</span>
+                                        </div>
+                                        <strong class="pm-task-title">{{ task.title }}</strong>
+                                        <div class="pm-task-card-meta pm-task-preview-meta">
+                                            <span>Tache #{{ task.id }}</span>
+                                            {% if task.created_at %}
+                                                <span>{{ task.created_at|date('d/m/Y') }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </article>
+                                {% else %}
+                                    <p class="pm-empty-text pm-task-preview-empty">Aucune tache.</p>
+                                {% endfor %}
+
+                                {% if task_board.counts[status]|default(0) > 3 %}
+                                    <div class="pm-task-preview-more">
+                                        + {{ task_board.counts[status] - 3 }} autre(s) tache(s)
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </section>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <aside class="pm-detail-side">
+            <div class="pm-card">
+                {% if latest_decision %}
+                    <div class="pm-current-decision">
+                        <span class="pm-badge">Decision actuelle</span>
+                        <strong>{{ latest_decision.getDecisionTitleLabel() }}</strong>
+                        <span>{{ latest_decision.decisionDate|date('d/m/Y') }}</span>
+                        <p>{{ latest_decision.description ?: 'Sans description.' }}</p>
+                    </div>
+                {% else %}
+                    <p class="pm-empty-text">Aucune decision strategique n a encore ete enregistree.</p>
+                {% endif %}
+
+                <details class="pm-history-toggle">
+                    <summary class="pm-history-summary">
+                        <span>Afficher l historique des decisions</span>
+                        <span class="pm-history-count">{{ project.decisions|length }}</span>
+                    </summary>
+                    <div class="pm-decision-list">
+                        {% for decision in project.decisions %}
+                            <div class="pm-decision-item">
+                                <strong>{{ decision.getDecisionTitleLabel() }}</strong>
+                                <span>{{ decision.decisionDate|date('d/m/Y') }}</span>
+                                <p>{{ decision.description ?: 'Sans description.' }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </details>
+            </div>
+        </aside>
+    </section>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ page_title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% macro field(field) %}
+    <div class="pm-field {% if field.vars.errors|length > 0 %}pm-field-has-error{% endif %}">
+        {{ form_label(field) }}
+        {{ form_widget(field) }}
+        {% if field.vars.help %}
+            <div class="pm-field-help">{{ form_help(field) }}</div>
+        {% endif %}
+        <div class="pm-field-errors" data-field-errors>
+            {{ form_errors(field) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% block body %}
+    {% import _self as forms %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">{{ page_badge }}</span>
+                <h1>{{ page_title }}</h1>
+                <p>{{ page_message }}</p>
+            </div>
+            <a class="pm-btn pm-btn-secondary" href="{{ back_route == 'investment_manage' and investment.id ? path(back_route, {id: investment.id}) : path(back_route) }}">{{ 'investment.common.back'|trans }}</a>
+        </div>
+
+        {% include 'front/investment/_module_nav.html.twig' %}
+
+        {% if form.project is defined %}
+            {% include 'front/investment/_project_recommendations.html.twig' with {
+                investment_recommendations: investment_recommendations|default([]),
+                investment_recommendations_error: investment_recommendations_error|default(null),
+                recommendation_macro: recommendation_macro|default(null),
+                selected_project_id: selected_project_id|default(project ? project.id : null),
+                project_select_id: form.project.vars.id
+            } only %}
+        {% endif %}
+
+        <div class="pm-form-card">
+            <div class="pm-info-banner" data-selected-project-banner>
+                <strong>{{ 'investment.form.selected_project'|trans }} :</strong> <span data-selected-project-title>{{ project ? project.title : ('investment.form.none_yet'|trans) }}</span><br>
+                <strong>{{ 'investment.form.project_id'|trans }} :</strong> <span data-selected-project-id>{{ project ? '#' ~ project.id : ('investment.form.to_select'|trans) }}</span><br>
+                <strong>{{ 'investment.form.project_budget'|trans }} :</strong> <span data-selected-project-budget>{{ project and project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : ('investment.common.not_specified'|trans) }}</span><br>
+                <strong>{{ 'investment.common.sector'|trans }} :</strong> <span data-selected-project-sector>{{ project and project.legacyType ? project.legacyType : ('investment.common.not_provided'|trans) }}</span><br>
+                <strong>{{ 'investment.form.status'|trans }} :</strong> <span data-selected-project-status>{{ project ? project.statusLabel : ('investment.common.not_provided'|trans) }}</span><br>
+                <strong>{{ 'investment.form.available_projects'|trans }} :</strong> {{ projects_count|default(0) }}
+            </div>
+            {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'pm-validated-form', 'data-validation-form': 'investment'}}) }}
+                {{ form_errors(form) }}
+                <div class="pm-form-grid">
+                    {% if form.project is defined %}
+                        {{ forms.field(form.project) }}
+                    {% endif %}
+                    {{ forms.field(form.commentaireInv) }}
+                    {{ forms.field(form.durationEstimateLabel) }}
+                    {{ forms.field(form.bud_minInv) }}
+                    {{ forms.field(form.bud_maxInv) }}
+                    {{ forms.field(form.CurrencyInv) }}
+                </div>
+                <div class="pm-form-actions">
+                    {{ form_row(form.save) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if form.project is defined %}
+        <script src="{{ asset('js/investment-project-recommendations.js') }}"></script>
+    {% endif %}
+    <script src="{{ asset('js/investment-form-validation.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,8 @@
+stof_doctrine_extensions:
+    default_locale: fr
+    orm:
+        default:
+            translatable: true
+            sluggable: true
+            softdeleteable: true
+            blameable: true

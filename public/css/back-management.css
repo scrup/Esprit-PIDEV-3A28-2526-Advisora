@@ -1,0 +1,590 @@
+body.back-mode {
+    background:
+        radial-gradient(circle at top left, rgba(126, 139, 99, 0.08), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(185, 145, 105, 0.06), transparent 18%),
+        linear-gradient(180deg, #0b0f11 0%, #101518 100%);
+    color: var(--back-text);
+}
+
+body.back-mode .flash-message {
+    width: 100%;
+    margin: 0 0 1rem;
+    border-radius: 18px;
+    border: 1px solid var(--back-border);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+}
+
+body.back-mode .pm-admin-shell,
+body.back-mode .dashboard-container,
+body.back-mode .strategy-container,
+body.back-mode .form-container,
+body.back-mode .show-container,
+body.back-mode .back-users-shell {
+    width: min(1280px, 100%);
+    margin: 0 auto;
+}
+
+body.back-mode .pm-admin-header,
+body.back-mode .pm-card,
+body.back-mode .pm-form-card,
+body.back-mode .pm-empty,
+body.back-mode .quick-actions-bar,
+body.back-mode .stat-card,
+body.back-mode .card-panel,
+body.back-mode .stats-summary,
+body.back-mode .strategy-card,
+body.back-mode .sidebar-card,
+body.back-mode .show-card,
+body.back-mode .form-card,
+body.back-mode .back-user-table-shell,
+body.back-mode .back-users-toolbar,
+body.back-mode .modal-container {
+    background: linear-gradient(180deg, rgba(20, 25, 27, 0.98) 0%, rgba(15, 20, 22, 0.98) 100%);
+    border: 1px solid var(--back-border);
+    box-shadow: 0 22px 44px rgba(0, 0, 0, 0.2);
+    color: var(--back-text);
+}
+
+body.back-mode .pm-admin-header,
+body.back-mode .stats-summary,
+body.back-mode .quick-actions-bar,
+body.back-mode .back-users-toolbar,
+body.back-mode .show-card,
+body.back-mode .form-card {
+    border-radius: 26px;
+}
+
+body.back-mode .pm-card,
+body.back-mode .pm-form-card,
+body.back-mode .pm-empty,
+body.back-mode .card-panel,
+body.back-mode .strategy-card,
+body.back-mode .sidebar-card,
+body.back-mode .modal-container,
+body.back-mode .back-user-table-shell {
+    border-radius: 24px;
+}
+
+body.back-mode .pm-admin-header,
+body.back-mode .pm-form-card,
+body.back-mode .quick-actions-bar,
+body.back-mode .stats-summary,
+body.back-mode .back-users-toolbar,
+body.back-mode .show-card,
+body.back-mode .form-card {
+    padding: 1.5rem 1.6rem;
+}
+
+body.back-mode .pm-card,
+body.back-mode .card-panel,
+body.back-mode .strategy-card,
+body.back-mode .sidebar-card,
+body.back-mode .back-user-table-shell {
+    padding: 1.4rem;
+}
+
+body.back-mode .pm-badge {
+    background: rgba(185, 145, 105, 0.15);
+    color: var(--back-beige);
+    box-shadow: none;
+    border: 1px solid rgba(185, 145, 105, 0.24);
+}
+
+body.back-mode .pm-admin-header h1,
+body.back-mode .pm-card h1,
+body.back-mode .pm-card h2,
+body.back-mode .pm-card h3,
+body.back-mode .pm-form-card h1,
+body.back-mode .pm-form-card h2,
+body.back-mode .pm-form-card h3,
+body.back-mode .welcome-section h1,
+body.back-mode .header-title-row h1,
+body.back-mode .form-header h1,
+body.back-mode .show-title h1,
+body.back-mode .back-users-title h1 {
+    color: var(--back-text);
+}
+
+body.back-mode .pm-meta,
+body.back-mode .pm-card p,
+body.back-mode .pm-admin-header p,
+body.back-mode .pm-hero p,
+body.back-mode .pm-back-link,
+body.back-mode .pm-empty-text,
+body.back-mode .pm-meta-list span,
+body.back-mode .welcome-section p,
+body.back-mode .header-subtitle p,
+body.back-mode .form-header p,
+body.back-mode .show-card p,
+body.back-mode .back-users-title p,
+body.back-mode .back-users-summary,
+body.back-mode .budget-summary p,
+body.back-mode .panel-note,
+body.back-mode .objective-description,
+body.back-mode .legend-label,
+body.back-mode .info-label,
+body.back-mode .info-text,
+body.back-mode .form-helper,
+body.back-mode .pm-section-text {
+    color: var(--back-text-soft);
+}
+
+body.back-mode .pm-btn,
+body.back-mode .btn-new-strategy,
+body.back-mode .btn-submit,
+body.back-mode .save-btn,
+body.back-mode .quick-action-btn {
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+body.back-mode .pm-btn-primary,
+body.back-mode .btn-new-strategy,
+body.back-mode .btn-submit,
+body.back-mode .save-btn,
+body.back-mode .quick-action-btn.primary {
+    background: linear-gradient(135deg, var(--back-beige-deep), #8d6545);
+    color: #fff7ef;
+    box-shadow: 0 14px 26px rgba(185, 145, 105, 0.24);
+}
+
+body.back-mode .pm-btn-secondary,
+body.back-mode .btn-cancel,
+body.back-mode .quick-action-btn.secondary {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--back-text);
+    border: 1px solid var(--back-border-strong);
+}
+
+body.back-mode .pm-btn-danger,
+body.back-mode .btn-delete {
+    background: linear-gradient(135deg, #8c4d47, #6b332f);
+    color: #fff;
+    border: none;
+}
+
+body.back-mode .pm-status,
+body.back-mode .status-badge,
+body.back-mode .back-role-badge {
+    border: 1px solid transparent;
+}
+
+body.back-mode .pm-status-pending,
+body.back-mode .status-badge.pending,
+body.back-mode .back-role-gerant {
+    background: rgba(185, 145, 105, 0.16);
+    color: #efd8bf;
+    border-color: rgba(185, 145, 105, 0.2);
+}
+
+body.back-mode .pm-status-accepted,
+body.back-mode .pm-status-completed,
+body.back-mode .status-badge.approved,
+body.back-mode .back-role-client {
+    background: rgba(126, 139, 99, 0.16);
+    color: #d8e4c2;
+    border-color: rgba(126, 139, 99, 0.22);
+}
+
+body.back-mode .pm-status-refused,
+body.back-mode .pm-status-on_hold,
+body.back-mode .status-badge.rejected,
+body.back-mode .back-role-admin {
+    background: rgba(140, 77, 71, 0.16);
+    color: #e6bdb8;
+    border-color: rgba(140, 77, 71, 0.22);
+}
+
+body.back-mode .pm-status-planned,
+body.back-mode .pm-status-archived,
+body.back-mode .status-badge.unknown,
+body.back-mode .status-badge.unassigned,
+body.back-mode .status-badge.in-progress {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--back-text-soft);
+    border-color: var(--back-border);
+}
+
+body.back-mode .pm-current-decision,
+body.back-mode .pm-decision-item,
+body.back-mode .pm-history-summary,
+body.back-mode .pm-info-banner,
+body.back-mode .pm-strategy-card,
+body.back-mode .dashboard-list-item,
+body.back-mode .objective-item,
+body.back-mode .objectives-empty,
+body.back-mode .info-section,
+body.back-mode .info-item,
+body.back-mode .back-user-search,
+body.back-mode .back-user-sort,
+body.back-mode .back-user-stat {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(232, 221, 208, 0.08);
+    border-radius: 18px;
+    color: var(--back-text);
+}
+
+body.back-mode .pm-form-card label,
+body.back-mode .form-group label,
+body.back-mode .filter-label,
+body.back-mode .back-user-search label,
+body.back-mode .back-user-sort label {
+    color: var(--back-text);
+}
+
+body.back-mode .pm-form-card input,
+body.back-mode .pm-form-card textarea,
+body.back-mode .pm-form-card select,
+body.back-mode .pm-login-form input,
+body.back-mode .back-users-toolbar input,
+body.back-mode .back-users-toolbar select,
+body.back-mode .form-input,
+body.back-mode .form-select,
+body.back-mode .form-textarea,
+body.back-mode .filter-select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--back-border-strong);
+    color: var(--back-text);
+}
+
+body.back-mode .pm-form-card input::placeholder,
+body.back-mode .pm-form-card textarea::placeholder,
+body.back-mode .back-users-toolbar input::placeholder,
+body.back-mode .form-input::placeholder,
+body.back-mode .form-textarea::placeholder {
+    color: #8f8578;
+}
+
+body.back-mode .pm-form-card input:focus,
+body.back-mode .pm-form-card textarea:focus,
+body.back-mode .pm-form-card select:focus,
+body.back-mode .back-users-toolbar input:focus,
+body.back-mode .back-users-toolbar select:focus,
+body.back-mode .form-input:focus,
+body.back-mode .form-select:focus,
+body.back-mode .form-textarea:focus,
+body.back-mode .filter-select:focus {
+    outline: none;
+    border-color: rgba(185, 145, 105, 0.5);
+    box-shadow: 0 0 0 4px rgba(185, 145, 105, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+body.back-mode .pm-field-errors,
+body.back-mode .field-error,
+body.back-mode .form-error {
+    color: #e2a59d;
+}
+
+body.back-mode .input-invalid,
+body.back-mode .pm-input.pm-input-invalid,
+body.back-mode .pm-field-has-error input,
+body.back-mode .pm-field-has-error textarea,
+body.back-mode .pm-field-has-error select,
+body.back-mode .form-group-error .form-input,
+body.back-mode .form-group-error .form-select,
+body.back-mode .form-group-error .form-textarea {
+    border-color: #8c4d47 !important;
+    background: rgba(140, 77, 71, 0.12) !important;
+}
+
+body.back-mode .input-disabled,
+body.back-mode .pm-form-card input:disabled,
+body.back-mode .pm-form-card select:disabled,
+body.back-mode .form-input:disabled,
+body.back-mode .form-select:disabled {
+    color: #8f8578 !important;
+    background: rgba(255, 255, 255, 0.025) !important;
+}
+
+body.back-mode .pm-empty,
+body.back-mode .dashboard-empty {
+    border-style: dashed;
+    border-color: var(--back-border-strong);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--back-text-soft);
+}
+
+body.back-mode .quick-actions-title,
+body.back-mode .panel-header h3,
+body.back-mode .list-item-info strong,
+body.back-mode .back-user-table thead th,
+body.back-mode .back-user-name {
+    color: var(--back-text);
+}
+
+body.back-mode .dashboard-list-item,
+body.back-mode .list-item-info p,
+body.back-mode .dashboard-list-meta,
+body.back-mode .list-item-date,
+body.back-mode .view-link,
+body.back-mode .quick-action-btn.secondary {
+    color: var(--back-text-soft);
+}
+
+body.back-mode .stat-icon,
+body.back-mode .list-item-icon,
+body.back-mode .strategy-icon {
+    background: rgba(185, 145, 105, 0.12);
+    color: var(--back-beige);
+}
+
+body.back-mode .date-badge {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--back-border);
+    color: var(--back-text);
+}
+
+body.back-mode .stats-summary .stat-divider,
+body.back-mode .strategy-actions,
+body.back-mode .form-section,
+body.back-mode .panel-header,
+body.back-mode .show-actions,
+body.back-mode .modal-header,
+body.back-mode .modal-form .form-actions {
+    border-color: rgba(232, 221, 208, 0.08);
+}
+
+body.back-mode .stat-label,
+body.back-mode .quick-actions-title span,
+body.back-mode .panel-eyebrow,
+body.back-mode .objective-priority.unknown,
+body.back-mode .form-helper,
+body.back-mode .form-group label,
+body.back-mode .show-card .info-label,
+body.back-mode .back-users-summary {
+    color: var(--back-text-soft);
+}
+
+body.back-mode .stat-value,
+body.back-mode .budget-amount,
+body.back-mode .donut-total,
+body.back-mode .goal-percent,
+body.back-mode .info-value {
+    color: var(--back-text);
+}
+
+body.back-mode .strategy-badge,
+body.back-mode .budget-badge,
+body.back-mode .tag,
+body.back-mode .pm-project-chip,
+body.back-mode .pm-history-count,
+body.back-mode .info-badge {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--back-text);
+    border: 1px solid rgba(232, 221, 208, 0.08);
+}
+
+body.back-mode .roi-badge:not(.negative),
+body.back-mode .objective-priority.low,
+body.back-mode .priority-btn[data-priority="low"].active,
+body.back-mode .risk-buttons-container input[value="approved"]:checked + label,
+body.back-mode .strategy-form .risk-radio-group input[value="approved"]:checked + label {
+    background: rgba(126, 139, 99, 0.18);
+    color: #d8e4c2;
+}
+
+body.back-mode .roi-badge.negative,
+body.back-mode .objective-priority.high,
+body.back-mode .objective-priority.urgent,
+body.back-mode .priority-btn[data-priority="high"].active,
+body.back-mode .priority-btn[data-priority="urgent"].active,
+body.back-mode .risk-buttons-container input[value="rejected"]:checked + label,
+body.back-mode .strategy-form .risk-radio-group input[value="rejected"]:checked + label {
+    background: rgba(140, 77, 71, 0.18);
+    color: #e9c2bd;
+}
+
+body.back-mode .objective-priority.medium,
+body.back-mode .priority-btn.active,
+body.back-mode .risk-buttons-container input[value="pending"]:checked + label {
+    background: rgba(185, 145, 105, 0.16);
+    color: #f0d8bb;
+}
+
+body.back-mode .priority-btn,
+body.back-mode .risk-buttons-container input[type="radio"] + label,
+body.back-mode .type-buttons-container input[type="radio"] + label,
+body.back-mode .strategy-form .type-radio-group input[type="radio"] + label,
+body.back-mode .strategy-form .risk-radio-group input[type="radio"] + label {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--back-border-strong);
+    color: var(--back-text);
+}
+
+body.back-mode .priority-btn.active,
+body.back-mode .type-buttons-container input[type="radio"]:checked + label,
+body.back-mode .strategy-form .type-radio-group input[type="radio"]:checked + label {
+    background: linear-gradient(135deg, var(--back-beige-deep), #8d6545);
+    color: #fff7ef;
+    border-color: transparent;
+}
+
+body.back-mode .show-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+body.back-mode .info-section.full-width {
+    grid-column: 1 / -1;
+}
+
+body.back-mode .show-title,
+body.back-mode .show-header,
+body.back-mode .form-header,
+body.back-mode .header-title-row,
+body.back-mode .back-user-table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+body.back-mode .modal-header {
+    background: linear-gradient(180deg, rgba(23, 28, 31, 0.98) 0%, rgba(18, 23, 25, 0.98) 100%);
+}
+
+body.back-mode .modal-close,
+body.back-mode .action-icon {
+    color: var(--back-text-soft);
+}
+
+body.back-mode .action-icon.delete:hover {
+    background: rgba(140, 77, 71, 0.16);
+    color: #f0c7c3;
+}
+
+body.back-mode .back-users-shell {
+    display: grid;
+    gap: 1.5rem;
+}
+
+body.back-mode .back-user-search,
+body.back-mode .back-user-sort,
+body.back-mode .back-user-stat {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+body.back-mode .back-users-toolbar {
+    display: grid;
+    grid-template-columns: minmax(240px, 1.2fr) repeat(3, minmax(180px, 0.8fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+body.back-mode .back-user-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+body.back-mode .back-user-table thead th {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid rgba(232, 221, 208, 0.08);
+}
+
+body.back-mode .back-user-table td {
+    padding: 1rem 1.1rem;
+    color: var(--back-text-soft);
+    border-bottom: 1px solid rgba(232, 221, 208, 0.06);
+}
+
+body.back-mode .back-user-row:hover {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+body.back-mode .back-user-name {
+    font-weight: 700;
+}
+
+body.back-mode .back-user-table-actions {
+    justify-content: flex-end;
+}
+
+body.back-mode .back-icon-button {
+    width: 38px;
+    height: 38px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 12px;
+    border: 1px solid rgba(232, 221, 208, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--back-text);
+    text-decoration: none;
+}
+
+body.back-mode .back-icon-button:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(185, 145, 105, 0.28);
+}
+
+body.back-mode .back-icon-button-danger:hover {
+    background: rgba(140, 77, 71, 0.14);
+    border-color: rgba(140, 77, 71, 0.24);
+    color: #f0c7c3;
+}
+
+body.back-mode .back-icon-button-form {
+    margin: 0;
+}
+
+body.back-mode .back-user-form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+body.back-mode .back-user-form .pm-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.back-mode .back-user-form .pm-form-actions {
+    justify-content: flex-end;
+}
+
+@media (max-width: 1024px) {
+    body.back-mode .back-users-toolbar,
+    body.back-mode .show-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 820px) {
+    body.back-mode .back-user-form .pm-form-grid,
+    body.back-mode .stats-summary,
+    body.back-mode .strategy-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.back-mode .stats-summary {
+        width: 100%;
+    }
+
+    body.back-mode .back-user-table {
+        min-width: 760px;
+    }
+
+    body.back-mode .back-user-table-shell {
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 640px) {
+    body.back-mode .pm-admin-header,
+    body.back-mode .pm-card,
+    body.back-mode .pm-form-card,
+    body.back-mode .quick-actions-bar,
+    body.back-mode .card-panel,
+    body.back-mode .strategy-card,
+    body.back-mode .sidebar-card,
+    body.back-mode .show-card,
+    body.back-mode .form-card,
+    body.back-mode .back-user-table-shell {
+        padding: 1.1rem;
+    }
+}

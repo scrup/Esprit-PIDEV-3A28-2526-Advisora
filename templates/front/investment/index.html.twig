@@ -1,0 +1,165 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ 'investment.index.meta_title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleButton = document.getElementById('toggle-history');
+            const historyPanel = document.getElementById('investment-history-panel');
+
+            if (!toggleButton || !historyPanel) {
+                return;
+            }
+
+            toggleButton.addEventListener('click', function () {
+                const isHidden = historyPanel.hasAttribute('hidden');
+
+                if (isHidden) {
+                    historyPanel.removeAttribute('hidden');
+                    toggleButton.textContent = '{{ 'investment.index.toggle.hide_completed'|trans }}';
+                    return;
+                }
+
+                historyPanel.setAttribute('hidden', 'hidden');
+                toggleButton.textContent = '{{ 'investment.index.toggle.show_completed'|trans }}';
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    {% set completedInvestments = [] %}
+    {% for investment in investments %}
+        {% set latestTransaction = investment.latestTransaction %}
+        {% if latestTransaction and not latestTransaction.isPending %}
+            {% set completedInvestments = completedInvestments|merge([investment]) %}
+        {% endif %}
+    {% endfor %}
+
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">{{ 'investment.common.badge'|trans }}</span>
+            <h1>{{ 'investment.index.heading'|trans }}</h1>
+            <p>{{ 'investment.index.subtitle'|trans }}</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-primary" href="{{ path('investment_create') }}">{{ 'investment.index.actions.add'|trans }}</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">{{ 'investment.index.actions.open_projects'|trans }}</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('transaction_index') }}">{{ 'investment.index.actions.view_transactions'|trans }}</a>
+        </div>
+    </section>
+
+    {% include 'front/investment/_module_nav.html.twig' %}
+
+    <section class="pm-hero">
+        <form method="get" action="{{ path('investment_index') }}" class="pm-form-card">
+            <div class="pm-filter-grid">
+                <div class="pm-field">
+                    <label for="filter_q">{{ 'investment.index.filters.search'|trans }}</label>
+                    <input id="filter_q" type="search" name="q" placeholder="{{ 'investment.index.filters.search_placeholder'|trans }}" value="{{ filters.q|default('') }}">
+                </div>
+                <div class="pm-field">
+                    <label for="filter_status">{{ 'investment.index.filters.status'|trans }}</label>
+                    <select id="filter_status" name="status">
+                        <option value="">{{ 'investment.common.all'|trans }}</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if filters.status is defined and filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="pm-history-toggle">
+                <button class="pm-btn pm-btn-ghost" type="button" id="toggle-history">{{ 'investment.index.toggle.show_completed'|trans }}</button>
+            </div>
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit">{{ 'investment.common.filter'|trans }}</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('investment_index') }}">{{ 'investment.common.reset'|trans }}</a>
+            </div>
+        </form>
+
+        <div class="pm-card" id="investment-history-panel" hidden>
+            <div class="pm-section-head">
+                <h2>{{ 'investment.index.completed_history.title'|trans }}</h2>
+                <span class="pm-history-count">{{ completedInvestments|length }}</span>
+           
+                <a class="pm-btn pm-btn-primary" href="{{ path('investment_history') }}" style="margin-left:auto; background-color:#2b2b2b;">Consulter l Historique</a>
+            
+            {% if completedInvestments is not empty %}
+                <div class="pm-decision-list">
+                    {% for investment in completedInvestments %}
+                        {% set latestTransaction = investment.latestTransaction %}
+                        <article class="pm-decision-item">
+                            <div class="pm-card-head">
+                                <span class="pm-status pm-status-{{ latestTransaction.statusCssClass }}">{{ latestTransaction.statusLabel }}</span>
+                                <span class="pm-meta">{{ 'investment.common.item_number'|trans }} #{{ investment.id }}</span>
+                            </div>
+                            <h2>{{ investment.project ? investment.project.title : ('investment.common.project_unavailable'|trans) }}</h2>
+                            <div class="pm-meta-list pm-meta-list-vertical">
+                                <span><strong>{{ 'investment.common.project'|trans }} :</strong> #{{ investment.project ? investment.project.id : 'N/A' }}</span>
+                                <span><strong>{{ 'investment.common.range'|trans }} :</strong> {{ investment.budgetRangeLabel }}</span>
+                                <span><strong>{{ 'investment.common.transaction_amount'|trans }} :</strong> {{ latestTransaction.MontantTransac|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</span>
+                                <span><strong>{{ 'investment.index.completed_history.processed_date'|trans }} :</strong> {{ latestTransaction.DateTransac ? latestTransaction.DateTransac|date('d/m/Y') : ('investment.common.not_provided_female'|trans) }}</span>
+                            </div>
+                            <div class="pm-card-actions">
+                                <a class="pm-btn pm-btn-secondary" href="{{ path('investment_manage', {id: investment.id}) }}">{{ 'investment.common.view_details'|trans }}</a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="pm-empty-text">{{ 'investment.index.completed_history.empty'|trans }}</p>
+            {% endif %}
+
+            <div class="pm-filter-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('investment_history') }}">{{ 'investment.index.completed_history.open_full'|trans }}</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('investment_history_pdf') }}">{{ 'investment.index.completed_history.export_pdf'|trans }}</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="pm-grid">
+        {% for investment in investments %}
+            {% set latestTransaction = investment.latestTransaction %}
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ latestTransaction ? latestTransaction.statusCssClass : 'pending' }}">
+                        {{ latestTransaction ? latestTransaction.statusLabel : ('investment.common.no_transaction'|trans) }}
+                    </span>
+                    <span class="pm-meta">{{ 'investment.common.item_number'|trans }} #{{ investment.id }}</span>
+                </div>
+                <h2>{{ investment.project ? investment.project.title : ('investment.common.project_unavailable'|trans) }}</h2>
+                <p>{{ investment.commentaireInv ?: ('investment.common.no_comment'|trans) }}</p>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>{{ 'investment.common.project'|trans }} :</strong> #{{ investment.project ? investment.project.id : 'N/A' }}</span>
+                    <span><strong>{{ 'investment.common.range'|trans }} :</strong> {{ investment.budgetRangeLabel }}</span>
+                    <span><strong>{{ 'investment.common.duration'|trans }} :</strong> {{ investment.durationEstimateDisplay }}</span>
+                    {% if latestTransaction %}
+                        <span><strong>{{ 'investment.common.transaction_amount'|trans }} :</strong> {{ latestTransaction.MontantTransac|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</span>
+                    {% endif %}
+                </div>
+                <div class="pm-card-actions">
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('investment_manage', {id: investment.id}) }}">{{ 'investment.common.manage'|trans }}</a>
+                    {% if latestTransaction is null %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('transaction_new', {id: investment.id}) }}">{{ 'investment.index.actions.add_transaction'|trans }}</a>
+                    {% elseif latestTransaction.isPending %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('transaction_edit', {id: latestTransaction.id}) }}">{{ 'investment.index.actions.edit_transaction'|trans }}</a>
+                    {% else %}
+                        <span class="pm-empty-text">{{ 'investment.index.read_only'|trans }}</span>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>{{ 'investment.index.empty.title'|trans }}</h2>
+                <p>{{ 'investment.index.empty.text'|trans }}</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

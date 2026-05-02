@@ -1,0 +1,118 @@
+<section
+    class="pm-card pm-investment-reco-shell"
+    data-investment-recommendations
+    data-project-select-id="{{ project_select_id }}"
+>
+    <details class="pm-analysis-disclosure">
+        <summary class="pm-analysis-trigger">
+                <span class="pm-btn pm-btn-primary">
+                    <i class="fas fa-ranking-star"></i>
+                    <span>{{ 'investment.recommendations.view_best_projects'|trans }}</span>
+                </span>
+            </summary>
+
+        <div class="pm-analysis-body">
+            <div class="pm-analysis-head">
+                <div>
+                    <span class="pm-badge">{{ 'investment.recommendations.decision_help'|trans }}</span>
+                    <h2>{{ 'investment.recommendations.top_projects'|trans }}</h2>
+                    <p>{{ 'investment.recommendations.subtitle'|trans }}</p>
+                </div>
+
+                {% if recommendation_macro %}
+                    <div class="pm-analysis-score-panel pm-reco-score-panel">
+                        <span class="pm-badge">{{ 'investment.recommendations.world_bank_tn'|trans }}</span>
+                        <strong>{{ recommendation_macro.adjustedRoi|number_format(2, '.', ' ') }}%</strong>
+                        <span>{{ 'investment.recommendations.base_macro_roi'|trans }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if recommendation_macro %}
+                <div class="pm-analysis-badge-row">
+                    <span class="pm-analysis-chip">{{ 'investment.prediction.inflation'|trans }} {{ recommendation_macro.data.inflation|number_format(2, '.', ' ') }}%</span>
+                    <span class="pm-analysis-chip">{{ 'investment.recommendations.gdp'|trans }} {{ recommendation_macro.data.gdpGrowth|number_format(2, '.', ' ') }}%</span>
+                    <span class="pm-analysis-chip">{{ 'investment.recommendations.credit'|trans }} {{ recommendation_macro.data.lendingRate|number_format(2, '.', ' ') }}%</span>
+                    <span class="pm-analysis-chip">{{ recommendation_macro.riskLevelLabel }}</span>
+                </div>
+            {% endif %}
+
+            {% if investment_recommendations is not empty %}
+                <div class="pm-recommendation-grid">
+                    {% for item in investment_recommendations %}
+                        {% set recommended_project = item.project %}
+                        {% set prediction = item.prediction %}
+                        {% set is_selected = selected_project_id is not null and selected_project_id == recommended_project.id %}
+
+                        <article
+                            class="pm-recommendation-card {{ is_selected ? 'is-selected' : '' }}"
+                            data-recommendation-card
+                            data-project-id="{{ recommended_project.id }}"
+                        >
+                            <div class="pm-recommendation-head">
+                                <div class="pm-recommendation-rank-row">
+                                    <span class="pm-recommendation-rank">#{{ loop.index }}</span>
+                                    <span class="pm-status pm-status-{{ item.statusClass }}">{{ recommended_project.statusLabel }}</span>
+                                </div>
+                                <span class="pm-prediction-badge pm-prediction-badge-{{ prediction.recommendationBadgeClass }}">{{ prediction.recommendationLabel }}</span>
+                            </div>
+
+                            <h3>{{ recommended_project.title ?: ('investment.recommendations.untitled_project'|trans) }}</h3>
+                            <p>{{ prediction.sectorOutlook }}</p>
+
+                            <div class="pm-recommendation-kpi-grid">
+                                <article class="pm-recommendation-kpi">
+                                    <span>{{ 'investment.recommendations.projected_roi'|trans }}</span>
+                                    <strong class="{{ item.projectedRoi >= 0 ? 'is-positive' : 'is-negative' }}">{{ item.projectedRoi|number_format(2, '.', ' ') }}%</strong>
+                                </article>
+                                <article class="pm-recommendation-kpi">
+                                    <span>{{ 'investment.recommendations.invest_score'|trans }}</span>
+                                    <strong>{{ item.rankingScore }}/100</strong>
+                                </article>
+                                <article class="pm-recommendation-kpi">
+                                    <span>{{ 'investment.common.sector'|trans }}</span>
+                                    <strong>{{ prediction.sectorLabel }}</strong>
+                                </article>
+                            </div>
+
+                            <div class="pm-meta-list pm-meta-list-vertical">
+                                <span><strong>ID :</strong> #{{ recommended_project.id }}</span>
+                                <span><strong>{{ 'investment.common.budget'|trans }} :</strong> {{ recommended_project.legacyBudget is not null ? recommended_project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : ('investment.common.not_specified'|trans) }}</span>
+                                <span><strong>{{ 'investment.prediction.sector_rate'|trans }} :</strong> {{ prediction.acceptanceRatePercent }}%</span>
+                            </div>
+
+                            <div class="pm-recommendation-highlights">
+                                {% for highlight in prediction.highlights|slice(0, 2) %}
+                                    <article class="pm-analysis-highlight pm-analysis-highlight-compact">
+                                        <i class="fas fa-circle-check"></i>
+                                        <span>{{ highlight }}</span>
+                                    </article>
+                                {% endfor %}
+                            </div>
+
+                            <div class="pm-card-actions">
+                                <button
+                                    type="button"
+                                    class="pm-btn {{ is_selected ? 'pm-btn-primary' : 'pm-btn-secondary' }}"
+                                    data-recommend-project="{{ recommended_project.id }}"
+                                >
+                                    {{ is_selected ? ('investment.recommendations.project_selected'|trans) : ('investment.recommendations.choose_project'|trans) }}
+                                </button>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% elseif investment_recommendations_error %}
+                <div class="pm-analysis-warning">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <span>{{ investment_recommendations_error }}</span>
+                </div>
+            {% else %}
+                <div class="pm-analysis-warning">
+                    <i class="fas fa-circle-info"></i>
+                    <span>{{ 'investment.recommendations.none_available'|trans }}</span>
+                </div>
+            {% endif %}
+        </div>
+    </details>
+</section>

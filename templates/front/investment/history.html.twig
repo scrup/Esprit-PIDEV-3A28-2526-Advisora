@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | {{ 'investment.history.meta_title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">{{ 'investment.history.badge'|trans }}</span>
+            <h1>{{ 'investment.history.heading'|trans }}</h1>
+            <p>{{ 'investment.history.subtitle'|trans }}</p>
+        </div>
+        <div class="pm-actions">
+            <a class="pm-btn pm-btn-primary" href="{{ path('investment_history_pdf') }}" style="background-color: #d1563f;">{{ 'investment.history.actions.export_pdf'|trans }}</a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('investment_index') }}">{{ 'investment.history.actions.back_to_investments'|trans }}</a>
+        </div>
+    </section>
+
+    {% include 'front/investment/_module_nav.html.twig' %}
+
+    <section class="pm-grid" style="display:flex; flex-direction:column; gap:20px;">
+        {% set total_investi = 0 %}
+        {% set total_max = 0 %}
+
+        {% for investment in pagination %}
+            {% set active_trans = investment.getTotalActiveTransactionsAmount() %}
+            {% set total_investi = total_investi + active_trans %}
+            {% set total_max = total_max + investment.BudMaxInv %}
+
+            <div class="pm-card" style="width: 100%;">
+                <div class="pm-card-head">
+                    <span class="pm-meta">{{ 'investment.common.project'|trans }}: {{ investment.project ? investment.project.title : 'N/A' }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 10px;">
+                    <div><strong>{{ 'investment.history.budget_allocated'|trans }}:</strong> {{ investment.BudMaxInv|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</div>
+                    <div><strong>{{ 'investment.history.total_transferred'|trans }}:</strong> <span style="color:#2ecc71; font-weight:bold;">{{ active_trans|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</span></div>
+                </div>
+
+                {% if investment.transactions is not empty %}
+                    <table style="width:100%; border-collapse: collapse; margin-top:15px; font-size: 0.9em;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid rgba(195, 125, 93, 0.2);">
+                                <th style="text-align:left; padding:8px;">{{ 'investment.history.transaction_date'|trans }}</th>
+                                <th style="text-align:left; padding:8px;">{{ 'investment.history_pdf.status'|trans }}</th>
+                                <th style="text-align:right; padding:8px;">{{ 'investment.common.transaction_amount'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in investment.transactions %}
+                                <tr style="border-bottom: 1px solid rgba(195, 125, 93, 0.1);">
+                                    <td style="padding:8px;">{{ tx.DateTransac ? tx.DateTransac|date('d/m/Y') : '' }}</td>
+                                    <td style="padding:8px;">{{ tx.statusLabel }}</td>
+                                    <td style="text-align:right; padding:8px;">{{ tx.MontantTransac|number_format(2, '.', ' ') }} {{ investment.CurrencyInv }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="font-size: 0.9em; font-style:italic; color:#666;">{{ 'investment.history.no_transactions'|trans }}</p>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="pm-empty">
+                <h2>{{ 'investment.history.empty.title'|trans }}</h2>
+                <p>{{ 'investment.history.empty.text'|trans }}</p>
+            </div>
+        {% endfor %}
+
+        <div style="margin-top: 30px; display:flex; justify-content:center;">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </section>
+{% endblock %}

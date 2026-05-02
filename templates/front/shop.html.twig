@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'shop.meta.title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/shop.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="hero shop-hero">
+        <div class="hero-text">
+            <span class="badge"><i class="fas fa-store"></i> {{ 'shop.hero.badge'|trans }}</span>
+            <h1>{{ 'shop.hero.title_before'|trans }} <span style="color:#C37D5D;">{{ 'shop.hero.title_highlight'|trans }}</span></h1>
+            <p>{{ 'shop.hero.description'|trans }}</p>
+        </div>
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format" alt="{{ 'shop.hero.image_alt'|trans }}">
+            <div class="floating-card">
+                <i class="fas fa-gem"></i> <span>{{ 'shop.hero.floating_card'|trans }}</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="shop" class="shop-section">
+        <h2 class="section-title">{{ 'shop.section.title_before'|trans }} <span style="color:#C37D5D;">{{ 'shop.section.title_highlight'|trans }}</span></h2>
+        <p class="section-sub">{{ 'shop.section.subtitle'|trans }}</p>
+
+        <div class="product-filters">
+            <button class="filter-btn active" data-filter="all">{{ 'shop.filters.all'|trans }}</button>
+            <button class="filter-btn" data-filter="analytics">{{ 'shop.filters.analytics'|trans }}</button>
+            <button class="filter-btn" data-filter="strategy">{{ 'shop.filters.strategy'|trans }}</button>
+            <button class="filter-btn" data-filter="training">{{ 'shop.filters.training'|trans }}</button>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be populated by JavaScript -->
+        </div>
+    </section>
+
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> {{ 'cart.title'|trans }}</h3>
+            <button class="close-cart" id="closeCartBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-bag"></i>
+                <p>{{ 'cart.empty'|trans }}</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>{{ 'cart.total'|trans }}</span>
+                <span class="total-amount" id="cartTotal">0.00 €</span>
+            </div>
+            <button class="btn btn-primary checkout-btn" id="checkoutBtn">{{ 'cart.checkout'|trans }}</button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/shop.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% set current_route = app.request.get('_route')|default('') %}
+{% set is_shop_route = current_route starts with 'app_shop' %}
+{% set is_shop_catalog_route = current_route == 'app_shop' %}
+{% set user_role = app.user ? app.user.getRoleUser() : null %}
+{% set shop_cart = app.session.get('shop_cart', {}) %}
+{% set shop_checkout_draft = app.session.get('shop_checkout_draft', null) %}
+{% set shop_checkout_cart = app.session.get('shop_checkout_cart', {}) %}
+{% set shop_checkout_count = shop_checkout_cart is iterable ? shop_checkout_cart|length : 0 %}
+{% if shop_checkout_count == 0 and shop_checkout_draft is iterable and shop_checkout_draft.listing_id is defined and shop_checkout_draft.listing_id > 0 %}
+    {% set shop_checkout_count = 1 %}
+{% endif %}
+{% set shop_cart_count = (shop_cart|length) + shop_checkout_count %}
+{% set home_solutions_href = current_route == 'app_home' ? '#solutions' : path('app_home') ~ '#solutions' %}
+{% set home_whyus_href = current_route == 'app_home' ? '#whyus' : path('app_home') ~ '#whyus' %}
+{% set home_reviews_href = current_route == 'app_home' ? '#reviews' : path('app_home') ~ '#reviews' %}
+{% set forex_ticker = exchange_ticker_data() %}
+{% set ticker_icons = {
+    'USD': 'coins',
+    'EUR': 'euro-sign',
+    'GBP': 'sterling-sign',
+    'JPY': 'chart-line',
+    'CHF': 'chart-line',
+    'CAD': 'dollar-sign',
+    'CNY': 'chart-simple'
+} %}
+
+<div class="top-currency-bar">
+    {% if forex_ticker.items is not empty %}
+        <div class="currency-ticker" id="forexTicker">
+            {% for item in forex_ticker.items %}
+                <span>
+                    <i class="fas fa-{{ ticker_icons[item.code]|default('chart-line') }}"></i>
+                    <span class="ticker-label">{{ forex_ticker.base }}/{{ item.code }}:</span>
+                    <span>{{ item.displayRate }}</span>
+                    <span class="{{ item.changeClass }}">{{ item.changeLabel }}</span>
+                </span>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="ticker-subtitle">
+        <i class="fas fa-chart-line"></i> Dinar Tunisien ({{ forex_ticker.base|default('TND') }}) - Taux de change en direct
+        {% if forex_ticker.updatedAt %}
+            <span class="ticker-update">Mise a jour {{ forex_ticker.updatedAt|date('d/m/Y H:i') }}</span>
+        {% endif %}
+        {% if forex_ticker.usingFallback %}
+            <span class="ticker-note">Cache</span>
+        {% endif %}
+        {% if forex_ticker.warning %}
+            <span class="ticker-note">{{ forex_ticker.warning }}</span>
+        {% endif %}
+    </div>
+</div>
+
+<header id="header" class="site-header">
+    <div class="header-left">
+        <button
+            class="hamburger"
+            type="button"
+            aria-label="Ouvrir le menu"
+            aria-expanded="false"
+            aria-controls="front-main-nav"
+            data-header-toggle
+        >
+            &#9776;
+        </button>
+
+        <a href="{{ path('app_home') }}" class="logo header-brand">
+            <img src="{{ app.request.basePath ~ '/assets/logo.png' }}" alt="Advisora Logo" class="logo-img" onerror="this.style.display='none'">
+            <span class="logo-copy">
+                <span class="logo-title">Advisora</span>
+                <span class="logo-subtitle">Conseil et suivi strategique</span>
+            </span>
+        </a>
+    </div>
+
+    <nav id="front-main-nav" class="header-nav" aria-label="Main" data-header-nav>
+        <a href="{{ path('app_home') }}" class="nav-link {% if current_route == 'app_home' %}active{% endif %}">Accueil</a>
+        <a href="{{ path('app_shop') }}" class="nav-link {% if is_shop_route %}active{% endif %}">Boutique</a>
+        <a href="{{ path('project_index') }}" class="nav-link {% if current_route starts with 'project_' %}active{% endif %}">Projet</a>
+        {% if app.user and user_role == 'client' %}
+            <a href="{{ path('investment_index') }}" class="nav-link {% if current_route starts with 'investment_' or current_route starts with 'transaction_' %}active{% endif %}">Investissements</a>
+        {% elseif app.user and user_role in ['admin', 'gerant'] %}
+            <a href="{{ path('back_investment_index') }}" class="nav-link {% if current_route starts with 'back_investment' or current_route starts with 'back_transaction' %}active{% endif %}">Investissements</a>
+        {% endif %}
+        <a href="{{ path('event_index') }}" class="nav-link {% if current_route starts with 'event_' %}active{% endif %}">Evenements</a>
+        <a href="{{ path('resource_index') }}" class="nav-link {% if current_route starts with 'resource_' %}active{% endif %}">Ressources</a>
+        <a href="{{ home_solutions_href }}" class="nav-link">Solutions</a>
+        <a href="{{ home_whyus_href }}" class="nav-link">Pourquoi nous choisir ?</a>
+        <a href="{{ home_reviews_href }}" class="nav-link">Temoignages</a>
+    </nav>
+
+    <div class="header-actions" data-header-actions>
+        <div class="header-lang-tools">
+            <div class="lang-switcher">
+                {% set current_route_name = app.request.attributes.get('_route')|default('app_home') %}
+                {% set route_params = app.request.attributes.get('_route_params', {}) %}
+                {% set query_params = app.request.query.all() %}
+                {% set fr_params = route_params|merge(query_params)|merge({'_locale': 'fr'}) %}
+                {% set en_params = route_params|merge(query_params)|merge({'_locale': 'en'}) %}
+
+                <a href="{{ path(current_route_name, fr_params) }}"
+                   class="lang-option {{ app.request.locale == 'fr' ? 'active' : '' }}"
+                   aria-label="{{ 'header.lang.fr'|trans }}">
+                    FR
+                </a>
+                <span class="lang-divider">|</span>
+                <a href="{{ path(current_route_name, en_params) }}"
+                   class="lang-option {{ app.request.locale == 'en' ? 'active' : '' }}"
+                   aria-label="{{ 'header.lang.en'|trans }}">
+                    EN
+                </a>
+            </div>
+        </div>
+
+        <div class="user-tools">
+            {% if app.user %}
+                {% include 'shared/notification_center.html.twig' with {variant: 'front'} %}
+
+                {% if user_role in ['admin', 'gerant'] %}
+                    {% include 'shared/interface_toggle.html.twig' with {interface_mode: 'front'} %}
+                {% endif %}
+
+                {% include 'components/user_dropdown.html.twig' %}
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn btn-outline">Connexion</a>
+                <button class="btn btn-primary" id="getStartedBtn">Commencer</button>
+            {% endif %}
+        </div>
+
+        <a
+            class="cart-btn"
+            href="{{ is_shop_catalog_route ? '#shop-cart-drawer' : path('app_shop') ~ '#shop-cart-drawer' }}"
+            aria-label="Cart ({{ shop_cart_count }})"
+            data-cart-toggle
+        >
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">{{ shop_cart_count }}</span>
+        </a>
+    </div>
+</header>

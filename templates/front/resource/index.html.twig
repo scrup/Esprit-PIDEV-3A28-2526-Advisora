@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Ressources{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Resource Management</span>
+            <h1>Catalogue des ressources disponibles</h1>
+            <p>Consultez les ressources du catalogue, filtrez-les par fournisseur et verifiez le stock total, reserve et disponible avant reservation.</p>
+        </div>
+        <div class="pm-actions">
+            {% if app.user and can_manage_resources %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('resource_new') }}">Ajouter une ressource</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_dashboard') }}">Ouvrir le back office</a>
+            {% elseif app.user and can_reserve_resource %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('resource_reservations') }}">Mes reservations</a>
+            {% elseif not app.user %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gerer</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="pm-hero">
+        <form method="get" action="{{ path('resource_index') }}" class="pm-form-card" data-auto-filter-form>
+            <div class="pm-filter-grid">
+                <div class="pm-field">
+                    <label for="filter_q">Recherche</label>
+                    <input id="filter_q" type="search" name="q" placeholder="Nom, statut, fournisseur ou ID..." value="{{ filters.q|default('') }}">
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_status">Statut</label>
+                    <select id="filter_status" name="status">
+                        <option value="">Tous</option>
+                        {% for status_value, status_label in status_choices %}
+                            <option value="{{ status_value }}" {% if filters.status is defined and filters.status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_supplier">Fournisseur</label>
+                    <select id="filter_supplier" name="supplier_id">
+                        <option value="">Tous</option>
+                        {% for supplier in suppliers %}
+                            {% set supplierLabel = supplier.fournisseur ?: supplier.nomFr %}
+                            <option value="{{ supplier.idFr }}" {% if filters.supplier_id is defined and filters.supplier_id == supplier.idFr %}selected{% endif %}>{{ supplierLabel }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_min_price">Prix min</label>
+                    <input id="filter_min_price" type="number" step="0.01" name="min_price" placeholder="Min" value="{{ filters.min_price|default('') }}">
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_max_price">Prix max</label>
+                    <input id="filter_max_price" type="number" step="0.01" name="max_price" placeholder="Max" value="{{ filters.max_price|default('') }}">
+                </div>
+            </div>
+
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('resource_index') }}">Reinitialiser</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="pm-grid">
+        {% for resource in resources %}
+            {% set stock = stock_snapshots[resource.id] ?? {'reserved': 0, 'available': resource.quantity ?? 0} %}
+            <article class="pm-card">
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ resource.status|default('')|lower|replace({' ':'_','-':'_'}) }}">{{ resource.getStatusLabel() }}</span>
+                    <span class="pm-meta">Ressource #{{ resource.id }}</span>
+                </div>
+                <div class="pm-resource-media">
+                    {% if resource.primaryImageUrl %}
+                        <img src="{{ resource.primaryImageUrl }}" alt="{{ resource.name }}">
+                    {% else %}
+                        <div class="pm-resource-placeholder"><i class="fas fa-box-open"></i></div>
+                    {% endif %}
+                </div>
+                <h2>{{ resource.name }}</h2>
+                <p>Fiche ressource pour le catalogue web et la gestion du stock Symfony.</p>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Fournisseur :</strong> {{ resource.getSupplierDisplayName() }}</span>
+                    <span><strong>Stock total :</strong> {{ resource.quantity }}</span>
+                    <span><strong>Stock reserve :</strong> {{ stock.reserved }}</span>
+                    <span><strong>Stock disponible :</strong> {{ stock.available }}</span>
+                    <span><strong>Prix :</strong> {{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><strong>Reservations liees :</strong> {{ resource.projects|length }}</span>
+                </div>
+                <div class="pm-card-actions">
+                    <a class="pm-btn pm-btn-primary" href="{{ path('resource_show', {id: resource.id}) }}">Voir le detail</a>
+                    {% if app.user and can_manage_resources %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('resource_back_manage', {id: resource.id}) }}">Back office</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>Aucune ressource pour le moment</h2>
+                <p>Ajoutez une premiere ressource ou modifiez les filtres de recherche.</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/resource-filters.js') }}"></script>
+{% endblock %}

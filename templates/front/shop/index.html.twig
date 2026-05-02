@@ -1,0 +1,972 @@
+{% extends 'base.html.twig' %}
+{# Page principale shop: catalogue + marketplace C2C + panier drawer unifie. #}
+
+{% block title %}Advisora | Boutique Ressources{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260424-01' }}">
+{% endblock %}
+
+{% block body %}
+    {% set active_search = selected_search|default('') %}
+    {% set active_market_search = marketplace.market_search|default('') %}
+    {% set active_market_sort = marketplace.open_sort|default('recent') %}
+    {% set pending_market_buy = pending_buy|default(null) %}
+    {% set manage_mode = app.request.query.get('manage') in ['1', 'true', 'yes'] %}
+    {% set orders_mode = app.request.query.get('orders') in ['1', 'true', 'yes'] %}
+    {% set base_shop_filters = {} %}
+    {% if selected_supplier_id %}
+        {% set base_shop_filters = base_shop_filters|merge({'supplier_id': selected_supplier_id}) %}
+    {% endif %}
+    {% if active_search is not empty %}
+        {% set base_shop_filters = base_shop_filters|merge({'q': active_search}) %}
+    {% endif %}
+    {% set full_shop_filters = base_shop_filters %}
+    {% if active_market_search is not empty %}
+        {% set full_shop_filters = full_shop_filters|merge({'market_q': active_market_search}) %}
+    {% endif %}
+    {% if active_market_sort != 'recent' %}
+        {% set full_shop_filters = full_shop_filters|merge({'c2c_sort': active_market_sort}) %}
+    {% endif %}
+    {% set market_view_filters = full_shop_filters %}
+    {% set market_reset_filters = base_shop_filters %}
+    {% if manage_mode %}
+        {% set full_shop_filters = full_shop_filters|merge({'manage': 1}) %}
+        {% set market_reset_filters = market_reset_filters|merge({'manage': 1}) %}
+    {% endif %}
+    {% if orders_mode %}
+        {% set full_shop_filters = full_shop_filters|merge({'orders': 1}) %}
+        {% set market_reset_filters = market_reset_filters|merge({'orders': 1}) %}
+    {% endif %}
+
+    {% set hero_fallback_1 = app.request.basePath ~ '/assets/images/shop-hero-gold.jpg' %}
+    {% set hero_fallback_2 = app.request.basePath ~ '/assets/images/shop-hero-electrical.png' %}
+    {% set hero_fallback_3 = app.request.basePath ~ '/assets/images/shop-hero-dark.jpg' %}
+    {% set hero_image_1 = hero_fallback_1 %}
+    {% set hero_image_2 = hero_fallback_2 %}
+    {% set hero_image_3 = hero_fallback_3 %}
+
+    <div class="mini-shop-shell {{ manage_mode ? 'is-manage-view' : 'is-market-view' }}" id="shop-page">
+        <section class="mini-shop-hero mini-shop-hero-carousel" aria-label="Vitrine boutique en carousel">
+            <div class="mini-shop-carousel">
+                <input class="mini-shop-carousel-toggle" type="radio" name="shop_hero_slide" id="shop_hero_slide_1" checked>
+                <input class="mini-shop-carousel-toggle" type="radio" name="shop_hero_slide" id="shop_hero_slide_2">
+                <input class="mini-shop-carousel-toggle" type="radio" name="shop_hero_slide" id="shop_hero_slide_3">
+
+                <div class="mini-shop-carousel-slides">
+                    <article class="mini-shop-carousel-slide slide-1">
+                        <div class="mini-shop-carousel-media">
+                            <img src="{{ hero_image_1 }}" alt="Vitrine boutique, slide 1" onerror="this.onerror=null;this.src='{{ hero_fallback_1 }}';">
+                        </div>
+                        <div class="mini-shop-carousel-overlay"></div>
+                        <div class="mini-shop-carousel-content">
+                            <span class="mini-shop-kicker"><i class="fas fa-store"></i> Marketplace C2C</span>
+                            <h1>Achetez et vendez vos ressources avec un rendu pro</h1>
+                            <p>Interface claire, commandes suivees, et panier centralise dans un seul flux.</p>
+                        </div>
+                    </article>
+
+                    <article class="mini-shop-carousel-slide slide-2">
+                        <div class="mini-shop-carousel-media">
+                            <img src="{{ hero_image_2 }}" alt="Vitrine boutique, slide 2" onerror="this.onerror=null;this.src='{{ hero_fallback_2 }}';">
+                        </div>
+                        <div class="mini-shop-carousel-overlay"></div>
+                        <div class="mini-shop-carousel-content">
+                            <span class="mini-shop-kicker"><i class="fas fa-box-open"></i> Ressources techniques</span>
+                            <h1>Materiaux et equipements disponibles</h1>
+                            <p>Trouvez rapidement les references utiles dans un catalogue clair.</p>
+                        </div>
+                    </article>
+
+                    <article class="mini-shop-carousel-slide slide-3">
+                        <div class="mini-shop-carousel-media">
+                            <img src="{{ hero_image_3 }}" alt="Vitrine boutique, slide 3" onerror="this.onerror=null;this.src='{{ hero_fallback_3 }}';">
+                        </div>
+                        <div class="mini-shop-carousel-overlay"></div>
+                        <div class="mini-shop-carousel-content">
+                            <span class="mini-shop-kicker"><i class="fas fa-receipt"></i> Commandes & avis</span>
+                            <h1>Pilotez vos commandes avec des retours clients utiles</h1>
+                            <p>Livraison, confirmation et avis regroupes dans une experience cohérente.</p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="mini-shop-carousel-arrows arrows-1">
+                    <label for="shop_hero_slide_3" class="mini-shop-carousel-arrow is-prev" aria-label="Slide precedente"><i class="fas fa-chevron-left"></i></label>
+                    <label for="shop_hero_slide_2" class="mini-shop-carousel-arrow is-next" aria-label="Slide suivante"><i class="fas fa-chevron-right"></i></label>
+                </div>
+                <div class="mini-shop-carousel-arrows arrows-2">
+                    <label for="shop_hero_slide_1" class="mini-shop-carousel-arrow is-prev" aria-label="Slide precedente"><i class="fas fa-chevron-left"></i></label>
+                    <label for="shop_hero_slide_3" class="mini-shop-carousel-arrow is-next" aria-label="Slide suivante"><i class="fas fa-chevron-right"></i></label>
+                </div>
+                <div class="mini-shop-carousel-arrows arrows-3">
+                    <label for="shop_hero_slide_2" class="mini-shop-carousel-arrow is-prev" aria-label="Slide precedente"><i class="fas fa-chevron-left"></i></label>
+                    <label for="shop_hero_slide_1" class="mini-shop-carousel-arrow is-next" aria-label="Slide suivante"><i class="fas fa-chevron-right"></i></label>
+                </div>
+
+                <div class="mini-shop-carousel-dots" role="tablist" aria-label="Navigation carousel boutique">
+                    <label for="shop_hero_slide_1" aria-label="Slide 1"></label>
+                    <label for="shop_hero_slide_2" aria-label="Slide 2"></label>
+                    <label for="shop_hero_slide_3" aria-label="Slide 3"></label>
+                </div>
+            </div>
+        </section>
+
+        <section class="mini-shop-page-actions" aria-label="Actions boutique">
+            <a href="{{ path('app_shop_publish') }}" class="shop-btn shop-btn-primary mini-shop-page-action">
+                <i class="fas fa-upload"></i>
+                Publier une annonce
+            </a>
+            <a href="{{ path('app_shop_my_listings') }}" class="shop-btn shop-btn-secondary mini-shop-page-action">
+                <i class="fas fa-list"></i>
+                Mes annonces
+            </a>
+            <a href="{{ path('app_shop_wallet') }}" class="shop-btn shop-btn-secondary mini-shop-page-action mini-shop-page-action-wallet">
+                <span class="mini-shop-page-action-wallet-copy">
+                    <i class="fas fa-wallet"></i>
+                    Wallet
+                </span>
+                <strong>{{ marketplace.wallet.balance|default(0)|number_format(3, '.', ' ') }} coins</strong>
+            </a>
+        </section>
+
+        <section class="mini-shop-marketplace-layout" id="shop-marketplace">
+            {% if manage_mode %}
+            <article class="mini-shop-panel mini-shop-management-block">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Mini Shop C2C</span>
+                        <h2>Publier une annonce depuis vos reservations</h2>
+                        <p>Choisissez une reservation autorisee, fixez la quantite et le prix unitaire. Si l URL est vide, une image est generee automatiquement avec le nom exact de la ressource.</p>
+                    </div>
+                    <div class="mini-shop-panel-chip">
+                        <span>Reservations publiables</span>
+                        <strong>{{ marketplace.stats.publishable_count }} ligne(s)</strong>
+                    </div>
+                </div>
+
+                <section class="mini-shop-side-stats">
+                    <div class="mini-side-stat">
+                        <span>Publiables</span>
+                        <strong>{{ marketplace.stats.publishable_count }}</strong>
+                    </div>
+                    <div class="mini-side-stat">
+                        <span>Unites</span>
+                        <strong>{{ marketplace.stats.publishable_units }}</strong>
+                    </div>
+                    <div class="mini-side-stat">
+                        <span>Mes annonces</span>
+                        <strong>{{ marketplace.stats.my_listings_count }}</strong>
+                    </div>
+                </section>
+
+                <div class="mini-shop-market-reservation-grid">
+                    {% for reservation in marketplace.publishable_reservations %}
+                        {% set publish_status_class = reservation.publishable_qty > 0 ? 'is-available' : 'is-unavailable' %}
+                        {% set publish_card_id = reservation.project_id ~ '_' ~ reservation.resource_id %}
+                        {% set reservation_image = shop_image_url(reservation.image_url, 'card') %}
+                        <article class="mini-shop-market-reservation-card">
+                            <div class="mini-shop-market-card-head">
+                                <div>
+                                    <span class="mini-panel-tag">Reservation source</span>
+                                    <h3>{{ reservation.resource_name }}</h3>
+                                </div>
+                                <span class="shop-status-badge {{ publish_status_class }}">{{ reservation.publishable_qty }} dispo</span>
+                            </div>
+
+                            <div class="mini-shop-market-card-media {% if reservation_image is empty %}is-placeholder{% endif %}">
+                                {% if reservation_image is not empty %}
+                                    <img src="{{ reservation_image }}" alt="{{ reservation.resource_name }}">
+                                {% else %}
+                                    <div class="mini-shop-market-media-fallback">
+                                        <span>{{ reservation.resource_name|slice(0, 1)|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mini-shop-cart-item-meta">
+                                <span>{{ reservation.supplier_name ?: 'Non renseigne' }}</span>
+                                <span>Projet: {{ reservation.project_title }}</span>
+                                <span>#{{ reservation.resource_id }}</span>
+                            </div>
+
+                            <div class="mini-shop-cart-item-facts">
+                                <div>
+                                    <span>Reserve</span>
+                                    <strong>{{ reservation.reserved_qty }}</strong>
+                                </div>
+                                <div>
+                                    <span>Deja liste</span>
+                                    <strong>{{ reservation.listed_qty }}</strong>
+                                </div>
+                                <div>
+                                    <span>Publier max</span>
+                                    <strong>{{ reservation.publishable_qty }}</strong>
+                                </div>
+                            </div>
+
+                            <form method="post" action="{{ path('app_shop_market_publish') }}" class="mini-shop-form mini-shop-grid" novalidate>
+                                <input type="hidden" name="_token" value="{{ csrf_token('shop_market_publish') }}">
+                                <input type="hidden" name="_redirect_fragment" value="shop-marketplace">
+                                <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                <input type="hidden" name="q" value="{{ active_search }}">
+                                <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                <input type="hidden" name="project_id" value="{{ reservation.project_id }}">
+                                <input type="hidden" name="resource_id" value="{{ reservation.resource_id }}">
+
+                                <div class="mini-shop-grid mini-shop-grid-two">
+                                    <div class="mini-shop-field-group">
+                                        <label for="publish_quantity_{{ publish_card_id }}">Quantite a publier</label>
+                                        <input
+                                            id="publish_quantity_{{ publish_card_id }}"
+                                            type="number"
+                                            name="quantity"
+                                            value="1"
+                                        >
+                                    </div>
+                                    <div class="mini-shop-field-group">
+                                        <label for="publish_price_{{ publish_card_id }}">Prix unitaire (coins)</label>
+                                        <input
+                                            id="publish_price_{{ publish_card_id }}"
+                                            type="number"
+                                            name="unit_price"
+                                            value="1.000"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="mini-shop-field-group">
+                                    <label for="publish_image_{{ publish_card_id }}">Image annonce (optionnel, sinon image auto)</label>
+                                        <input
+                                            id="publish_image_{{ publish_card_id }}"
+                                            type="url"
+                                            name="image_url"
+                                            placeholder="https://... ou /uploads/mon-image.jpg"
+                                        >
+                                </div>
+
+                                <div class="mini-shop-field-group">
+                                    <label for="publish_note_{{ publish_card_id }}">Note annonce (optionnel)</label>
+                                        <input
+                                            id="publish_note_{{ publish_card_id }}"
+                                            type="text"
+                                            name="note"
+                                            placeholder="Ex: lot presque neuf, remise possible"
+                                        >
+                                </div>
+
+                                <div class="mini-shop-form-actions">
+                                    <button type="submit" class="shop-btn shop-btn-primary">
+                                        <i class="fas fa-upload"></i>
+                                        Publier annonce
+                                    </button>
+                                </div>
+                            </form>
+                        </article>
+                    {% else %}
+                        <div class="mini-shop-empty-state mini-shop-empty-state-inline">
+                            <i class="fas fa-box-open"></i>
+                            <h3>Aucune reservation publiable</h3>
+                            <p>Reservez d'abord une ressource pour pouvoir la proposer dans le Mini Shop C2C.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+            {% endif %}
+
+            <article class="mini-shop-panel">
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Annonces ouvertes</span>
+                        <h2>Acheter une ressource publiee par un autre client</h2>
+                        <p>Checkout serveur Symfony: controle quantite, wallet, commande et livraison.</p>
+                    </div>
+                    <div class="mini-shop-panel-head-meta">
+                        <div class="mini-shop-panel-chip">
+                            <span>Ouvertes</span>
+                            <strong>{{ marketplace.stats.open_count }} annonce(s)</strong>
+                        </div>
+                        <div class="mini-shop-panel-chip is-wallet-balance">
+                            <span class="mini-shop-balance-label"><i class="fas fa-coins" aria-hidden="true"></i> Solde</span>
+                            <strong class="mini-shop-balance-value">{{ marketplace.wallet.balance|default(0)|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="get" action="{{ path('app_shop') }}" class="mini-shop-market-search">
+                    {% if selected_supplier_id %}
+                        <input type="hidden" name="supplier_id" value="{{ selected_supplier_id }}">
+                    {% endif %}
+                    {% if active_search is not empty %}
+                        <input type="hidden" name="q" value="{{ active_search }}">
+                    {% endif %}
+                    {% if manage_mode %}
+                        <input type="hidden" name="manage" value="1">
+                    {% endif %}
+
+                    <div class="mini-shop-field-group">
+                        <label for="market_q">Recherche C2C</label>
+                        <input
+                            id="market_q"
+                            type="text"
+                            name="market_q"
+                            value="{{ active_market_search }}"
+                            placeholder="Ressource, vendeur, fournisseur, statut"
+                        >
+                    </div>
+                    <div class="mini-shop-field-group">
+                        <label for="c2c_sort">Tri C2C</label>
+                        <select id="c2c_sort" name="c2c_sort">
+                            <option value="recent" {{ active_market_sort == 'recent' ? 'selected' : '' }}>Plus recent</option>
+                            <option value="price_asc" {{ active_market_sort == 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
+                            <option value="price_desc" {{ active_market_sort == 'price_desc' ? 'selected' : '' }}>Prix decroissant</option>
+                            <option value="qty_desc" {{ active_market_sort == 'qty_desc' ? 'selected' : '' }}>Stock restant</option>
+                        </select>
+                    </div>
+
+                    <div class="mini-shop-toolbar-actions">
+                        <button type="submit" class="shop-btn shop-btn-primary">Filtrer annonces</button>
+                        <a href="{{ path('app_shop', market_reset_filters) }}#shop-marketplace" class="shop-btn shop-btn-secondary">Reinitialiser</a>
+                    </div>
+                </form>
+
+                <section class="mini-shop-side-stats">
+                    <div class="mini-side-stat">
+                        <span>Annonces</span>
+                        <strong>{{ marketplace.stats.open_count }}</strong>
+                    </div>
+                    <div class="mini-side-stat">
+                        <span>Unites</span>
+                        <strong>{{ marketplace.stats.open_units }}</strong>
+                    </div>
+                    <div class="mini-side-stat">
+                        <span>Ordres</span>
+                        <strong>{{ marketplace.stats.orders_count }}</strong>
+                    </div>
+                </section>
+
+                <div class="mini-shop-market-listing-grid mini-shop-market-catalog-grid">
+                    {% for listing in marketplace.open_listings_page|default(marketplace.open_listings) %}
+                        {% set listing_status_class = listing.status == 'LISTED'
+                            ? 'is-available'
+                            : (listing.status == 'SOLD_OUT' ? 'is-reserved' : 'is-unavailable') %}
+                        {% set listing_rating = listing.rating_avg|default(0) %}
+                        {% set listing_rating_floor = listing_rating|round(0, 'floor') %}
+                        {% set listing_review_count = listing.review_count|default(0) %}
+                        {% set listing_image = shop_image_url(listing.image_url, 'card') %}
+                        <article class="mini-shop-market-listing-card mini-shop-open-card mini-shop-open-image-only-card">
+                            <a href="{{ path('app_shop_market_product', {'listingId': listing.idListing}) }}" class="mini-shop-open-image-link" aria-label="Voir le produit {{ listing.resource_name }}">
+                                <div class="mini-shop-open-media {% if listing_image is empty %}is-placeholder{% endif %}">
+                                    <span class="shop-status-badge {{ listing_status_class }}">{{ listing.status }}</span>
+                                    {% if listing_image is not empty %}
+                                        <img src="{{ listing_image }}" alt="{{ listing.resource_name }}">
+                                    {% else %}
+                                        <div class="mini-shop-market-media-fallback">
+                                            <span>{{ (listing.resource_name ?: 'R')|slice(0, 1)|upper }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mini-shop-open-image-caption">
+                                    <h3>{{ listing.resource_name ?: 'Ressource' }}</h3>
+                                    <div class="mini-shop-open-stars mini-shop-open-stars-strong">
+                                        {% for star in 1..5 %}
+                                            <i class="fas fa-star {{ star <= listing_rating_floor ? 'is-on' : '' }}"></i>
+                                        {% endfor %}
+                                        <span>{{ listing_rating|number_format(2, '.', ' ') }}</span>
+                                    </div>
+                                    <small class="mini-shop-open-reviews-count">{{ listing_review_count }} avis</small>
+                                    <p class="mini-shop-open-price-row">
+                                        <span class="mini-shop-open-price-icon" aria-hidden="true"><i class="fas fa-coins"></i></span>
+                                        <span class="mini-shop-open-price-value">{{ listing.unitPrice|number_format(3, '.', ' ') }}</span>
+                                        <span class="mini-shop-open-price-currency">coins</span>
+                                    </p>
+                                </div>
+                            </a>
+                            <form method="post" action="{{ path('app_shop_market_cart_add') }}" class="mini-shop-open-quick-add-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('shop_market_cart_add') }}">
+                                <input type="hidden" name="_redirect_page" value="shop">
+                                <input type="hidden" name="_redirect_fragment" value="shop-marketplace">
+                                <input type="hidden" name="listing_id" value="{{ listing.idListing }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                <input type="hidden" name="q" value="{{ active_search }}">
+                                <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                <input type="hidden" name="c2c_sort" value="{{ active_market_sort }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                {% if orders_mode %}<input type="hidden" name="orders" value="1">{% endif %}
+
+                                <button type="submit" class="shop-btn shop-btn-icon shop-btn-secondary" aria-label="Ajouter au panier checkout">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                        </article>
+                    {% else %}
+                        <div class="mini-shop-empty-state mini-shop-empty-state-inline">
+                            <i class="fas fa-tags"></i>
+                            <h3>Aucune annonce ouverte</h3>
+                            <p>Les annonces C2C apparaitront ici des qu'un autre client publie une ressource.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if marketplace.open_listings_page is defined %}
+                    <div class="mini-shop-pagination-wrap">
+                        {{ knp_pagination_render(marketplace.open_listings_page) }}
+                    </div>
+                {% endif %}
+
+                {% if manage_mode %}
+                <div class="mini-shop-panel-head">
+                    <div>
+                        <span class="mini-panel-tag">Mes annonces</span>
+                        <h2>Gestion rapide de vos annonces publiees</h2>
+                    </div>
+                    <div class="mini-shop-panel-chip">
+                        <span>Total</span>
+                        <strong>{{ marketplace.stats.my_listings_count }} annonce(s)</strong>
+                    </div>
+                </div>
+
+                <div class="mini-shop-market-listing-grid">
+                    {% for listing in marketplace.my_listings %}
+                        {% set my_listing_status_class = listing.status == 'LISTED'
+                            ? 'is-available'
+                            : (listing.status == 'SOLD_OUT' ? 'is-reserved' : 'is-unavailable') %}
+                        {% set my_listing_image = shop_image_url(listing.image_url, 'card') %}
+                        <article class="mini-shop-market-listing-card mini-shop-market-own-card">
+                            <div class="mini-shop-market-card-head">
+                                <div>
+                                    <span class="mini-panel-tag">Mon annonce #{{ listing.idListing }}</span>
+                                    <h3>{{ listing.resource_name ?: 'Ressource' }}</h3>
+                                </div>
+                                <span class="shop-status-badge {{ my_listing_status_class }}">{{ listing.status }}</span>
+                            </div>
+
+                            <div class="mini-shop-open-media {% if my_listing_image is empty %}is-placeholder{% endif %}">
+                                {% if my_listing_image is not empty %}
+                                    <img src="{{ my_listing_image }}" alt="{{ listing.resource_name ?: 'Ressource' }}">
+                                {% else %}
+                                    <div class="mini-shop-market-media-fallback">
+                                        <span>{{ (listing.resource_name ?: 'R')|slice(0, 1)|upper }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mini-shop-cart-item-meta">
+                                <span>{{ listing.supplier_name ?: 'Non renseigne' }}</span>
+                                <span>Projet #{{ listing.idProj }}</span>
+                                <span>Ref #{{ listing.idRs }}</span>
+                            </div>
+
+                            <div class="mini-shop-cart-item-facts">
+                                <div>
+                                    <span>Initial</span>
+                                    <strong>{{ listing.qtyInitial }}</strong>
+                                </div>
+                                <div>
+                                    <span>Restant</span>
+                                    <strong>{{ listing.qtyRemaining }}</strong>
+                                </div>
+                                <div>
+                                    <span>Prix</span>
+                                    <strong>{{ listing.unitPrice|number_format(3, '.', ' ') }} coins</strong>
+                                </div>
+                                <div>
+                                    <span>MAJ</span>
+                                    <strong>{{ listing.updatedAt|date('Y-m-d') }}</strong>
+                                </div>
+                            </div>
+
+                            {% if listing.status == 'LISTED' %}
+                                <form method="post" action="{{ path('app_shop_market_cancel') }}" class="mini-shop-form-actions">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('shop_market_cancel') }}">
+                                    <input type="hidden" name="_redirect_fragment" value="shop-marketplace">
+                                    <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                    <input type="hidden" name="q" value="{{ active_search }}">
+                                    <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                    <input type="hidden" name="listing_id" value="{{ listing.idListing }}">
+                                    <button type="submit" class="shop-btn shop-btn-danger">
+                                        <i class="fas fa-ban"></i>
+                                        Annuler annonce
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </article>
+                    {% else %}
+                        <div class="mini-shop-empty-state mini-shop-empty-state-inline">
+                            <i class="fas fa-upload"></i>
+                            <h3>Aucune annonce publiee</h3>
+                            <p>Publiez une reservation pour commencer a vendre dans le mini shop C2C.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </article>
+        </section>
+
+        {% if orders_mode %}
+        <section class="mini-shop-showcase" id="shop-orders">
+            <div class="mini-shop-showcase-head">
+                <div>
+                    <span class="mini-panel-tag">Commandes</span>
+                    <h2>Commandes, livraison et avis</h2>
+                    <p>Apres livraison confirmee, vous pouvez noter la commande.</p>
+                </div>
+                <div class="mini-shop-panel-chip">
+                    <span>Historique C2C</span>
+                    <strong>{{ marketplace.stats.orders_count }} ordre(s)</strong>
+                </div>
+            </div>
+
+            <div class="mini-shop-market-listing-grid">
+                {% for order in marketplace.orders %}
+                    {% set delivery_status_class = order.delivery_status == 'LIVREE'
+                        ? 'is-available'
+                        : (order.delivery_status == 'ENVOYEE' ? 'is-reserved' : 'is-unavailable') %}
+                    <article class="mini-shop-market-listing-card">
+                        <div class="mini-shop-market-card-head">
+                            <div>
+                                <span class="mini-panel-tag">Commande #{{ order.idOrder }}</span>
+                                <h3>{{ order.resource_name ?: 'Ressource' }}</h3>
+                            </div>
+                            <span class="shop-status-badge {{ delivery_status_class }}">{{ order.delivery_status ?: 'N/A' }}</span>
+                        </div>
+
+                        <div class="mini-shop-cart-item-meta">
+                            <span>Role: {{ order.order_role }}</span>
+                            <span>Projet acheteur: {{ order.buyer_project_title ?: '-' }}</span>
+                            <span>Tracking: {{ order.trackingCode ?: '-' }}</span>
+                        </div>
+
+                        <div class="mini-shop-cart-item-facts">
+                            <div>
+                                <span>Quantite</span>
+                                <strong>{{ order.quantity }}</strong>
+                            </div>
+                            <div>
+                                <span>Prix unit.</span>
+                                <strong>{{ order.unitPrice|number_format(3, '.', ' ') }} coins</strong>
+                            </div>
+                            <div>
+                                <span>Total</span>
+                                <strong>{{ order.totalPrice|number_format(3, '.', ' ') }} coins</strong>
+                            </div>
+                            <div>
+                                <span>Date</span>
+                                <strong>{{ order.order_created_at|date('Y-m-d H:i') }}</strong>
+                            </div>
+                        </div>
+
+                        {% set qr_payload = 'ORDER#' ~ order.idOrder
+                            ~ '|TRACKING=' ~ (order.trackingCode ?: '-')
+                            ~ '|STATUS=' ~ (order.delivery_status ?: 'N/A')
+                            ~ '|ROLE=' ~ (order.order_role ?: '-') %}
+                        <div class="mini-shop-order-qr">
+                            <img
+                                src="{{ qr_code_data_uri(qr_payload, 'default', {'size': 180, 'margin': 8}) }}"
+                                alt="QR suivi commande {{ order.idOrder }}"
+                            >
+                            <p>QR suivi commande #{{ order.idOrder }}</p>
+                        </div>
+
+                        {% if order.has_review %}
+                            <p class="mini-shop-market-note">
+                                Avis deja laisse: {{ order.stars }}/5
+                                {% if order.comment %}- {{ order.comment }}{% endif %}
+                            </p>
+                        {% endif %}
+
+                        {% if order.can_confirm_delivery %}
+                            <form method="post" action="{{ path('app_shop_delivery_confirm') }}" class="mini-shop-form-actions">
+                                <input type="hidden" name="_token" value="{{ csrf_token('shop_delivery_confirm') }}">
+                                <input type="hidden" name="_redirect_fragment" value="shop-orders">
+                                <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                <input type="hidden" name="q" value="{{ active_search }}">
+                                <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                <input type="hidden" name="order_id" value="{{ order.idOrder }}">
+                                <button type="submit" class="shop-btn shop-btn-secondary">
+                                    <i class="fas fa-truck"></i>
+                                    Confirmer livraison
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {% if order.can_review %}
+                            <form method="post" action="{{ path('app_shop_review_submit') }}" class="mini-shop-form mini-shop-grid" novalidate>
+                                <input type="hidden" name="_token" value="{{ csrf_token('shop_review_submit') }}">
+                                <input type="hidden" name="_redirect_fragment" value="shop-orders">
+                                <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                <input type="hidden" name="q" value="{{ active_search }}">
+                                <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                <input type="hidden" name="order_id" value="{{ order.idOrder }}">
+
+                                <div class="mini-shop-grid mini-shop-grid-two">
+                                    <div class="mini-shop-field-group">
+                                        <label for="review_stars_{{ order.idOrder }}">Note</label>
+                                        <select id="review_stars_{{ order.idOrder }}" name="stars">
+                                            <option value="5">5</option>
+                                            <option value="4">4</option>
+                                            <option value="3">3</option>
+                                            <option value="2">2</option>
+                                            <option value="1">1</option>
+                                        </select>
+                                    </div>
+                                    <div class="mini-shop-field-group">
+                                        <label for="review_comment_{{ order.idOrder }}">Commentaire</label>
+                                        <input
+                                            id="review_comment_{{ order.idOrder }}"
+                                            type="text"
+                                            name="comment"
+                                            placeholder="Partagez votre retour sur cette commande"
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="mini-shop-form-actions">
+                                    <button type="submit" class="shop-btn shop-btn-primary">
+                                        <i class="fas fa-star"></i>
+                                        Envoyer avis
+                                    </button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </article>
+                {% else %}
+                    <div class="mini-shop-empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h3>Aucune commande C2C</h3>
+                        <p>Les commandes acheteur ou vendeur s'affichent ici apres le premier checkout.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% set total_drawer_lines = checkout_cart_stats.items_count|default(0) + cart_stats.items_count|default(0) %}
+        {% set total_drawer_units = checkout_cart_stats.units_count|default(0) + cart_stats.units_count|default(0) %}
+
+        {# Drawer panier: resume rapide + separation claire entre panier C2C et panier catalogue. #}
+        <aside class="mini-shop-cart-drawer" id="shop-cart-drawer" aria-labelledby="shop-cart-title">
+            <div class="mini-shop-cart-drawer-shell">
+                <div class="mini-shop-cart-drawer-head">
+                    <div class="mini-shop-panel-copy">
+                        <span class="mini-panel-tag">Panier</span>
+                        <h2 id="shop-cart-title">Mon panier boutique</h2>
+                        <p>Toutes les actions du panier restent traitees cote Symfony.</p>
+                    </div>
+                    <a href="#shop-closed" class="mini-shop-cart-close" aria-label="Fermer le panier">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+
+                <div class="mini-shop-cart-drawer-body has-shop-sections">
+                    <div class="mini-shop-panel-chip mini-shop-cart-drawer-chip">
+                        {% if checkout_cart_stats.items_count|default(0) > 0 %}
+                            <span>Sous-total C2C</span>
+                            <strong>{{ checkout_cart_stats.subtotal|number_format(3, '.', ' ') }} coins</strong>
+                        {% elseif cart_stats.items_count|default(0) > 0 %}
+                            <span>Panier catalogue</span>
+                            <strong>{{ cart_stats.items_count }} ligne(s)</strong>
+                        {% else %}
+                            <span>Panier</span>
+                            <strong>0 ligne(s)</strong>
+                        {% endif %}
+                    </div>
+
+                    <section class="mini-shop-cart-spotlight">
+                        <div class="mini-shop-cart-spotlight-copy">
+                            <span class="mini-shop-cart-spotlight-kicker">Controle Symfony</span>
+                            <h3>
+                                {% if checkout_cart_stats.items_count|default(0) > 0 %}
+                                    Panier C2C pret pour un checkout global
+                                {% elseif cart_stats.items_count|default(0) > 0 %}
+                                    Panier catalogue pret pour reservation projet
+                                {% else %}
+                                    Panier en attente d articles
+                                {% endif %}
+                            </h3>
+                            <p>Le back Symfony garde la main sur le stock, le wallet, les commandes et les livraisons avant toute validation.</p>
+                        </div>
+                        <div class="mini-shop-cart-spotlight-metrics">
+                            <div>
+                                <span>Wallet</span>
+                                <strong>{{ marketplace.wallet.balance|default(0)|number_format(3, '.', ' ') }} coins</strong>
+                            </div>
+                            <div>
+                                <span>Lignes</span>
+                                <strong>{{ total_drawer_lines }}</strong>
+                            </div>
+                            <div>
+                                <span>Unites</span>
+                                <strong>{{ total_drawer_units }}</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="mini-shop-side-stats mini-shop-side-stats-cart">
+                        <div class="mini-side-stat">
+                            <span>Lignes</span>
+                            <strong>{{ total_drawer_lines }}</strong>
+                        </div>
+                        <div class="mini-side-stat">
+                            <span>Unites</span>
+                            <strong>{{ total_drawer_units }}</strong>
+                        </div>
+                        <div class="mini-side-stat">
+                            <span>C2C</span>
+                            <strong>{{ checkout_cart_stats.items_count|default(0) }}</strong>
+                        </div>
+                    </section>
+
+                    {% if checkout_cart_items is not empty %}
+                        {# Section panier C2C: chaque annonce garde ses donnees checkout, mais le CTA principal est global. #}
+                        <div class="mini-shop-cart-section-head">
+                            <div>
+                                <span>Panier C2C</span>
+                                <h3>Commandes client a payer</h3>
+                            </div>
+                            <strong>{{ checkout_cart_stats.subtotal|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+
+                        <div class="mini-shop-cart-cta-row">
+                            <a href="{{ path('app_shop_checkout') }}" class="shop-btn shop-btn-primary">
+                                <i class="fas fa-credit-card"></i>
+                                Checkout tout le panier ({{ checkout_cart_stats.subtotal|number_format(3, '.', ' ') }} coins)
+                            </a>
+                            <p class="mini-shop-cart-inline-note">Un seul formulaire Symfony pour verifier wallet, stock et livraison.</p>
+                        </div>
+
+                        <div class="mini-shop-cart-list">
+                            {% for checkout_item in checkout_cart_items %}
+                                {# Carte annonce checkout: informations visibles rapidement pour lecture/prof/tests. #}
+                                <article class="mini-shop-c2c-cart-card is-checkout-card">
+                                    <div class="mini-shop-c2c-cart-shell">
+                                        <div class="mini-shop-cart-item-media{% if checkout_item.image_url is empty %} is-placeholder{% endif %}">
+                                            {% if checkout_item.image_url is not empty %}
+                                                <img src="{{ checkout_item.image_url }}" alt="{{ checkout_item.resource_name }}">
+                                            {% else %}
+                                                <div class="mini-shop-cart-item-fallback">
+                                                    <span>{{ checkout_item.resource_name|slice(0, 1)|upper }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mini-shop-c2c-cart-copy">
+                                            <div class="mini-shop-cart-item-head">
+                                                <div>
+                                                    <span class="mini-panel-tag">Panier C2C</span>
+                                                    <h3>{{ checkout_item.resource_name }}</h3>
+                                                </div>
+                                                <span class="shop-status-badge is-available">LISTED</span>
+                                            </div>
+
+                                            <div class="mini-shop-cart-item-meta">
+                                                <span>{{ checkout_item.supplier_name }}</span>
+                                                <span>Vendeur: {{ checkout_item.seller_name }}</span>
+                                                <span>Annonce #{{ checkout_item.listing_id }}</span>
+                                            </div>
+
+                                            <div class="mini-shop-cart-item-facts">
+                                                <div>
+                                                    <span>Prix unit.</span>
+                                                    <strong>{{ checkout_item.unit_price|number_format(3, '.', ' ') }} coins</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Quantite</span>
+                                                    <strong>{{ checkout_item.quantity }}</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Disponible</span>
+                                                    <strong>{{ checkout_item.available }}</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Total</span>
+                                                    <strong>{{ checkout_item.line_total|number_format(3, '.', ' ') }} coins</strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="mini-shop-form-actions mini-shop-cart-card-actions">
+                                                <a href="{{ path('app_shop_market_checkout', {'listingId': checkout_item.listing_id, 'quantity': checkout_item.quantity}) }}" class="shop-btn shop-btn-primary">
+                                                    <i class="fas fa-credit-card"></i>
+                                                    Checkout
+                                                </a>
+                                                <form method="post" action="{{ path('app_shop_market_cart_clear') }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('shop_market_cart_clear') }}">
+                                                    <input type="hidden" name="_redirect_fragment" value="shop-cart-drawer">
+                                                    <input type="hidden" name="listing_id" value="{{ checkout_item.listing_id }}">
+                                                    <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                                    <input type="hidden" name="q" value="{{ active_search }}">
+                                                    <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                                    <input type="hidden" name="c2c_sort" value="{{ active_market_sort }}">
+                                                    {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                                    {% if orders_mode %}<input type="hidden" name="orders" value="1">{% endif %}
+                                                    <button type="submit" class="shop-btn shop-btn-secondary">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                        Retirer
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+
+                        <form method="post" action="{{ path('app_shop_market_cart_clear') }}" class="mini-shop-cart-clear-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('shop_market_cart_clear') }}">
+                            <input type="hidden" name="_redirect_fragment" value="shop-cart-drawer">
+                            <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                            <input type="hidden" name="q" value="{{ active_search }}">
+                            <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                            <input type="hidden" name="c2c_sort" value="{{ active_market_sort }}">
+                            {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                            {% if orders_mode %}<input type="hidden" name="orders" value="1">{% endif %}
+                            <button type="submit" class="shop-btn shop-btn-secondary">Vider le panier C2C</button>
+                        </form>
+                    {% endif %}
+
+                    {% if cart_items is not empty %}
+                        <div class="mini-shop-cart-section-head is-catalog">
+                            <div>
+                                <span>Catalogue fournisseur</span>
+                                <h3>Reservation vers un projet</h3>
+                            </div>
+                            <strong>{{ cart_stats.items_count|default(0) }} ligne(s)</strong>
+                        </div>
+
+                        <form method="post" action="{{ path('app_shop_cart_reserve') }}" class="mini-shop-form mini-shop-cart-bulk-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('shop_cart_reserve') }}">
+                            <input type="hidden" name="_redirect_fragment" value="shop-page">
+                            <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                            <input type="hidden" name="q" value="{{ active_search }}">
+                            <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+
+                            <div class="mini-shop-field-group">
+                                <label for="cart_project_id">Projet de destination</label>
+                                <select id="cart_project_id" name="project_id">
+                                    <option value="">Dernier projet ou creation automatique</option>
+                                    {% for project in projects %}
+                                        <option value="{{ project.idProj }}">{{ project.titleProj }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="mini-shop-cart-form-note">Cette action reste geree cote Symfony avec verification du stock avant reservation.</small>
+                            </div>
+
+                            <div class="mini-shop-form-actions">
+                                <button type="submit" class="shop-btn shop-btn-primary">Commander ces ressources</button>
+                            </div>
+                        </form>
+
+                        <form method="post" action="{{ path('app_shop_cart_clear') }}" class="mini-shop-cart-clear-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('shop_cart_clear') }}">
+                            <input type="hidden" name="_redirect_fragment" value="shop-cart-drawer">
+                            <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                            <input type="hidden" name="q" value="{{ active_search }}">
+                            <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                            <button type="submit" class="shop-btn shop-btn-secondary">Vider le panier</button>
+                        </form>
+
+                        <div class="mini-shop-cart-list">
+                            {% for item in cart_items %}
+                                {% set item_status_class = item.status == 'AVAILABLE'
+                                    ? 'is-available'
+                                    : (item.status == 'RESERVED' ? 'is-reserved' : 'is-unavailable') %}
+                                <article class="mini-shop-cart-item">
+                                    <div class="mini-shop-cart-item-head">
+                                        <div>
+                                            <span class="mini-panel-tag">Ligne panier</span>
+                                            <h3>{{ item.resource_name }}</h3>
+                                        </div>
+                                        <span class="shop-status-badge {{ item_status_class }}">{{ item.status }}</span>
+                                    </div>
+
+                                    <div class="mini-shop-cart-item-media is-placeholder">
+                                        <div class="mini-shop-cart-item-fallback">
+                                            <span>{{ item.resource_name|slice(0, 1)|upper }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="mini-shop-cart-item-meta">
+                                        <span>{{ item.supplier_name }}</span>
+                                        <span>#{{ item.resource_id }}</span>
+                                    </div>
+
+                                    <div class="mini-shop-cart-item-facts">
+                                        <div>
+                                            <span>Prix</span>
+                                            <strong>{{ item.price|number_format(2, '.', ' ') }} EUR</strong>
+                                        </div>
+                                        <div>
+                                            <span>Disponible</span>
+                                            <strong>{{ item.available_stock }}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Quantite</span>
+                                            <strong>{{ item.quantity }}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Total ligne</span>
+                                            <strong>{{ item.line_total|number_format(2, '.', ' ') }} EUR</strong>
+                                        </div>
+                                    </div>
+
+                                    {% if not item.is_stock_valid %}
+                                        <p class="mini-shop-stock-warning">Le stock actuel n'est plus suffisant pour cette ligne.</p>
+                                    {% endif %}
+
+                                    <div class="mini-shop-cart-item-actions">
+                                        <form method="post" action="{{ path('app_shop_cart_update') }}" class="mini-shop-cart-inline-form" novalidate>
+                                            <input type="hidden" name="_token" value="{{ csrf_token('shop_cart_update') }}">
+                                            <input type="hidden" name="_redirect_fragment" value="shop-cart-drawer">
+                                            <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                            <input type="hidden" name="q" value="{{ active_search }}">
+                                            <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                            <input type="hidden" name="resource_id" value="{{ item.resource_id }}">
+
+                                            <div class="mini-shop-field-group mini-shop-field-group-compact">
+                                                <label for="cart_quantity_{{ item.resource_id }}">Quantite</label>
+                                                <input
+                                                    id="cart_quantity_{{ item.resource_id }}"
+                                                    type="number"
+                                                    name="quantity"
+                                                    value="{{ item.quantity }}"
+                                                >
+                                            </div>
+
+                                            <button type="submit" class="shop-btn shop-btn-primary">Mettre a jour</button>
+                                        </form>
+
+                                        <form method="post" action="{{ path('app_shop_cart_remove') }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('shop_cart_remove') }}">
+                                            <input type="hidden" name="_redirect_fragment" value="shop-cart-drawer">
+                                            <input type="hidden" name="supplier_id" value="{{ selected_supplier_id ?? '' }}">
+                                            <input type="hidden" name="q" value="{{ active_search }}">
+                                            <input type="hidden" name="market_q" value="{{ active_market_search }}">
+                                {% if manage_mode %}<input type="hidden" name="manage" value="1">{% endif %}
+                                            <input type="hidden" name="resource_id" value="{{ item.resource_id }}">
+                                            <button type="submit" class="shop-btn shop-btn-danger">Retirer</button>
+                                        </form>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% elseif checkout_cart_items is empty %}
+                        <div class="mini-shop-empty-state mini-shop-empty-state-inline">
+                            <i class="fas fa-shopping-bag"></i>
+                            <h3>Votre panier est vide</h3>
+                            <p>Ajoute des articles depuis le catalogue pour construire une commande.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+
+        <a href="#shop-closed" class="mini-shop-cart-overlay" aria-label="Fermer le panier"></a>
+    </div>
+{% endblock %}

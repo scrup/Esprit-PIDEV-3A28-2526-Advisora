@@ -1,0 +1,97 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | {{ 'event.back.manage.meta_title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">{{ 'event.back.manage.badge'|trans }}</span>
+                <h1>{{ event.title }}</h1>
+                <p>{{ event.description ?: ('event.common.no_description'|trans) }}</p>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_index') }}">{{ 'event.back.manage.back_to_list'|trans }}</a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('event_show', {id: event.id}) }}">{{ 'event.back.index.view_front'|trans }}</a>
+                <a class="pm-btn pm-btn-primary" href="{{ path('event_edit', {id: event.id}) }}">{{ 'event.common.edit'|trans }}</a>
+            </div>
+        </div>
+
+        {% include 'back/event/_module_nav.html.twig' %}
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>{{ 'event.back.manage.info_title'|trans }}</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>{{ 'event.back.manage.timeline_status'|trans }} :</strong> {{ event.getTimelineLabel() }}</span>
+                    <span><strong>{{ 'event.common.organizer'|trans }} :</strong> {{ event.organizerName ?: ('event.common.not_provided'|trans) }}</span>
+                    <span><strong>{{ 'event.common.location'|trans }} :</strong> {{ event.location ?: ('event.common.not_provided'|trans) }}</span>
+                    <span><strong>{{ 'event.back.common.start'|trans }} :</strong> {{ event.startDate ? event.startDate|date('d/m/Y H:i') : ('event.common.not_provided'|trans) }}</span>
+                    <span><strong>{{ 'event.back.common.end'|trans }} :</strong> {{ event.endDate ? event.endDate|date('d/m/Y H:i') : ('event.common.not_provided_female'|trans) }}</span>
+                    <span><strong>{{ 'event.back.manage.capacity'|trans }} :</strong> {{ event.capacity }}</span>
+                    <span><strong>{{ 'event.back.common.reserved_tickets'|trans }} :</strong> {{ event.reservedTickets }}</span>
+                    <span><strong>{{ 'event.back.manage.remaining_places'|trans }} :</strong> {{ event.remainingTickets }}</span>
+                    <span><strong>{{ 'event.back.common.manager'|trans }} :</strong> {{ event.getManagerDisplayName() }}</span>
+                </div>
+                <form method="post" action="{{ path('event_delete', {id: event.id}) }}" onsubmit="return confirm('{{ 'event.back.common.confirm_delete_event'|trans }}');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
+                    <button class="pm-btn pm-btn-danger" type="submit">{{ 'event.back.manage.delete_event'|trans }}</button>
+                </form>
+            </article>
+
+            <article class="pm-card">
+                <div class="pm-section-head">
+                    <h2>{{ 'event.back.manage.bookings_title'|trans }}</h2>
+                    <a class="pm-btn pm-btn-secondary" href="{{ path('back_event_bookings') }}">{{ 'event.back.manage.view_all_bookings'|trans }}</a>
+                </div>
+
+                <details class="pm-history-toggle" open>
+                    <summary class="pm-history-summary">
+                        <span>{{ 'event.back.manage.show_event_bookings'|trans }}</span>
+                        <span class="pm-history-count">{{ event_bookings|length }}</span>
+                    </summary>
+                    <div class="pm-decision-list">
+                        {% for booking in event_bookings %}
+                            <div class="pm-decision-item">
+                                <div class="pm-section-head">
+                                    <div>
+                                        <strong>{{ booking.getClientDisplayName() }}</strong>
+                                        <span>{{ booking.user ? booking.user.getEmailUser() : ('event.back.manage.email_unavailable'|trans) }}</span>
+                                    </div>
+                                    <div class="pm-card-actions">
+                                        <span class="pm-status pm-status-{{ booking.workflowStatusCssClass }}">{{ booking.workflowStatusLabel }}</span>
+                                        <span>{{ booking.bookingDate ? booking.bookingDate|date('d/m/Y H:i') : ('event.common.not_provided_female'|trans) }}</span>
+                                    </div>
+                                </div>
+                                <p>
+                                    {{ 'event.back.manage.ticket_count'|trans }} : {{ booking.ticketCount }}<br>
+                                    {{ 'event.back.manage.total_stored'|trans }} : {{ booking.totalPrixBk|number_format(2, '.', ' ') }} TND
+                                </p>
+                                {% if booking.isPending %}
+                                    <div class="pm-card-actions">
+                                        <form method="post" action="{{ path('back_event_booking_accept', {id: booking.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('accept_booking_' ~ booking.id) }}">
+                                            <button class="pm-btn pm-btn-primary" type="submit">{{ 'event.back.manage.accept'|trans }}</button>
+                                        </form>
+                                        <form method="post" action="{{ path('back_event_booking_refuse', {id: booking.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('refuse_booking_' ~ booking.id) }}">
+                                            <button class="pm-btn pm-btn-danger" type="submit">{{ 'event.back.manage.refuse'|trans }}</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <p class="pm-empty-text">{{ 'event.back.manage.no_bookings'|trans }}</p>
+                        {% endfor %}
+                    </div>
+                </details>
+            </article>
+        </div>
+    </section>
+{% endblock %}

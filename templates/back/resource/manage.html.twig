@@ -1,0 +1,166 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Gestion de la ressource{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+     <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
+    <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260417-rs-v29">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell rs-admin-shell rs-module-resource">
+        <div class="pm-admin-header rs-header">
+            <div class="rs-header-copy back-users-title">
+                <span class="pm-badge">Back office</span>
+                <h1>{{ resource.name }}</h1>
+                <p>Consultation detaillee de la ressource, du stock courant et des projets qui l utilisent deja.</p>
+            </div>
+            <div class="pm-card-actions rs-header-actions">
+                <a class="pm-btn pm-btn-secondary" href="{{ path('back_resource_index') }}">Retour</a>
+                {% if can_edit_resource %}
+                    <a class="pm-btn pm-btn-primary" href="{{ path('resource_edit', {id: resource.id}) }}">Modifier la ressource</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% include 'back/resource/_module_nav.html.twig' %}
+
+        <div class="rs-detail-grid">
+            <section class="pm-card rs-panel rs-preview-panel">
+                <div class="pm-card-head rs-panel-head">
+                    <div>
+                        <h2>Apercu</h2>
+                        <p>Visualisation de la ressource</p>
+                    </div>
+                </div>
+                <div class="rs-preview-frame">
+                    {% if resource.primaryImageUrl %}
+                        <img src="{{ resource.primaryImageUrl }}" alt="{{ resource.name }}">
+                    {% else %}
+                        <div class="rs-preview-placeholder">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="rs-mini-metrics">
+                    <div class="rs-mini-metric">
+                        <span>Prix</span>
+                        <strong>{{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</strong>
+                    </div>
+                    <div class="rs-mini-metric">
+                        <span>Disponible</span>
+                        <strong>{{ available_stock }}</strong>
+                    </div>
+                    <div class="rs-mini-metric">
+                        <span>Reserve</span>
+                        <strong>{{ reserved_stock }}</strong>
+                    </div>
+                    <div class="rs-mini-metric">
+                        <span>Reservations</span>
+                        <strong>{{ assigned_projects_count }}</strong>
+                    </div>
+                </div>
+                {% if can_delete_resource %}
+                    <div class="rs-panel-actions">
+                        <form method="post" action="{{ path('resource_delete', {id: resource.id}) }}" onsubmit="return confirm('Supprimer cette ressource ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_' ~ resource.id) }}">
+                            <button class="pm-btn pm-btn-danger" type="submit">Supprimer</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </section>
+
+            <div class="rs-detail-stack">
+                <section class="pm-card rs-panel">
+                    <div class="pm-card-head rs-panel-head">
+                        <div>
+                            <h2>Informations generales</h2>
+                            <p>Fiche technique et administrative</p>
+                        </div>
+                    </div>
+                    <div class="back-user-table-shell rs-table-wrap">
+                        <table class="back-user-table rs-table rs-kv-table">
+                            <tbody>
+                                <tr>
+                                    <th>Statut</th>
+                                    <td>
+                                        <span class="rs-state rs-state-{{ resource.status|default('')|lower }}">{{ resource.getStatusLabel() }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Fournisseur</th>
+                                    <td>
+                                        {% if resource.cataloguefournisseur %}
+                                            <a class="rs-primary-link" href="{{ path('supplier_back_manage', {id: resource.cataloguefournisseur.id}) }}">{{ resource.getSupplierDisplayName() }}</a>
+                                        {% else %}
+                                            {{ resource.getSupplierDisplayName() }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Stock total</th>
+                                    <td>{{ resource.quantity }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Stock reserve</th>
+                                    <td>{{ reserved_stock }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Stock disponible</th>
+                                    <td>{{ available_stock }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Prix</th>
+                                    <td>{{ resource.price is not null ? resource.price|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Image</th>
+                                    <td>{{ resource.primaryImageUrl ? 'Disponible' : 'Non renseignee' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="pm-card rs-panel">
+                    <div class="pm-card-head rs-panel-head">
+                        <div>
+                            <h2>Projets lies</h2>
+                            <p>{{ resource.projects|length }} projet(s) rattache(s)</p>
+                        </div>
+                    </div>
+                    {% if resource.projects is not empty %}
+                        <div class="back-user-table-shell rs-table-wrap">
+                            <table class="back-user-table rs-table">
+                                <thead>
+                                    <tr>
+                                        <th>Projet</th>
+                                        <th>Statut</th>
+                                        <th>Budget</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in resource.projects %}
+                                        <tr class="back-user-row">
+                                            <td>{{ project.title }}</td>
+                                            <td>{{ project.getStatusLabel() }}</td>
+                                            <td>{{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</td>
+                                            <td>{{ project.description ? (project.description|length > 110 ? project.description|slice(0, 110) ~ '...' : project.description) : 'Aucune description disponible.' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="pm-empty rs-empty rs-empty-inline">
+                            <p>Aucun projet n utilise encore cette ressource.</p>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </section>
+{% endblock %}

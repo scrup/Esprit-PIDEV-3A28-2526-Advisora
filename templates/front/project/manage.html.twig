@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Gerer mon projet{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/project-task-board.js') }}"></script>
+    <script src="{{ asset('js/project-tts.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+    <section class="pm-admin-shell">
+        <div class="pm-admin-header">
+            <div>
+                <span class="pm-badge">Mon projet</span>
+                <h1>{{ project.title }}</h1>
+                <p>
+                    {{ project.description ?: 'Aucune description disponible.' }}
+                    {% if not can_edit_project and is_project_accepted %}
+                        Ce projet est accepte : vous ne pouvez plus le modifier.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="pm-card-actions">
+                <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.summary }}">
+                    <i class="fas fa-volume-up"></i>
+                    <span data-project-tts-label>Ecouter</span>
+                </button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
+                {% if can_edit_project %}
+                    <a class="pm-btn pm-btn-primary" href="{{ path('project_edit', {id: project.id}) }}">Modifier mon projet</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="pm-admin-grid">
+            <article class="pm-card">
+                <h2>Informations du projet</h2>
+                <div class="pm-meta-list pm-meta-list-vertical">
+                    <span><strong>Statut :</strong> {{ project.getStatusLabel() }}</span>
+                    <span><strong>Type :</strong> {{ project.legacyType ?: 'Non precise' }}</span>
+                    <span><strong>Budget :</strong> {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><strong>Avancement taches :</strong> {{ task_board.progress|number_format(2, '.', ' ') }}%</span>
+                    <span><strong>Date de creation :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
+                    <span><strong>Derniere mise a jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Non disponible' }}</span>
+                </div>
+                {% if can_delete_project %}
+                    <form method="post" action="{{ path('project_delete', {id: project.id}) }}" onsubmit="return confirm('Supprimer ce projet ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_project_' ~ project.id) }}">
+                        <button class="pm-btn pm-btn-danger" type="submit">Supprimer mon projet</button>
+                    </form>
+                {% endif %}
+            </article>
+
+            <article class="pm-card">
+                {% if latest_decision %}
+                    <div class="pm-current-decision">
+                        <span class="pm-badge">Decision actuelle</span>
+                        <strong>{{ latest_decision.getDecisionTitleLabel() }}</strong>
+                        <span>{{ latest_decision.decisionDate|date('d/m/Y') }}</span>
+                        <p>{{ latest_decision.description ?: 'Aucune justification.' }}</p>
+                        {% if tts_messages.refusal_reason is defined %}
+                            <button class="pm-btn pm-btn-secondary" type="button" data-project-tts-button data-project-tts-text="{{ tts_messages.refusal_reason }}">
+                                <i class="fas fa-headphones"></i>
+                                <span data-project-tts-label>Pourquoi refuse ?</span>
+                            </button>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="pm-empty-text">Aucune validation associee a ce projet.</p>
+                {% endif %}
+
+                <details class="pm-history-toggle">
+                    <summary class="pm-history-summary">
+                        <span>Afficher l historique des validations</span>
+                        <span class="pm-history-count">{{ project.decisions|length }}</span>
+                    </summary>
+
+                    <div class="pm-decision-list">
+                        {% for decision in project.decisions %}
+                            <div class="pm-decision-item">
+                                <div class="pm-section-head">
+                                    <div>
+                                        <strong>Statut : {{ decision.getDecisionTitleLabel() }}</strong>
+                                        <span>{{ decision.decisionDate|date('d/m/Y') }}</span>
+                                    </div>
+                                </div>
+                                <p>{{ decision.description ?: 'Aucune justification.' }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </details>
+            </article>
+        </div>
+
+        {% include 'shared/project_task_board.html.twig' with {
+            project: project,
+            task_board: task_board,
+            task_form: task_form,
+            editing_task: editing_task,
+            can_manage_tasks: can_manage_tasks,
+            can_move_tasks: can_move_tasks,
+            task_readonly_hint: task_readonly_hint,
+            management_route: 'project_manage'
+        } %}
+    </section>
+{% endblock %}

@@ -1,0 +1,723 @@
+/* ============================================
+   FORM CONTAINER & LAYOUT (Dark Theme)
+   ============================================ */
+
+.form-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 5% 60px;
+}
+
+.form-header {
+    margin-bottom: 30px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-terracotta, #b99169);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    transition: 0.2s;
+}
+
+.back-link:hover {
+    transform: translateX(-4px);
+    color: var(--primary-dark, #946c4a);
+}
+
+.form-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--deep-umber, #f3eee6);
+    margin-bottom: 10px;
+}
+
+.form-header h1 .material-symbols-outlined {
+    color: var(--primary-terracotta);
+    font-size: 2rem;
+}
+
+.form-header p {
+    color: var(--back-text-soft, #b9b0a2);
+}
+
+.form-card {
+    background: var(--card-white, #20282c);
+    border-radius: 28px;
+    border: 1px solid var(--back-border, rgba(232, 221, 208, 0.12));
+    overflow: hidden;
+    box-shadow: var(--shadow-md, 0 12px 28px rgba(0, 0, 0, 0.4));
+}
+
+.strategy-form {
+    padding: 32px;
+}
+
+.form-errors-global {
+    margin: 0 32px 24px;
+    padding: 14px 18px;
+    border: 1.5px solid #d68b6e;
+    border-radius: 18px;
+    background: rgba(214, 139, 110, 0.12);
+    color: #e6a192;
+}
+
+.form-errors-global ul,
+.field-errors ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.form-errors-global li,
+.field-errors li {
+    line-height: 1.5;
+}
+
+.form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--back-border);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.form-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--deep-umber);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-section h3::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: var(--primary-terracotta);
+    border-radius: 4px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 700px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .strategy-form {
+        padding: 20px;
+    }
+
+    .form-errors-global {
+        margin: 0 20px 20px;
+    }
+}
+
+/* ============================================
+   IMPROVED FORM GROUP & INPUT STYLES (Dark)
+   ============================================ */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.form-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--back-text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.form-group label .required {
+    color: #d68b6e;
+    margin-left: 4px;
+}
+
+/* Input wrapper for icon positioning */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    color: var(--back-text-soft);
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.input-wrapper .form-input,
+.input-wrapper .form-select {
+    padding-left: 48px;
+}
+
+/* Base input styles */
+.form-input, 
+.form-select, 
+.form-textarea {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1.5px solid var(--back-border-strong, rgba(232, 221, 208, 0.22));
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.25s ease;
+    background: var(--back-surface, #14191b);
+    color: var(--deep-umber);
+    line-height: 1.5;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Select specific styles */
+.form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23b9b0a2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    cursor: pointer;
+}
+
+/* Hover state */
+.form-input:hover, 
+.form-select:hover, 
+.form-textarea:hover {
+    border-color: var(--primary-terracotta);
+    background-color: var(--back-surface-soft, #1b2124);
+}
+
+/* Focus state */
+.form-input:focus, 
+.form-select:focus, 
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-terracotta);
+    box-shadow: 0 0 0 4px rgba(185, 145, 105, 0.2);
+    background-color: var(--back-surface-elevated, #20282c);
+}
+
+/* Filled state */
+.form-input:not(:placeholder-shown),
+.form-select:not([value=""]),
+.form-textarea:not(:placeholder-shown) {
+    border-color: var(--primary-terracotta);
+    background-color: var(--back-surface-soft);
+}
+
+/* Disabled state */
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+    background-color: rgba(232, 221, 208, 0.08);
+    border-color: var(--back-border);
+    color: var(--back-text-soft);
+    cursor: not-allowed;
+}
+
+/* Placeholder styling */
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: #9e9587;
+    font-weight: 400;
+    font-size: 0.85rem;
+}
+
+/* Error styles */
+.form-group-error .form-input,
+.form-group-error .form-select,
+.form-group-error .form-textarea {
+    border-color: #d68b6e;
+    background-color: rgba(214, 139, 110, 0.08);
+}
+
+.form-group-error .form-input:focus,
+.form-group-error .form-select:focus,
+.form-group-error .form-textarea:focus {
+    box-shadow: 0 0 0 4px rgba(214, 139, 110, 0.2);
+}
+
+.form-error {
+    color: #e6a192;
+    font-size: 0.7rem;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-error::before {
+    content: 'âš ï¸';
+    font-size: 0.65rem;
+}
+
+.field-errors {
+    color: #e6a192;
+    font-size: 0.75rem;
+    margin-top: 6px;
+}
+
+/* Helper text */
+.form-helper {
+    font-size: 0.7rem;
+    color: var(--back-text-soft);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-helper i,
+.form-helper .material-symbols-outlined {
+    font-size: 0.85rem;
+}
+
+.status-auto-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1.5px solid var(--back-border-strong);
+    border-radius: 18px;
+    background: rgba(232, 221, 208, 0.04);
+}
+
+.status-auto-card .material-symbols-outlined {
+    color: var(--primary-terracotta);
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+
+.status-auto-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--deep-umber);
+}
+
+.status-auto-content strong {
+    font-size: 0.9rem;
+}
+
+.status-auto-content p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--back-text-soft);
+}
+
+/* ============================================
+   TYPE BUTTONS (Radio styled as buttons) - Dark
+   ============================================ */
+
+.type-buttons-container {
+    margin-top: 5px;
+}
+
+.type-buttons-container .type-radio-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.type-buttons-container input[type="radio"] {
+    display: none;
+}
+
+.type-buttons-container input[type="radio"] + label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--back-surface);
+    border: 1.5px solid var(--back-border-strong);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--deep-umber);
+    margin: 0;
+}
+
+.type-buttons-container input[type="radio"] + label:hover {
+    border-color: var(--primary-terracotta);
+    background: rgba(185, 145, 105, 0.1);
+    transform: translateY(-1px);
+}
+
+.type-buttons-container input[type="radio"]:checked + label {
+    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
+    border-color: var(--primary-terracotta);
+    color: white;
+    box-shadow: 0 4px 12px rgba(185, 145, 105, 0.4);
+}
+
+.type-buttons-container input[type="radio"]:checked + label .material-symbols-outlined {
+    color: white;
+}
+
+/* ============================================
+   STATUS RADIO BUTTONS (Dark theme badges)
+   ============================================ */
+
+.risk-buttons-container {
+    margin-top: 5px;
+}
+
+.risk-buttons-container .risk-radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.risk-buttons-container input[type="radio"] {
+    display: none;
+}
+
+.risk-buttons-container input[type="radio"] + label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--back-surface);
+    border: 1.5px solid var(--back-border-strong);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.risk-buttons-container input[type="radio"] + label:hover {
+    transform: translateY(-1px);
+    border-color: var(--primary-terracotta);
+}
+
+.risk-buttons-container input[value="pending"]:checked + label {
+    background: rgba(212, 160, 23, 0.25);
+    color: #e6c87a;
+    border-color: #e6c87a;
+    box-shadow: 0 2px 8px rgba(212, 160, 23, 0.3);
+}
+
+.risk-buttons-container input[value="approved"]:checked + label {
+    background: rgba(126, 139, 99, 0.25);
+    color: #bcd0a0;
+    border-color: #bcd0a0;
+    box-shadow: 0 2px 8px rgba(126, 139, 99, 0.3);
+}
+
+.risk-buttons-container input[value="rejected"]:checked + label {
+    background: rgba(214, 139, 110, 0.25);
+    color: #e6a192;
+    border-color: #e6a192;
+    box-shadow: 0 2px 8px rgba(214, 139, 110, 0.3);
+}
+
+/* ============================================
+   IMPACT SLIDER (Dark)
+   ============================================ */
+
+.impact-slider {
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, var(--back-border-strong), var(--back-text-soft));
+    border-radius: 10px;
+    accent-color: var(--primary-terracotta);
+    cursor: pointer;
+}
+
+.impact-slider:focus {
+    outline: none;
+}
+
+.slider-value {
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary-terracotta);
+    margin-top: 8px;
+    background: rgba(185, 145, 105, 0.2);
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 30px;
+}
+
+/* ============================================
+   SWOT GRID (Dark)
+   ============================================ */
+
+.swot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 700px) {
+    .swot-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.swot-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.swot-item label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 30px;
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.swot-item label::before {
+    content: 'âœ¨';
+    font-size: 0.7rem;
+}
+
+.swot-item.strengths label { background: rgba(126, 139, 99, 0.25); color: #bcd0a0; }
+.swot-item.weaknesses label { background: rgba(214, 139, 110, 0.25); color: #e6a192; }
+.swot-item.opportunities label { background: rgba(126, 139, 99, 0.25); color: #bcd0a0; }
+.swot-item.threats label { background: rgba(214, 139, 110, 0.25); color: #e6a192; }
+
+.swot-item .form-textarea {
+    min-height: 100px;
+}
+
+/* ============================================
+   FORM ACTIONS (Dark)
+   ============================================ */
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--back-border);
+}
+
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: transparent;
+    border: 1.5px solid var(--back-border-strong);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--deep-umber);
+}
+
+.btn-cancel:hover {
+    background: rgba(232, 221, 208, 0.1);
+    border-color: var(--primary-terracotta);
+    transform: translateY(-1px);
+}
+
+.btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 36px;
+    background: linear-gradient(135deg, var(--primary-terracotta), var(--primary-dark));
+    border: none;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    box-shadow: 0 4px 12px rgba(185, 145, 105, 0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(185, 145, 105, 0.45);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+.btn-submit .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
+/* ============================================
+   FORM HINT (Dark)
+   ============================================ */
+
+.form-hint {
+    font-size: 0.7rem;
+    color: var(--back-text-soft);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.form-hint::before {
+    content: 'ðŸ’¡';
+    font-size: 0.7rem;
+}
+
+/* ============================================
+   SUCCESS / ERROR STATES (Dark)
+   ============================================ */
+
+.form-group-success .form-input,
+.form-group-success .form-select {
+    border-color: #bcd0a0;
+    background-color: rgba(126, 139, 99, 0.08);
+}
+
+.success-message {
+    color: #bcd0a0;
+    font-size: 0.7rem;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.success-message::before {
+    content: 'âœ“';
+    font-weight: bold;
+}
+
+/* ============================================
+   READONLY FIELD STYLES (Dark)
+   ============================================ */
+
+.form-input[readonly],
+.form-select[readonly],
+.form-textarea[readonly] {
+    background-color: rgba(232, 221, 208, 0.06);
+    border-color: var(--back-border);
+    cursor: default;
+    color: var(--back-text-soft);
+}
+
+/* ============================================
+   ANIMATIONS (unchanged)
+   ============================================ */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+.form-group:nth-child(1) { animation-delay: 0.05s; }
+.form-group:nth-child(2) { animation-delay: 0.1s; }
+.form-group:nth-child(3) { animation-delay: 0.15s; }
+.form-group:nth-child(4) { animation-delay: 0.2s; }
+
+
+/* ============================================
+   FIX: SELECT DROPDOWN TEXT CLARITY (Dark theme)
+   ============================================ */
+
+/* Style the select itself (already done, but ensure high contrast) */
+.form-select {
+    background-color: var(--back-surface, #14191b);
+    color: var(--deep-umber, #f3eee6);
+    border-color: var(--back-border-strong, rgba(232, 221, 208, 0.22));
+}
+
+/* Force dropdown options to have light text on dark background */
+.form-select option,
+select option {
+    background-color: var(--back-surface-elevated, #20282c) !important;
+    color: var(--back-text, #f3eee6) !important;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+}
+
+/* Hover & selected states for options (works in most browsers) */
+.form-select option:hover,
+select option:hover,
+.form-select option:checked,
+select option:checked {
+    background-color: var(--primary-terracotta, #b99169) !important;
+    color: white !important;
+}
+
+/* For Firefox (which uses different select internals) */
+@-moz-document url-prefix() {
+    .form-select,
+    select {
+        background-color: var(--back-surface);
+        color: var(--deep-umber);
+    }
+    .form-select option,
+    select option {
+        background-color: var(--back-surface-elevated);
+        color: var(--back-text);
+    }
+}
+
+/* For Webkit browsers (Chrome, Edge, Safari) - improves the dropdown arrow and overall contrast */
+.form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23d9c2a4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    appearance: none;
+}
+
+/* Focus state for select */
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-terracotta);
+    box-shadow: 0 0 0 4px rgba(185, 145, 105, 0.2);
+    background-color: var(--back-surface-soft);
+}

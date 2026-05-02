@@ -1,0 +1,17 @@
+<div class="pm-card pm-card-actions" style="margin-top: 1.5rem;">
+    <a class="pm-btn {% if app.request.get('_route') == 'back_resource_dashboard' %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_resource_dashboard') }}">
+        Statistiques
+    </a>
+    <a class="pm-btn {% if app.request.get('_route') in ['back_resource_index', 'resource_back_manage', 'resource_edit', 'resource_new'] %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_resource_index') }}">
+        Ressources
+    </a>
+    <a class="pm-btn {% if app.request.get('_route') in ['back_resource_analysis', 'back_resource_analysis_run', 'back_resource_analysis_chat', 'back_resource_analysis_export_csv', 'back_resource_analysis_export_pdf'] %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_resource_analysis') }}">
+        Analyse IA
+    </a>
+    <a class="pm-btn {% if app.request.get('_route') in ['back_supplier_index', 'supplier_back_manage', 'supplier_edit', 'supplier_new'] %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_supplier_index') }}">
+        Fournisseurs
+    </a>
+    <a class="pm-btn {% if app.request.get('_route') in ['back_resource_reservations', 'back_resource_reservation_edit'] %}pm-btn-primary{% else %}pm-btn-secondary{% endif %}" href="{{ path('back_resource_reservations') }}">
+        Reservations
+    </a>
+</div>

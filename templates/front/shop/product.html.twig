@@ -1,0 +1,212 @@
+{% extends 'base.html.twig' %}
+{# Fiche produit C2C: details annonce, ajout panier/achat direct, avis clients. #}
+
+{% block title %}Advisora | {{ product.resource_name ?: 'Boutique' }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ app.request.basePath ~ '/css/shop.css?v=20260424-01' }}">
+{% endblock %}
+
+{% block body %}
+    <div class="mini-shop-shell is-market-view mini-shop-product-page">
+        {% set review_count = review_summary.review_count|default(0) %}
+        {% set rating_avg = review_summary.rating_avg|default(0) %}
+        {% set rating_floor = rating_avg|round(0, 'floor') %}
+        <section class="mini-shop-marketplace-layout">
+            <article class="mini-shop-panel">
+                <div class="mini-shop-product-detail-grid">
+                    <div class="mini-shop-product-gallery">
+                        {% set main_image = product.images|first %}
+                        {% set main_image_display = shop_image_url(main_image, 'detail') %}
+                        <div class="mini-shop-product-main-image {% if main_image_display is empty %}is-placeholder{% endif %}">
+                            {% if main_image_display is not empty %}
+                                <img src="{{ main_image_display }}" alt="{{ product.resource_name }}">
+                            {% else %}
+                                <div class="mini-shop-market-media-fallback"><span>{{ (product.resource_name ?: 'R')|slice(0, 1)|upper }}</span></div>
+                            {% endif %}
+                        </div>
+                        <div class="mini-shop-product-thumbs">
+                            {% for image in product.images %}
+                                {% set thumb_image = shop_image_url(image, 'thumb') %}
+                                <div class="mini-shop-product-thumb {% if thumb_image is empty %}is-placeholder{% endif %}">
+                                    {% if thumb_image is not empty %}
+                                        <img src="{{ thumb_image }}" alt="{{ product.resource_name ~ ' image ' ~ loop.index }}">
+                                    {% else %}
+                                        <div class="mini-shop-market-media-fallback"><span>{{ (product.resource_name ?: 'R')|slice(0, 1)|upper }}</span></div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mini-shop-product-info">
+                        <div class="mini-shop-panel-chip">
+                            <span>Prix</span>
+                            <strong>{{ product.unitPrice|number_format(3, '.', ' ') }} coins</strong>
+                        </div>
+
+                        <div class="mini-shop-review-summary-box">
+                            <div class="mini-shop-open-stars mini-shop-open-stars-strong">
+                                {% for star in 1..5 %}
+                                    <i class="fas fa-star {{ star <= rating_floor ? 'is-on' : '' }}"></i>
+                                {% endfor %}
+                            </div>
+                            <p>
+                                <strong>{{ rating_avg|number_format(2, '.', ' ') }}/5</strong>
+                                <span>({{ review_count }} avis client{{ review_count > 1 ? 's' : '' }})</span>
+                            </p>
+                        </div>
+
+                        <div class="mini-shop-cart-item-facts">
+                            <div>
+                                <span>Disponible</span>
+                                <strong>{{ product.qtyRemaining }}</strong>
+                            </div>
+                            <div>
+                                <span>Reference</span>
+                                <strong>#{{ product.idRs }}</strong>
+                            </div>
+                            <div>
+                                <span>Fournisseur</span>
+                                <strong>{{ product.supplier_name ?: 'Non renseigne' }}</strong>
+                            </div>
+                            <div>
+                                <span>Vendeur</span>
+                                <strong>{{ product.seller_name ?: 'Client' }}</strong>
+                            </div>
+                            <div>
+                                <span>Projet source</span>
+                                <strong>{{ product.source_project_title ?: '-' }}</strong>
+                            </div>
+                            <div>
+                                <span>Statut</span>
+                                <strong>{{ product.status }}</strong>
+                            </div>
+                        </div>
+
+                        {% if product.note %}
+                            <p class="mini-shop-market-note">{{ product.note }}</p>
+                        {% endif %}
+
+                        <form method="post" action="{{ path('app_shop_market_cart_add') }}" class="mini-shop-form mini-shop-grid" id="shop-product-actions-form" novalidate>
+                            <input type="hidden" name="_token" value="{{ csrf_token('shop_market_cart_add') }}">
+                            <input type="hidden" name="listing_id" value="{{ product.idListing }}">
+                            <div class="mini-shop-field-group">
+                                <label for="product_quantity">Quantite</label>
+                                <input id="product_quantity" type="number" name="quantity" value="{{ checkout_cart_quantity|default(1) }}">
+                            </div>
+                            <div class="mini-shop-form-actions mini-shop-product-cta-row">
+                                <button type="submit" class="shop-btn shop-btn-secondary">
+                                    <i class="fas fa-cart-plus"></i>
+                                    Ajouter au panier
+                                </button>
+                                <button type="submit" formaction="{{ path('app_shop_market_checkout', {'listingId': product.idListing}) }}" formmethod="get" class="shop-btn shop-btn-primary">Acheter maintenant</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="mini-shop-showcase" id="shop-reviews">
+            <div class="mini-shop-showcase-head">
+                <div>
+                    <span class="mini-panel-tag">Avis clients</span>
+                    <h2>Avis clients sur cette annonce</h2>
+                    <p>Chaque client connecte peut partager une note et un commentaire.</p>
+                </div>
+                <div class="mini-shop-panel-chip">
+                    <span>Note moyenne</span>
+                    <strong>{{ rating_avg|number_format(2, '.', ' ') }}/5</strong>
+                </div>
+            </div>
+
+            <article class="mini-shop-panel mini-shop-review-cta-panel">
+                {% if client_review %}
+                    <div class="mini-shop-panel-chip mini-shop-review-chip">
+                        <span>Votre avis</span>
+                        <strong>{{ client_review.stars }}/5 deja publie</strong>
+                    </div>
+                    {% if client_review.comment %}
+                        <p class="mini-shop-market-note">{{ client_review.comment }}</p>
+                    {% endif %}
+                {% else %}
+                    <form method="post" action="{{ path('app_shop_review_submit') }}" class="mini-shop-form mini-shop-grid mini-shop-review-inline-form" novalidate>
+                        <input type="hidden" name="_token" value="{{ csrf_token('shop_review_submit') }}">
+                        <input type="hidden" name="_redirect_page" value="product">
+                        <input type="hidden" name="listing_id" value="{{ product.idListing }}">
+                        {% if reviewable_order %}
+                            <input type="hidden" name="order_id" value="{{ reviewable_order.idOrder }}">
+                        {% endif %}
+
+                        <div class="mini-shop-panel-chip mini-shop-review-chip">
+                            <span>{{ reviewable_order ? 'Commande livree' : 'Avis client' }}</span>
+                            <strong>{{ reviewable_order ? ('Commande #' ~ reviewable_order.idOrder ~ ' liee a votre avis') : 'Ajoutez une note et un commentaire' }}</strong>
+                        </div>
+
+                        <div class="mini-shop-grid mini-shop-grid-two">
+                            <div class="mini-shop-field-group">
+                                <label for="product_review_stars">Note</label>
+                                <select id="product_review_stars" name="stars">
+                                    <option value="5">5 - Excellent</option>
+                                    <option value="4">4 - Tres bien</option>
+                                    <option value="3">3 - Correct</option>
+                                    <option value="2">2 - Faible</option>
+                                    <option value="1">1 - Mauvais</option>
+                                </select>
+                            </div>
+                            <div class="mini-shop-field-group">
+                                <label for="product_review_comment">Commentaire</label>
+                                <input
+                                    id="product_review_comment"
+                                    type="text"
+                                    name="comment"
+                                    placeholder="Votre avis sur cette annonce"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="mini-shop-form-actions">
+                            <button type="submit" class="shop-btn shop-btn-primary">
+                                <i class="fas fa-star"></i>
+                                Envoyer mon avis
+                            </button>
+                        </div>
+                    </form>
+                {% endif %}
+            </article>
+
+            <div class="mini-shop-review-list">
+                {% for review in reviews_page %}
+                    <article class="mini-shop-review-card">
+                        <div class="mini-shop-review-card-head">
+                            <div class="mini-shop-open-stars mini-shop-open-stars-strong">
+                                {% for star in 1..5 %}
+                                    <i class="fas fa-star {{ star <= review.stars ? 'is-on' : '' }}"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="mini-shop-review-date">{{ review.createdAt|date('Y-m-d H:i') }}</span>
+                        </div>
+                        <p class="mini-shop-review-author">{{ review.reviewer_name ?: 'Client' }}</p>
+                        {% if review.comment %}
+                            <p class="mini-shop-market-note">{{ review.comment }}</p>
+                        {% endif %}
+                    </article>
+                {% else %}
+                    <div class="mini-shop-empty-state mini-shop-empty-state-inline">
+                        <i class="fas fa-star"></i>
+                        <h3>Aucun avis pour le moment</h3>
+                        <p>Les premiers retours clients apparaitront ici.</p>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if reviews_page is defined %}
+                <div class="mini-shop-pagination-wrap">
+                    {{ knp_pagination_render(reviews_page) }}
+                </div>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

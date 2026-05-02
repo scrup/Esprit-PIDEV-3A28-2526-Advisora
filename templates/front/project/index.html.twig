@@ -1,0 +1,514 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Advisora | Projets{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-dashboard.css') }}">
+{% endblock %}
+
+{% block body %}
+    <section class="pm-hero">
+        <div>
+            <span class="pm-badge">Project Management</span>
+            <h1>Suivez les projets strategiques d'Advisora</h1>
+            <p>
+                {% if app.user and not can_see_all_projects %}
+                    Consultez uniquement vos projets et les decisions prises sur vos initiatives.
+                {% else %}
+                    Consultez l'etat des projets et les decisions prises pour chaque initiative.
+                {% endif %}
+            </p>
+        </div>
+        <div class="pm-actions">
+            {% if app.user and can_manage_projects %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('project_new') }}">Ajouter un projet</a>
+            {% elseif not app.user %}
+                <a class="pm-btn pm-btn-primary" href="{{ path('app_login') }}">Se connecter pour gerer</a>
+            {% endif %}
+            <a class="pm-btn pm-btn-secondary" href="{{ path('project_top10') }}">
+                <i class="fas fa-ranking-star"></i>
+                <span>Top 10 mondiaux</span>
+            </a>
+            <a class="pm-btn pm-btn-secondary" href="{{ path('project_estimation') }}">
+                <i class="fas fa-chart-pie"></i>
+                <span>Estimation Tunisie</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="pm-grid">
+        <article class="pm-card">
+            <div class="pm-card-head">
+                <span class="pm-badge">Outil Advisora</span>
+                <span class="pm-meta"><i class="fas fa-chart-pie"></i> Analyse guidee</span>
+            </div>
+            <h2>Interface d estimation de projet</h2>
+            <p>
+                Lancez une analyse structuree du projet avec vos donnees de marche, vos ressources, votre budget
+                et vos contraintes locales pour obtenir une lecture de viabilite directement dans Advisora.
+            </p>
+            <div class="pm-meta-list">
+                <span><i class="fas fa-list-check"></i> Wizard en 5 etapes</span>
+                <span><i class="fas fa-location-dot"></i> Contexte tunisien</span>
+                <span><i class="fas fa-shield-halved"></i> Secours automatique si un provider tombe</span>
+            </div>
+            <div class="pm-card-actions">
+                <a class="pm-btn pm-btn-primary" href="{{ path('project_estimation') }}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Ouvrir l estimation</span>
+                </a>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_top10') }}">
+                    <i class="fas fa-ranking-star"></i>
+                    <span>Explorer Top 10</span>
+                </a>
+            </div>
+        </article>
+    </section>
+
+    {% if app.user %}
+        {% include 'shared/project_dashboard_block.html.twig' with {
+            dashboard: project_dashboard,
+            export_url: path('project_export_pdf', app.request.query.all),
+            title: can_see_all_projects ? 'Vue globale des projets' : 'Mon tableau de bord projets',
+            description: can_see_all_projects
+                ? 'Retrouvez la synthese globale du portefeuille visible depuis le front office.'
+                : 'Suivez vos statuts, vos types de projet et vos tendances recentes depuis un seul bloc.'
+        } only %}
+    {% endif %}
+
+    <section class="pm-hero">
+        <form method="get" action="{{ path('project_index') }}" class="pm-form-card">
+            <div class="pm-filter-grid">
+                <div class="pm-field">
+                    <label for="filter_q">Recherche</label>
+                    <input id="filter_q" type="search" name="q" placeholder="Titre, description, type, statut ou ID..." value="{{ filters.q|default('') }}">
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_status">Statut</label>
+                    <select id="filter_status" name="status">
+                        <option value="">Tous</option>
+                        {% for status_value, status_label in status_choices %}
+                            <option value="{{ status_value }}" {% if filters.status is defined and filters.status == status_value %}selected{% endif %}>{{ status_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_type">Type</label>
+                    <select id="filter_type" name="type">
+                        <option value="">Tous</option>
+                        {% for project_type in type_choices %}
+                            <option value="{{ project_type }}" {% if filters.type is defined and filters.type == project_type %}selected{% endif %}>{{ project_type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_min_price">Budget min</label>
+                    <input id="filter_min_price" type="number" step="0.01" name="min_price" placeholder="Min" value="{{ filters.min_price|default('') }}">
+                </div>
+
+                <div class="pm-field">
+                    <label for="filter_max_price">Budget max</label>
+                    <input id="filter_max_price" type="number" step="0.01" name="max_price" placeholder="Max" value="{{ filters.max_price|default('') }}">
+                </div>
+            </div>
+
+            <div class="pm-filter-actions">
+                <button class="pm-btn pm-btn-primary" type="submit">Filtrer</button>
+                <a class="pm-btn pm-btn-secondary" href="{{ path('project_index') }}">Reinitialiser</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="pm-grid">
+        {% for project in projects %}
+            <article class="pm-card">
+                {% set estimate = project_acceptance_estimates[project.id]|default(null) %}
+                <div class="pm-card-head">
+                    <span class="pm-status pm-status-{{ project.status|lower }}">{{ project.getStatusLabel() }}</span>
+                    <span class="pm-meta">Projet #{{ project.id }}</span>
+                </div>
+                <h2>{{ project.title }}</h2>
+                <p>{{ project.description ?: 'Aucune description pour ce projet.' }}</p>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-layer-group"></i> Type : {{ project.legacyType ?: 'Non precise' }}</span>
+                    <span><i class="fas fa-wallet"></i> Budget : {{ project.legacyBudget is not null ? project.legacyBudget|number_format(2, '.', ' ') ~ ' TND' : 'Non precise' }}</span>
+                    <span><i class="fas fa-calendar-plus"></i> Creation : {{ project.startDate ? project.startDate|date('d/m/Y') : 'Non precisee' }}</span>
+                </div>
+                <div class="pm-meta-list">
+                    <span><i class="fas fa-sitemap"></i> {{ project.decisions|length }} decision(s)</span>
+                </div>
+
+                {% if project.status == constant('App\\Entity\\Project::STATUS_PENDING') and estimate %}
+                    {% include 'shared/project_acceptance_estimate.html.twig' with { estimate: estimate } only %}
+                {% endif %}
+                <div class="pm-card-actions">
+                    {% if app.user and app.user.roleUser in ['admin', 'gerant'] %}
+                        <a class="pm-btn pm-btn-primary" href="{{ path('strategie_recommandation', {id: project.id}) }}">
+                            Recommander une strategie
+                        </a>
+                    {% endif %}
+                </div>
+
+                {% if project.strategies|length > 0 %}
+                    {% set strategy_page_size = 5 %}
+                    {% set strategy_total_pages = (project.strategies|length / strategy_page_size)|round(0, 'ceil') %}
+                    <div class="pm-project-strategies pm-project-strategies-inline" data-strategy-pagination-block data-page-size="{{ strategy_page_size }}">
+                        <div class="pm-section-head">
+                            <div>
+                                <span class="pm-badge">Strategies proposees</span>
+                                <p class="pm-section-text">Consultez les strategies rattachees a ce projet et, pour le client proprietaire, choisissez de les accepter ou de les refuser.</p>
+                            </div>
+                            <span class="pm-history-count">{{ project.strategies|length }}</span>
+                        </div>
+                        
+
+                        <div class="pm-strategy-list pm-strategy-list-inline" data-strategy-pagination-list>
+                            {% for strategy in project.strategies %}
+                                <section class="pm-strategy-card pm-strategy-card-inline" data-strategy-pagination-item>
+                                {# Inside the loop for project.strategies, after strategy status check #}
+{% if strategy.statusStrategie == strategy_statuses.approved %}
+    <div class="pm-strategy-pdf-action" data-strategy-id="{{ strategy.idStrategie }}">
+        <button class="pm-btn pm-btn-primary pdf-generate-btn" type="button" data-strategy-id="{{ strategy.idStrategie }}" data-generate-url="{{ path('strategy_generate_pdf', {id: strategy.idStrategie}) }}">
+            <i class="fas fa-file-pdf"></i> TÃ©lÃ©charger le playbook
+        </button>
+        <div class="pdf-progress-container" style="display: none;">
+            <div class="progress-circle"></div>
+            <span class="progress-text">GÃ©nÃ©ration en cours...</span>
+        </div>
+        <div class="pdf-download-link" style="display: none;">
+            <a href="#" class="pm-btn pm-btn-secondary" target="_blank">
+                <i class="fas fa-download"></i> TÃ©lÃ©charger
+            </a>
+        </div>
+    </div>
+{% endif %}
+                                    {% set strategy_decision_taken = strategy.statusStrategie in [strategy_statuses.approved, strategy_statuses.rejected] %}
+                                    <div class="pm-strategy-main">
+                                        <div>
+                                            <div class="pm-strategy-topline">
+                                                <h3>{{ strategy.nomStrategie }}</h3>
+                                                <span class="pm-status pm-status-{{ strategy.statusCssClass }}">{{ strategy.statusLabel }}</span>
+                                            </div>
+                                            <p class="pm-strategy-description">
+                                                {% if strategy.statusStrategie == strategy_statuses.rejected and strategy.justification %}
+                                                    Motif du refus : {{ strategy.justification }}
+                                                {% elseif strategy.statusStrategie == strategy_statuses.rejected %}
+                                                    Cette strategie a ete refusee par le client.
+                                                {% elseif strategy.statusStrategie == strategy_statuses.approved %}
+                                                    Cette strategie a ete acceptee par le client.
+                                                {% elseif strategy.justification %}
+                                                    {{ strategy.justification }}
+                                                {% else %}
+                                                    En attente de la decision du client.
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        
+
+                                        {% if can_client_decide_strategies and app.user and project.user and project.user.idUser == app.user.idUser %}
+                                            {% if strategy_decision_taken %}
+                                                <div class="pm-strategy-decision-state">
+                                                    <strong>Decision confirmee.</strong>
+                                                    Votre choix a deja ete enregistre pour cette strategie.
+                                                </div>
+                                            {% else %}
+                                                <div class="pm-strategy-actions">
+                                                    <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" onsubmit="return confirm('Confirmer l acceptation de cette strategie ? Cette decision sera definitive.');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
+                                                        <input type="hidden" name="status" value="{{ strategy_statuses.approved }}">
+                                                        <button class="pm-btn pm-btn-primary" type="submit">Accepter</button>
+                                                    </form>
+
+                                                    <details class="pm-strategy-reject-panel">
+                                                        <summary class="pm-btn pm-btn-danger pm-strategy-reject-summary">Refuser</summary>
+                                                        <form method="post" action="{{ path('project_strategy_decision', {id: strategy.idStrategie}) }}" class="pm-strategy-reject-form" novalidate onsubmit="return confirm('Confirmer le refus de cette strategie ? Cette decision sera definitive.');">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('status' ~ strategy.idStrategie) }}">
+                                                            <input type="hidden" name="status" value="{{ strategy_statuses.rejected }}">
+                                                            <label for="strategy_reject_{{ strategy.idStrategie }}">Justification obligatoire</label>
+                                                            <textarea id="strategy_reject_{{ strategy.idStrategie }}" name="justification" rows="4" placeholder="Expliquez pourquoi cette strategie doit etre refusee."></textarea>
+                                                            <p class="pm-field-help">Le refus doit etre motive entre 10 et 255 caracteres.</p>
+                                                            <div class="pm-strategy-reject-actions">
+                                                                <button class="pm-btn pm-btn-danger" type="submit">Confirmer le refus</button>
+                                                            </div>
+                                                        </form>
+                                                    </details>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    
+
+                                    <div class="pm-strategy-meta">
+                                        <span><strong>{{ 'project.strategy.type'|trans }} :</strong> {{ strategy.type ?: ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.duration'|trans }} :</strong> {{ strategy.DureeTerme }} {{ 'project.strategy.months'|trans }}</span>
+                                        <span><strong>{{ 'project.strategy.budget'|trans }} :</strong> {{ strategy.budgetTotal is not null ? strategy.budgetTotal|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.estimated_gain'|trans }} :</strong> {{ strategy.gainEstime is not null ? strategy.gainEstime|number_format(2, '.', ' ') ~ ' TND' : ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>ROI :</strong> {{ strategy.estimatedRoiPercent is not null ? strategy.estimatedRoiPercent|number_format(2, '.', ' ') ~ '%' : ('project.card.not_specified'|trans) }}</span>
+                                        <span><strong>{{ 'project.strategy.objectives'|trans }} :</strong> {{ strategy.objectives|length }}</span>
+                                        {% set strategy_countdown_start = strategy.statusStrategie == strategy_statuses.approved ? strategy.lockedAt : null %}
+                                        {% if strategy_countdown_start and strategy.DureeTerme is not null and strategy.DureeTerme > 0 %}
+                                            {% set strategy_deadline = (strategy_countdown_start|date('c'))|date_modify('+' ~ strategy.DureeTerme ~ ' months') %}
+                                            <span
+                                                class="pm-countdown"
+                                                data-strategy-countdown
+                                                data-start-at="{{ strategy_countdown_start|date('c') }}"
+                                                data-end-at="{{ strategy_deadline|date('c') }}"
+                                            >
+                                                <strong>Fin de periode dans :</strong>
+                                                <span class="pm-countdown-value" data-countdown-value>--:--:--</span>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </section>
+                            {% endfor %}
+                        </div>
+                        {% if strategy_total_pages > 1 %}
+                            <nav class="pm-strategy-pagination" data-strategy-pagination>
+                                <button class="pm-btn pm-btn-secondary pm-pagination-btn" type="button" data-pagination-action="prev" aria-label="Page precedente">
+                                    <i class="fas fa-chevron-left"></i>
+                                    <span>Precedent</span>
+                                </button>
+                                <span class="pm-strategy-page-indicator" data-pagination-indicator>Page 1 / {{ strategy_total_pages }}</span>
+                                <button class="pm-btn pm-btn-secondary pm-pagination-btn" type="button" data-pagination-action="next" aria-label="Page suivante">
+                                    <span>Suivant</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </nav>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div class="pm-card-actions">
+                    <a class="pm-btn pm-btn-primary" href="{{ path('project_show', {id: project.id}) }}">Voir le detail</a>
+                    {% if app.user and project.user and project.user.idUser == app.user.idUser %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_manage', {id: project.id}) }}">Gerer</a>
+                    {% elseif app.user and can_see_all_projects %}
+                        <a class="pm-btn pm-btn-secondary" href="{{ path('project_back_manage', {id: project.id}) }}">Traiter</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="pm-empty">
+                <h2>Aucun projet pour le moment</h2>
+                <p>Commencez par creer un premier projet strategique depuis l espace projets.</p>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ asset('js/project-dashboard.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const extractServerError = (html) => {
+                if (!html || typeof html !== 'string') {
+                    return '';
+                }
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const title = doc.querySelector('title')?.textContent?.trim();
+                const heading = doc.querySelector('h1')?.textContent?.trim();
+                const bodyText = doc.body?.textContent?.replace(/\s+/g, ' ').trim() || '';
+
+                return title || heading || bodyText.slice(0, 220);
+            };
+
+            const formatCountdownValue = (remainingSeconds) => {
+                const totalSeconds = Math.max(0, Math.floor(remainingSeconds));
+                const days = Math.floor(totalSeconds / 86400);
+                const hours = Math.floor((totalSeconds % 86400) / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                if (days > 0) {
+                    return `${days}j ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+                }
+
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            };
+
+            const initStrategyCountdowns = () => {
+                const countdownElements = Array.from(document.querySelectorAll('[data-strategy-countdown]'));
+                if (countdownElements.length === 0) {
+                    return;
+                }
+
+                const updateCountdown = (element) => {
+                    const displayElement = element.querySelector('[data-countdown-value], [data-countdown-display]');
+                    if (!displayElement) {
+                        return;
+                    }
+
+                    const endAtRaw = element.dataset.endAt || '';
+                    const endDate = new Date(endAtRaw);
+                    if (Number.isNaN(endDate.getTime())) {
+                        displayElement.textContent = '--:--:--';
+                        return;
+                    }
+
+                    const now = new Date();
+                    const remainingSeconds = (endDate.getTime() - now.getTime()) / 1000;
+
+                    if (remainingSeconds <= 0) {
+                        element.classList.add('is-expired');
+                        displayElement.textContent = 'Expiree';
+                        return;
+                    }
+
+                    element.classList.remove('is-expired');
+                    displayElement.textContent = formatCountdownValue(remainingSeconds);
+                };
+
+                const refresh = () => {
+                    countdownElements.forEach(updateCountdown);
+                };
+
+                refresh();
+                window.setInterval(refresh, 1000);
+            };
+
+            initStrategyCountdowns();
+
+            document.querySelectorAll('.pdf-generate-btn').forEach((button) => {
+                button.addEventListener('click', async (event) => {
+                    event.preventDefault();
+
+                    const container = button.closest('.pm-strategy-pdf-action');
+                    if (!container) {
+                        return;
+                    }
+
+                    const progressDiv = container.querySelector('.pdf-progress-container');
+                    const downloadDiv = container.querySelector('.pdf-download-link');
+                    const downloadLink = downloadDiv ? downloadDiv.querySelector('a') : null;
+                    const generateUrl = button.dataset.generateUrl;
+
+                    if (!progressDiv || !downloadDiv || !downloadLink || !generateUrl) {
+                        return;
+                    }
+
+                    button.style.display = 'none';
+                    progressDiv.style.display = 'flex';
+                    downloadDiv.style.display = 'none';
+
+                    const showDownload = (url, label = 'Ouvrir') => {
+                        progressDiv.style.display = 'none';
+                        downloadDiv.style.display = 'block';
+                        downloadLink.href = url;
+                        downloadLink.innerHTML = `<i class="fas fa-download"></i> ${label}`;
+                    };
+
+                    const resetState = () => {
+                        progressDiv.style.display = 'none';
+                        button.style.display = 'inline-flex';
+                    };
+
+                    try {
+                        const response = await fetch(generateUrl, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        const responseText = await response.text();
+                        let data = null;
+
+                        if (responseText.trim() !== '') {
+                            try {
+                                data = JSON.parse(responseText);
+                            } catch (parseError) {
+                                throw new Error(
+                                    extractServerError(responseText)
+                                    || `Le serveur a renvoye une reponse non JSON (${response.status}).`
+                                );
+                            }
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(data?.error || `Impossible de lancer la generation du PDF (${response.status}).`);
+                        }
+
+                        if (data?.status === 'failed') {
+                            throw new Error(data.error || 'La generation du PDF a echoue.');
+                        }
+
+                        if (data?.status === 'completed' && data.url) {
+                            const isHtmlFallback = data.format === 'html';
+                            showDownload(data.url, isHtmlFallback ? 'Ouvrir la version imprimable' : 'Telecharger le PDF');
+
+                            if (data.message) {
+                                alert(data.message);
+                            }
+
+                            return;
+                        }
+
+                        throw new Error('Reponse PDF inattendue.');
+                    } catch (error) {
+                        resetState();
+                        alert('Erreur: ' + error.message);
+                    }
+                });
+            });
+
+            document.querySelectorAll('[data-strategy-pagination-block]').forEach((block) => {
+                const list = block.querySelector('[data-strategy-pagination-list]');
+                const controls = block.querySelector('[data-strategy-pagination]');
+                const items = list ? Array.from(list.querySelectorAll('[data-strategy-pagination-item]')) : [];
+                const pageSize = Math.max(1, Number(block.dataset.pageSize || 5));
+                const totalPages = Math.ceil(items.length / pageSize);
+
+                if (!list || !controls || totalPages <= 1) {
+                    return;
+                }
+
+                const previousButton = controls.querySelector('[data-pagination-action="prev"]');
+                const nextButton = controls.querySelector('[data-pagination-action="next"]');
+                const indicator = controls.querySelector('[data-pagination-indicator]');
+
+                if (!previousButton || !nextButton || !indicator) {
+                    return;
+                }
+
+                let currentPage = 1;
+
+                const renderPage = () => {
+                    items.forEach((item, index) => {
+                        const itemPage = Math.floor(index / pageSize) + 1;
+                        item.hidden = itemPage !== currentPage;
+                    });
+
+                    indicator.textContent = `Page ${currentPage} / ${totalPages}`;
+                    previousButton.disabled = currentPage === 1;
+                    nextButton.disabled = currentPage === totalPages;
+                };
+
+                previousButton.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        renderPage();
+                    }
+                });
+
+                nextButton.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        currentPage += 1;
+                        renderPage();
+                    }
+                });
+
+                renderPage();
+            });
+        });
+    </script>
+{% endblock %}

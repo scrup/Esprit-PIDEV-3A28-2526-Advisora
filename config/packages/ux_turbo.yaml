@@ -1,0 +1,5 @@
+# Symfony 6.4 does not support the `check_header` CSRF option added in newer recipes.
+# Keep CSRF protection enabled in a format this project's FrameworkBundle understands.
+framework:
+    csrf_protection:
+        enabled: true
