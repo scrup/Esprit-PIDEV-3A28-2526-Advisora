@@ -47,8 +47,6 @@ class UserActivitySubscriber implements EventSubscriberInterface
         }
 
         $user->setLast_activity_at(\DateTime::createFromInterface($now));
-        $user->setUpdatedAt(new \DateTime());
         $this->entityManager->flush();
     }
 }
-

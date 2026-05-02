@@ -813,7 +813,7 @@ class GeminiPdfContentGenerator
                 $project !== null
                     ? sprintf(
                         'Le projet associe dispose d un avancement de %s%% pour accueillir la strategie.',
-                        $project->getAvancementProj() !== null ? number_format((float) $project->getAvancementProj(), 0, ',', ' ') : '0'
+                        number_format((float) $project->getAvancementProj(), 0, ',', ' ')
                     )
                     : 'Associer cette strategie a un projet clarifiera la gouvernance et le suivi.',
                      'Les objectifs relies peuvent servir de feuille de route immediate pour le lancement du playbook.',

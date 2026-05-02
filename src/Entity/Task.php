@@ -153,31 +153,30 @@ class Task
     
 
     #[ORM\PrePersist]
-    public function initializeDefaults(): void
-    {
-        if ($this->status === null || $this->status === '') {
-            $this->status = self::STATUS_TODO;
-        } else {
-            $this->status = self::normalizeStatus($this->status);
-        }
-
-        if ($this->weight === null) {
-            $this->weight = 1;
-        }
-
-        if ($this->duration_days === null || $this->duration_days < 1) {
-            $this->duration_days = 1;
-        }
-
-        if ($this->created_at === null) {
-            $this->created_at = new \DateTime();
-        }
-
-        if ($this->updated_at === null) {
-            $this->updated_at = new \DateTime();
-        }
+   public function initializeDefaults(): void
+{
+    if ($this->status === '') {
+        $this->status = self::STATUS_TODO;
+    } else {
+        $this->status = self::normalizeStatus($this->status);
     }
 
+    if ($this->weight < 1) {
+        $this->weight = 1;
+    }
+
+    if ($this->duration_days < 1) {
+        $this->duration_days = 1;
+    }
+
+    if (!isset($this->created_at)) {
+        $this->created_at = new \DateTime();
+    }
+
+    if (!isset($this->updated_at)) {
+        $this->updated_at = new \DateTime();
+    }
+}
     #[ORM\PreUpdate]
     public function refreshUpdatedAt(): void
     {

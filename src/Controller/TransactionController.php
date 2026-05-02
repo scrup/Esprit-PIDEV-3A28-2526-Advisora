@@ -71,7 +71,7 @@ final class TransactionController extends AbstractController
         $transaction = new Transaction();
         $transaction->setInvestment($investment);
         $transaction->setDateTransac(new \DateTime('today'));
-        $transaction->setMontantTransac((float) ($investment->getBud_minInv() ?? 0));
+        $transaction->setMontantTransac((float) $investment->getBud_minInv());
         $transaction->setType(Transaction::TYPE_INVESTMENT_PAYMENT);
         $transaction->setStatut(Transaction::STATUS_PENDING);
 
@@ -301,14 +301,10 @@ final class TransactionController extends AbstractController
             $transaction->setInvestment($investment);
         }
 
-        if ($transaction->getDateTransac() === null) {
-            $transaction->setDateTransac(new \DateTime('today'));
-        }
-
         $type = trim((string) $transaction->getType());
         $transaction->setType($type !== '' ? mb_strtoupper($type) : Transaction::TYPE_INVESTMENT_PAYMENT);
 
-        if ($transaction->getStatut() === null || $transaction->getStatut() === '') {
+        if (trim($transaction->getStatut()) === '') {
             $transaction->setStatut(Transaction::STATUS_PENDING);
         }
     }
@@ -325,16 +321,16 @@ final class TransactionController extends AbstractController
             return;
         }
 
-        $amount = (float) ($transaction->getMontantTransac() ?? 0);
-        $min = (float) ($investment->getBud_minInv() ?? 0);
-        $max = (float) ($investment->getBud_maxInv() ?? 0);
+        $amount = (float) $transaction->getMontantTransac();
+        $min = (float) $investment->getBud_minInv();
+        $max = (float) $investment->getBud_maxInv();
 
         if ($amount < $min || $amount > $max) {
             $form->get('MontantTransac')->addError(new FormError(sprintf(
                 'Le montant doit etre compris entre %s et %s %s.',
                 number_format($min, 2, '.', ' '),
                 number_format($max, 2, '.', ' '),
-                $investment->getCurrencyInv() ?? 'TND'
+                $investment->getCurrencyInv()
             )));
         }
     }

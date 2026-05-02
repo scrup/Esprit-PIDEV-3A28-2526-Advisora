@@ -148,13 +148,21 @@ class ResourceWalletTopup
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private \DateTimeInterface $createdAt;
+   #[ORM\Column(type: 'datetime', nullable: false)]
+private \DateTimeInterface $createdAt;
 
-    public function getCreatedAt(): \DateTimeInterface
-    {
-        return $this->createdAt;
+public function getCreatedAt(): \DateTimeInterface
+{
+    return $this->createdAt;
+}
+
+#[ORM\PrePersist]
+public function initializeCreatedAt(): void
+{
+    if (!isset($this->createdAt)) {
+        $this->createdAt = new \DateTime();
     }
+}
 
    
 

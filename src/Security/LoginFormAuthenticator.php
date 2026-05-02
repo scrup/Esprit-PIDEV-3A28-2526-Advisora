@@ -151,7 +151,6 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
         if (!$exception instanceof BadCredentialsException) {
             if ($lockExpiredReset) {
-                $user->setUpdatedAt(new \DateTime());
                 $this->entityManager->flush();
             }
 
@@ -160,9 +159,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
         $currentFailedCount = (int) $user->getFailed_login_count();
         $updatedAt = $user->getUpdatedAt();
-        $secondsSinceLastUpdate = $updatedAt instanceof \DateTimeInterface
-            ? ($now->getTimestamp() - $updatedAt->getTimestamp())
-            : self::FAILED_ATTEMPT_WINDOW_SECONDS + 1;
+        $secondsSinceLastUpdate = $now->getTimestamp() - $updatedAt->getTimestamp();
 
         if ($currentFailedCount > 0 && $secondsSinceLastUpdate > self::FAILED_ATTEMPT_WINDOW_SECONDS) {
             $currentFailedCount = 0;
@@ -175,7 +172,6 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             $lockedUntil = (new \DateTimeImmutable())->modify('+15 minutes');
             $user->setFailed_login_count(3);
             $user->setLock_until(\DateTime::createFromInterface($lockedUntil));
-            $user->setUpdatedAt(new \DateTime());
             $this->entityManager->flush();
 
             try {
@@ -191,7 +187,6 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         }
 
         $user->setFailed_login_count($attempt);
-        $user->setUpdatedAt(new \DateTime());
         $this->entityManager->flush();
 
         return parent::onAuthenticationFailure(
@@ -216,7 +211,6 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         $user->setLock_until(null);
         $this->upgradeStoredPasswordIfNeeded($user);
         $user->setLast_activity_at(new \DateTime());
-        $user->setUpdatedAt(new \DateTime());
         $this->entityManager->flush();
 
         if ($verifiedUserId > 0 && $verifiedUserId === $userId) {
@@ -244,7 +238,6 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         $otp->setEmail($email);
         $otp->setPurpose('login_otp');
         $otp->setCode_hash(password_hash($code, PASSWORD_DEFAULT));
-        $otp->setCreated_at(new \DateTime());
         $otp->setExpires_at((new \DateTime())->modify('+10 minutes'));
         $otp->setUsed_at(null);
 

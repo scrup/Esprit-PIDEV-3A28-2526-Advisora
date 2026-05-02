@@ -90,7 +90,6 @@ final class BookingController extends AbstractController
         $booking = new Booking();
         $booking->setUser($user);
         $booking->setEvent($event);
-        $booking->setBookingDate(new \DateTime());
         $booking->setNumTicketBk(1);
         $booking->setTotalPrixBk(0.0);
 
@@ -354,10 +353,6 @@ final class BookingController extends AbstractController
 
     private function normalizeBookingForPersistence(Booking $booking): void
     {
-        if ($booking->getBookingDate() === null) {
-            $booking->setBookingDate(new \DateTime());
-        }
-
         if ($booking->getTicketCount() < 1) {
             $booking->setNumTicketBk(1);
         }

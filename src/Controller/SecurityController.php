@@ -375,8 +375,6 @@ final class SecurityController extends AbstractController
                 $newUser->setFailed_login_count(0);
                 $newUser->setLock_until(null);
                 $newUser->setLast_activity_at(null);
-                $newUser->setCreatedAt($now);
-                $newUser->setUpdatedAt($now);
                 $newUser->setPassword_changed_at($now);
                 $newUser->setPasswordUser($passwordHasher->hashPassword($newUser, $password));
 
@@ -488,7 +486,6 @@ final class SecurityController extends AbstractController
                 $otp->setEmail($email);
                 $otp->setPurpose('forgot_password');
                 $otp->setCode_hash(password_hash($code, PASSWORD_DEFAULT));
-                $otp->setCreated_at(new \DateTime());
                 $otp->setExpires_at((new \DateTime())->modify('+15 minutes'));
                 $otp->setUsed_at(null);
 
@@ -622,7 +619,6 @@ final class SecurityController extends AbstractController
                         $errors[] = 'Aucun code valide trouvÃ©.';
                     } else {
                         $user->setPasswordUser($passwordHasher->hashPassword($user, $password));
-                        $user->setUpdatedAt(new \DateTime());
 
                         $otp->setUsed_at(new \DateTime());
 
@@ -779,7 +775,6 @@ final class SecurityController extends AbstractController
         $otp->setEmail($email);
         $otp->setPurpose('login_otp');
         $otp->setCode_hash(password_hash($code, PASSWORD_DEFAULT));
-        $otp->setCreated_at(new \DateTime());
         $otp->setExpires_at((new \DateTime())->modify('+10 minutes'));
         $otp->setUsed_at(null);
 

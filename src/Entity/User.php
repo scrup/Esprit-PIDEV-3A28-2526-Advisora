@@ -287,7 +287,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return (string) ($this->EmailUser ?? '');
+        return (string) ($this->EmailUser );
     }
 
     /**
@@ -452,6 +452,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->lock_until;
     }
 
+    public function setLock_until(?\DateTimeInterface $lock_until): self
+    {
+        $this->lock_until = $lock_until;
+
+        return $this;
+    }
+
     
 
     public function getLast_activity_at(): ?\DateTimeInterface
@@ -459,10 +466,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->last_activity_at;
     }
 
+    public function setLast_activity_at(?\DateTimeInterface $last_activity_at): self
+    {
+        $this->last_activity_at = $last_activity_at;
+
+        return $this;
+    }
+
    
     public function getPassword_changed_at(): ?\DateTimeInterface
     {
         return $this->password_changed_at;
+    }
+
+    public function setPassword_changed_at(?\DateTimeInterface $password_changed_at): self
+    {
+        $this->password_changed_at = $password_changed_at;
+
+        return $this;
     }
 
    

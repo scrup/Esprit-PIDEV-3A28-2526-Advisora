@@ -519,7 +519,7 @@ class ProjectRepository extends ServiceEntityRepository
         ];
 
         foreach ($projects as $project) {
-            $status = $project->getStatus() ?? Project::STATUS_PENDING;
+            $status = $project->getStatus();
 
             if (!array_key_exists($status, $counters)) {
                 continue;
@@ -569,9 +569,8 @@ class ProjectRepository extends ServiceEntityRepository
         }
 
         foreach ($projects as $project) {
-            if (!$project->getStartDate() instanceof \DateTimeInterface) {
-                continue;
-            }
+            
+            
 
             $key = $project->getStartDate()->format('Y-m');
 
@@ -599,13 +598,13 @@ class ProjectRepository extends ServiceEntityRepository
         ];
 
         foreach ($projects as $project) {
-            $status = $project->getStatus() ?? Project::STATUS_PENDING;
+            $status = $project->getStatus() ;
 
             if (!isset($totals[$status])) {
                 continue;
             }
 
-            $budget = (float) ($project->getLegacyBudget() ?? 0.0);
+            $budget = (float) ($project->getLegacyBudget());
 
             if ($budget <= 0) {
                 continue;

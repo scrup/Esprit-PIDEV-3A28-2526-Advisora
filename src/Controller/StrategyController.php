@@ -249,10 +249,6 @@ public function new(
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        if (!$strategy->getCreatedAtS()) {
-            $strategy->setCreatedAtS(new \DateTime());
-        }
-
         $this->applyAutomaticStatusRules($strategy);
         $this->syncLockedAtWithStatus($strategy);
         $correctedFields = $this->applyFrenchSpellCorrections($strategy, $frenchSpellCorrector);
@@ -1502,7 +1498,6 @@ private function saveRejectedJustification(Strategie $strategy, string $justific
         $strategie->setDureeTerme($payload['DureeTerme']);
         $strategie->setJustification($payload['justification'] ?? null);
         $strategie->setStatusStrategie($payload['statusStrategie']);
-        $strategie->setCreatedAtS(new \DateTime());
         $strategie->setProject($projet);
 
         if ($user instanceof User) {
@@ -1532,10 +1527,6 @@ private function saveRejectedJustification(Strategie $strategy, string $justific
         $strategie->setProject($projet);
         $strategie->setStatusStrategie(Strategie::STATUS_IN_PROGRESS);
         $strategie->setLockedAt(null);
-
-        if ($strategie->getCreatedAtS() === null) {
-            $strategie->setCreatedAtS(new \DateTime());
-        }
 
         if ($strategie->getUser() === null && $user instanceof User) {
             $strategie->setUser($user);
@@ -1622,7 +1613,7 @@ private function saveRejectedJustification(Strategie $strategy, string $justific
     {
         $correctedFields = [];
 
-        $currentName = (string) ($strategy->getNomStrategie() ?? '');
+        $currentName = (string) $strategy->getNomStrategie();
         $correctedName = $frenchSpellCorrector->correct($currentName, 'fr');
         if ($correctedName !== $currentName) {
             $strategy->setNomStrategie($correctedName);

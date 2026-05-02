@@ -972,7 +972,7 @@ final class ResourceController extends AbstractController
 
     private function normalizeResourceForPersistence(Resource $resource): void
     {
-        if ($resource->getName() === null || trim($resource->getName()) === '') {
+        if (trim($resource->getName()) === '') {
             $resource->setName('Ressource sans nom');
         } else {
             $resource->setName(trim((string) $resource->getName()));
@@ -982,7 +982,7 @@ final class ResourceController extends AbstractController
             $resource->setImageUrlRs(null);
         }
 
-        if ($resource->getQuantity() !== null && $resource->getQuantity() <= 0) {
+        if ($resource->getQuantity() <= 0) {
             $resource->setStatus(Resource::STATUS_UNAVAILABLE);
 
             return;
@@ -1203,7 +1203,7 @@ final class ResourceController extends AbstractController
     {
         $availableResources = count(array_filter(
             $resources,
-            static fn (Resource $resource): bool => ($resource->getQuantity() ?? 0) > 0 && $resource->getStatus() !== Resource::STATUS_UNAVAILABLE
+            static fn (Resource $resource): bool => $resource->getQuantity() > 0 && $resource->getStatus() !== Resource::STATUS_UNAVAILABLE
         ));
 
         $activeSuppliers = count(array_filter(
@@ -1212,7 +1212,7 @@ final class ResourceController extends AbstractController
         ));
 
         $stockTotal = array_sum(array_map(
-            static fn (Resource $resource): int => (int) ($resource->getQuantity() ?? 0),
+            static fn (Resource $resource): int => (int) $resource->getQuantity(),
             $resources
         ));
 

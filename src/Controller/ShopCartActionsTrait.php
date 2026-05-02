@@ -21,7 +21,7 @@ trait ShopCartActionsTrait
         if (!$this->isCsrfTokenValid('shop_reserve', $csrfToken)) {
             $this->addFlash('error', 'Le jeton de reservation est invalide.');
 
-            return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+            return $this->redirectToShop($request, 'shop-cart-drawer');
         }
 
         try {
@@ -49,7 +49,7 @@ trait ShopCartActionsTrait
         if (!$this->isCsrfTokenValid('shop_cart_add', $csrfToken)) {
             $this->addFlash('error', 'Le jeton du panier est invalide.');
 
-            return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+            return $this->redirectToShop($request, 'shop-cart-drawer');
         }
 
         $resourceId = (int) $request->request->get('resource_id');
@@ -77,7 +77,7 @@ trait ShopCartActionsTrait
         $this->saveCart($request, $cart);
         $this->addFlash('success', sprintf('%s ajoute au panier.', (string) $resource['nomRs']));
 
-        return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+        return $this->redirectToShop($request, 'shop-cart-drawer');
     }
 
     #[Route('/boutique/panier/update', name: 'app_shop_cart_update', methods: ['POST'])]
@@ -88,7 +88,7 @@ trait ShopCartActionsTrait
         if (!$this->isCsrfTokenValid('shop_cart_update', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le jeton du panier est invalide.');
 
-            return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+            return $this->redirectToShop($request, 'shop-cart-drawer');
         }
 
         $resourceId = (int) $request->request->get('resource_id');
@@ -100,7 +100,7 @@ trait ShopCartActionsTrait
             $this->saveCart($request, $cart);
             $this->addFlash('info', 'Article retire du panier.');
 
-            return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+            return $this->redirectToShop($request, 'shop-cart-drawer');
         }
 
         $resource = $miniShopService->getResourceSnapshot($client, $resourceId);
@@ -109,7 +109,7 @@ trait ShopCartActionsTrait
             $this->saveCart($request, $cart);
             $this->addFlash('error', 'Ressource introuvable.');
 
-            return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+            return $this->redirectToShop($request, 'shop-cart-drawer');
         }
 
         $availableStock = (int) $resource['available_stock'];
@@ -123,7 +123,7 @@ trait ShopCartActionsTrait
         $this->saveCart($request, $cart);
         $this->addFlash('success', 'Quantite du panier mise a jour.');
 
-        return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+        return $this->redirectToShop($request, 'shop-cart-drawer');
     }
 
     #[Route('/boutique/panier/remove', name: 'app_shop_cart_remove', methods: ['POST'])]
@@ -134,7 +134,7 @@ trait ShopCartActionsTrait
         if (!$this->isCsrfTokenValid('shop_cart_remove', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le jeton du panier est invalide.');
 
-            return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+            return $this->redirectToShop($request, 'shop-cart-drawer');
         }
 
         $resourceId = (int) $request->request->get('resource_id');
@@ -143,7 +143,7 @@ trait ShopCartActionsTrait
         $this->saveCart($request, $cart);
         $this->addFlash('info', 'Article retire du panier.');
 
-        return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+        return $this->redirectToShop($request, 'shop-cart-drawer');
     }
 
     #[Route('/boutique/panier/clear', name: 'app_shop_cart_clear', methods: ['POST'])]
@@ -154,7 +154,7 @@ trait ShopCartActionsTrait
         if (!$this->isCsrfTokenValid('shop_cart_clear', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le jeton du panier est invalide.');
 
-            return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+            return $this->redirectToShop($request, 'shop-cart-drawer');
         }
 
         $this->saveCart($request, []);
@@ -171,7 +171,7 @@ trait ShopCartActionsTrait
         if (!$this->isCsrfTokenValid('shop_cart_reserve', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le jeton de reservation du panier est invalide.');
 
-            return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+            return $this->redirectToShop($request, 'shop-cart-drawer');
         }
 
         $cart = $this->getCart($request);
@@ -208,7 +208,7 @@ trait ShopCartActionsTrait
             $this->addFlash('error', $throwable->getMessage());
         }
 
-        return $this->redirectToShop($request, self::CART_DRAWER_FRAGMENT);
+        return $this->redirectToShop($request, 'shop-cart-drawer');
     }
 
     #[Route('/boutique/reservations/update', name: 'app_shop_reservation_update', methods: ['POST'])]
@@ -265,3 +265,4 @@ trait ShopCartActionsTrait
     }
 
 }
+

@@ -103,12 +103,14 @@ class Transaction
 
     public function getStatusLabel(): string
     {
-        return self::STATUSES[$this->getStatut() ?? ''] ?? ((string) ($this->getStatut() ?? ''));
+       $status = $this->getStatut();
+
+        return self::STATUSES[$status] ?? $status;
     }
 
     public function getStatusCssClass(): string
     {
-        return strtolower((string) ($this->getStatut() ?? 'pending'));
+        return strtolower((string) ($this->getStatut()));
     }
 
     public function isPending(): bool

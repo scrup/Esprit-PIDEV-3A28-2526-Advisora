@@ -149,7 +149,7 @@ final class ProjectController extends AbstractController
         return $this->createProjectDashboardExportResponse(
             $dashboard,
             $pdfGenerator,
-            sprintf('rapport-projets-%s', $user->getRoleUser() ?? 'front')
+            sprintf('rapport-projets-%s', $user->getRoleUser())
         );
     }
 
@@ -222,10 +222,6 @@ final class ProjectController extends AbstractController
         $project = new Project();
         $project->setUser($user);
         $project->setStatus(Project::STATUS_PENDING);
-
-        if ($project->getStartDate() === null) {
-            $project->setStartDate(new \DateTime('today'));
-        }
 
         $form = $this->createForm(ProjectType::class, $project, [
             'submit_label' => 'Ajouter le projet',
@@ -722,11 +718,7 @@ final class ProjectController extends AbstractController
 
     private function normalizeProjectForPersistence(Project $project, ?User $user): void
     {
-        if ($project->getStartDate() === null) {
-            $project->setStartDate(new \DateTime('today'));
-        }
-
-        if ($project->getTitle() === null || trim((string) $project->getTitle()) === '') {
+        if (trim($project->getTitle()) === '') {
             $project->setTitle('Projet sans titre');
         }
 
@@ -738,15 +730,15 @@ final class ProjectController extends AbstractController
             $project->setDescription(null);
         }
 
-        if ($project->getLegacyBudget() === null) {
+        if ($project->getLegacyBudget() <= 0) {
             $project->setLegacyBudget(0.01);
         }
 
-        if ($project->getAvancementProj() === null) {
+        if ($project->getAvancementProj() < 0) {
             $project->setAvancementProj(0.0);
         }
 
-        if ($project->getStatus() === null || $project->getStatus() === '') {
+        if (trim($project->getStatus()) === '') {
             $project->setStatus(Project::STATUS_PENDING);
         }
 
@@ -821,12 +813,8 @@ final class ProjectController extends AbstractController
             if ($form->isValid()) {
                 $task->setProject($project);
 
-                if ($task->getDuration_days() === null || $task->getDuration_days() < 1) {
+                if ($task->getDuration_days() < 1) {
                     $task->setDuration_days(1);
-                }
-
-                if ($task->getCreated_at() === null) {
-                    $task->setCreated_at(new \DateTime());
                 }
 
                 if (!$editingTask instanceof Task) {
@@ -890,7 +878,7 @@ final class ProjectController extends AbstractController
 
         foreach ($columns as &$columnTasks) {
             usort($columnTasks, static function (Task $left, Task $right): int {
-                $weightCompare = ($right->getWeight() ?? 0) <=> ($left->getWeight() ?? 0);
+                $weightCompare = $right->getWeight() <=> $left->getWeight();
                 if ($weightCompare !== 0) {
                     return $weightCompare;
                 }

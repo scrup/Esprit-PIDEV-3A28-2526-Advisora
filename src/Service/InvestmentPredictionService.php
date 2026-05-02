@@ -156,7 +156,7 @@ final class InvestmentPredictionService
 
         $sectorMedianBudget = $this->median($this->mergeBudgetLists($context['acceptedBudgetsByType'], $matchingTypes));
         $budgetFitScore = (int) round($this->computeBudgetScore(
-            (float) ($project->getLegacyBudget() ?? 0),
+            (float) ($project->getLegacyBudget()),
             $sectorMedianBudget ?? $context['globalMedianBudget']
         ) * 100);
 
@@ -356,7 +356,7 @@ final class InvestmentPredictionService
             $score += 0.15;
         }
 
-        if ((float) ($project->getLegacyBudget() ?? 0) > 0) {
+        if ((float) ($project->getLegacyBudget()) > 0) {
             $score += 0.25;
         }
 

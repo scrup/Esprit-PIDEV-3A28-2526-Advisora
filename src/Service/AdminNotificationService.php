@@ -91,10 +91,9 @@ class AdminNotificationService
             return;
         }
 
-        $date = new \DateTime();
         $created = 0;
         $alreadyNotifiedUserIds = array_flip(
-            $this->notificationRepository->findUserIdsWithExistingNotificationOnDate($admins, $title, $description, $date)
+            $this->notificationRepository->findUserIdsWithExistingNotificationOnDate($admins, $title, $description, new \DateTime())
         );
 
         foreach ($admins as $admin) {
@@ -108,8 +107,7 @@ class AdminNotificationService
                 $title,
                 $description,
                 'failed_login_lock',
-                null,
-                $date
+                null
             );
 
             $this->entityManager->persist($notification);
@@ -134,7 +132,6 @@ class AdminNotificationService
         string $description,
         string $eventType,
         ?int $targetProjectId = null,
-        ?\DateTimeInterface $createdAt = null,
     ): Notification {
         $notification = new Notification();
         $notification->setTitle($title);
@@ -142,11 +139,6 @@ class AdminNotificationService
         $notification->setRecipient($recipient);
         $notification->setEventType($eventType);
         $notification->setSpokenText($description);
-        $notification->setCreatedAt(
-            $createdAt instanceof \DateTime
-                ? $createdAt
-                : \DateTime::createFromInterface($createdAt ?? new \DateTimeImmutable())
-        );
         $notification->setIsRead(false);
         $notification->setTarget_project_id($targetProjectId);
 

@@ -68,13 +68,9 @@ final class EventController extends AbstractController
         $data = [];
 
         foreach ($events as $event) {
-            if ($event->getStartDateEv() === null || $event->getEndDateEv() === null) {
-                continue;
-            }
-
             $data[] = [
                 'id' => $event->getIdEv(),
-                'title' => $event->getTitleEv() ?? 'Sans titre',
+                'title' => $event->getTitleEv(),
                 'start' => $event->getStartDateEv()->format('Y-m-d\TH:i:s'),
                 'end' => $event->getEndDateEv()->format('Y-m-d\TH:i:s'),
                 'url' => $this->generateUrl('event_show', ['id' => $event->getIdEv()]),
@@ -143,8 +139,8 @@ final class EventController extends AbstractController
 
         $event = new Event();
         $event->setUser($user);
-        $event->setStartDateEv(new \DateTime('+1 day 09:00'));
-        $event->setEndDateEv(new \DateTime('+1 day 17:00'));
+        $event->setStartDateEv(new \DateTimeImmutable('+1 day 09:00'));
+        $event->setEndDateEv(new \DateTimeImmutable('+1 day 17:00'));
         $event->setCapaciteEvnt(50);
 
         $form = $this->createForm(EventType::class, $event, [
@@ -314,8 +310,8 @@ final class EventController extends AbstractController
     private function sortBookingsByDate(array $bookings): array
     {
         usort($bookings, static function (Booking $left, Booking $right): int {
-            $leftDate = $left->getBookingDate()?->getTimestamp() ?? 0;
-            $rightDate = $right->getBookingDate()?->getTimestamp() ?? 0;
+            $leftDate = $left->getBookingDate()->getTimestamp();
+            $rightDate = $right->getBookingDate()->getTimestamp();
 
             return $rightDate <=> $leftDate;
         });

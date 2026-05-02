@@ -158,7 +158,6 @@ class NotificationService
             ->setDescription($description)
             ->setSpokenText($spokenText)
             ->setEventType($eventType)
-            ->setCreatedAt(new \DateTimeImmutable())
             ->setIsRead(false)
             ->setTargetProjectId($targetProjectId);
 

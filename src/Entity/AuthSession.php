@@ -129,6 +129,12 @@ class AuthSession
         return $this->expires_at;
     }
 
+    public function setExpires_at(\DateTimeInterface $expires_at): self
+    {
+        $this->expires_at = $expires_at;
+
+        return $this;
+    }
 
 
     public function getRevoked_at(): ?\DateTimeInterface
@@ -136,11 +142,25 @@ class AuthSession
         return $this->revoked_at;
     }
 
+    public function setRevoked_at(?\DateTimeInterface $revoked_at): self
+    {
+        $this->revoked_at = $revoked_at;
+
+        return $this;
+    }
+
     
 
     public function getLast_seen_at(): ?\DateTimeInterface
     {
         return $this->last_seen_at;
+    }
+
+    public function setLast_seen_at(?\DateTimeInterface $last_seen_at): self
+    {
+        $this->last_seen_at = $last_seen_at;
+
+        return $this;
     }
 
     

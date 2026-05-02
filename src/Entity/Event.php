@@ -136,7 +136,19 @@ class Event
         return $this->startDateEv;
     }
 
-    
+ public function setStartDateEv(?\DateTimeImmutable $startDateEv): self
+{
+    $this->startDateEv = $startDateEv;
+
+    return $this;
+}
+
+public function setEndDateEv(?\DateTimeImmutable $endDateEv): self
+{
+    $this->endDateEv = $endDateEv;
+
+    return $this;
+}
 
     public function getEndDateEv(): \DateTimeInterface
     {
@@ -251,14 +263,12 @@ class Event
     {
         $now = new \DateTimeImmutable();
 
-        if ($this->endDateEv instanceof \DateTimeInterface && $this->endDateEv < $now) {
+        if ($this->endDateEv < $now) {
             return 'completed';
         }
 
         if (
-            $this->startDateEv instanceof \DateTimeInterface
-            && $this->endDateEv instanceof \DateTimeInterface
-            && $this->startDateEv <= $now
+            $this->startDateEv <= $now
             && $this->endDateEv >= $now
         ) {
             return 'in_progress';
@@ -307,18 +317,13 @@ class Event
 
     public function hasStarted(): bool
     {
-        return $this->startDateEv instanceof \DateTimeInterface
-            && $this->startDateEv <= new \DateTimeImmutable();
+        return $this->startDateEv <= new \DateTimeImmutable();
     }
 
     #[Assert\Callback]
     public function validateDates(ExecutionContextInterface $context): void
     {
-        if (
-            $this->startDateEv instanceof \DateTimeInterface
-            && $this->endDateEv instanceof \DateTimeInterface
-            && $this->endDateEv <= $this->startDateEv
-        ) {
+        if ($this->endDateEv <= $this->startDateEv) {
             $context->buildViolation('La date de fin doit etre posterieure a la date de debut.')
                 ->atPath('endDateEv')
                 ->addViolation();

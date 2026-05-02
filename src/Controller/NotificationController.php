@@ -80,7 +80,7 @@ final class NotificationController extends AbstractController
             'spokenText' => $notification->getSpokenText(),
             'targetProjectId' => $notification->getTargetProjectId(),
             'targetUrl' => $this->resolveTargetUrl($notification, $user),
-            'createdAt' => $notification->getCreatedAt()?->format(\DateTimeInterface::ATOM),
+            'createdAt' => $notification->getCreatedAt()->format(\DateTimeInterface::ATOM),
             'eventType' => $notification->getEventType(),
         ];
     }

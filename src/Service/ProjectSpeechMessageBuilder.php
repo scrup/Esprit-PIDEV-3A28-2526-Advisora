@@ -24,9 +24,7 @@ class ProjectSpeechMessageBuilder
             $parts[] = sprintf('Budget %s.', $budget);
         }
 
-        if ($project->getStartDate() instanceof \DateTimeInterface) {
-            $parts[] = sprintf('Cree le %s.', $project->getStartDate()->format('d/m/Y'));
-        }
+        $parts[] = sprintf('Cree le %s.', $project->getStartDate()->format('d/m/Y'));
 
         return $this->normalizeSpeech(implode(' ', $parts));
     }

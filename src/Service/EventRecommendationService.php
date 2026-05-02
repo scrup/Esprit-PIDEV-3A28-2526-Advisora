@@ -20,63 +20,64 @@ class EventRecommendationService
      * @return Event[]
      */
     public function getRecommendationsForUser(User $user, int $limit = 5): array
-    {
-        $bookings = $this->bookingRepository->findClientBookings($user);
+{
+    $bookings = $this->bookingRepository->findClientBookings($user);
 
-        $bookedEventIds = array_values(array_filter(array_map(
-            static fn (Booking $booking): ?int => $booking->getEvent()?->getIdEv(),
-            $bookings
-        )));
+    $bookedEventIds = array_values(array_filter(array_map(
+        static fn (Booking $booking): ?int => $booking->getEvent()?->getIdEv(),
+        $bookings
+    )));
 
-        $interestKeywords = $this->extractInterestKeywords($user, $bookings);
+    $interestKeywords = $this->extractInterestKeywords($user, $bookings);
 
-        $availableEvents = array_values(array_filter(
-            $this->eventRepository->findFrontEvents(),
-            static fn (Event $event): bool => !in_array($event->getIdEv(), $bookedEventIds, true)
-        ));
+    $availableEvents = array_values(array_filter(
+        $this->eventRepository->findFrontEvents(),
+        static fn (Event $event): bool => !in_array($event->getIdEv(), $bookedEventIds, true)
+    ));
 
-        if ($availableEvents === []) {
-            return [];
-        }
-
-        if ($interestKeywords === []) {
-            usort(
-                $availableEvents,
-                static fn (Event $left, Event $right): int =>
-                    ($left->getStartDateEv()?->getTimestamp() ?? PHP_INT_MAX)
-                    <=>
-                    ($right->getStartDateEv()?->getTimestamp() ?? PHP_INT_MAX)
-            );
-
-            return array_slice($availableEvents, 0, $limit);
-        }
-
-        $scored = [];
-
-        foreach ($availableEvents as $event) {
-            $score = $this->scoreEvent($event, $interestKeywords);
-
-            if ($event->getStartDateEv() instanceof \DateTimeInterface && $event->getStartDateEv() > new \DateTimeImmutable()) {
-                $score += 1;
-            }
-
-            $scored[] = [
-                'event' => $event,
-                'score' => $score,
-            ];
-        }
-
-        usort(
-            $scored,
-            static fn (array $left, array $right): int => $right['score'] <=> $left['score']
-        );
-
-        return array_slice(
-            array_map(static fn (array $item): Event => $item['event'], $scored),
-            0,
-            $limit
-        );
+    if ($availableEvents === []) {
+        return [];
     }
+
+    if ($interestKeywords === []) {
+        usort(
+            $availableEvents,
+            static fn (Event $left, Event $right): int =>
+                $left->getStartDateEv()->getTimestamp()
+                <=>
+                $right->getStartDateEv()->getTimestamp()
+        );
+
+        return array_slice($availableEvents, 0, $limit);
+    }
+
+    $scored = [];
+    $now = new \DateTimeImmutable();
+
+    foreach ($availableEvents as $event) {
+        $score = $this->scoreEvent($event, $interestKeywords);
+
+        if ($event->getStartDateEv() > $now) {
+            $score += 1;
+        }
+
+        $scored[] = [
+            'event' => $event,
+            'score' => $score,
+        ];
+    }
+
+    usort(
+        $scored,
+        static fn (array $left, array $right): int => $right['score'] <=> $left['score']
+    );
+
+    return array_slice(
+        array_map(static fn (array $item): Event => $item['event'], $scored),
+        0,
+        $limit
+    );
+}
 
     /**
      * @param Booking[] $bookings

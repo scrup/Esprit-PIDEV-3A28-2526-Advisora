@@ -174,15 +174,11 @@ final class DecisionController extends AbstractController
             return;
         }
 
-        if ($project->getStartDate() === null) {
-            $project->setStartDate(new \DateTime('today'));
-        }
-
-        if ($project->getAvancementProj() === null) {
+        if ($project->getAvancementProj() < 0) {
             $project->setAvancementProj(0.0);
         }
 
-        if ($project->getStatus() === null || $project->getStatus() === '') {
+        if (trim($project->getStatus()) === '') {
             $project->setStatus(Project::STATUS_PENDING);
         }
     }

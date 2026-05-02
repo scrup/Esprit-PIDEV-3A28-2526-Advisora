@@ -120,7 +120,7 @@ class ProjectAcceptanceService
         $tClient = $this->smoothedRate($clientStat['accepted'], $clientStat['total'], self::CLIENT_PRIOR, $globalRate);
 
         $typeMedianBudget = $this->median($acceptedBudgetsByType[$normalizedType] ?? []);
-        $budget = (float) ($project->getLegacyBudget() ?? 0);
+        $budget = (float) ($project->getLegacyBudget());
         $sBudget = $this->computeBudgetScore($budget, $typeMedianBudget ?? $globalMedianBudget);
         $dossierScore = $this->computeDossierScore($project);
 
@@ -170,7 +170,7 @@ class ProjectAcceptanceService
             $score += 0.15;
         }
 
-        if ((float) ($project->getLegacyBudget() ?? 0) > 0) {
+        if ((float) ($project->getLegacyBudget()) > 0) {
             $score += 0.25;
         }
 
@@ -298,7 +298,7 @@ class ProjectAcceptanceService
             ++$criteria;
         }
 
-        if ((float) ($project->getLegacyBudget() ?? 0) > 0) {
+        if ((float) ($project->getLegacyBudget()) > 0) {
             ++$criteria;
         }
 

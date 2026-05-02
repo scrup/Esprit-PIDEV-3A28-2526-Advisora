@@ -204,25 +204,25 @@ class Project
 
     #[ORM\PrePersist]
     public function onPrePersist(): void
-    {
-        $now = new \DateTime();
+{
+    $now = new \DateTime();
 
-        if ($this->createdAtProj === null) {
-            $this->createdAtProj = $now;
-        }
-
-        if ($this->updatedAtProj === null) {
-            $this->updatedAtProj = clone $now;
-        }
-
-        if ($this->avancementProj === null) {
-            $this->avancementProj = 0.0;
-        }
-
-        if ($this->stateProj === null || $this->stateProj === '') {
-            $this->stateProj = self::STATUS_PENDING;
-        }
+    if (!isset($this->createdAtProj)) {
+        $this->createdAtProj = $now;
     }
+
+    if (!isset($this->updatedAtProj)) {
+        $this->updatedAtProj = clone $now;
+    }
+
+    if (!isset($this->avancementProj)) {
+        $this->avancementProj = 0.0;
+    }
+
+    if ($this->stateProj === '') {
+        $this->stateProj = self::STATUS_PENDING;
+    }
+}
 
     #[ORM\PreUpdate]
     public function onPreUpdate(): void
@@ -484,7 +484,7 @@ class Project
 
     public function getStatusLabel(): string
     {
-        return self::STATUSES[$this->getStatus()] ?? ($this->getStatus() ?? 'N/A');
+        return self::STATUSES[$this->getStatus()] ;
     }
 
     public function addStrategy(Strategie $strategy): static

@@ -63,14 +63,20 @@ class Userlog
     }
 
     #[ORM\Column(type: 'datetime', nullable: false)]
-    private \DateTimeInterface $dateLog;
+private \DateTimeInterface $dateLog;
 
-    public function getDateLog(): \DateTimeInterface
-    {
-        return $this->dateLog;
+public function getDateLog(): \DateTimeInterface
+{
+    return $this->dateLog;
+}
+
+#[ORM\PrePersist]
+public function initializeDateLog(): void
+{
+    if (!isset($this->dateLog)) {
+        $this->dateLog = new \DateTime();
     }
-
-    
+}    
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $ip_address = null;
 

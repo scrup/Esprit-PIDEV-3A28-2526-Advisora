@@ -71,7 +71,7 @@ final class ProjectDashboardInsightsService
         $budgetCount = 0;
 
         foreach ($projects as $project) {
-            $budget = (float) ($project->getLegacyBudget() ?? 0.0);
+            $budget = (float) ($project->getLegacyBudget());
 
             if ($budget <= 0) {
                 continue;

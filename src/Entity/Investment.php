@@ -249,61 +249,56 @@ private Collection $transactions;
         return $this;
     }
 
-    public function getBudgetRangeLabel(): string
-    {
-        return sprintf(
-            '%s - %s %s',
-            number_format((float) ($this->getBud_minInv() ?? 0), 2, '.', ' '),
-            number_format((float) ($this->getBud_maxInv() ?? 0), 2, '.', ' '),
-            $this->getCurrencyInv() ?? 'TND'
-        );
+   public function getBudgetRangeLabel(): string
+{
+    return sprintf(
+        '%s - %s %s',
+        number_format((float) $this->getBud_minInv(), 2, '.', ' '),
+        number_format((float) $this->getBud_maxInv(), 2, '.', ' '),
+        $this->getCurrencyInv()
+    );
+}
+
+public function getLatestTransaction(): ?Transaction
+{
+    $transactions = $this->getTransactions()->toArray();
+
+    if ($transactions === []) {
+        return null;
     }
 
-    public function getLatestTransaction(): ?Transaction
-    {
-        $transactions = $this->getTransactions()->toArray();
+    usort($transactions, static function (Transaction $left, Transaction $right): int {
+        $dateComparison = $right->getDateTransac() <=> $left->getDateTransac();
 
-        if ($transactions === []) {
-            return null;
+        if ($dateComparison !== 0) {
+            return $dateComparison;
         }
 
-        usort($transactions, static function (Transaction $left, Transaction $right): int {
-            $leftDate = $left->getDateTransac();
-            $rightDate = $right->getDateTransac();
+        return ($right->getId() ?? 0) <=> ($left->getId() ?? 0);
+    });
 
-            if ($leftDate instanceof \DateTimeInterface && $rightDate instanceof \DateTimeInterface) {
-                $dateComparison = $rightDate <=> $leftDate;
+    return $transactions[0];
+}
 
-                if ($dateComparison !== 0) {
-                    return $dateComparison;
-                }
-            }
+public function getLatestTransactionStatus(): ?string
+{
+    return $this->getLatestTransaction()?->getStatut();
+}
 
-            return ($right->getId() ?? 0) <=> ($left->getId() ?? 0);
-        });
+public function getTotalActiveTransactionsAmount(): float
+{
+    $total = 0.0;
 
-        return $transactions[0];
-    }
-
-    public function getLatestTransactionStatus(): ?string
-    {
-        return $this->getLatestTransaction()?->getStatut();
-    }
-
-    public function getTotalActiveTransactionsAmount(): float
-    {
-        $total = 0.0;
-
-        foreach ($this->transactions as $transaction) {
-            if ($transaction->isFailed()) {
-                continue;
-            }
-
-            $total += (float) ($transaction->getMontantTransac() ?? 0);
+    foreach ($this->transactions as $transaction) {
+        if ($transaction->isFailed()) {
+            continue;
         }
 
-        return $total;
+        $total += (float) $transaction->getMontantTransac();
     }
+
+    return $total;
+}
 
     public function isEditableByClient(): bool
     {

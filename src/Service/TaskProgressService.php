@@ -16,7 +16,7 @@ class TaskProgressService
         $completedWeight = 0;
 
         foreach ($tasks as $task) {
-            $weight = max(1, (int) ($task->getWeight() ?? 1));
+            $weight = max(1, (int) $task->getWeight());
             $totalWeight += $weight;
 
             if ($task->isCompleted()) {

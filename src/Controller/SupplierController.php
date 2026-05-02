@@ -29,7 +29,7 @@ final class SupplierController extends AbstractController
         ];
 
         $suppliers = $supplierRepository->findBackOfficeSuppliers($filters);
-        $totalProducts = array_sum(array_map(static fn (Cataloguefournisseur $supplier): int => (int) ($supplier->getQuantite() ?? 0), $suppliers));
+        $totalProducts = array_sum(array_map(static fn (Cataloguefournisseur $supplier): int => (int) $supplier->getQuantite(), $suppliers));
         $activeSuppliers = count(array_filter($suppliers, static fn (Cataloguefournisseur $supplier): bool => $supplier->isActiveSupplier()));
 
         return $this->render('back/supplier/index.html.twig', [
@@ -202,7 +202,7 @@ final class SupplierController extends AbstractController
         $supplier->setLocalisationFr(trim((string) $supplier->getLocalisationFr()));
         $supplier->setNumTelFr(trim((string) $supplier->getNumTelFr()));
 
-        if (($supplier->getQuantite() ?? 0) < 0) {
+        if ($supplier->getQuantite() < 0) {
             $supplier->setQuantite(0);
         }
     }

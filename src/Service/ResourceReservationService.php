@@ -36,7 +36,7 @@ class ResourceReservationService
 
     public function getAvailableStock(Resource $resource): int
     {
-        $total = max(0, (int) ($resource->getQuantity() ?? 0));
+        $total = max(0, (int) ($resource->getQuantity()));
         $reserved = $resource->getId() ? $this->getReservedStock((int) $resource->getId()) : 0;
 
         return max(0, $total - $reserved);

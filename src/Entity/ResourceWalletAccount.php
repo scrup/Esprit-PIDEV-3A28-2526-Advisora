@@ -45,13 +45,19 @@ class ResourceWalletAccount
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private \DateTimeInterface $updatedAt;
+   #[ORM\Column(type: 'datetime', nullable: true)]
+private ?\DateTimeInterface $updatedAt = null;
 
-    public function getUpdatedAt(): \DateTimeInterface
-    {
-        return $this->updatedAt;
-    }
+public function getUpdatedAt(): ?\DateTimeInterface
+{
+    return $this->updatedAt;
+}
+
+#[ORM\PreUpdate]
+public function refreshUpdatedAt(): void
+{
+    $this->updatedAt = new \DateTime();
+}
 
     
 

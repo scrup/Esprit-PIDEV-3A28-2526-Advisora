@@ -10,6 +10,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: StrategieRepository::class)]
 #[ORM\Table(name: 'strategy')]
+#[ORM\HasLifecycleCallbacks]
 class Strategie
 {
     public const STATUS_PENDING = 'En_attente';
@@ -116,7 +117,7 @@ class Strategie
             self::STATUS_REJECTED => 'Refusée',
             self::STATUS_IN_PROGRESS => 'En cours',
             self::STATUS_UNASSIGNED => 'Non affectée',
-            default => $this->statusStrategie ?? 'Non défini',
+            default => 'Inconnu',
         };
     }
 
@@ -132,9 +133,9 @@ class Strategie
         };
     }
 
-    public function getCreatedAtS(): \DateTimeInterface
+    public function getCreatedAtS(): ?\DateTimeInterface
     {
-        return $this->CreatedAtS;
+        return isset($this->CreatedAtS) ? $this->CreatedAtS : null;
     }
 
     
@@ -142,6 +143,13 @@ class Strategie
     public function getLockedAt(): ?\DateTimeInterface
     {
         return $this->lockedAt;
+    }
+
+    public function setLockedAt(?\DateTimeInterface $lockedAt): self
+    {
+        $this->lockedAt = $lockedAt;
+
+        return $this;
     }
 
     
@@ -321,5 +329,13 @@ class Strategie
         $this->swotItems->removeElement($swotItem);
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function initializeCreatedAt(): void
+    {
+        if (!isset($this->CreatedAtS)) {
+            $this->CreatedAtS = new \DateTime();
+        }
     }
 }

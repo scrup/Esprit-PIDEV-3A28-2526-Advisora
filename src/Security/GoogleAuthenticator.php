@@ -102,8 +102,6 @@ class GoogleAuthenticator extends OAuth2Authenticator
                 $newUser->setFailed_login_count(0);
                 $newUser->setLock_until(null);
                 $newUser->setLast_activity_at($now);
-                $newUser->setCreatedAt($now);
-                $newUser->setUpdatedAt($now);
                 $newUser->setPasswordUser(
                     $this->passwordHasher->hashPassword($newUser, bin2hex(random_bytes(24)))
                 );
@@ -127,7 +125,6 @@ class GoogleAuthenticator extends OAuth2Authenticator
             $user->setFailed_login_count(0);
             $user->setLock_until(null);
             $user->setLast_activity_at(new \DateTime());
-            $user->setUpdatedAt(new \DateTime());
             $this->entityManager->flush();
         }
 

@@ -10,7 +10,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class ShopController extends AbstractController
 {
     private const CART_SESSION_KEY = 'shop_cart';
-    private const CART_DRAWER_FRAGMENT = 'shop-cart-drawer';
     private const PENDING_BUY_SESSION_KEY = 'shop_pending_market_buy';
     private const CHECKOUT_CART_SESSION_KEY = 'shop_checkout_cart';
     private const CHECKOUT_DRAFT_SESSION_KEY = 'shop_checkout_draft';

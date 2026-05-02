@@ -105,7 +105,7 @@ final class InvestmentController extends AbstractController
         $latestTransaction = $investment->getLatestTransaction();
 
         $totalActive = $investment->getTotalActiveTransactionsAmount();
-        $budMax = (float) ($investment->getBud_maxInv() ?? 0);
+        $budMax = (float) $investment->getBud_maxInv();
         $prediction = null;
         $predictionError = null;
 
@@ -416,7 +416,7 @@ final class InvestmentController extends AbstractController
      */
     private function validateInvestmentRange(FormInterface $form, Investment $investment): void
     {
-        if (($investment->getBud_minInv() ?? 0) > ($investment->getBud_maxInv() ?? 0)) {
+        if ($investment->getBud_minInv() > $investment->getBud_maxInv()) {
             $form->get('bud_maxInv')->addError(new FormError('Le montant maximum doit etre superieur ou egal au montant minimum.'));
         }
     }
@@ -428,7 +428,7 @@ final class InvestmentController extends AbstractController
     {
         $totalActive = $investment->getTotalActiveTransactionsAmount();
 
-        if ($totalActive > (float) ($investment->getBud_maxInv() ?? 0)) {
+        if ($totalActive > (float) $investment->getBud_maxInv()) {
             $form->addError(new FormError('Le total des transactions existantes depasse le nouveau montant maximum de l investissement.'));
         }
     }

@@ -84,7 +84,6 @@ final class UserController extends AbstractController
                 }
             }
 
-            $user->setUpdatedAt(new \DateTime());
             $entityManager->flush();
 
             $this->addFlash('success', 'Profil mis à jour avec succès.');
@@ -106,8 +105,6 @@ final class UserController extends AbstractController
         SluggerInterface $slugger
     ): Response {
         $user = new User();
-        $user->setCreatedAt(new \DateTime());
-        $user->setUpdatedAt(new \DateTime());
         $user->setFailed_login_count(0);
         $user->setTotp_enabled(false);
 
@@ -207,7 +204,6 @@ final class UserController extends AbstractController
                     }
                 }
 
-                $user->setUpdatedAt(new \DateTime());
                 $entityManager->flush();
 
                 $this->addFlash('success', 'Utilisateur modifié avec succès.');

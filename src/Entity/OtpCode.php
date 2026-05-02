@@ -83,6 +83,13 @@ class OtpCode
         return $this->expires_at;
     }
 
+    public function setExpires_at(\DateTimeInterface $expires_at): self
+    {
+        $this->expires_at = $expires_at;
+
+        return $this;
+    }
+
     
 
     #[ORM\Column(type: 'datetime', nullable: true)]
@@ -91,6 +98,13 @@ class OtpCode
     public function getUsed_at(): ?\DateTimeInterface
     {
         return $this->used_at;
+    }
+
+    public function setUsed_at(?\DateTimeInterface $used_at): self
+    {
+        $this->used_at = $used_at;
+
+        return $this;
     }
 
     

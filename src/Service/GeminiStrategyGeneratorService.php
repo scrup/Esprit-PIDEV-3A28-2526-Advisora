@@ -219,19 +219,19 @@ class GeminiStrategyGeneratorService
 
         $budget = null;
 
-        if ($projectBudget !== null && $projectBudget > 0) {
+         if ($projectBudget > 0) {
             $budget = round($projectBudget * 0.35, 2);
         }
 
         $duration = 6;
 
-        if ($projectProgress !== null) {
+        
             if ($projectProgress >= 70) {
                 $duration = 4;
             } elseif ($projectProgress <= 20) {
                 $duration = 9;
             }
-        }
+        
 
         return [
             'nomStrategie' => $name,
@@ -272,8 +272,8 @@ class GeminiStrategyGeneratorService
             sprintf('- descriptionProj: %s', $description),
             sprintf('- typeProj: %s', $type),
             sprintf('- stateProj: %s', $status),
-            sprintf('- budgetProj: %s', $budget !== null ? (string) $budget : 'null'),
-            sprintf('- avancementProj: %s', $progress !== null ? (string) $progress : 'null'),
+            sprintf('- budgetProj: %s', $budget ),
+            sprintf('- avancementProj: %s', $progress),
         ]);
     }
 

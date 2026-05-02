@@ -92,7 +92,6 @@ final class ClientProfileController extends AbstractController
                 }
             }
 
-            $user->setUpdatedAt(new \DateTime());
             $entityManager->flush();
 
             $this->addFlash('success', 'Profil mis a jour avec succes.');

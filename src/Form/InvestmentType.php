@@ -34,7 +34,7 @@ class InvestmentType extends AbstractType
                     return sprintf(
                         '#%d - %s',
                         (int) ($project->getId() ?? 0),
-                        (string) ($project->getTitle() ?? 'Projet sans titre')
+                        (string) ($project->getTitle() )
                     );
                 },
                 'placeholder' => 'Selectionnez un projet',

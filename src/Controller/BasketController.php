@@ -177,7 +177,7 @@ final class BasketController extends AbstractController
         foreach ($items as $item) {
             $unitPrice = number_format((float) ($item['event']->getPrice() ?? 0), 2, '.', '');
             $orderItems[] = [
-                'name' => $item['event']->getTitle() ?? 'Ticket',
+                'name' => $item['event']->getTitle(),
                 'quantity' => (string) $item['quantity'],
                 'unit_amount' => [
                     'currency_code' => 'USD',
@@ -338,7 +338,6 @@ final class BasketController extends AbstractController
             $booking = new Booking();
             $booking->setUser($user);
             $booking->setEvent($event);
-            $booking->setBookingDate(new \DateTime());
             $booking->setNumTicketBk($qty);
             $booking->setTotalPrixBk((float) $item['subtotal']);
 
