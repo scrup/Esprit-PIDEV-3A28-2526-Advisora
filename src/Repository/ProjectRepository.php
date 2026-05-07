@@ -207,10 +207,11 @@ class ProjectRepository extends ServiceEntityRepository
                 ->setParameter('emptyOwnerValue', '');
         }
 
-        return $qb
+        $query = $qb
             ->setMaxResults(100)
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+
+        return iterator_to_array(new Paginator($query, false));
     }
 
     public function findOneVisibleWithDecisions(int $id, ?User $user = null, bool $canSeeAll = false): ?Project
