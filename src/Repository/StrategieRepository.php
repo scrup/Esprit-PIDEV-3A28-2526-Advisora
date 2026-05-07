@@ -79,14 +79,15 @@ class StrategieRepository extends ServiceEntityRepository
      */
     public function getAcceptanceTimeline(): array
     {
-        $rows = $this->getEntityManager()->getConnection()->executeQuery(
+        $rows = array_reverse($this->getEntityManager()->getConnection()->executeQuery(
             '
                 SELECT DATE(lockedAt) AS approval_date, COUNT(*) AS total
                 FROM strategy
                 WHERE statusStrategie = :approved_status
                   AND lockedAt IS NOT NULL
                 GROUP BY approval_date
-                ORDER BY approval_date ASC
+                ORDER BY approval_date DESC
+                LIMIT 30
             ',
             [
                 'approved_status' => Strategie::STATUS_APPROVED,
@@ -94,7 +95,7 @@ class StrategieRepository extends ServiceEntityRepository
             [
                 'approved_status' => Types::STRING,
             ]
-        )->fetchAllAssociative();
+        )->fetchAllAssociative());
 
         $refusedTotal = (int) $this->createQueryBuilder('s')
             ->select('COUNT(s.idStrategie)')

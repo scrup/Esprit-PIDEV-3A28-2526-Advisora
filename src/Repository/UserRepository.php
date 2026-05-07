@@ -87,6 +87,7 @@ class UserRepository extends ServiceEntityRepository
             ->setParameter('role', 'gerant')
             ->setParameter('cutoff', $cutoff)
             ->orderBy('u.last_activity_at', 'ASC')
+            ->setMaxResults(99)
             ->getQuery()
             ->getResult();
     }
@@ -100,6 +101,7 @@ class UserRepository extends ServiceEntityRepository
             ->andWhere('LOWER(u.roleUser) = :role')
             ->setParameter('role', 'admin')
             ->orderBy('u.idUser', 'ASC')
+            ->setMaxResults(99)
             ->getQuery()
             ->getResult();
     }
@@ -113,6 +115,7 @@ class UserRepository extends ServiceEntityRepository
             ->andWhere('u.roleUser IN (:roles)')
             ->setParameter('roles', ['admin', 'gerant'])
             ->orderBy('u.idUser', 'ASC')
+            ->setMaxResults(99)
             ->getQuery()
             ->getResult();
     }

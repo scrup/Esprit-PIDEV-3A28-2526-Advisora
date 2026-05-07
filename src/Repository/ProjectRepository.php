@@ -90,12 +90,37 @@ class ProjectRepository extends ServiceEntityRepository
                 ->setParameter('max', (float) $filters['max_price']);
         }
 
-        $query = $qb
+        $projectIdRows = (clone $qb)
+            ->resetDQLPart('join')
+            ->resetDQLPart('select')
+            ->select('p.idProj AS id')
             ->setMaxResults(12)
-            ->getQuery();
+            ->getQuery()
+            ->getScalarResult();
 
-        // Avoid partial hydration when limiting a fetch-joined collection.
-        return iterator_to_array(new Paginator($query, true));
+        $projectIds = array_map(
+            static fn (array $row): int => (int) $row['id'],
+            $projectIdRows
+        );
+
+        if ($projectIds === []) {
+            return [];
+        }
+
+        $projects = $this->createQueryBuilder('p')
+            ->leftJoin('p.user', 'u')
+            ->addSelect('u')
+            ->leftJoin('p.strategies', 's')
+            ->addSelect('s')
+            ->andWhere('p.idProj IN (:projectIds)')
+            ->setParameter('projectIds', $projectIds)
+            ->getQuery()
+            ->getResult();
+
+        $positions = array_flip($projectIds);
+        usort($projects, static fn (Project $left, Project $right): int => ($positions[$left->getId()] ?? 0) <=> ($positions[$right->getId()] ?? 0));
+
+        return $projects;
     }
 
     /**
@@ -111,8 +136,7 @@ class ProjectRepository extends ServiceEntityRepository
             ->select('DISTINCT p.typeProj AS type')
             ->andWhere('p.typeProj IS NOT NULL')
             ->andWhere('TRIM(p.typeProj) != :emptyType')
-            ->setParameter('emptyType', '')
-            ->orderBy('p.typeProj', 'ASC');
+            ->setParameter('emptyType', '');
 
         if (!$canSeeAll) {
             $qb->andWhere('p.user = :user')
@@ -121,10 +145,14 @@ class ProjectRepository extends ServiceEntityRepository
 
         $rows = $qb->getQuery()->getArrayResult();
 
-        return array_values(array_map(
+        $types = array_values(array_map(
             static fn (array $row): string => (string) $row['type'],
             $rows
         ));
+
+        sort($types, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $types;
     }
 
     /**
@@ -247,6 +275,8 @@ class ProjectRepository extends ServiceEntityRepository
         /** @var list<ProjectStatusAggregateRow> $rows */
         $rows = $this->createQueryBuilder('p')
             ->select('NEW App\Dto\ProjectStatusAggregateRow(p.stateProj, COUNT(p.idProj))')
+            ->andWhere('p.stateProj IN (:statuses)')
+            ->setParameter('statuses', [Project::STATUS_PENDING, Project::STATUS_ACCEPTED, Project::STATUS_REFUSED])
             ->groupBy('p.stateProj')
             ->getQuery()
             ->getResult();
@@ -275,8 +305,6 @@ class ProjectRepository extends ServiceEntityRepository
     public function findLatestProjects(int $limit = 6): array
     {
         return $this->createQueryBuilder('p')
-            ->leftJoin('p.user', 'u')
-            ->addSelect('u')
             ->orderBy('p.createdAtProj', 'DESC')
             ->addOrderBy('p.idProj', 'DESC')
             ->setMaxResults(max(1, $limit))
@@ -464,8 +492,6 @@ class ProjectRepository extends ServiceEntityRepository
             ->setParameter('accepted', Project::STATUS_ACCEPTED)
             ->setParameter('emptyNormalizedType', '')
             ->setParameter('types', $normalizedTypes)
-            ->orderBy('normalizedType', 'ASC')
-            ->addOrderBy('p.budgetProj', 'ASC')
             ->getQuery()
             ->getArrayResult();
 
@@ -483,6 +509,12 @@ class ProjectRepository extends ServiceEntityRepository
             $budgets[$type][] = $budget;
         }
 
+        ksort($budgets);
+        foreach ($budgets as &$typeBudgets) {
+            sort($typeBudgets, SORT_NUMERIC);
+        }
+        unset($typeBudgets);
+
         return $budgets;
     }
 
@@ -496,14 +528,17 @@ class ProjectRepository extends ServiceEntityRepository
             ->andWhere('p.stateProj = :accepted')
             ->andWhere('p.budgetProj > 0')
             ->setParameter('accepted', Project::STATUS_ACCEPTED)
-            ->orderBy('p.budgetProj', 'ASC')
             ->getQuery()
             ->getArrayResult();
 
-        return array_values(array_map(
+        $budgets = array_values(array_map(
             static fn (array $row): float => (float) ($row['budget'] ?? 0),
             array_filter($rows, static fn (array $row): bool => (float) ($row['budget'] ?? 0) > 0)
         ));
+
+        sort($budgets, SORT_NUMERIC);
+
+        return $budgets;
     }
 
     /**

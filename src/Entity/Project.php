@@ -69,7 +69,6 @@ class Project
      * @var Collection<int, Decision>
      */
     #[ORM\OneToMany(targetEntity: Decision::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[ORM\OrderBy(['dateDecision' => 'DESC', 'idD' => 'DESC'])]
     private Collection $decisions;
 
     /**

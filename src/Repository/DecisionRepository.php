@@ -23,8 +23,6 @@ class DecisionRepository extends ServiceEntityRepository
     public function findLatestGlobal(int $limit = 6): array
     {
         return $this->createQueryBuilder('d')
-            ->leftJoin('d.project', 'p')
-            ->addSelect('p')
             ->orderBy('d.dateDecision', 'DESC')
             ->addOrderBy('d.idD', 'DESC')
             ->setMaxResults(max(1, $limit))
