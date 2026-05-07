@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Project;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -152,7 +153,11 @@ class ProjectRepository extends ServiceEntityRepository
                 ->setParameter('owner', $owner);
         }
 
-        return $qb->getQuery()->getResult();
+        $query = $qb
+            ->setMaxResults(100)
+            ->getQuery();
+
+        return iterator_to_array(new Paginator($query, false));
     }
 
     public function findOneVisibleWithDecisions(int $id, ?\App\Entity\User $user = null, bool $canSeeAll = false): ?Project
