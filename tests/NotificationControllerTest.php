@@ -71,6 +71,32 @@ class NotificationControllerTest extends KernelTestCase
         self::assertSame(0, $payload['count']);
     }
 
+    public function testConsumeReturnsNotFoundForAnotherUsersNotification(): void
+    {
+        self::bootKernel();
+
+        $controller = self::getContainer()->get(NotificationController::class);
+        $requestStack = $this->pushRequestWithSession(Request::create('/notifications/2/consume', 'POST'));
+        $client = $this->authenticate('client', 101);
+        $other = $this->createUser(202, 'admin');
+
+        $mine = $this->createNotification(1, $client, 'Projet modifie');
+        $others = $this->createNotification(2, $other, 'Projet admin');
+        $repository = new FakeNotificationRepository([$mine, $others]);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::never())->method('flush');
+
+        try {
+            $response = $controller->consume(2, $repository, $entityManager);
+        } finally {
+            $requestStack->pop();
+            $this->clearAuthentication();
+        }
+
+        self::assertSame(404, $response->getStatusCode());
+        self::assertFalse($others->isRead());
+    }
+
     private function createNotification(int $id, User $recipient, string $title): Notification
     {
         return (new Notification())
@@ -80,7 +106,7 @@ class NotificationControllerTest extends KernelTestCase
             ->setDescription($title)
             ->setSpokenText($title)
             ->setEventType(Notification::EVENT_PROJECT_CREATED)
-            ->setCreatedAt(new \DateTimeImmutable('2026-04-22 12:00:00'))
+            ->setDateNotification()
             ->setIsRead(false)
             ->setTargetProjectId(9);
     }

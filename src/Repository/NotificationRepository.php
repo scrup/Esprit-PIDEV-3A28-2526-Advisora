@@ -94,7 +94,9 @@ class NotificationRepository extends ServiceEntityRepository
      * FIX FOR N+1: Use this when checking multiple users at once.
      * Returns an array of User IDs that already have this specific unread title.
      * 
-     * @param User[] $recipients
+     * @param list<User> $recipients
+     *
+     * @return list<int>
      */
     public function findUserIdsWithUnreadTitle(array $recipients, string $title): array
     {
@@ -166,7 +168,9 @@ class NotificationRepository extends ServiceEntityRepository
     /**
      * Optimized bulk check for existence on a specific date.
      * 
-     * @param User[] $recipients
+     * @param list<User> $recipients
+     *
+     * @return list<int>
      */
     public function findUserIdsWithExistingNotificationOnDate(
         array $recipients,
