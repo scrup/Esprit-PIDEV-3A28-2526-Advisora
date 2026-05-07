@@ -902,21 +902,8 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
 
     private function isStrategyAtRisk(Strategie $strategy): bool
     {
-        return $this->isEstimatedGainValueBelowBudget($strategy)
-            || $this->isEstimatedMonetaryGainBelowBudget($strategy)
+        return $this->isEstimatedMonetaryGainBelowBudget($strategy)
             || $this->doesStrategyBudgetExceedProjectBudget($strategy);
-    }
-
-    private function isEstimatedGainValueBelowBudget(Strategie $strategy): bool
-    {
-        $budget = $strategy->getBudgetTotal();
-        $estimatedGainValue = $strategy->getGainEstime();
-
-        if ($estimatedGainValue === null || $budget === null) {
-            return false;
-        }
-
-        return $estimatedGainValue < $budget;
     }
 
     private function isEstimatedMonetaryGainBelowBudget(Strategie $strategy): bool

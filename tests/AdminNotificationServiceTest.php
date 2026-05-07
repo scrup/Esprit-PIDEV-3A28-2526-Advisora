@@ -26,9 +26,9 @@ class AdminNotificationServiceTest extends TestCase
 
         $notificationRepository = $this->createMock(NotificationRepository::class);
         $notificationRepository
-            ->expects(self::exactly(2))
-            ->method('existsForRecipientTitleDescriptionOnDate')
-            ->willReturn(false);
+            ->expects(self::once())
+            ->method('findUserIdsWithExistingNotificationOnDate')
+            ->willReturn([]);
 
         $userRepository = $this->createMock(UserRepository::class);
         $userRepository
@@ -63,11 +63,9 @@ class AdminNotificationServiceTest extends TestCase
 
         $notificationRepository = $this->createMock(NotificationRepository::class);
         $notificationRepository
-            ->expects(self::exactly(2))
-            ->method('existsUnreadForRecipientAndTitle')
-            ->willReturnCallback(static function (User $recipient): bool {
-                return $recipient->getIdUser() === 1;
-            });
+            ->expects(self::once())
+            ->method('findUserIdsWithUnreadTitle')
+            ->willReturn([1]);
 
         $userRepository = $this->createMock(UserRepository::class);
         $admins = [
