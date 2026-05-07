@@ -63,7 +63,7 @@ final class ClientMarketplaceService
         $normalizedOpenSort = $this->normalizeOpenSort($openSort);
 
         $projects = $connection->fetchAllAssociative(
-            'SELECT idProj, titleProj FROM project WHERE idClient = ? ORDER BY idProj DESC',
+            'SELECT idProj, titleProj FROM project WHERE user_id = ? ORDER BY idProj DESC',
             [$clientId]
         );
 
@@ -141,7 +141,7 @@ final class ClientMarketplaceService
                 COALESCE(rv_stats.rating_avg, 0) AS rating_avg
             FROM resource_market_listing l
             LEFT JOIN resource r ON r.idRs = l.idRs
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
             LEFT JOIN `user` u ON u.idUser = l.sellerUserId
             LEFT JOIN project p ON p.idProj = l.idProj
             LEFT JOIN (
@@ -966,8 +966,8 @@ final class ClientMarketplaceService
             FROM project p
             INNER JOIN project_resources pr ON pr.project_id = p.idProj
             INNER JOIN resource r ON r.idRs = pr.resource_id
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
-            WHERE p.idClient = ?
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
+            WHERE p.user_id = ?
             GROUP BY p.idProj, p.titleProj, r.idRs, r.nomRs, cf.fournisseur, cf.nomFr, r.imageUrlRs, r.thumbnailUrlRs
             ORDER BY p.idProj DESC, r.idRs DESC
             ',
@@ -1033,7 +1033,7 @@ final class ClientMarketplaceService
                 COALESCE(rv_stats.rating_avg, 0) AS rating_avg
             FROM resource_market_listing l
             LEFT JOIN resource r ON r.idRs = l.idRs
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
             LEFT JOIN `user` u ON u.idUser = l.sellerUserId
             LEFT JOIN (
                 SELECT idListing, COUNT(*) AS review_count, ROUND(AVG(stars), 2) AS rating_avg
@@ -1112,7 +1112,7 @@ final class ClientMarketplaceService
                 COALESCE(NULLIF(l.imageUrl, \'\'), NULLIF(r.imageUrlRs, \'\'), NULLIF(r.thumbnailUrlRs, \'\')) AS image_url
             FROM resource_market_listing l
             LEFT JOIN resource r ON r.idRs = l.idRs
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
             WHERE l.sellerUserId = ?
             ORDER BY l.updatedAt DESC, l.idListing DESC
             ',
@@ -1165,7 +1165,7 @@ final class ClientMarketplaceService
             FROM resource_market_order o
             LEFT JOIN resource_market_listing l ON l.idListing = o.idListing
             LEFT JOIN resource r ON r.idRs = o.idRs
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
             LEFT JOIN project p ON p.idProj = o.buyerProjectId
             LEFT JOIN `user` b ON b.idUser = o.buyerUserId
             LEFT JOIN `user` s ON s.idUser = o.sellerUserId
@@ -1206,7 +1206,7 @@ final class ClientMarketplaceService
     private function assertProjectBelongsToClient(Connection $connection, int $projectId, int $clientId): void
     {
         $resolvedProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idProj = ? AND idClient = ?',
+            'SELECT idProj FROM project WHERE idProj = ? AND user_id = ?',
             [$projectId, $clientId]
         );
 
@@ -1222,7 +1222,7 @@ final class ClientMarketplaceService
         string $errorMessage
     ): void {
         $resolvedProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idProj = ? AND idClient = ? FOR UPDATE',
+            'SELECT idProj FROM project WHERE idProj = ? AND user_id = ? FOR UPDATE',
             [$projectId, $clientId]
         );
 
@@ -1280,7 +1280,7 @@ final class ClientMarketplaceService
         }
 
         $latestProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idClient = ? ORDER BY idProj DESC LIMIT 1',
+            'SELECT idProj FROM project WHERE user_id = ? ORDER BY idProj DESC LIMIT 1',
             [$clientId]
         );
 
@@ -1298,7 +1298,7 @@ final class ClientMarketplaceService
             'createdAtProj' => $now,
             'updatedAtProj' => $now,
             'avancementProj' => 0.0,
-            'idClient' => $clientId,
+            'user_id' => $clientId,
         ]);
 
         return (int) $connection->lastInsertId();

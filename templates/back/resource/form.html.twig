@@ -4,7 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') ~ '?v=20260507-02' }}">
      <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
     <link rel="stylesheet" href="{{ asset('css/resource-backoffice.css') }}?v=20260417-rs-v29">
 {% endblock %}
@@ -73,3 +73,4 @@
     {{ parent() }}
     <script src="{{ asset('js/project-form-validation.js') }}"></script>
 {% endblock %}
+

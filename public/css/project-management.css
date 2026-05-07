@@ -21,7 +21,7 @@
     --pm-shadow-md: 0 16px 34px rgba(44, 36, 24, 0.08);
 }
 
-body {
+body:not(.back-mode) {
     background: linear-gradient(180deg, #fbf7f1 0%, #f7f0e6 100%);
     color: var(--pm-umber);
 }
@@ -892,7 +892,7 @@ body {
 }
 
 .pm-empty::before {
-    content: 'ðŸ“‹';
+    content: "\1F4CB";
     font-size: 3rem;
     display: block;
     margin-bottom: 1rem;
@@ -3376,4 +3376,61 @@ body.back-mode .pm-task-column-todo .pm-task-status-todo {
         flex-direction: column;
         align-items: stretch;
     }
+}
+
+/* ============================================ */
+/* BACK MODE LOCK (events/resources/investments) */
+/* ============================================ */
+
+body.back-mode {
+    background:
+        radial-gradient(circle at top left, rgba(126, 139, 99, 0.08), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(185, 145, 105, 0.08), transparent 20%),
+        linear-gradient(180deg, #0b0e10 0%, #0f1315 100%) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .back-main-shell main,
+body.back-mode .pm-admin-shell {
+    background: transparent !important;
+}
+
+body.back-mode .pm-admin-header,
+body.back-mode .pm-card,
+body.back-mode .pm-form-card,
+body.back-mode .pm-empty {
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.1), transparent 30%),
+        linear-gradient(145deg, rgba(20, 25, 27, 0.96), rgba(11, 15, 18, 0.98)) !important;
+    border-color: rgba(232, 221, 208, 0.12) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-admin-header h1,
+body.back-mode .pm-card h1,
+body.back-mode .pm-card h2,
+body.back-mode .pm-card h3 {
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-admin-header p,
+body.back-mode .pm-card p,
+body.back-mode .pm-meta,
+body.back-mode .pm-meta-list span,
+body.back-mode .pm-form-card label,
+body.back-mode .pm-empty p {
+    color: #c5b9a8 !important;
+}
+
+body.back-mode .pm-form-card input,
+body.back-mode .pm-form-card textarea,
+body.back-mode .pm-form-card select {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(232, 221, 208, 0.2) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-form-card input::placeholder,
+body.back-mode .pm-form-card textarea::placeholder {
+    color: #a89d8e !important;
 }

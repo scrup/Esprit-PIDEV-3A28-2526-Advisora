@@ -5,14 +5,14 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/events.css') ~ '?v=20260507-03' }}">
     <link rel="stylesheet" href="{{ asset('css/cart.css') }}">
 {% endblock %}
 
 {% block body %}
 <div class="cart-shell">
     <div class="cart-confirmed">
-        <div class="cart-confirmed-icon">?</div>
+        <div class="cart-confirmed-icon">&#10003;</div>
         <h1>{{ 'event.cart_confirmed.heading'|trans }}</h1>
         <p>{{ 'event.cart_confirmed.text'|trans }}</p>
         <p class="cart-confirmed-sub">{{ 'event.cart_confirmed.subtext'|trans }}</p>
@@ -27,3 +27,4 @@
     </div>
 </div>
 {% endblock %}
+

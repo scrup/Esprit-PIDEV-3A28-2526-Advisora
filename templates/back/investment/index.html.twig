@@ -4,7 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') ~ '?v=20260507-02' }}">
 {% endblock %}
 
 {% block body %}
@@ -80,3 +80,4 @@
         </section>
     </section>
 {% endblock %}
+

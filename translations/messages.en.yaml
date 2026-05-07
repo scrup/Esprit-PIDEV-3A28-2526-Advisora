@@ -490,6 +490,7 @@ event:
     filter: "Filter"
     reset: "Reset"
     add: "Add"
+    reserve: "Reserve"
     view: "View"
     edit: "Edit"
     delete: "Delete"
@@ -517,7 +518,7 @@ event:
     actions:
       back_office: "Back office"
       my_bookings: "My bookings"
-      my_cart: "My cart"
+      my_cart: "My reservations"
       login: "Log in"
     ai:
       title: "Recommended for you"

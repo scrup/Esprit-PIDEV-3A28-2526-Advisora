@@ -640,6 +640,317 @@
 }
 
 /* ===== Toast Notification ===== */
+
+/* ===== Absolute Final Lock (keep this block last) ===== */
+body.back-mode {
+    background:
+        radial-gradient(circle at top left, rgba(126, 139, 99, 0.08), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(185, 145, 105, 0.08), transparent 20%),
+        linear-gradient(180deg, #0b0e10 0%, #0f1315 100%) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .back-main-shell main,
+body.back-mode .dashboard-container {
+    background: transparent !important;
+}
+
+body.back-mode .dashboard-header,
+body.back-mode .stat-card,
+body.back-mode .card-panel,
+body.back-mode .full-width-card,
+body.back-mode .pm-hero,
+body.back-mode .pm-card,
+body.back-mode .pm-form-card,
+body.back-mode .pm-current-decision,
+body.back-mode .pm-empty,
+body.back-mode .pm-filter-form,
+body.back-mode .pm-detail-main .pm-card,
+body.back-mode .pm-detail-side .pm-card {
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.10), transparent 30%),
+        linear-gradient(145deg, rgba(20, 25, 27, 0.96), rgba(11, 15, 18, 0.98)) !important;
+    border: 1px solid rgba(232, 221, 208, 0.12) !important;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24) !important;
+}
+
+body.back-mode .welcome-section h1,
+body.back-mode .panel-header h3,
+body.back-mode .stat-value,
+body.back-mode .resource-info strong,
+body.back-mode .event-info strong,
+body.back-mode .project-name,
+body.back-mode .pm-hero h1,
+body.back-mode .pm-card h2,
+body.back-mode .pm-card h3,
+body.back-mode .pm-detail-main h1 {
+    color: #f3eee6 !important;
+}
+
+body.back-mode .welcome-section p,
+body.back-mode .stat-info h3,
+body.back-mode .resource-info p,
+body.back-mode .event-info p,
+body.back-mode .dashboard-empty,
+body.back-mode .stat-trend,
+body.back-mode .pm-hero p,
+body.back-mode .pm-card p,
+body.back-mode .pm-empty-text,
+body.back-mode .pm-meta-list span,
+body.back-mode .pm-current-decision span,
+body.back-mode .pm-current-decision p {
+    color: #c5b9a8 !important;
+}
+
+body.back-mode .date-badge,
+body.back-mode .pm-badge,
+body.back-mode .ev-price-tag,
+body.back-mode .pm-status,
+body.back-mode .ev-meta-chips li {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-color: rgba(232, 221, 208, 0.18) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-btn-secondary,
+body.back-mode .resource-btn,
+body.back-mode .event-btn,
+body.back-mode .action-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(232, 221, 208, 0.18) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-btn-primary,
+body.back-mode .resource-btn:hover,
+body.back-mode .event-btn:hover,
+body.back-mode .action-btn:hover {
+    background: linear-gradient(135deg, #d5a46e, #b88757) !important;
+    border-color: #b88757 !important;
+    color: #16110d !important;
+}
+
+/* ===== Final Theme Lock (Back UI Dark) ===== */
+body.back-mode {
+    background:
+        radial-gradient(circle at top left, rgba(126, 139, 99, 0.08), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(185, 145, 105, 0.08), transparent 20%),
+        linear-gradient(180deg, #0b0e10 0%, #0f1315 100%) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .back-main-shell main {
+    background: transparent !important;
+}
+
+body.back-mode .dashboard-container {
+    background: transparent !important;
+}
+
+body.back-mode .dashboard-header,
+body.back-mode .stat-card,
+body.back-mode .card-panel,
+body.back-mode .full-width-card {
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.10), transparent 30%),
+        linear-gradient(145deg, rgba(20, 25, 27, 0.96), rgba(11, 15, 18, 0.98)) !important;
+    border: 1px solid rgba(232, 221, 208, 0.10) !important;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24) !important;
+}
+
+body.back-mode .welcome-section h1,
+body.back-mode .panel-header h3,
+body.back-mode .stat-value,
+body.back-mode .resource-info strong,
+body.back-mode .event-info strong,
+body.back-mode .project-name {
+    color: #f3eee6 !important;
+}
+
+body.back-mode .welcome-section p,
+body.back-mode .stat-info h3,
+body.back-mode .resource-info p,
+body.back-mode .event-info p,
+body.back-mode .dashboard-empty {
+    color: #c5b9a8 !important;
+}
+
+/* ===== Final Theme (Users/Strategies Style) ===== */
+.dashboard-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #f3eee6 !important;
+}
+
+.dashboard-header,
+.stat-card,
+.card-panel,
+.full-width-card {
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.10), transparent 30%),
+        linear-gradient(145deg, rgba(20, 25, 27, 0.96), rgba(11, 15, 18, 0.98)) !important;
+    border: 1px solid rgba(232, 221, 208, 0.10) !important;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24) !important;
+}
+
+.welcome-section h1,
+.stat-value,
+.panel-header h3,
+.resource-info strong,
+.event-info strong,
+.project-name {
+    color: #f3eee6 !important;
+}
+
+.welcome-section p,
+.stat-info h3,
+.resource-info p,
+.event-info p,
+.dashboard-empty,
+.stat-trend {
+    color: #c5b9a8 !important;
+}
+
+.date-badge {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #f3eee6 !important;
+    border: 1px solid rgba(232, 221, 208, 0.16) !important;
+}
+
+.panel-header,
+.insight-item,
+.resource-item,
+.event-item,
+.investment-footer,
+.quick-actions {
+    border-color: rgba(232, 221, 208, 0.14) !important;
+}
+
+.stat-icon,
+.resource-icon,
+.event-date {
+    background: rgba(185, 145, 105, 0.16) !important;
+    color: #d5a46e !important;
+}
+
+.progress-bar {
+    background: rgba(232, 221, 208, 0.20) !important;
+}
+
+.progress-fill {
+    background: #8faa7e !important;
+}
+
+.progress-percent {
+    color: #cfe0ae !important;
+}
+
+.resource-btn,
+.event-btn,
+.action-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(232, 221, 208, 0.18) !important;
+    color: #f3eee6 !important;
+}
+
+.resource-btn:hover,
+.event-btn:hover,
+.action-btn:hover {
+    background: linear-gradient(135deg, #d5a46e, #b88757) !important;
+    border-color: #b88757 !important;
+    color: #16110d !important;
+}
+
+/* ===== Final Dark Override (Must Stay Last) ===== */
+.dashboard-container {
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.08), transparent 22%),
+        radial-gradient(circle at bottom left, rgba(126, 139, 99, 0.08), transparent 25%),
+        linear-gradient(180deg, #161b20 0%, #11161a 100%);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
+    color: #f1ece4;
+}
+
+.welcome-section h1,
+.panel-header h3,
+.resource-info strong,
+.event-info strong,
+.project-name,
+.stat-value {
+    color: #f1ece4;
+}
+
+.welcome-section p,
+.resource-info p,
+.event-info p,
+.dashboard-empty,
+.stat-info h3 {
+    color: #b2a99c;
+}
+
+.date-badge {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(232, 221, 208, 0.14);
+    color: #f1ece4;
+}
+
+.stat-card,
+.card-panel {
+    background: linear-gradient(145deg, rgba(24, 30, 37, 0.95), rgba(14, 19, 25, 0.98));
+    border: 1px solid rgba(232, 221, 208, 0.10);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.stat-card:hover,
+.card-panel:hover {
+    border-color: rgba(185, 145, 105, 0.34);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+}
+
+.panel-header,
+.insight-item,
+.resource-item,
+.event-item,
+.investment-footer,
+.quick-actions {
+    border-color: rgba(232, 221, 208, 0.12);
+}
+
+.progress-bar {
+    background: rgba(232, 221, 208, 0.16);
+}
+
+.progress-fill {
+    background: #8faa7e;
+}
+
+.progress-percent {
+    color: #b8caa0;
+}
+
+.resource-icon,
+.event-date {
+    background: rgba(232, 221, 208, 0.14);
+}
+
+.resource-btn,
+.event-btn,
+.action-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(232, 221, 208, 0.16);
+    color: #f1ece4;
+}
+
+.resource-btn:hover,
+.event-btn:hover,
+.action-btn:hover {
+    background: linear-gradient(135deg, #d5a46e, #b88757);
+    color: #16110d;
+    border-color: #b88757;
+}
 .toast-notification {
     position: fixed;
     bottom: 20px;
@@ -663,6 +974,96 @@
 
 .toast-notification i {
     color: var(--sage-green);
+}
+
+/* ===== Back Dashboard Dark Override ===== */
+.dashboard-container {
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.08), transparent 22%),
+        radial-gradient(circle at bottom left, rgba(126, 139, 99, 0.08), transparent 25%),
+        linear-gradient(180deg, #161b20 0%, #11161a 100%);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
+    color: #f1ece4;
+}
+
+.welcome-section h1,
+.panel-header h3,
+.resource-info strong,
+.event-info strong,
+.project-name,
+.stat-value {
+    color: #f1ece4;
+}
+
+.welcome-section p,
+.resource-info p,
+.event-info p,
+.dashboard-empty,
+.stat-info h3 {
+    color: #b2a99c;
+}
+
+.date-badge {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(232, 221, 208, 0.14);
+    color: #f1ece4;
+}
+
+.stat-card,
+.card-panel {
+    background: linear-gradient(145deg, rgba(24, 30, 37, 0.95), rgba(14, 19, 25, 0.98));
+    border: 1px solid rgba(232, 221, 208, 0.10);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.stat-card:hover,
+.card-panel:hover {
+    border-color: rgba(185, 145, 105, 0.34);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+}
+
+.panel-header,
+.insight-item,
+.resource-item,
+.event-item,
+.investment-footer,
+.quick-actions {
+    border-color: rgba(232, 221, 208, 0.12);
+}
+
+.progress-bar {
+    background: rgba(232, 221, 208, 0.16);
+}
+
+.progress-fill {
+    background: #8faa7e;
+}
+
+.progress-percent {
+    color: #b8caa0;
+}
+
+.resource-icon,
+.event-date {
+    background: rgba(232, 221, 208, 0.14);
+}
+
+.resource-btn,
+.event-btn,
+.action-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(232, 221, 208, 0.16);
+    color: #f1ece4;
+}
+
+.resource-btn:hover,
+.event-btn:hover,
+.action-btn:hover {
+    background: linear-gradient(135deg, #d5a46e, #b88757);
+    color: #16110d;
+    border-color: #b88757;
 }
 
 /* ===== Base & Variables ===== */

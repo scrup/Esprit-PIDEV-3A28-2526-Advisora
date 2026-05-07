@@ -34,7 +34,7 @@ final class ClientMiniShopService
         );
 
         $projects = $connection->fetchAllAssociative(
-            'SELECT idProj, titleProj FROM project WHERE idClient = ? ORDER BY idProj DESC',
+            'SELECT idProj, titleProj FROM project WHERE user_id = ? ORDER BY idProj DESC',
             [(int) $client->getIdUser()]
         );
 
@@ -274,7 +274,7 @@ final class ClientMiniShopService
             }
 
             $connection->executeStatement(
-                'DELETE pr FROM project_resources pr INNER JOIN project p ON p.idProj = pr.project_id WHERE pr.project_id = ? AND pr.resource_id = ? AND p.idClient = ?',
+                'DELETE pr FROM project_resources pr INNER JOIN project p ON p.idProj = pr.project_id WHERE pr.project_id = ? AND pr.resource_id = ? AND p.user_id = ?',
                 [$projectId, $resourceId, $clientId]
             );
 
@@ -302,12 +302,12 @@ final class ClientMiniShopService
                 r.prixRs,
                 r.QuantiteRs,
                 r.availabilityStatusRs,
-                r.idFr,
+                r.cataloguefournisseur_id,
                 COALESCE(NULLIF(cf.fournisseur, \'\'), cf.nomFr) AS fournisseur_name,
                 COALESCE(stock.reserved_stock, 0) AS reserved_stock,
                 GREATEST(r.QuantiteRs - COALESCE(stock.reserved_stock, 0), 0) AS available_stock
             FROM resource r
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
             LEFT JOIN (
                 SELECT pr.resource_id AS resource_id, ' . $quantityAggregation . ' AS reserved_stock
                 FROM project_resources pr
@@ -365,12 +365,12 @@ final class ClientMiniShopService
                 r.prixRs,
                 r.QuantiteRs,
                 r.availabilityStatusRs,
-                r.idFr,
+                r.cataloguefournisseur_id,
                 COALESCE(NULLIF(cf.fournisseur, \'\'), cf.nomFr) AS fournisseur_name,
                 COALESCE(stock.reserved_stock, 0) AS reserved_stock,
                 GREATEST(r.QuantiteRs - COALESCE(stock.reserved_stock, 0), 0) AS available_stock
             FROM resource r
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
             LEFT JOIN (
                 SELECT pr.resource_id AS resource_id, ' . $quantityAggregation . ' AS reserved_stock
                 FROM project_resources pr
@@ -402,8 +402,8 @@ final class ClientMiniShopService
             FROM project_resources pr
             INNER JOIN project p ON p.idProj = pr.project_id
             INNER JOIN resource r ON r.idRs = pr.resource_id
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
-            WHERE p.idClient = ?
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
+            WHERE p.user_id = ?
             GROUP BY pr.project_id, pr.resource_id, p.titleProj, r.nomRs, cf.fournisseur, cf.nomFr
             ORDER BY pr.project_id DESC, pr.resource_id DESC
             ',
@@ -515,7 +515,7 @@ final class ClientMiniShopService
         }
 
         $latestProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idClient = ? ORDER BY idProj DESC LIMIT 1',
+            'SELECT idProj FROM project WHERE user_id = ? ORDER BY idProj DESC LIMIT 1',
             [(int) $client->getIdUser()]
         );
 
@@ -532,7 +532,7 @@ final class ClientMiniShopService
             'createdAtProj' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'updatedAtProj' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'avancementProj' => 0.0,
-            'idClient' => (int) $client->getIdUser(),
+            'user_id' => (int) $client->getIdUser(),
         ]);
 
         return (int) $connection->lastInsertId();
@@ -541,7 +541,7 @@ final class ClientMiniShopService
     private function resolveOwnedProject(Connection $connection, User $client, int $projectId): int
     {
         $resolvedProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idProj = ? AND idClient = ?',
+            'SELECT idProj FROM project WHERE idProj = ? AND user_id = ?',
             [$projectId, (int) $client->getIdUser()]
         );
 
@@ -576,7 +576,7 @@ final class ClientMiniShopService
 
         foreach ($orderedProjectIds as $projectId) {
             $lockedProjectId = (int) $connection->fetchOne(
-                'SELECT idProj FROM project WHERE idProj = ? AND idClient = ? FOR UPDATE',
+                'SELECT idProj FROM project WHERE idProj = ? AND user_id = ? FOR UPDATE',
                 [$projectId, $clientId]
             );
 
@@ -615,7 +615,7 @@ final class ClientMiniShopService
             SELECT ' . $this->quantityAggregateSql($connection, 'pr') . '
             FROM project_resources pr
             INNER JOIN project p ON p.idProj = pr.project_id
-            WHERE pr.project_id = ? AND pr.resource_id = ? AND p.idClient = ?
+            WHERE pr.project_id = ? AND pr.resource_id = ? AND p.user_id = ?
             ',
             [$projectId, $resourceId, (int) $client->getIdUser()]
         );
