@@ -902,7 +902,21 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
 
     private function isStrategyAtRisk(Strategie $strategy): bool
     {
-        return $this->isEstimatedMonetaryGainBelowBudget($strategy) || $this->doesStrategyBudgetExceedProjectBudget($strategy);
+        return $this->isEstimatedGainValueBelowBudget($strategy)
+            || $this->isEstimatedMonetaryGainBelowBudget($strategy)
+            || $this->doesStrategyBudgetExceedProjectBudget($strategy);
+    }
+
+    private function isEstimatedGainValueBelowBudget(Strategie $strategy): bool
+    {
+        $budget = $strategy->getBudgetTotal();
+        $estimatedGainValue = $strategy->getGainEstime();
+
+        if ($estimatedGainValue === null || $budget === null) {
+            return false;
+        }
+
+        return $estimatedGainValue < $budget;
     }
 
     private function isEstimatedMonetaryGainBelowBudget(Strategie $strategy): bool
@@ -1311,7 +1325,7 @@ private function saveRejectedJustification(Strategie $strategy, string $justific
             $entityManager->flush();
 
             $this->clearPendingRecommendation($request, $id, $user);
-            $this->addFlash('success', 'Strategie attribuee au projet et mise en cours.');
+            $this->addFlash('success', 'Strategie attribuee au projet avec statut automatique.');
 
             return $this->redirectToRoute('project_back_manage', ['id' => $id]);
         }
@@ -1324,7 +1338,7 @@ private function saveRejectedJustification(Strategie $strategy, string $justific
                 $entityManager->flush();
 
                 $this->clearPendingRecommendation($request, $id, $user);
-                $this->addFlash('success', 'Cette strategie est deja liee a ce projet et reste en cours.');
+                $this->addFlash('success', 'Cette strategie est deja liee a ce projet et son statut a ete recalcule automatiquement.');
 
                 return $this->redirectToRoute('project_back_manage', ['id' => $id]);
             }
@@ -1350,12 +1364,13 @@ private function saveRejectedJustification(Strategie $strategy, string $justific
             return $this->redirectToRoute('project_back_manage', ['id' => $id]);
         }
 
-        $strategie->setStatusStrategie(Strategie::STATUS_IN_PROGRESS);
+        $this->applyAutomaticStatusRules($strategie, null, true);
+        $this->syncLockedAtWithStatus($strategie);
         $entityManager->persist($strategie);
         $entityManager->flush();
 
         $this->clearPendingRecommendation($request, $id, $user);
-        $this->addFlash('success', 'Strategie enregistree et mise en cours.');
+        $this->addFlash('success', 'Strategie enregistree avec statut automatique.');
 
         return $this->redirectToRoute('project_back_manage', ['id' => $id]);
     }
@@ -1525,8 +1540,8 @@ private function saveRejectedJustification(Strategie $strategy, string $justific
     private function applyRecommendationToExistingStrategy(Strategie $strategie, Project $projet, ?User $user): void
     {
         $strategie->setProject($projet);
-        $strategie->setStatusStrategie(Strategie::STATUS_IN_PROGRESS);
-        $strategie->setLockedAt(null);
+        $this->applyAutomaticStatusRules($strategie, null, true);
+        $this->syncLockedAtWithStatus($strategie);
 
         if ($strategie->getUser() === null && $user instanceof User) {
             $strategie->setUser($user);

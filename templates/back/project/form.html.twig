@@ -4,7 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/project-management.css') ~ '?v=20260507-02' }}">
      <link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}?v=20260415-users-v2">
 {% endblock %}
 
@@ -28,16 +28,16 @@
             <div>
                 <span class="pm-badge">{{ page_badge|default('Back office') }}</span>
                 <h1>{{ page_title }}</h1>
-                <p>{{ page_message|default('Le propriÃ©taire du projet est associÃ© automatiquement Ã  l utilisateur connectÃ©.') }}</p>
+                <p>{{ page_message|default('Le propriÃƒÂ©taire du projet est associÃƒÂ© automatiquement ÃƒÂ  l utilisateur connectÃƒÂ©.') }}</p>
             </div>
             <a class="pm-btn pm-btn-secondary" href="{{ project.id ? path(back_route|default('project_back_manage'), {id: project.id}) : path(back_route|default('project_index')) }}">Retour</a>
         </div>
 
         <div class="pm-form-card">
             <div class="pm-info-banner">
-                <strong>Date de crÃ©ation :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignÃ©e Ã  l enregistrement.' }}
+                <strong>Date de crÃƒÂ©ation :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignÃƒÂ©e ÃƒÂ  l enregistrement.' }}
                 <br>
-                <strong>DerniÃ¨re mise Ã  jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
+                <strong>DerniÃƒÂ¨re mise ÃƒÂ  jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
             </div>
             {{ form_start(form, {attr: {novalidate: 'novalidate', 'data-skip-validation': 'true'}}) }}
                 {{ form_errors(form) }}
@@ -58,3 +58,4 @@
         </div>
     </section>
 {% endblock %}
+

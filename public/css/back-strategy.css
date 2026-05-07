@@ -876,7 +876,7 @@
 
 /* Optional: Add a small arrow indicator to the reject button */
 .btn-admin-decision-reject::after {
-    content: 'â–¼';
+    content: "\25BC";
     font-size: 0.6rem;
     margin-left: 6px;
     transition: transform 0.2s;

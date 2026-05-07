@@ -5,7 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/events.css') ~ '?v=20260507-04' }}">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
 {% endblock %}
 
@@ -88,7 +88,7 @@
     <section class="ev-ai-section">
         <div class="ev-ai-header">
             <div class="ev-ai-title">
-                <span class="ev-ai-icon">?</span>
+                <span class="ev-ai-icon">&#10024;</span>
                 <div>
                     <h2>{{ 'event.index.ai.title'|trans }}</h2>
                     <p>{{ 'event.index.ai.subtitle'|trans }}</p>
@@ -109,7 +109,7 @@
                         {% endif %}
                     </div>
                     <h3>{{ rec.title }}</h3>
-                    <p class="ev-ai-desc">{{ rec.description|length > 90 ? rec.description|slice(0, 90) ~ '…' : rec.description ?: ('event.common.no_description_short'|trans) }}</p>
+                    <p class="ev-ai-desc">{{ rec.description|length > 90 ? rec.description|slice(0, 90) ~ 'â€¦' : rec.description ?: ('event.common.no_description_short'|trans) }}</p>
                     <ul class="ev-meta-chips">
                         {% if rec.organizerName %}
                             <li><i class="fas fa-user-tie"></i> {{ rec.organizerName }}</li>
@@ -128,7 +128,7 @@
                             <form method="post" action="{{ path('event_add_to_cart', {id: rec.id}) }}" style="display:inline;">
                                 <input type="hidden" name="quantity" value="1">
                                 <input type="hidden" name="redirect" value="events">
-                                <button type="submit" class="pm-btn pm-btn-primary"><i class="fas fa-cart-plus"></i> {{ 'event.common.add'|trans }}</button>
+                                <button type="submit" class="pm-btn pm-btn-primary"><i class="fas fa-ticket-alt"></i> {{ 'event.common.reserve'|trans }}</button>
                             </form>
                         {% elseif existingBooking %}
                             <span class="pm-status pm-status-{{ existingBooking.workflowStatusCssClass }}">{{ existingBooking.workflowStatusLabel }}</span>
@@ -173,7 +173,7 @@
                         {% endif %}
                     </div>
                     <h2>{{ event.title }}</h2>
-                    <p>{{ event.description|length > 100 ? event.description|slice(0, 100) ~ '…' : event.description ?: ('event.common.no_description'|trans) }}</p>
+                    <p>{{ event.description|length > 100 ? event.description|slice(0, 100) ~ 'â€¦' : event.description ?: ('event.common.no_description'|trans) }}</p>
                     <ul class="ev-meta-chips">
                         {% if event.organizerName %}
                             <li><i class="fas fa-user-tie"></i> {{ event.organizerName }}</li>
@@ -207,7 +207,7 @@
                                 <form method="post" action="{{ path('event_add_to_cart', {id: event.id}) }}" style="display:inline;">
                                     <input type="hidden" name="quantity" value="1">
                                     <input type="hidden" name="redirect" value="events">
-                                    <button type="submit" class="pm-btn pm-btn-secondary"><i class="fas fa-cart-plus"></i> {{ 'event.common.add'|trans }}</button>
+                                    <button type="submit" class="pm-btn pm-btn-secondary"><i class="fas fa-ticket-alt"></i> {{ 'event.common.reserve'|trans }}</button>
                                 </form>
                             {% else %}
                                 <span class="ev-full-badge">{{ 'event.common.full'|trans }}</span>
@@ -242,3 +242,4 @@
     </section>
 
 {% endblock %}
+

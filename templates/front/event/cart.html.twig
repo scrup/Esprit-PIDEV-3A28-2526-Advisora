@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Advisora | Mon panier{% endblock %}
+{% block title %}Advisora | Mes reservations{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/events.css') ~ '?v=20260507-03' }}">
     <link rel="stylesheet" href="{{ asset('css/cart.css') }}">
 {% endblock %}
 
@@ -17,7 +17,7 @@
     <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-        // ── Quantity stepper ──────────────────────────────────────────────────
+        // -- Quantity stepper --------------------------------------------------
         document.querySelectorAll('.cart-qty-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var input = btn.closest('.cart-qty-wrap').querySelector('.cart-qty-input');
@@ -30,7 +30,7 @@
         });
 
         {% if items|length > 0 and total > 0 and paypal_client_id %}
-        // ── PayPal button ─────────────────────────────────────────────────────
+        // -- PayPal button -----------------------------------------------------
         paypal.Buttons({
             style: {
                 layout: 'vertical',
@@ -91,11 +91,11 @@
 {% block body %}
 <div class="cart-shell">
 
-    {# ── Header ── #}
+    {# -- Header -- #}
     <div class="cart-header">
         <div>
-            <a class="pm-back-link" href="{{ path('event_index') }}">← Retour aux evenements</a>
-            <h1>Mon panier</h1>
+            <a class="pm-back-link" href="{{ path('event_index') }}">&larr; Retour aux evenements</a>
+            <h1>Mes reservations</h1>
             <p>{{ items|length }} evenement{{ items|length != 1 ? 's' : '' }} &mdash; {{ items|reduce((carry, item) => carry + item.quantity, 0) }} ticket{{ items|reduce((carry, item) => carry + item.quantity, 0) != 1 ? 's' : '' }}</p>
         </div>
         {% if items|length > 0 %}
@@ -104,18 +104,18 @@
     </div>
 
     {% if items|length == 0 %}
-    {# ── Empty cart ── #}
+    {# -- Empty cart -- #}
     <div class="cart-empty">
-        <div class="cart-empty-icon">🛒</div>
-        <h2>Votre panier est vide</h2>
-        <p>Parcourez les evenements disponibles et ajoutez des tickets a votre panier.</p>
+        <div class="cart-empty-icon">&#128722;</div>
+        <h2>Vous n'avez aucune reservation</h2>
+        <p>Parcourez les evenements disponibles et reservez des tickets.</p>
         <a class="pm-btn pm-btn-primary" href="{{ path('event_index') }}">Voir les evenements</a>
     </div>
 
     {% else %}
     <div class="cart-layout">
 
-        {# ── Items ── #}
+        {# -- Items -- #}
         <div class="cart-items">
             {% for item in items %}
             <div class="cart-item">
@@ -144,7 +144,7 @@
                     {# Quantity form #}
                     <form method="post" action="{{ path('event_cart_update', {id: item.event.id}) }}" class="cart-qty-form">
                         <div class="cart-qty-wrap">
-                            <button type="button" class="cart-qty-btn" data-dir="down" aria-label="Diminuer">−</button>
+                            <button type="button" class="cart-qty-btn" data-dir="down" aria-label="Diminuer">-</button>
                             <input
                                 type="number"
                                 name="quantity"
@@ -170,7 +170,7 @@
                 <div class="cart-item-subtotal">
                     {% if item.event.price %}
                         <span class="cart-subtotal-amount">{{ item.subtotal|number_format(2, '.', ' ') }} TND</span>
-                        <span class="cart-subtotal-detail">{{ item.quantity }} × {{ item.event.price|number_format(2, '.', ' ') }}</span>
+                        <span class="cart-subtotal-detail">{{ item.quantity }} &times; {{ item.event.price|number_format(2, '.', ' ') }}</span>
                     {% else %}
                         <span class="cart-subtotal-amount cart-subtotal-free">Gratuit</span>
                     {% endif %}
@@ -179,7 +179,7 @@
             {% endfor %}
         </div>
 
-        {# ── Summary & Checkout ── #}
+        {# -- Summary & Checkout -- #}
         <aside class="cart-summary">
             <div class="cart-summary-card">
                 <h2>Recapitulatif</h2>
@@ -187,7 +187,7 @@
                 <div class="cart-summary-lines">
                     {% for item in items %}
                     <div class="cart-summary-line">
-                        <span>{{ item.event.title|length > 28 ? item.event.title|slice(0,28) ~ '…' : item.event.title }} × {{ item.quantity }}</span>
+                        <span>{{ item.event.title|length > 28 ? item.event.title|slice(0,28) ~ '...' : item.event.title }} &times; {{ item.quantity }}</span>
                         <span>
                             {% if item.event.price %}
                                 {{ item.subtotal|number_format(2, '.', ' ') }} TND
@@ -232,7 +232,7 @@
                         </div>
                     {% endif %}
                 {% else %}
-                    {# All free — confirm without payment #}
+                    {# All free - confirm without payment #}
                     <form method="post" action="{{ path('event_cart_confirm_free') }}">
                         <button type="submit" class="pm-btn pm-btn-primary pm-btn-block" style="margin-top:1rem;">
                             <i class="fas fa-check"></i> Confirmer l'inscription gratuite
@@ -250,3 +250,4 @@
 
 </div>
 {% endblock %}
+

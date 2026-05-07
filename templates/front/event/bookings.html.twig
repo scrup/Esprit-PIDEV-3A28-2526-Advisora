@@ -5,7 +5,7 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/project-management.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/events.css') ~ '?v=20260507-03' }}">
 {% endblock %}
 
 {% block body %}
@@ -39,7 +39,7 @@
                     {% endif %}
                 </div>
                 <h2>{{ booking.event ? booking.event.title : ('event.common.event_unavailable'|trans) }}</h2>
-                <p>{{ booking.event and booking.event.description ? (booking.event.description|length > 100 ? booking.event.description|slice(0,100) ~ '…' : booking.event.description) : ('event.common.no_description'|trans) }}</p>
+                <p>{{ booking.event and booking.event.description ? (booking.event.description|length > 100 ? booking.event.description|slice(0,100) ~ 'â€¦' : booking.event.description) : ('event.common.no_description'|trans) }}</p>
 
                 <ul class="ev-meta-chips">
                     {% if booking.event and booking.event.organizerName %}
@@ -87,3 +87,4 @@
         {% endfor %}
     </section>
 {% endblock %}
+

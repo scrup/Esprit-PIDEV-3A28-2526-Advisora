@@ -93,7 +93,7 @@
                                                 <p class="strategy-eyebrow">
                                                     Strategie #{{ strategy.idStrategie }}
                                                     {% if strategy.CreatedAtS %}
-                                                        Â· Creee le {{ strategy.CreatedAtS|date('d/m/Y') }}
+                                                        &middot; Creee le {{ strategy.CreatedAtS|date('d/m/Y') }}
                                                     {% endif %}
                                                 </p>
                                                 <h3>{{ strategy.nomStrategie }}</h3>
@@ -137,7 +137,7 @@
                 <circle cx="12" cy="12" r="10"/>
                 <polyline points="12 6 12 12 16 14"/>
             </svg>
-            <span class="countdown-label">Fin de période dans</span>
+            <span class="countdown-label">Fin de p&eacute;riode dans</span>
         </div>
         <div class="countdown-value" data-countdown-display>-- -- -- --</div>
         <div class="countdown-units">
@@ -297,7 +297,7 @@
                                                 <p class="objective-description">
                                                     {% if swotStrengths|length > 0 %}
                                                         {% for item in swotStrengths %}
-                                                            • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                                            &bull; {{ item.description }}{% if not loop.last %}<br>{% endif %}
                                                         {% endfor %}
                                                     {% else %}
                                                         Aucune force renseignee.
@@ -317,7 +317,7 @@
                                                 <p class="objective-description">
                                                     {% if swotWeaknesses|length > 0 %}
                                                         {% for item in swotWeaknesses %}
-                                                            • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                                            &bull; {{ item.description }}{% if not loop.last %}<br>{% endif %}
                                                         {% endfor %}
                                                     {% else %}
                                                         Aucune faiblesse renseignee.
@@ -337,7 +337,7 @@
                                                 <p class="objective-description">
                                                     {% if swotOpportunities|length > 0 %}
                                                         {% for item in swotOpportunities %}
-                                                            • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                                            &bull; {{ item.description }}{% if not loop.last %}<br>{% endif %}
                                                         {% endfor %}
                                                     {% else %}
                                                         Aucune opportunite renseignee.
@@ -357,7 +357,7 @@
                                                 <p class="objective-description">
                                                     {% if swotThreats|length > 0 %}
                                                         {% for item in swotThreats %}
-                                                            • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                                            &bull; {{ item.description }}{% if not loop.last %}<br>{% endif %}
                                                         {% endfor %}
                                                     {% else %}
                                                         Aucune menace renseignee.

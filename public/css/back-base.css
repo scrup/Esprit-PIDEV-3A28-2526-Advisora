@@ -1105,3 +1105,95 @@ body.back-mode .back-header {
     color: var(--back-border-strong);
     font-size: 0.74rem;
 }
+
+/* ===== Global Back-Mode Theme Lock ===== */
+body.back-mode .back-main-shell main {
+    background: transparent !important;
+}
+
+body.back-mode .pm-hero,
+body.back-mode .pm-card,
+body.back-mode .pm-form-card,
+body.back-mode .pm-current-decision,
+body.back-mode .pm-empty,
+body.back-mode .pm-filter-form,
+body.back-mode .pm-detail-main .pm-card,
+body.back-mode .pm-detail-side .pm-card,
+body.back-mode .rs-card,
+body.back-mode .rs-showcase-item,
+body.back-mode .rs-table-card {
+    background:
+        radial-gradient(circle at top right, rgba(185, 145, 105, 0.10), transparent 30%),
+        linear-gradient(145deg, rgba(20, 25, 27, 0.96), rgba(11, 15, 18, 0.98)) !important;
+    border: 1px solid rgba(232, 221, 208, 0.12) !important;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-hero h1,
+body.back-mode .pm-card h2,
+body.back-mode .pm-card h3,
+body.back-mode .pm-detail-main h1,
+body.back-mode .rs-showcase-title,
+body.back-mode .rs-card h2,
+body.back-mode .rs-card h3 {
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-hero p,
+body.back-mode .pm-card p,
+body.back-mode .pm-empty-text,
+body.back-mode .pm-meta-list span,
+body.back-mode .pm-current-decision span,
+body.back-mode .pm-current-decision p,
+body.back-mode .pm-field label,
+body.back-mode .rs-muted,
+body.back-mode .rs-showcase-subtitle,
+body.back-mode .rs-table td {
+    color: #c5b9a8 !important;
+}
+
+body.back-mode .pm-card a,
+body.back-mode .pm-form-card a,
+body.back-mode .rs-card a,
+body.back-mode .rs-showcase-item a {
+    color: #e3c9a0 !important;
+}
+
+body.back-mode .pm-card a:hover,
+body.back-mode .pm-form-card a:hover,
+body.back-mode .rs-card a:hover,
+body.back-mode .rs-showcase-item a:hover {
+    color: #f1dcc0 !important;
+}
+
+body.back-mode .pm-field input,
+body.back-mode .pm-field select,
+body.back-mode .pm-field textarea,
+body.back-mode .pm-filter-form input,
+body.back-mode .pm-filter-form select {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(232, 221, 208, 0.18) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-badge,
+body.back-mode .pm-status,
+body.back-mode .ev-price-tag,
+body.back-mode .ev-meta-chips li {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-color: rgba(232, 221, 208, 0.18) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-btn-secondary {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(232, 221, 208, 0.18) !important;
+    color: #f3eee6 !important;
+}
+
+body.back-mode .pm-btn-primary {
+    background: linear-gradient(135deg, #d5a46e, #b88757) !important;
+    border-color: #b88757 !important;
+    color: #16110d !important;
+}

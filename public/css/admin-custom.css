@@ -305,9 +305,9 @@
 }
 
 .role-client {
-    background: rgba(102, 142, 255, 0.12);
-    color: #9fc0ff;
-    border-color: rgba(102, 142, 255, 0.16);
+    background: rgba(184, 164, 132, 0.14);
+    color: #e1ccb0;
+    border-color: rgba(184, 164, 132, 0.22);
 }
 
 .user-card-body {
@@ -595,9 +595,9 @@
 }
 
 .role-client {
-    background: rgba(102, 142, 255, 0.12);
-    color: #9fc0ff;
-    border-color: rgba(102, 142, 255, 0.16);
+    background: rgba(184, 164, 132, 0.14);
+    color: #e1ccb0;
+    border-color: rgba(184, 164, 132, 0.22);
 }
 
 .user-card-body {
@@ -1243,3 +1243,4 @@
     border-radius: 50%;
     display: block;
 }
+

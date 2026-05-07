@@ -274,7 +274,7 @@
 }
 
 .form-error::before {
-    content: 'âš ï¸';
+    content: "\26A0";
     font-size: 0.65rem;
 }
 
@@ -506,7 +506,7 @@
 }
 
 .swot-item label::before {
-    content: 'âœ¨';
+    content: "\2728";
     font-size: 0.7rem;
 }
 
@@ -597,7 +597,7 @@
 }
 
 .form-hint::before {
-    content: 'ðŸ’¡';
+    content: "\1F4A1";
     font-size: 0.7rem;
 }
 
@@ -621,7 +621,7 @@
 }
 
 .success-message::before {
-    content: 'âœ“';
+    content: "\2713";
     font-weight: bold;
 }
 

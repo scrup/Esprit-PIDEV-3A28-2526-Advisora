@@ -8,6 +8,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
 #[ORM\Table(name: 'booking')]
+#[ORM\HasLifecycleCallbacks]
 class Booking
 {
     public const STATUS_PENDING = 'pending';
@@ -39,6 +40,11 @@ class Booking
 
     private ?string $workflowStatus = null;
 
+    public function __construct()
+    {
+        $this->bookingDate = new \DateTime();
+    }
+
     public function getIdBk(): ?int
     {
         return $this->idBk;
@@ -64,6 +70,13 @@ class Booking
     public function getBookedAt(): \DateTimeInterface
     {
         return $this->bookingDate;
+    }
+
+    public function setBookingDate(\DateTimeInterface $bookingDate): self
+    {
+        $this->bookingDate = $bookingDate;
+
+        return $this;
     }
 
     
@@ -186,5 +199,13 @@ class Booking
     public function isRefused(): bool
     {
         return $this->getWorkflowStatus() === self::STATUS_REFUSED;
+    }
+
+    #[ORM\PrePersist]
+    public function ensureBookingDate(): void
+    {
+        if (!isset($this->bookingDate)) {
+            $this->bookingDate = new \DateTime();
+        }
     }
 }
