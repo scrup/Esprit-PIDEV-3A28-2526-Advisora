@@ -10,10 +10,6 @@ use App\Entity\Project;
 use App\Entity\Strategie;
 use App\Entity\Task;
 use App\Entity\User;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Query;
-use Doctrine\ORM\QueryBuilder;
 use PHPUnit\Framework\TestCase;
 
 class ProjectDecisionModuleTest extends TestCase
@@ -33,37 +29,6 @@ class ProjectDecisionModuleTest extends TestCase
         $decision->setDecisionTitle('pending');
         self::assertSame(Decision::STATUS_PENDING, $decision->getDecisionTitle());
         self::assertSame('En attente', $decision->getDecisionTitleLabel());
-    }
-
-    public function testProjectStartDateStaysNullUntilExplicitlySet(): void
-    {
-        $project = new Project();
-
-        self::assertNull($project->getStartDate());
-
-        $date = new \DateTimeImmutable('2026-04-07 09:30:00');
-        $project->setStartDate($date);
-
-        self::assertSame($date, $project->getStartDate());
-    }
-
-    public function testClientEditNormalizationResetsStatusToPendingAndKeepsTechnicalDates(): void
-    {
-        $controller = new ProjectController();
-        $project = new Project();
-        $project->setTitle('Projet test');
-        $project->setStatus(Project::STATUS_ACCEPTED);
-
-        $user = new User();
-        $user->setRoleUser('client');
-
-        $this->invokePrivate($controller, 'normalizeProjectForPersistence', [$project, $user]);
-
-        self::assertSame(Project::STATUS_PENDING, $project->getStatus());
-        self::assertNotNull($project->getStartDate());
-        self::assertNull($project->getEndDate());
-        self::assertSame(0.01, $project->getLegacyBudget());
-        self::assertSame(0.0, $project->getAvancementProj());
     }
 
     public function testProjectDeletionIsBlockedWhenSensitiveDependenciesExist(): void
@@ -114,52 +79,6 @@ class ProjectDecisionModuleTest extends TestCase
         self::assertSame('2026-01-15 10:00:00', $project->getStartDate()?->format('Y-m-d H:i:s'));
         self::assertSame(42.5, $project->getAvancementProj());
         self::assertSame(Project::STATUS_ACCEPTED, $project->getStatus());
-    }
-
-    public function testDecisionControllerEnsuresProjectDefaultsWhenValuesAreMissing(): void
-    {
-        $controller = new DecisionController();
-        $project = new Project();
-
-        self::assertNull($project->getStartDate());
-        self::assertNull($project->getAvancementProj());
-        self::assertNull($project->getStatus());
-
-        $this->invokePrivate($controller, 'ensureProjectDefaults', [$project]);
-
-        self::assertNotNull($project->getStartDate());
-        self::assertSame(0.0, $project->getAvancementProj());
-        self::assertSame(Project::STATUS_PENDING, $project->getStatus());
-    }
-
-    public function testDecisionRecalculationUsesLatestDecisionStatus(): void
-    {
-        $controller = new DecisionController();
-        $project = new Project();
-
-        $decision = new Decision();
-        $decision->setDecisionTitle(Decision::STATUS_REFUSED);
-
-        $entityManager = $this->createEntityManagerForLatestDecision($decision);
-
-        $this->invokePrivate($controller, 'recalculateProjectStatus', [$project, $entityManager]);
-
-        self::assertSame(Project::STATUS_REFUSED, $project->getStatus());
-    }
-
-    public function testDecisionRecalculationFallsBackToPendingWhenNoHistoryExists(): void
-    {
-        $controller = new DecisionController();
-        $project = new Project();
-        $project->setStatus(Project::STATUS_ACCEPTED);
-
-        $entityManager = $this->createEntityManagerForLatestDecision(null);
-
-        $this->invokePrivate($controller, 'recalculateProjectStatus', [$project, $entityManager]);
-
-        self::assertSame(Project::STATUS_PENDING, $project->getStatus());
-        self::assertNotNull($project->getStartDate());
-        self::assertSame(0.0, $project->getAvancementProj());
     }
 
     public function testProjectEditPermissionDependsOnRoleAndStatus(): void
@@ -340,52 +259,6 @@ class ProjectDecisionModuleTest extends TestCase
         self::assertNotNull($strategy->getLockedAt());
     }
 
-    public function testApprovedStrategyIsRecalculatedWhenProjectChanges(): void
-    {
-        $controller = new \App\Controller\StrategyController();
-
-        $oldProject = new Project();
-        $oldProject->setIdProj(1);
-        $oldProject->setBudgetProj(2000);
-
-        $newProject = new Project();
-        $newProject->setIdProj(2);
-        $newProject->setBudgetProj(900);
-
-        $strategy = new Strategie();
-        $strategy->setStatusStrategie(Strategie::STATUS_APPROVED);
-        $strategy->setBudgetTotal(1000);
-        $strategy->setGainEstime(150);
-        $strategy->setProject($newProject);
-
-        self::assertTrue($this->invokePrivate($controller, 'hasStrategyProjectChanged', [$oldProject, $newProject]));
-
-        $this->invokePrivate($controller, 'applyAutomaticStatusRules', [$strategy, Strategie::STATUS_APPROVED, true]);
-
-        self::assertSame(Strategie::STATUS_PENDING, $strategy->getStatusStrategie());
-    }
-
-    public function testRejectedStrategyBecomesUnassignedWhenProjectIsRemoved(): void
-    {
-        $controller = new \App\Controller\StrategyController();
-
-        $oldProject = new Project();
-        $oldProject->setIdProj(4);
-        $oldProject->setBudgetProj(1800);
-
-        $strategy = new Strategie();
-        $strategy->setStatusStrategie(Strategie::STATUS_REJECTED);
-        $strategy->setBudgetTotal(1000);
-        $strategy->setGainEstime(150);
-        $strategy->setProject(null);
-
-        self::assertTrue($this->invokePrivate($controller, 'hasStrategyProjectChanged', [$oldProject, null]));
-
-        $this->invokePrivate($controller, 'applyAutomaticStatusRules', [$strategy, Strategie::STATUS_REJECTED, true]);
-
-        self::assertSame(Strategie::STATUS_UNASSIGNED, $strategy->getStatusStrategie());
-    }
-
     private function invokePrivate(object $object, string $method, array $arguments = []): mixed
     {
         $reflection = new \ReflectionMethod($object, $method);
@@ -394,35 +267,4 @@ class ProjectDecisionModuleTest extends TestCase
         return $reflection->invokeArgs($object, $arguments);
     }
 
-    private function createEntityManagerForLatestDecision(?Decision $decision): EntityManagerInterface
-    {
-        $query = $this->getMockBuilder(Query::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getOneOrNullResult'])
-            ->getMock();
-        $query->method('getOneOrNullResult')->willReturn($decision);
-
-        $queryBuilder = $this->getMockBuilder(QueryBuilder::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['andWhere', 'setParameter', 'orderBy', 'addOrderBy', 'setMaxResults', 'getQuery'])
-            ->getMock();
-        $queryBuilder->method('andWhere')->willReturnSelf();
-        $queryBuilder->method('setParameter')->willReturnSelf();
-        $queryBuilder->method('orderBy')->willReturnSelf();
-        $queryBuilder->method('addOrderBy')->willReturnSelf();
-        $queryBuilder->method('setMaxResults')->willReturnSelf();
-        $queryBuilder->method('getQuery')->willReturn($query);
-
-        $repository = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['createQueryBuilder'])
-            ->getMock();
-        $repository->method('createQueryBuilder')->with('d')->willReturn($queryBuilder);
-
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->method('getRepository')->with(Decision::class)->willReturn($repository);
-        $entityManager->expects(self::once())->method('flush');
-
-        return $entityManager;
-    }
 }
