@@ -241,7 +241,7 @@ final class ShopSeedListingsCommand extends Command
         $connection = $this->entityManager->getConnection();
 
         $existing = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idClient = ? AND titleProj = ? ORDER BY idProj DESC LIMIT 1',
+            'SELECT idProj FROM project WHERE user_id = ? AND titleProj = ? ORDER BY idProj DESC LIMIT 1',
             [$clientId, self::SEED_PROJECT_TITLE]
         );
         if ($existing > 0) {
@@ -258,7 +258,7 @@ final class ShopSeedListingsCommand extends Command
             'createdAtProj' => $now,
             'updatedAtProj' => $now,
             'avancementProj' => 0.0,
-            'idClient' => $clientId,
+            'user_id' => $clientId,
         ]);
 
         return (int) $connection->lastInsertId();

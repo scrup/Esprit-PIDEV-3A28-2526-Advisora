@@ -18,7 +18,7 @@ class Resource
 
     public const STATUSES = [
         self::STATUS_AVAILABLE => 'Disponible',
-        self::STATUS_RESERVED => 'Reservee',
+        self::STATUS_RESERVED => 'Réservée',
         self::STATUS_UNAVAILABLE => 'Indisponible',
     ];
 
@@ -28,20 +28,20 @@ class Resource
     private ?int $idRs = null;
 
     #[ORM\Column(type: 'string', nullable: false)]
-    private string $availabilityStatusRs;
+    private string $availabilityStatusRs = self::STATUS_AVAILABLE;
 
     #[ORM\Column(type: 'string', nullable: false)]
     #[Gedmo\Translatable]
-    private string $nomRs;
+    private string $nomRs = '';
 
     #[Gedmo\Locale]
     private ?string $locale = null;
 
     #[ORM\Column(type: 'integer', nullable: false)]
-    private int $QuantiteRs;
+    private int $QuantiteRs = 0;
 
     #[ORM\Column(type: 'float', nullable: false)]
-    private float $prixRs;
+    private float $prixRs = 0.0;
 
     #[ORM\ManyToOne(targetEntity: Cataloguefournisseur::class, inversedBy: 'resources')]
     #[ORM\JoinColumn(name: 'cataloguefournisseur_id', referencedColumnName: 'idFr', nullable: true, onDelete: 'SET NULL')]
@@ -64,6 +64,10 @@ class Resource
 
     public function __construct()
     {
+        $this->availabilityStatusRs = self::STATUS_AVAILABLE;
+        $this->nomRs = '';
+        $this->QuantiteRs = 0;
+        $this->prixRs = 0.0;
         $this->projects = new ArrayCollection();
     }
 
@@ -81,48 +85,50 @@ class Resource
 
     public function getAvailabilityStatusRs(): string
     {
-        return $this->availabilityStatusRs;
+        return isset($this->availabilityStatusRs)
+            ? $this->availabilityStatusRs
+            : self::STATUS_AVAILABLE;
     }
 
-    public function setAvailabilityStatusRs(string $availabilityStatusRs): self
+    public function setAvailabilityStatusRs(?string $availabilityStatusRs): self
     {
-        $this->availabilityStatusRs = $availabilityStatusRs;
+        $this->availabilityStatusRs = $availabilityStatusRs ?: self::STATUS_AVAILABLE;
 
         return $this;
     }
 
     public function getNomRs(): string
     {
-        return $this->nomRs;
+        return isset($this->nomRs) ? $this->nomRs : '';
     }
 
-    public function setNomRs(string $nomRs): self
+    public function setNomRs(?string $nomRs): self
     {
-        $this->nomRs = $nomRs;
+        $this->nomRs = $nomRs ?? '';
 
         return $this;
     }
 
     public function getQuantiteRs(): int
     {
-        return $this->QuantiteRs;
+        return isset($this->QuantiteRs) ? $this->QuantiteRs : 0;
     }
 
-    public function setQuantiteRs(int $QuantiteRs): self
+    public function setQuantiteRs(?int $QuantiteRs): self
     {
-        $this->QuantiteRs = $QuantiteRs;
+        $this->QuantiteRs = $QuantiteRs ?? 0;
 
         return $this;
     }
 
     public function getPrixRs(): float
     {
-        return $this->prixRs;
+        return isset($this->prixRs) ? $this->prixRs : 0.0;
     }
 
-    public function setPrixRs(float $prixRs): self
+    public function setPrixRs(?float $prixRs): self
     {
-        $this->prixRs = $prixRs;
+        $this->prixRs = $prixRs ?? 0.0;
 
         return $this;
     }
@@ -187,6 +193,7 @@ class Resource
     {
         if (!$this->projects->contains($project)) {
             $this->projects->add($project);
+            $project->addResource($this);
         }
 
         return $this;
@@ -194,7 +201,9 @@ class Resource
 
     public function removeProject(Project $project): self
     {
-        $this->projects->removeElement($project);
+        if ($this->projects->removeElement($project)) {
+            $project->removeResource($this);
+        }
 
         return $this;
     }
@@ -206,24 +215,24 @@ class Resource
 
     public function getName(): string
     {
-        return $this->nomRs;
+        return $this->getNomRs();
     }
 
-    public function setName(string $name): self
+    public function setName(?string $name): self
     {
-        $this->nomRs = $name;
+        $this->nomRs = $name ?? '';
 
         return $this;
     }
 
     public function getStatus(): string
     {
-        return $this->normalizeStatusValue($this->availabilityStatusRs);
+        return $this->normalizeStatusValue($this->getAvailabilityStatusRs());
     }
 
-    public function setStatus(string $status): self
+    public function setStatus(?string $status): self
     {
-        $this->availabilityStatusRs = $status;
+        $this->availabilityStatusRs = $status ?: self::STATUS_AVAILABLE;
 
         return $this;
     }
@@ -237,24 +246,24 @@ class Resource
 
     public function getQuantity(): int
     {
-        return $this->QuantiteRs;
+        return $this->getQuantiteRs();
     }
 
-    public function setQuantity(int $quantity): self
+    public function setQuantity(?int $quantity): self
     {
-        $this->QuantiteRs = $quantity;
+        $this->QuantiteRs = $quantity ?? 0;
 
         return $this;
     }
 
     public function getPrice(): float
     {
-        return $this->prixRs;
+        return $this->getPrixRs();
     }
 
-    public function setPrice(float $price): self
+    public function setPrice(?float $price): self
     {
-        $this->prixRs = $price;
+        $this->prixRs = $price ?? 0.0;
 
         return $this;
     }
@@ -274,7 +283,7 @@ class Resource
             return (string) $this->cataloguefournisseur->getNomFr();
         }
 
-        return 'Non assigne';
+        return 'Non assigné';
     }
 
     private function normalizeStatusValue(?string $status): string
@@ -283,9 +292,9 @@ class Resource
 
         return match ($normalized) {
             'AVAILABLE', 'DISPONIBLE' => self::STATUS_AVAILABLE,
-            'RESERVED', 'LOW_STOCK', 'MAINTENANCE', 'RESERVEE', 'RESERVE' => self::STATUS_RESERVED,
+            'RESERVED', 'LOW_STOCK', 'MAINTENANCE', 'RESERVEE', 'RÉSERVÉE', 'RESERVE', 'RÉSERVÉ' => self::STATUS_RESERVED,
             'UNAVAILABLE', 'OUT_OF_STOCK', 'INDISPONIBLE' => self::STATUS_UNAVAILABLE,
-            default => $normalized,
+            default => $normalized ?: self::STATUS_AVAILABLE,
         };
     }
 

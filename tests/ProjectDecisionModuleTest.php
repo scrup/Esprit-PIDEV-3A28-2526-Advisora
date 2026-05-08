@@ -46,6 +46,17 @@ class ProjectDecisionModuleTest extends TestCase
         self::assertTrue($this->invokePrivate($controller, 'hasBlockingProjectDependencies', [$projectWithRelations]));
     }
 
+    public function testNewProjectHasSafeFormDefaults(): void
+    {
+        $project = new Project();
+
+        self::assertSame('', $project->getTitle());
+        self::assertSame(0.0, $project->getLegacyBudget());
+        self::assertSame(0.0, $project->getAvancementProj());
+        self::assertInstanceOf(\DateTimeInterface::class, $project->getStartDate());
+        self::assertInstanceOf(\DateTimeInterface::class, $project->getEndDate());
+    }
+
     public function testDecisionControllerMapsLegacyDecisionValuesToProjectStatus(): void
     {
         $controller = new DecisionController();

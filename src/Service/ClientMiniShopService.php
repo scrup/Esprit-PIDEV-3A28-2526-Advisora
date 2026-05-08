@@ -318,7 +318,7 @@ final class ClientMiniShopService
         $conditions = [];
 
         if ($supplierId !== null && $supplierId > 0) {
-            $conditions[] = 'r.idFr = :supplierId';
+            $conditions[] = 'r.cataloguefournisseur_id = :supplierId';
             $parameters['supplierId'] = $supplierId;
         }
 

@@ -5,6 +5,7 @@ namespace App\Controller\Back;
 use App\Entity\User;
 use App\Form\ProfileType;
 use App\Form\UserType;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -238,8 +239,17 @@ final class UserController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         if ($this->isCsrfTokenValid('delete_user_' . $user->getIdUser(), (string) $request->request->get('_token'))) {
-            $entityManager->remove($user);
-            $entityManager->flush();
+            try {
+                $entityManager->remove($user);
+                $entityManager->flush();
+            } catch (ForeignKeyConstraintViolationException) {
+                $this->addFlash(
+                    'error',
+                    'Impossible de supprimer cet utilisateur car des donnees sont encore liees a son compte.'
+                );
+
+                return $this->redirectToRoute('back_user_index');
+            }
 
             $this->addFlash('success', 'Utilisateur supprimé avec succès.');
         } else {

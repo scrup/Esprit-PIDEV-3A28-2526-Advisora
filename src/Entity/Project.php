@@ -62,7 +62,7 @@ class Project
     private float $avancementProj;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projects')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     /**
@@ -115,6 +115,13 @@ class Project
 
     public function __construct()
     {
+        $now = new \DateTime();
+
+        $this->titleProj = '';
+        $this->budgetProj = 0.0;
+        $this->createdAtProj = $now;
+        $this->updatedAtProj = $now;
+        $this->avancementProj = 0.0;
         $this->decisions = new ArrayCollection();
         $this->investments = new ArrayCollection();
         $this->strategies = new ArrayCollection();
@@ -135,10 +142,9 @@ class Project
     }
 
     public function getTitleProj(): string
-    {
-        return $this->titleProj;
-    }
-
+{
+    return isset($this->titleProj) ? $this->titleProj : '';
+}
     public function setTitleProj(string $titleProj): self
     {
         $this->titleProj = $titleProj;
@@ -196,6 +202,10 @@ class Project
 
     public function getCreatedAtProj(): \DateTimeInterface
     {
+        if (!isset($this->createdAtProj)) {
+            $this->createdAtProj = new \DateTime();
+        }
+
         return $this->createdAtProj;
     }
 
@@ -231,6 +241,10 @@ class Project
 
     public function getUpdatedAtProj(): \DateTimeInterface
     {
+        if (!isset($this->updatedAtProj)) {
+            $this->updatedAtProj = new \DateTime();
+        }
+
         return $this->updatedAtProj;
     }
 
@@ -238,6 +252,10 @@ class Project
 
     public function getAvancementProj(): float
     {
+        if (!isset($this->avancementProj)) {
+            $this->avancementProj = 0.0;
+        }
+
         return $this->avancementProj;
     }
 
@@ -398,10 +416,9 @@ class Project
     }
 
     public function getTitle(): string
-    {
-        return $this->titleProj;
-    }
-
+{
+    return isset($this->titleProj) ? $this->titleProj : '';
+}
     public function setTitle(string $title): self
     {
         $this->titleProj = $title;
@@ -447,24 +464,28 @@ class Project
 
     public function getStartDate(): \DateTimeInterface
     {
-        return $this->createdAtProj;
+        return $this->getCreatedAtProj();
     }
 
     public function setStartDate(\DateTimeInterface $dt): self
     {
-        $this->createdAtProj = $dt;
+        $this->createdAtProj = $dt instanceof \DateTime
+            ? $dt
+            : \DateTime::createFromInterface($dt);
 
         return $this;
     }
 
     public function getEndDate(): \DateTimeInterface
     {
-        return $this->updatedAtProj;
+        return $this->getUpdatedAtProj();
     }
 
     public function setEndDate(\DateTimeInterface $dt): self
     {
-        $this->updatedAtProj = $dt;
+        $this->updatedAtProj = $dt instanceof \DateTime
+            ? $dt
+            : \DateTime::createFromInterface($dt);
 
         return $this;
     }

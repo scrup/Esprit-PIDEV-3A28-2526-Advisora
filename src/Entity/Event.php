@@ -136,19 +136,27 @@ class Event
         return $this->startDateEv;
     }
 
- public function setStartDateEv(?\DateTimeImmutable $startDateEv): self
-{
-    $this->startDateEv = $startDateEv;
+    public function setStartDateEv(?\DateTimeInterface $startDateEv): self
+    {
+        if ($startDateEv !== null) {
+            $this->startDateEv = $startDateEv instanceof \DateTimeImmutable
+                ? \DateTime::createFromImmutable($startDateEv)
+                : $startDateEv;
+        }
 
-    return $this;
-}
+        return $this;
+    }
 
-public function setEndDateEv(?\DateTimeImmutable $endDateEv): self
-{
-    $this->endDateEv = $endDateEv;
+    public function setEndDateEv(?\DateTimeInterface $endDateEv): self
+    {
+        if ($endDateEv !== null) {
+            $this->endDateEv = $endDateEv instanceof \DateTimeImmutable
+                ? \DateTime::createFromImmutable($endDateEv)
+                : $endDateEv;
+        }
 
-    return $this;
-}
+        return $this;
+    }
 
     public function getEndDateEv(): \DateTimeInterface
     {
@@ -261,7 +269,7 @@ public function setEndDateEv(?\DateTimeImmutable $endDateEv): self
 
     public function getTimelineStatus(): string
     {
-        $now = new \DateTimeImmutable();
+        $now = new \DateTime();
 
         if ($this->endDateEv < $now) {
             return 'completed';
@@ -317,7 +325,7 @@ public function setEndDateEv(?\DateTimeImmutable $endDateEv): self
 
     public function hasStarted(): bool
     {
-        return $this->startDateEv <= new \DateTimeImmutable();
+        return $this->startDateEv <= new \DateTime();
     }
 
     #[Assert\Callback]

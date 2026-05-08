@@ -36,9 +36,6 @@ final class ClientMarketplaceService
     private const TXN_BUY = 'SHOP_BUY';
     private const TXN_SELL = 'SHOP_SELL';
     private const DEFAULT_COIN_RATE = 10.0;
-    private const FIABILO_API_URL = '';
-    private const FIABILO_API_TOKEN = '';
-    private const STRIPE_SECRET_KEY = '';
     private const STRIPE_CURRENCY = 'eur';
 
     private ?string $quantityColumnCache = null;
@@ -82,6 +79,8 @@ final class ClientMarketplaceService
                 'balance' => $walletBalance,
                 'pending_topups' => $pendingTopups,
                 'coin_rate' => $this->getCoinRate(),
+                'stripe_available' => $this->isStripeAvailable(),
+                'default_topup_provider' => $this->getDefaultTopupProvider(),
             ],
             'projects' => $projects,
             'publishable_reservations' => $publishableReservations,
@@ -476,7 +475,7 @@ final class ClientMarketplaceService
                     'designation' => $resourceName,
                     'nb_article' => (string) $quantity,
                     'msg' => $this->resolveDeliveryMessage($deliveryPayload, $orderId, $resourceName, $quantity),
-                    'token' => self::FIABILO_API_TOKEN,
+                    'token' => $this->getFiabiloApiToken(),
                 ]
             );
 
@@ -569,6 +568,12 @@ final class ClientMarketplaceService
                     $connection->update('resource_wallet_topup', [
                         'note' => 'Stripe checkout error: ' . ($this->sanitizeText($throwable->getMessage(), 170) ?: 'inconnue'),
                     ], ['idTopup' => $topupId]);
+
+                    throw new \RuntimeException(
+                        'Recharge Stripe impossible: ' . ($this->sanitizeText($throwable->getMessage(), 170) ?: 'configuration invalide.'),
+                        0,
+                        $throwable
+                    );
                 }
             }
         }
@@ -726,6 +731,16 @@ final class ClientMarketplaceService
         $parsed = is_numeric($raw) ? (float) $raw : self::DEFAULT_COIN_RATE;
 
         return $parsed > 0 ? round($parsed, 3) : self::DEFAULT_COIN_RATE;
+    }
+
+    public function isStripeAvailable(): bool
+    {
+        return $this->getStripeSecretKey() !== null;
+    }
+
+    public function getDefaultTopupProvider(): string
+    {
+        return $this->isStripeAvailable() ? 'STRIPE' : 'MANUAL';
     }
 
     public function coinsToMoney(float $coins): float
@@ -1589,9 +1604,14 @@ final class ClientMarketplaceService
             throw new \RuntimeException('Stripe SDK introuvable.');
         }
 
+        $stripeSecretKey = $this->getStripeSecretKey();
+        if ($stripeSecretKey === null) {
+            throw new \RuntimeException('Stripe n est pas configure sur ce serveur.');
+        }
+
         $amountCents = max(1, (int) round($amountMoney * 100));
 
-        \Stripe\Stripe::setApiKey(self::STRIPE_SECRET_KEY);
+        \Stripe\Stripe::setApiKey($stripeSecretKey);
         $session = \Stripe\Checkout\Session::create([
             'mode' => 'payment',
             'payment_method_types' => ['card'],
@@ -1631,7 +1651,12 @@ final class ClientMarketplaceService
             throw new \RuntimeException('Stripe SDK introuvable.');
         }
 
-        \Stripe\Stripe::setApiKey(self::STRIPE_SECRET_KEY);
+        $stripeSecretKey = $this->getStripeSecretKey();
+        if ($stripeSecretKey === null) {
+            throw new \RuntimeException('Stripe n est pas configure sur ce serveur.');
+        }
+
+        \Stripe\Stripe::setApiKey($stripeSecretKey);
         $session = \Stripe\Checkout\Session::retrieve($sessionId);
 
         return $session->toArray();
@@ -1654,6 +1679,40 @@ final class ClientMarketplaceService
             'AUTO_CHECKOUT' => 'Recharge automatique apres echec checkout',
             default => 'Recharge initiee depuis la boutique',
         };
+    }
+
+    private function getStripeSecretKey(): ?string
+    {
+        $raw = $_ENV['STRIPE_SECRET_KEY']
+            ?? $_SERVER['STRIPE_SECRET_KEY']
+            ?? getenv('STRIPE_SECRET_KEY')
+            ?: null;
+
+        $value = is_string($raw) ? trim($raw) : '';
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function getFiabiloApiUrl(): ?string
+    {
+        $raw = $_ENV['FIABILO_API_URL']
+            ?? $_SERVER['FIABILO_API_URL']
+            ?? getenv('FIABILO_API_URL')
+            ?: null;
+
+        $value = is_string($raw) ? trim($raw) : '';
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function getFiabiloApiToken(): string
+    {
+        $raw = $_ENV['FIABILO_API_TOKEN']
+            ?? $_SERVER['FIABILO_API_TOKEN']
+            ?? getenv('FIABILO_API_TOKEN')
+            ?: '';
+
+        return is_string($raw) ? trim($raw) : '';
     }
 
     /**
@@ -1714,12 +1773,17 @@ final class ClientMarketplaceService
      */
     private function callFiabiloApi(array $payload): array
     {
+        $fiabiloApiUrl = $this->getFiabiloApiUrl();
+        if ($fiabiloApiUrl === null) {
+            throw new \RuntimeException('Fiabilo n est pas configure sur ce serveur.');
+        }
+
         $encoded = http_build_query($payload, '', '&', PHP_QUERY_RFC3986);
         $responseBody = null;
         $statusCode = null;
 
         if (function_exists('curl_init')) {
-            $curl = curl_init(self::FIABILO_API_URL);
+            $curl = curl_init($fiabiloApiUrl);
             if ($curl === false) {
                 throw new \RuntimeException('Initialisation cURL impossible.');
             }
@@ -1756,7 +1820,7 @@ final class ClientMarketplaceService
                 ],
             ]);
 
-            $raw = @file_get_contents(self::FIABILO_API_URL, false, $context);
+            $raw = @file_get_contents($fiabiloApiUrl, false, $context);
             $responseBody = is_string($raw) ? $raw : '';
 
             $statusCode = 0;

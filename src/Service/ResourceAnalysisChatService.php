@@ -13,9 +13,8 @@ namespace App\Service;
  */
 class ResourceAnalysisChatService
 {
-    private const HARD_API_KEY = '';
-    private const HARD_MODEL = 'gpt-4o';
-    private const HARD_BASE_URL = '';
+    private const DEFAULT_MODEL = 'gpt-4o';
+    private const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
     private const HARD_MAX_TOKENS = 320;
     private const OFF_TOPIC_MESSAGE = 'Desole, je reponds uniquement aux questions de gestion des ressources/projets (stock, reservations, fournisseurs, prix, KPI, actions).';
     /**
@@ -52,6 +51,20 @@ class ResourceAnalysisChatService
         'inventaire',
         'delai',
         'confiance',
+        'priorite',
+        'urgent',
+        'urgence',
+        'risque',
+        'probleme',
+        'problemes',
+        'ameliorer',
+        'optimiser',
+        'recommande',
+        'recommandation',
+        'faire',
+        'maintenant',
+        'resume',
+        'resumer',
     ];
 
     private string $apiKey;
@@ -61,9 +74,9 @@ class ResourceAnalysisChatService
 
     public function __construct()
     {
-        $this->apiKey = self::HARD_API_KEY;
-        $this->model = self::HARD_MODEL;
-        $this->baseUrl = rtrim(self::HARD_BASE_URL, '/');
+        $this->apiKey = $this->readEnv('OPENAI_API_KEY') ?? $this->readEnv('PROJECT_ESTIMATION_OPENAI_API_KEY') ?? '';
+        $this->model = $this->readEnv('OPENAI_MODEL') ?? self::DEFAULT_MODEL;
+        $this->baseUrl = rtrim($this->readEnv('OPENAI_API_BASE_URL') ?? self::DEFAULT_BASE_URL, '/');
         $this->maxTokens = self::HARD_MAX_TOKENS;
     }
 
@@ -77,7 +90,7 @@ class ResourceAnalysisChatService
             return 'Merci de poser une question sur l analyse ressources.';
         }
 
-        if (!$this->isManagementQuestion($question)) {
+        if (!$this->isManagementQuestion($analysis, $question)) {
             return self::OFF_TOPIC_MESSAGE;
         }
 
@@ -307,7 +320,10 @@ class ResourceAnalysisChatService
         return "Voici les fournisseurs:\n" . implode("\n", $lines);
     }
 
-    private function isManagementQuestion(string $question): bool
+    /**
+     * @param array<string, mixed> $analysis
+     */
+    private function isManagementQuestion(array $analysis, string $question): bool
     {
         $normalized = $this->normalizeText($question);
         if ($normalized === '') {
@@ -320,7 +336,44 @@ class ResourceAnalysisChatService
             }
         }
 
+        $genericQuestionHints = [
+            'que faire',
+            'quoi faire',
+            'priorite',
+            'priorites',
+            'resume',
+            'resume moi',
+            'explique',
+            'analyse',
+            'situation',
+            'maintenant',
+            'urgent',
+            'urgence',
+            'risque',
+            'probleme',
+            'problemes',
+            'recommande',
+        ];
+
+        foreach ($genericQuestionHints as $hint) {
+            if (str_contains($normalized, $hint)) {
+                return $this->analysisContainsUsefulData($analysis);
+            }
+        }
+
         return false;
+    }
+
+    /**
+     * @param array<string, mixed> $analysis
+     */
+    private function analysisContainsUsefulData(array $analysis): bool
+    {
+        $kpis = is_array($analysis['kpis'] ?? null) ? $analysis['kpis'] : [];
+        $actions = is_array($analysis['actions'] ?? null) ? $analysis['actions'] : [];
+        $resources = is_array($analysis['resource_signals'] ?? null) ? $analysis['resource_signals'] : [];
+
+        return $kpis !== [] || $actions !== [] || $resources !== [];
     }
 
     private function isResourceListingQuestion(string $question): bool
@@ -406,6 +459,19 @@ class ResourceAnalysisChatService
         $value = preg_replace('/\s+/', ' ', $value) ?? $value;
 
         return trim($value);
+    }
+
+    private function readEnv(string $key): ?string
+    {
+        $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?: null;
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 
     /**

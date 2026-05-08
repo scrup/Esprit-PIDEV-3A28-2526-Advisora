@@ -141,7 +141,7 @@ class ResourceActionAnalysisService
                 COALESCE(NULLIF(TRIM(cf.fournisseur), \'\'), NULLIF(TRIM(cf.nomFr), \'\'), \'Non renseigne\') AS supplier_name,
                 ' . $reservedExpression . ' AS stock_reserved
             FROM resource r
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
             LEFT JOIN project_resources pr ON pr.resource_id = r.idRs
             GROUP BY
                 r.idRs,

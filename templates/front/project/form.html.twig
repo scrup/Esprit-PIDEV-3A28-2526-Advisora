@@ -34,9 +34,9 @@
 
         <div class="pm-form-card">
             <div class="pm-info-banner">
-                <strong>Date de crÃ©ation :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignÃ©e Ã  l enregistrement.' }}
+                <strong>Date de création :</strong> {{ project.startDate ? project.startDate|date('d/m/Y') : 'Sera renseignée à  l enregistrement.' }}
                 <br>
-                <strong>DerniÃ¨re mise Ã  jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
+                <strong>Dernière mise à jour :</strong> {{ project.endDate ? project.endDate|date('d/m/Y H:i') : 'Aucune pour le moment.' }}
             </div>
             {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
                 {{ form_errors(form) }}

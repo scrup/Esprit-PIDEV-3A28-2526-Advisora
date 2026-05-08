@@ -8,6 +8,8 @@ use Symfony\Component\Process\Process;
 
 class PythonRecommendationService
 {
+    private const WINDOWS_STORE_PYTHON_MARKER = '\\appdata\\local\\microsoft\\windowsapps\\python.exe';
+
     private string $pythonPath;
     private string $scriptPath;
 
@@ -35,8 +37,15 @@ class PythonRecommendationService
         }
 
         $lastException = null;
+        $usableCandidates = [];
 
         foreach ($this->buildPythonCandidates($this->pythonPath) as $pythonCandidate) {
+            if (!$this->isUsablePythonCandidate($pythonCandidate)) {
+                continue;
+            }
+
+            $usableCandidates[] = $pythonCandidate;
+
             try {
                 $decoded = $this->runRecommendationProcess($pythonCandidate, $jsonData);
                 $this->pythonPath = $pythonCandidate;
@@ -45,6 +54,10 @@ class PythonRecommendationService
             } catch (\Throwable $exception) {
                 $lastException = $exception;
             }
+        }
+
+        if ($usableCandidates === []) {
+            throw new \RuntimeException('Le moteur de recommandation est indisponible : Python n est pas installe ou accessible sur ce serveur.');
         }
 
         if ($lastException instanceof \Throwable) {
@@ -167,6 +180,7 @@ class PythonRecommendationService
             $candidates[] = $localAppData . '\\Programs\\Python\\Python311\\python.exe';
             $candidates[] = $localAppData . '\\Programs\\Python\\Python312\\python.exe';
             $candidates[] = $localAppData . '\\Programs\\Python\\Python313\\python.exe';
+            $candidates[] = $localAppData . '\\Programs\\Python\\Python314\\python.exe';
         }
 
         $candidates[] = 'python';
@@ -191,12 +205,37 @@ class PythonRecommendationService
         return $resolved;
     }
 
+    private function isUsablePythonCandidate(string $candidate): bool
+    {
+        $normalizedCandidate = strtolower(str_replace('/', '\\', trim($candidate)));
+
+        if ($normalizedCandidate === '') {
+            return false;
+        }
+
+        if (str_contains($normalizedCandidate, self::WINDOWS_STORE_PYTHON_MARKER)) {
+            return false;
+        }
+
+        $versionProcess = new Process([$candidate, '--version'], null, $this->buildPythonEnv());
+        $versionProcess->setTimeout(5);
+        $versionProcess->run();
+
+        if (!$versionProcess->isSuccessful()) {
+            return false;
+        }
+
+        $versionOutput = strtolower(trim($versionProcess->getOutput() . ' ' . $versionProcess->getErrorOutput()));
+
+        return str_starts_with($versionOutput, 'python ');
+    }
+
     private function resolvePreferredPythonPath(): string
     {
         $configuredPythonPath = trim((string) (
-            $_ENV['PYTHON_EXECUTABLE']
-            ?? $_SERVER['PYTHON_EXECUTABLE']
-            ?? getenv('PYTHON_EXECUTABLE')
+            $_ENV['PYTHON_PATH']
+            ?? $_SERVER['PYTHON_PATH']
+            ?? getenv('PYTHON_PATH')
             ?: ''
         ));
 

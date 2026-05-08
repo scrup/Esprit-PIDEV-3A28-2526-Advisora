@@ -157,6 +157,14 @@
                                                 <small>{{ topup.createdAt is defined and topup.createdAt ? topup.createdAt|date('d/m/Y H:i') : 'Date non disponible' }}</small>
                                                 {% if topup.paymentUrl|default('') %}
                                                     <a href="{{ topup.paymentUrl }}" target="_blank" rel="noreferrer">Payer maintenant</a>
+                                                {% elseif (topup.status|default('PENDING')) == 'PENDING' and topup.idTopup is defined %}
+                                                    <form method="post" action="{{ path('app_shop_wallet_topup_confirm') }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('shop_wallet_topup_confirm') }}">
+                                                        <input type="hidden" name="_redirect_page" value="wallet">
+                                                        <input type="hidden" name="_redirect_fragment" value="shop-wallet">
+                                                        <input type="hidden" name="topup_id" value="{{ topup.idTopup }}">
+                                                        <button type="submit" class="shop-btn shop-btn-secondary">Confirmer</button>
+                                                    </form>
                                                 {% else %}
                                                     <span class="mini-shop-wallet-topup-status">{{ topup.status|default('PENDING') }}</span>
                                                 {% endif %}
@@ -214,13 +222,19 @@
                             <div class="mini-shop-field-group">
                                 <label for="topup_provider">Fournisseur</label>
                                 <select id="topup_provider" name="provider">
-                                    {% set active_topup_provider = pending_market_buy.topup_provider|default('STRIPE') %}
+                                    {% set active_topup_provider = pending_market_buy.topup_provider|default(marketplace.wallet.default_topup_provider|default('MANUAL')) %}
                                     <option value="STRIPE" {{ active_topup_provider == 'STRIPE' ? 'selected' : '' }}>STRIPE</option>
                                     <option value="FLOUCI" {{ active_topup_provider == 'FLOUCI' ? 'selected' : '' }}>FLOUCI</option>
                                     <option value="D17" {{ active_topup_provider == 'D17' ? 'selected' : '' }}>D17</option>
                                     <option value="MANUAL" {{ active_topup_provider == 'MANUAL' ? 'selected' : '' }}>MANUAL</option>
                                 </select>
-                                <small class="mini-shop-field-hint">Choisissez le circuit de paiement adapte a votre workflow de recharge.</small>
+                                <small class="mini-shop-field-hint">
+                                    {% if marketplace.wallet.stripe_available|default(false) %}
+                                        Choisissez le circuit de paiement adapte a votre workflow de recharge.
+                                    {% else %}
+                                        Stripe n est pas configure sur ce serveur. Utilisez MANUAL ou confirmez une recharge en attente manuellement.
+                                    {% endif %}
+                                </small>
                             </div>
 
                             <div class="mini-shop-form-actions">

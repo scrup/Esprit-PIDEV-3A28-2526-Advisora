@@ -475,6 +475,7 @@ def recommend_strategy(data: dict[str, Any]) -> dict[str, Any]:
 if __name__ == "__main__":
     try:
         raw_input = sys.argv[1] if len(sys.argv) > 1 else sys.stdin.read()
+        raw_input = raw_input.lstrip("\ufeff")
         data = json.loads(raw_input or "{}")
 
         if not isinstance(data, dict):

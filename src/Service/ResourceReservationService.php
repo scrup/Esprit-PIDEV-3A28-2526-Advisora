@@ -130,8 +130,8 @@ class ResourceReservationService
              FROM project_resources pr
              INNER JOIN project p ON p.idProj = pr.project_id
              INNER JOIN resource r ON r.idRs = pr.resource_id
-             LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
-             WHERE p.idClient = ?
+             LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
+             WHERE p.user_id = ?
              ORDER BY p.idProj DESC, pr.resource_id DESC',
             [(int) $user->getIdUser()]
         );
@@ -154,7 +154,7 @@ class ResourceReservationService
                 pr.resource_id AS resource_id,
                 p.titleProj AS project_title,
                 p.stateProj AS project_status,
-                p.idClient AS client_id,
+                p.user_id AS client_id,
                 u.nomUser AS client_lastname,
                 u.PrenomUser AS client_firstname,
                 u.EmailUser AS client_email,
@@ -167,9 +167,9 @@ class ResourceReservationService
                 ' . $quantitySelect . '
              FROM project_resources pr
              INNER JOIN project p ON p.idProj = pr.project_id
-             INNER JOIN `user` u ON u.idUser = p.idClient
+             INNER JOIN `user` u ON u.idUser = p.user_id
              INNER JOIN resource r ON r.idRs = pr.resource_id
-             LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+             LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
              ORDER BY p.idProj DESC, pr.resource_id DESC'
         );
     }
@@ -343,7 +343,7 @@ class ResourceReservationService
 
         if ($projectIdOrNull !== null && $projectIdOrNull > 0) {
             $projectId = (int) $connection->fetchOne(
-                'SELECT idProj FROM project WHERE idProj = ? AND idClient = ?',
+                'SELECT idProj FROM project WHERE idProj = ? AND user_id = ?',
                 [$projectIdOrNull, $clientId]
             );
 
@@ -355,7 +355,7 @@ class ResourceReservationService
         }
 
         $latestProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idClient = ? ORDER BY idProj DESC LIMIT 1',
+            'SELECT idProj FROM project WHERE user_id = ? ORDER BY idProj DESC LIMIT 1',
             [$clientId]
         );
 
@@ -372,7 +372,7 @@ class ResourceReservationService
             'createdAtProj' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'updatedAtProj' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'avancementProj' => 0,
-            'idClient' => $clientId,
+            'user_id' => $clientId,
         ]);
 
         return (int) $connection->lastInsertId();
@@ -394,7 +394,7 @@ class ResourceReservationService
         }
 
         $resolved = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idProj = ? AND idClient = ?',
+            'SELECT idProj FROM project WHERE idProj = ? AND user_id = ?',
             [$projectId, (int) $clientId]
         );
 
@@ -494,7 +494,7 @@ class ResourceReservationService
                     pr.resource_id AS resource_id,
                     p.titleProj AS project_title,
                     p.stateProj AS project_status,
-                    p.idClient AS client_id,
+                    p.user_id AS client_id,
                     u.nomUser AS client_lastname,
                     u.PrenomUser AS client_firstname,
                     u.EmailUser AS client_email,
@@ -507,15 +507,15 @@ class ResourceReservationService
                     ' . $quantitySelect . '
                 FROM project_resources pr
                 INNER JOIN project p ON p.idProj = pr.project_id
-                INNER JOIN `user` u ON u.idUser = p.idClient
+                INNER JOIN `user` u ON u.idUser = p.user_id
                 INNER JOIN resource r ON r.idRs = pr.resource_id
-                LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+                LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
                 WHERE pr.project_id = ? AND pr.resource_id = ?';
 
         $params = [$projectId, $resourceId];
 
         if (!$allowAll) {
-            $sql .= ' AND p.idClient = ?';
+            $sql .= ' AND p.user_id = ?';
             $params[] = (int) $clientId;
         }
 

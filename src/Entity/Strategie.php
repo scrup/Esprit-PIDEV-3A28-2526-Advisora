@@ -25,7 +25,7 @@ class Strategie
     private ?int $idStrategie = null;
 
     #[ORM\Column(type: 'string', nullable: false)]
-    private string $statusStrategie;
+    private string $statusStrategie = self::STATUS_PENDING;
 
     #[ORM\Column(type: 'datetime', nullable: false)]
     private \DateTimeInterface $CreatedAtS;
@@ -43,7 +43,7 @@ class Strategie
 
     #[ORM\Column(type: 'string', nullable: false)]
     #[Gedmo\Translatable]
-    private string $nomStrategie;
+    private string $nomStrategie = '';
 
     #[ORM\Column(type: 'string', nullable: true)]
     #[Gedmo\Translatable]
@@ -81,6 +81,8 @@ class Strategie
 
     public function __construct()
     {
+        $this->CreatedAtS = new \DateTime();
+        $this->statusStrategie = self::STATUS_PENDING;
         $this->objectives = new ArrayCollection();
         $this->swotItems = new ArrayCollection();
     }
@@ -99,18 +101,22 @@ class Strategie
 
     public function getStatusStrategie(): string
     {
+        $this->ensureRequiredFieldsAreInitialized();
+
         return $this->statusStrategie;
     }
 
-    public function setStatusStrategie(string $statusStrategie): self
+    public function setStatusStrategie(?string $statusStrategie): self
     {
-        $this->statusStrategie = $statusStrategie;
+        $this->statusStrategie = $statusStrategie ?: self::STATUS_PENDING;
 
         return $this;
     }
 
     public function getStatusLabel(): string
     {
+        $this->ensureRequiredFieldsAreInitialized();
+
         return match ($this->statusStrategie) {
             self::STATUS_PENDING => 'En attente',
             self::STATUS_APPROVED => 'Acceptée',
@@ -123,6 +129,8 @@ class Strategie
 
     public function getStatusCssClass(): string
     {
+        $this->ensureRequiredFieldsAreInitialized();
+
         return match ($this->statusStrategie) {
             self::STATUS_PENDING => 'pending',
             self::STATUS_APPROVED => 'approved',
@@ -135,10 +143,17 @@ class Strategie
 
     public function getCreatedAtS(): ?\DateTimeInterface
     {
-        return isset($this->CreatedAtS) ? $this->CreatedAtS : null;
+        $this->ensureRequiredFieldsAreInitialized();
+
+        return $this->CreatedAtS;
     }
 
-    
+    public function setCreatedAtS(?\DateTimeInterface $CreatedAtS): self
+    {
+        $this->CreatedAtS = $CreatedAtS ?? new \DateTime();
+
+        return $this;
+    }
 
     public function getLockedAt(): ?\DateTimeInterface
     {
@@ -151,8 +166,6 @@ class Strategie
 
         return $this;
     }
-
-    
 
     public function getProject(): ?Project
     {
@@ -180,12 +193,14 @@ class Strategie
 
     public function getNomStrategie(): string
     {
+        $this->ensureRequiredFieldsAreInitialized();
+
         return $this->nomStrategie;
     }
 
-    public function setNomStrategie(string $nomStrategie): self
+    public function setNomStrategie(?string $nomStrategie): self
     {
-        $this->nomStrategie = $nomStrategie;
+        $this->nomStrategie = $nomStrategie ?? '';
 
         return $this;
     }
@@ -233,7 +248,9 @@ class Strategie
 
     public function setBudgetTotal(int|float|string|null $budgetTotal): self
     {
-        $this->budgetTotal = $budgetTotal !== null ? number_format((float) $budgetTotal, 2, '.', '') : null;
+        $this->budgetTotal = $budgetTotal !== null
+            ? number_format((float) $budgetTotal, 2, '.', '')
+            : null;
 
         return $this;
     }
@@ -301,7 +318,11 @@ class Strategie
 
     public function removeObjective(Objective $objective): self
     {
-        $this->objectives->removeElement($objective);
+        if ($this->objectives->removeElement($objective)) {
+            if ($objective->getStrategie() === $this) {
+                $objective->setStrategie(null);
+            }
+        }
 
         return $this;
     }
@@ -326,7 +347,11 @@ class Strategie
 
     public function removeSwotItem(SwotItem $swotItem): self
     {
-        $this->swotItems->removeElement($swotItem);
+        if ($this->swotItems->removeElement($swotItem)) {
+            if ($swotItem->getStrategie() === $this) {
+                $swotItem->setStrategie(null);
+            }
+        }
 
         return $this;
     }
@@ -334,8 +359,21 @@ class Strategie
     #[ORM\PrePersist]
     public function initializeCreatedAt(): void
     {
+        $this->ensureRequiredFieldsAreInitialized();
+    }
+
+    private function ensureRequiredFieldsAreInitialized(): void
+    {
         if (!isset($this->CreatedAtS)) {
             $this->CreatedAtS = new \DateTime();
+        }
+
+        if (!isset($this->statusStrategie) || $this->statusStrategie === '') {
+            $this->statusStrategie = self::STATUS_PENDING;
+        }
+
+        if (!isset($this->nomStrategie)) {
+            $this->nomStrategie = '';
         }
     }
 }
