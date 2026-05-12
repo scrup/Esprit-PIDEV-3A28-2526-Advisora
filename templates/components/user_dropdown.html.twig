@@ -46,6 +46,7 @@
         {% endif %}
 
         <form method="post" action="{{ path('app_logout') }}" class="user-dropdown-logout">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
             <button type="submit" class="user-dropdown-link user-dropdown-logout-btn">
                 <i class="fas fa-right-from-bracket"></i>
                 <span>Deconnexion</span>

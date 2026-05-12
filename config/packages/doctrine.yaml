@@ -1,10 +1,9 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
-        options:
-            1002: "SET time_zone = 'Africa/Lagos'"
-
-        # server_version: '8.0'
+        server_version: '8.0'
+        # options:
+        #     1002: "SET time_zone = 'Africa/Lagos'"
 
         profiling_collect_backtrace: true
         use_savepoints: true

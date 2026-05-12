@@ -3,32 +3,45 @@
     data-notification-center
     data-feed-url="{{ path('notification_feed') }}"
     data-consume-url-base="{{ path('notification_feed')|replace({'/feed': ''}) }}"
+    data-clear-url="{{ path('notification_clear') }}"
+    data-sound-url="{{ asset('assets/notification.wav') }}"
 >
     <button class="notification-toggle" type="button" data-notification-toggle aria-expanded="false" aria-haspopup="dialog">
         <span class="notification-toggle-icon"><i class="fas fa-bell"></i></span>
         <span class="notification-toggle-copy">
             <strong>Notifications</strong>
-            <small data-notification-audio-state>Desactive</small>
+            <small data-notification-audio-state>Actif</small>
         </span>
         <span class="notification-toggle-badge" data-notification-count>0</span>
     </button>
 
     <div class="notification-panel" data-notification-panel hidden>
-        <div class="notification-panel-head">
-            <div>
-                <strong>Centre de notifications</strong>
-                <span data-notification-panel-subtitle>Lecture vocale inactive</span>
-            </div>
-            <button class="notification-audio-toggle" type="button" data-notification-audio-toggle>
-                <span data-notification-audio-toggle-label>Activer</span>
-            </button>
-            <div class="notification-panel-shortcuts">
-                <span><kbd>J</kbd> Activer</span>
-                <span><kbd>F</kbd> Desactiver</span>
-            </div>
+    <!-- HEADER: title, audio state, shortcuts -->
+    <div class="notification-panel-head">
+        <div>
+            <strong>Notifications</strong>
+            <span data-notification-panel-subtitle>Actif</span>
+            <span data-notification-browser-state></span>
         </div>
-        <div class="notification-panel-list" data-notification-list>
-            <p class="notification-empty">Aucune notification active.</p>
+        <div class="notification-panel-shortcuts">
+            <span><kbd>J</kbd> Voix on</span>
+            <span><kbd>F</kbd> Voix off</span>
         </div>
     </div>
+
+    <!-- NOTIFICATION LIST -->
+    <div class="notification-panel-list" data-notification-list>
+        <p class="notification-empty">Aucune notification active.</p>
+    </div>
+
+    <!-- FOOTER: browser toggle + clear button -->
+    <div class="notification-panel-footer">
+        <button class="notification-browser-toggle" type="button" data-notification-browser-toggle>
+            <span data-notification-browser-toggle-label>Activer son notification</span>
+        </button>
+        <button class="notification-clear-btn" type="button" data-notification-clear>
+            Tout effacer
+        </button>
+    </div>
+</div>
 </div>

@@ -14,6 +14,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'objective')]
 class Objective
 {
+    public const TOWS_TYPE_SO = 'SO';
+    public const TOWS_TYPE_WO = 'WO';
+    public const TOWS_TYPE_ST = 'ST';
+    public const TOWS_TYPE_WT = 'WT';
+
     public const PRIORITY_LOW = 1;
     public const PRIORITY_MEDIUM = 2;
     public const PRIORITY_HIGH = 3;
@@ -117,6 +122,17 @@ class Objective
     #[Gedmo\Translatable]
     private ?string $nomObj = null;
 
+    #[ORM\Column(name: 'tows_type', type: 'string', length: 2, nullable: true)]
+    private ?string $towsType = null;
+
+    #[ORM\ManyToOne(targetEntity: SwotItem::class)]
+    #[ORM\JoinColumn(name: 'tows_source_swot_item_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?SwotItem $towsSourceSwotItem = null;
+
+    #[ORM\ManyToOne(targetEntity: SwotItem::class)]
+    #[ORM\JoinColumn(name: 'tows_target_swot_item_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?SwotItem $towsTargetSwotItem = null;
+
     #[Gedmo\Locale]
     private ?string $locale = null;
 
@@ -136,6 +152,50 @@ class Objective
     {
         $this->nomObj = $nomObj;
         return $this;
+    }
+
+    public function getTowsType(): ?string
+    {
+        return $this->towsType;
+    }
+
+    public function setTowsType(?string $towsType): self
+    {
+        $normalized = $towsType !== null ? strtoupper(trim($towsType)) : null;
+        $this->towsType = in_array($normalized, [self::TOWS_TYPE_SO, self::TOWS_TYPE_WO, self::TOWS_TYPE_ST, self::TOWS_TYPE_WT], true)
+            ? $normalized
+            : null;
+
+        return $this;
+    }
+
+    public function getTowsSourceSwotItem(): ?SwotItem
+    {
+        return $this->towsSourceSwotItem;
+    }
+
+    public function setTowsSourceSwotItem(?SwotItem $towsSourceSwotItem): self
+    {
+        $this->towsSourceSwotItem = $towsSourceSwotItem;
+
+        return $this;
+    }
+
+    public function getTowsTargetSwotItem(): ?SwotItem
+    {
+        return $this->towsTargetSwotItem;
+    }
+
+    public function setTowsTargetSwotItem(?SwotItem $towsTargetSwotItem): self
+    {
+        $this->towsTargetSwotItem = $towsTargetSwotItem;
+
+        return $this;
+    }
+
+    public function isTowsObjective(): bool
+    {
+        return $this->towsType !== null;
     }
 
     public function setTranslatableLocale(string $locale): self

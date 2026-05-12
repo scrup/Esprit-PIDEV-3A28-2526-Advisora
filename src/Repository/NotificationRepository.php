@@ -57,6 +57,20 @@ class NotificationRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function markAllUnreadAsReadForRecipient(User $recipient): int
+    {
+        return $this->createQueryBuilder('n')
+            ->update()
+            ->set('n.isRead', ':isRead')
+            ->andWhere('n.recipient = :recipient')
+            ->andWhere('n.isRead = :currentIsRead')
+            ->setParameter('isRead', true)
+            ->setParameter('currentIsRead', false)
+            ->setParameter('recipient', $recipient)
+            ->getQuery()
+            ->execute();
+    }
+
     /**
      * @return list<Notification>
      */

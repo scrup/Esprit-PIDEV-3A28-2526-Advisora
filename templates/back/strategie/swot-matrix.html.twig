@@ -1,0 +1,288 @@
+{% extends 'base_back.html.twig' %}
+
+{% block title %}Advisora | Matrice SWOT{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy.css') }}?v=20260511-swot-v3">
+    <link rel="stylesheet" href="{{ asset('css/back-strategy-swot.css') }}?v=20260511-swot-v3">
+{% endblock %}
+
+{% block body %}
+<div class="swot-page">
+    <header class="swot-page-header">
+        <a href="{{ path('app_back_strategies') }}" class="swot-back-link">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Retour aux strategies
+        </a>
+        <div class="swot-header-right">
+            <a href="{{ path('app_back_strategies_show', {id: strategy.idStrategie}) }}" class="swot-show-link">
+                <span class="material-symbols-outlined">visibility</span>
+                Voir la fiche strategie
+            </a>
+        </div>
+    </header>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash-message flash-{{ type }}">
+                <span class="material-symbols-outlined">
+                    {% if type == 'success' %}check_circle{% elseif type == 'error' %}error{% else %}info{% endif %}
+                </span>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <section class="swot-hero">
+        <div class="swot-hero-copy">
+            <p class="swot-hero-eyebrow">Matrice SWOT 2x2</p>
+            <h1>{{ strategy.nomStrategie }}</h1>
+            <p>Gerez les forces, faiblesses, opportunites et menaces de cette strategie.</p>
+        </div>
+        <div class="swot-hero-stats">
+            <div class="swot-stat">
+                <span>Total SWOT</span>
+                <strong>{{ strategy.swotItems|length }}</strong>
+            </div>
+            <div class="swot-stat">
+                <span>Objectifs lies</span>
+                <strong>{{ strategy.objectives|length }}</strong>
+            </div>
+            <div class="swot-stat">
+                <span>Statut</span>
+                <strong>{{ strategy.statusLabel }}</strong>
+            </div>
+        </div>
+    </section>
+
+    <nav class="swot-nav-tabs">
+        <a href="#swot-matrix" class="swot-tab-link">SWOT Matrix</a>
+        <a href="#tows-objectives" class="swot-tab-link">TOWS Objectives</a>
+    </nav>
+
+    {% set matrixConfig = {
+        'strength': {'title': 'Forces', 'icon': 'bolt', 'tone': 'strength'},
+        'weakness': {'title': 'Faiblesses', 'icon': 'trending_down', 'tone': 'weakness'},
+        'opportunity': {'title': 'Opportunites', 'icon': 'rocket_launch', 'tone': 'opportunity'},
+        'threat': {'title': 'Menaces', 'icon': 'warning', 'tone': 'threat'}
+    } %}
+
+    <section class="swot-section" id="swot-matrix" aria-label="Matrice SWOT">
+        <div class="section-heading">
+            <h2>Matrice SWOT 2x2</h2>
+            <p>Ajout unitaire, edition, suppression et import en masse par quadrant.</p>
+        </div>
+
+        <div class="tows-matrix">
+            {% for type, config in matrixConfig %}
+                {% set items = swotBuckets[type]|default([]) %}
+                <article class="tows-cell {{ config.tone }}">
+                    <div class="tows-cell-header">
+                        <div>
+                            <p class="tows-cell-eyebrow">Quadrant {{ loop.index }}</p>
+                            <h3>{{ config.title }}</h3>
+                        </div>
+                        <span class="tows-pill">
+                            <span class="material-symbols-outlined">{{ config.icon }}</span>
+                            {{ items|length }}
+                        </span>
+                    </div>
+
+                    <div class="tows-cell-body">
+                        {% if items|length > 0 %}
+                            <div class="tows-item-list">
+                                {% for item in items %}
+                                    {% set weight = item.weight ?? 0 %}
+                                    {% set weightPercent = ((weight / swotWeightMax) * 100)|round(0, 'floor') %}
+                                    <article class="tows-item">
+                                        <div class="tows-item-top">
+                                            <p>{{ item.description }}</p>
+                                            {% if item.weight is not null %}
+                                                <div class="tows-weight-wrap">
+                                                    <span class="tows-weight">Poids {{ item.weight }}/{{ swotWeightMax }}</span>
+                                                    <div class="tows-weight-meter">
+                                                        <div class="tows-weight-bar {{ weight >= 8 ? 'high' : (weight >= 5 ? 'medium' : 'low') }}" style="width: {{ weightPercent }}%"></div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="tows-item-actions">
+                                            <details class="tows-edit-details">
+                                                <summary>Modifier</summary>
+                                                <form method="post" action="{{ path('app_back_strategies_swot_item_edit', {id: item.id}) }}" class="tows-inline-form">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('edit_swot_item_' ~ item.id) }}">
+                                                    <label for="swotType_{{ item.id }}">Type</label>
+                                                    <select id="swotType_{{ item.id }}" name="swotType" required>
+                                                        {% for typeKey, typeLabel in swotTypeOptions %}
+                                                            <option value="{{ typeKey }}" {{ typeKey == type ? 'selected' : '' }}>{{ typeLabel }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <label for="swotDescription_{{ item.id }}">Description</label>
+                                                    <textarea id="swotDescription_{{ item.id }}" name="swotDescription" rows="3" required>{{ item.description }}</textarea>
+                                                    <label for="swotWeight_{{ item.id }}">Poids ({{ swotWeightMin }} a {{ swotWeightMax }})</label>
+                                                    <input id="swotWeight_{{ item.id }}" type="number" min="{{ swotWeightMin }}" max="{{ swotWeightMax }}" name="swotWeight" value="{{ item.weight ?? '' }}">
+                                                    <button type="submit" class="tows-btn tows-btn-primary">Enregistrer</button>
+                                                </form>
+                                            </details>
+                                            <form method="post" action="{{ path('app_back_strategies_swot_item_delete', {id: item.id}) }}" onsubmit="return confirm('Supprimer cet element SWOT ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_swot_item_' ~ item.id) }}">
+                                                <button type="submit" class="tows-btn tows-btn-danger">Supprimer</button>
+                                            </form>
+                                        </div>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="tows-empty">
+                                <span class="material-symbols-outlined">inbox</span>
+                                Aucun element pour ce quadrant.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <form method="post" action="{{ path('app_back_strategies_swot_item_new', {id: strategy.idStrategie}) }}" class="tows-create-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('create_swot_item_' ~ strategy.idStrategie) }}">
+                        <input type="hidden" name="swotType" value="{{ type }}">
+                        <label for="swotDescription_new_{{ type }}">Nouvel element {{ config.title|lower }}</label>
+                        <textarea id="swotDescription_new_{{ type }}" name="swotDescription" rows="3" placeholder="Ajouter un element concret..." required></textarea>
+                        <div class="tows-create-row">
+                            <input
+                                id="swotWeight_new_{{ type }}"
+                                type="number"
+                                min="{{ swotWeightMin }}"
+                                max="{{ swotWeightMax }}"
+                                name="swotWeight"
+                                placeholder="Poids {{ swotWeightMin }}-{{ swotWeightMax }}"
+                            >
+                            <button type="submit" class="tows-btn tows-btn-primary">Ajouter</button>
+                        </div>
+                    </form>
+
+                    <details class="tows-bulk-box">
+                        <summary>Import rapide (1 ligne = 1 item)</summary>
+                        <form method="post" action="{{ path('app_back_strategies_swot_item_bulk', {id: strategy.idStrategie}) }}" class="tows-inline-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('bulk_swot_item_' ~ strategy.idStrategie) }}">
+                            <input type="hidden" name="swotType" value="{{ type }}">
+                            <label for="swotBulkText_{{ type }}">Liste en vrac</label>
+                            <textarea id="swotBulkText_{{ type }}" name="swotBulkText" rows="4" placeholder="Item 1&#10;Item 2&#10;Item 3"></textarea>
+                            <label for="swotBulkWeight_{{ type }}">Poids par defaut (optionnel)</label>
+                            <input id="swotBulkWeight_{{ type }}" type="number" min="{{ swotWeightMin }}" max="{{ swotWeightMax }}" name="swotBulkWeight" placeholder="Ex: 7">
+                            <button type="submit" class="tows-btn tows-btn-primary">Importer</button>
+                        </form>
+                    </details>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% set towsObjectives = strategy.objectives|filter(objective => objective.towsType is not null) %}
+
+    <section class="swot-section" id="tows-objectives" aria-label="Objectifs TOWS">
+        <div class="section-heading">
+            <h2>TOWS Objectives</h2>
+            <p>Associez deux items SWOT pour creer un objectif actionnable genere automatiquement (Gemini + fallback).</p>
+        </div>
+
+        <div class="tows-generation-grid">
+            {% for towsType, pair in towsPairingViewModel %}
+                {% set canGenerate = pair.source_items|length > 0 and pair.target_items|length > 0 %}
+                <article class="tows-generate-card">
+                    <div class="tows-generate-head">
+                        <h3>{{ towsType }} Objective</h3>
+                        <span>{{ pair.source_label }} + {{ pair.target_label }}</span>
+                    </div>
+                    <form method="post" action="{{ path('app_back_strategies_tows_objective_new', {id: strategy.idStrategie}) }}" class="tows-generate-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('create_tows_objective_' ~ strategy.idStrategie) }}">
+                        <input type="hidden" name="towsType" value="{{ towsType }}">
+
+                        <label for="source_{{ towsType }}">{{ pair.source_label }}</label>
+                        <select id="source_{{ towsType }}" name="sourceSwotItemId" required {{ canGenerate ? '' : 'disabled' }}>
+                            <option value="">Selectionner</option>
+                            {% for sourceItem in pair.source_items %}
+                                {% set sourceWeight = sourceItem.weight ?? 0 %}
+                                <option value="{{ sourceItem.id }}">
+                                    [W{{ sourceWeight }}] {{ sourceItem.description|length > 90 ? sourceItem.description|slice(0, 90) ~ '...' : sourceItem.description }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <label for="target_{{ towsType }}">{{ pair.target_label }}</label>
+                        <select id="target_{{ towsType }}" name="targetSwotItemId" required {{ canGenerate ? '' : 'disabled' }}>
+                            <option value="">Selectionner</option>
+                            {% for targetItem in pair.target_items %}
+                                {% set targetWeight = targetItem.weight ?? 0 %}
+                                <option value="{{ targetItem.id }}">
+                                    [W{{ targetWeight }}] {{ targetItem.description|length > 90 ? targetItem.description|slice(0, 90) ~ '...' : targetItem.description }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <button type="submit" class="tows-btn tows-btn-primary" {{ canGenerate ? '' : 'disabled' }}>
+                            Create {{ towsType }} Objective
+                        </button>
+                        {% if not canGenerate %}
+                            <p class="tows-generate-hint">Ajoutez des items {{ pair.source_label|lower }} et {{ pair.target_label|lower }} pour activer cette generation.</p>
+                        {% endif %}
+                    </form>
+                </article>
+            {% endfor %}
+        </div>
+
+        <div class="tows-actions-board">
+            <h3>Objectifs TOWS Enregistres</h3>
+            {% if towsObjectives|length > 0 %}
+                <div class="tows-actions-list">
+                    {% for objective in towsObjectives %}
+                        {% set sourceWeight = objective.towsSourceSwotItem and objective.towsSourceSwotItem.weight is not null ? objective.towsSourceSwotItem.weight : 0 %}
+                        {% set targetWeight = objective.towsTargetSwotItem and objective.towsTargetSwotItem.weight is not null ? objective.towsTargetSwotItem.weight : 0 %}
+                        {% set pairScore = sourceWeight + targetWeight %}
+                        <article class="tows-action-item">
+                            <div class="tows-action-head">
+                                <div class="tows-action-tags">
+                                    <span class="tows-type-chip">{{ objective.towsType }}</span>
+                                    <span class="tows-score-chip {{ objective.priorityCssClass == 'urgent' ? 'high' : objective.priorityCssClass }}">{{ objective.priorityLabel }}</span>
+                                    <span class="tows-score-chip {{ pairScore >= 14 ? 'high' : (pairScore >= 9 ? 'medium' : 'low') }}">Score {{ pairScore }}</span>
+                                </div>
+                                <small>#{{ objective.idOb }}</small>
+                            </div>
+                            <p class="tows-action-description"><strong>{{ objective.nomObj ?: 'Objectif sans nom' }}</strong></p>
+                            <p class="tows-action-description">{{ objective.descriptionOb ?: 'Aucune description.' }}</p>
+                            <p class="tows-link-line">
+                                <strong>Source:</strong>
+                                {% if objective.towsSourceSwotItem %}
+                                    #{{ objective.towsSourceSwotItem.id }} - {{ objective.towsSourceSwotItem.description }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                            <p class="tows-link-line">
+                                <strong>Cible:</strong>
+                                {% if objective.towsTargetSwotItem %}
+                                    #{{ objective.towsTargetSwotItem.id }} - {{ objective.towsTargetSwotItem.description }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+
+                            <div class="tows-item-actions">
+                                <a href="{{ path('app_back_strategies') }}" class="tows-btn tows-btn-primary">Voir et modifier dans les objectifs</a>
+                                <form method="post" action="{{ path('app_back_strategies_objective_delete', {id: objective.idOb}) }}" onsubmit="return confirm('Supprimer cet objectif TOWS ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_objective_' ~ objective.idOb) }}">
+                                    <button type="submit" class="tows-btn tows-btn-danger">Supprimer</button>
+                                </form>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="tows-empty">
+                    <span class="material-symbols-outlined">playlist_add_check</span>
+                    Aucun objectif TOWS cree pour cette strategie.
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

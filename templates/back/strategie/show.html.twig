@@ -17,6 +17,10 @@
             Retour aux strategies
         </a>
         <div class="header-actions">
+            <a href="{{ path('app_back_strategies_swot_matrix', {id: strategy.idStrategie}) }}" class="btn-edit">
+                <span class="material-symbols-outlined">grid_view</span>
+                Matrice TOWS
+            </a>
             <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="btn-edit">
                 <span class="material-symbols-outlined">edit</span>
                 Modifier
@@ -135,7 +139,7 @@
                             <span class="info-value">
                                 {% if swotStrengths|length > 0 %}
                                     {% for item in swotStrengths %}
-                                        • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                        {% if not loop.first %}<br>{% endif %}• {{ item.description }}
                                     {% endfor %}
                                 {% else %}
                                     Aucune
@@ -147,7 +151,7 @@
                             <span class="info-value">
                                 {% if swotWeaknesses|length > 0 %}
                                     {% for item in swotWeaknesses %}
-                                        • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                        {% if not loop.first %}<br>{% endif %}• {{ item.description }}
                                     {% endfor %}
                                 {% else %}
                                     Aucune
@@ -159,7 +163,7 @@
                             <span class="info-value">
                                 {% if swotOpportunities|length > 0 %}
                                     {% for item in swotOpportunities %}
-                                        • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                        {% if not loop.first %}<br>{% endif %}• {{ item.description }}
                                     {% endfor %}
                                 {% else %}
                                     Aucune
@@ -171,7 +175,7 @@
                             <span class="info-value">
                                 {% if swotThreats|length > 0 %}
                                     {% for item in swotThreats %}
-                                        • {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                        {% if not loop.first %}<br>{% endif %}• {{ item.description }}
                                     {% endfor %}
                                 {% else %}
                                     Aucune

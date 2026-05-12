@@ -59,6 +59,23 @@ final class NotificationController extends AbstractController
         ]);
     }
 
+    #[Route('/notifications/clear', name: 'notification_clear', methods: ['POST'])]
+    public function clear(NotificationRepository $notificationRepository): JsonResponse
+    {
+        $user = $this->getCurrentUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Vous devez etre connecte pour vider les notifications.');
+        }
+
+        $affected = $notificationRepository->markAllUnreadAsReadForRecipient($user);
+
+        return $this->json([
+            'success' => true,
+            'cleared' => $affected,
+            'count' => 0,
+        ]);
+    }
+
     /**
      * @return array{
      *     id: int|null,

@@ -144,6 +144,68 @@ class NotificationService
         }
     }
 
+    public function notifyAdminStrategyDecision(Strategie $strategy, string $status, ?User $actor = null): void
+    {
+        $project = $strategy->getProject();
+        $projectTitle = $project?->getTitle() ?: 'Projet sans titre';
+        $strategyName = trim((string) $strategy->getNomStrategie());
+        if ($strategyName === '') {
+            $strategyName = 'Strategie sans nom';
+        }
+
+        $isApproved = $status === Strategie::STATUS_APPROVED;
+        $decisionLabel = $isApproved ? 'acceptee' : 'refusee';
+        $title = $isApproved ? 'Strategie acceptee par admin' : 'Strategie refusee par admin';
+        $description = sprintf(
+            'Decision admin: la strategie "%s" du projet %s est %s.',
+            $strategyName,
+            $projectTitle,
+            $decisionLabel
+        );
+        $spokenText = sprintf(
+            'Decision administrateur. La strategie %s est %s.',
+            $strategyName,
+            $decisionLabel
+        );
+
+        $recipients = array_values(array_filter(
+            $this->userRepository->findAdminsAndGerants(),
+            static fn (User $user): bool => mb_strtolower(trim((string) $user->getRoleUser())) === 'gerant'
+        ));
+
+        if ($recipients === []) {
+            $recipients = $this->userRepository->findAdmins();
+        }
+
+        if ($actor instanceof User) {
+            $actorRole = mb_strtolower(trim((string) $actor->getRoleUser()));
+            if (in_array($actorRole, ['admin', 'gerant'], true)) {
+                $recipients[] = $actor;
+            }
+        }
+
+        $uniqueRecipients = [];
+        foreach ($recipients as $recipient) {
+            $recipientId = $recipient->getIdUser();
+            if (!is_int($recipientId) || $recipientId <= 0) {
+                continue;
+            }
+
+            $uniqueRecipients[$recipientId] = $recipient;
+        }
+
+        foreach ($uniqueRecipients as $recipient) {
+            $this->createNotification(
+                $recipient,
+                $title,
+                $description,
+                $spokenText,
+                Notification::EVENT_STRATEGY_DECIDED,
+                $project?->getId()
+            );
+        }
+    }
+
     private function createNotification(
         User $recipient,
         string $title,

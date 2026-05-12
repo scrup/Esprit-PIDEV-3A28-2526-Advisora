@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Objective;
 use App\Entity\Project;
 use App\Entity\Strategie;
+use App\Entity\SwotItem;
 use App\Entity\User;
 use App\Form\StrategyType;
 use App\Repository\StrategieRepository;
@@ -25,6 +26,7 @@ use App\Service\NotificationService;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Service\AutoTranslator;
 use App\Service\FrenchSpellCorrector;
+use App\Service\GeminiTowsObjectiveGeneratorService;
 use Gedmo\Translatable\Entity\Repository\TranslationRepository;
 use Gedmo\Translatable\Entity\Translation;
 
@@ -39,6 +41,50 @@ final class StrategyController extends AbstractController
         'high' => Objective::PRIORITY_HIGH,
         'urgent' => Objective::PRIORITY_URGENT,
     ];
+
+    private const SWOT_TYPE_OPTIONS = [
+        'strength' => 'Forces',
+        'weakness' => 'Faiblesses',
+        'opportunity' => 'Opportunites',
+        'threat' => 'Menaces',
+    ];
+
+    private const SWOT_TYPE_ALIASES = [
+        'strength' => 'strength',
+        'strengths' => 'strength',
+        'force' => 'strength',
+        'forces' => 'strength',
+        'weakness' => 'weakness',
+        'weaknesses' => 'weakness',
+        'faiblesse' => 'weakness',
+        'faiblesses' => 'weakness',
+        'opportunity' => 'opportunity',
+        'opportunities' => 'opportunity',
+        'opportunite' => 'opportunity',
+        'opportunites' => 'opportunity',
+        'threat' => 'threat',
+        'threats' => 'threat',
+        'menace' => 'threat',
+        'menaces' => 'threat',
+    ];
+
+    private const SWOT_WEIGHT_MIN = 1;
+    private const SWOT_WEIGHT_MAX = 10;
+
+    private const TOWS_TYPE_OPTIONS = [
+        Objective::TOWS_TYPE_SO => 'SO',
+        Objective::TOWS_TYPE_WO => 'WO',
+        Objective::TOWS_TYPE_ST => 'ST',
+        Objective::TOWS_TYPE_WT => 'WT',
+    ];
+
+    private const TOWS_TYPE_SOURCE_TARGET = [
+        Objective::TOWS_TYPE_SO => ['source' => 'strength', 'target' => 'opportunity'],
+        Objective::TOWS_TYPE_WO => ['source' => 'weakness', 'target' => 'opportunity'],
+        Objective::TOWS_TYPE_ST => ['source' => 'strength', 'target' => 'threat'],
+        Objective::TOWS_TYPE_WT => ['source' => 'weakness', 'target' => 'threat'],
+    ];
+
 
     private const STRATEGY_SORT_OPTIONS = [
         'id' => [
@@ -529,8 +575,279 @@ public function show(Strategie $strategy): Response
         'strategy' => $strategy,
     ]);
 }
-    #[Route('/back/strategies/{id}/decision', name: 'app_back_strategies_decision', methods: ['POST'])]
-public function adminDecision(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
+
+#[Route('/back/strategies/{id}/swot-matrix', name: 'app_back_strategies_swot_matrix', methods: ['GET'])]
+public function swotMatrix(Strategie $strategy): Response
+{
+    $swotBuckets = $this->buildStrategySwotBuckets($strategy);
+
+    return $this->render('back/strategie/swot-matrix.html.twig', [
+        'strategy' => $strategy,
+        'swotBuckets' => $swotBuckets,
+        'swotTypeOptions' => self::SWOT_TYPE_OPTIONS,
+        'swotWeightMin' => self::SWOT_WEIGHT_MIN,
+        'swotWeightMax' => self::SWOT_WEIGHT_MAX,
+        'towsTypeOptions' => self::TOWS_TYPE_OPTIONS,
+        'towsPairingViewModel' => $this->buildTowsPairingViewModel($swotBuckets),
+    ]);
+}
+
+#[Route('/back/strategies/{id}/swot-items/new', name: 'app_back_strategies_swot_item_new', methods: ['POST'])]
+public function createSwotItem(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
+{
+    $strategyId = $strategy->getIdStrategie();
+    if ($strategyId === null) {
+        $this->addFlash('error', 'Strategie invalide.');
+
+        return $this->redirectToRoute('app_back_strategies');
+    }
+
+    if (!$this->isCsrfTokenValid('create_swot_item_' . $strategyId, (string) $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide. Creation SWOT impossible.');
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $swotData = $this->extractSwotItemData($request);
+    $validationError = $this->validateSwotItemData($swotData);
+    if ($validationError !== null) {
+        $this->addFlash('error', $validationError);
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $swotItem = new SwotItem();
+    $swotItem->setStrategie($strategy);
+    $swotItem->setType($swotData['type']);
+    $swotItem->setDescription($swotData['description']);
+    $swotItem->setWeight($swotData['weight']);
+
+    $entityManager->persist($swotItem);
+    $entityManager->flush();
+
+    $typeLabel = self::SWOT_TYPE_OPTIONS[$swotData['type']] ?? 'SWOT';
+    $this->addFlash('success', sprintf('%s ajoute avec succes.', $typeLabel));
+
+    return $this->redirectToSwotMatrix($strategy);
+}
+
+#[Route('/back/strategies/swot-items/{id}/edit', name: 'app_back_strategies_swot_item_edit', methods: ['POST'])]
+public function updateSwotItem(Request $request, SwotItem $swotItem, EntityManagerInterface $entityManager): Response
+{
+    if (!$this->isCsrfTokenValid('edit_swot_item_' . $swotItem->getId(), (string) $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide. Modification SWOT impossible.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $strategy = $swotItem->getStrategie();
+    if (!$strategy instanceof Strategie) {
+        $this->addFlash('error', 'Strategie associee introuvable.');
+
+        return $this->redirectToRoute('app_back_strategies');
+    }
+
+    $swotData = $this->extractSwotItemData($request);
+    $validationError = $this->validateSwotItemData($swotData);
+    if ($validationError !== null) {
+        $this->addFlash('error', $validationError);
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $swotItem->setType($swotData['type']);
+    $swotItem->setDescription($swotData['description']);
+    $swotItem->setWeight($swotData['weight']);
+    $entityManager->flush();
+
+    $this->addFlash('success', 'Element SWOT mis a jour avec succes.');
+
+    return $this->redirectToSwotMatrix($strategy);
+}
+
+#[Route('/back/strategies/swot-items/{id}/delete', name: 'app_back_strategies_swot_item_delete', methods: ['POST'])]
+public function deleteSwotItem(Request $request, SwotItem $swotItem, EntityManagerInterface $entityManager): Response
+{
+    if (!$this->isCsrfTokenValid('delete_swot_item_' . $swotItem->getId(), (string) $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide. Suppression SWOT impossible.');
+
+        return $this->redirectToStrategyReferer($request);
+    }
+
+    $strategy = $swotItem->getStrategie();
+    $entityManager->remove($swotItem);
+    $entityManager->flush();
+
+    $this->addFlash('success', 'Element SWOT supprime avec succes.');
+
+    if (!$strategy instanceof Strategie) {
+        return $this->redirectToRoute('app_back_strategies');
+    }
+
+    return $this->redirectToSwotMatrix($strategy);
+}
+
+#[Route('/back/strategies/{id}/swot-items/bulk', name: 'app_back_strategies_swot_item_bulk', methods: ['POST'])]
+public function bulkImportSwotItems(Request $request, Strategie $strategy, EntityManagerInterface $entityManager): Response
+{
+    $strategyId = $strategy->getIdStrategie();
+    if ($strategyId === null) {
+        $this->addFlash('error', 'Strategie invalide.');
+
+        return $this->redirectToRoute('app_back_strategies');
+    }
+
+    if (!$this->isCsrfTokenValid('bulk_swot_item_' . $strategyId, (string) $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide. Import SWOT impossible.');
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $type = $this->normalizeSwotType((string) $request->request->get('swotType'));
+    if (!$this->isSwotTypeValid($type)) {
+        $this->addFlash('error', 'Type SWOT invalide pour l import.');
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $defaultWeightRaw = trim((string) $request->request->get('swotBulkWeight', ''));
+    $defaultWeight = $this->parseSwotWeight($defaultWeightRaw);
+    if ($defaultWeightRaw !== '' && $defaultWeight === null) {
+        $this->addFlash('error', 'Le poids par defaut de l import doit etre un entier valide.');
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    if ($defaultWeight !== null && ($defaultWeight < self::SWOT_WEIGHT_MIN || $defaultWeight > self::SWOT_WEIGHT_MAX)) {
+        $this->addFlash('error', sprintf('Le poids par defaut doit etre entre %d et %d.', self::SWOT_WEIGHT_MIN, self::SWOT_WEIGHT_MAX));
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $bulkText = (string) $request->request->get('swotBulkText', '');
+    $descriptions = $this->normalizeBulkSwotDescriptions($bulkText);
+
+    if ($descriptions === []) {
+        $this->addFlash('error', 'Aucun element valide detecte dans votre import.');
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $createdCount = 0;
+
+    foreach ($descriptions as $description) {
+        $swotItem = new SwotItem();
+        $swotItem->setStrategie($strategy);
+        $swotItem->setType($type);
+        $swotItem->setDescription($description);
+        $swotItem->setWeight($defaultWeight);
+        $entityManager->persist($swotItem);
+        ++$createdCount;
+    }
+
+    $entityManager->flush();
+
+    $typeLabel = self::SWOT_TYPE_OPTIONS[$type] ?? 'SWOT';
+    $this->addFlash('success', sprintf('%d element(s) importes dans %s.', $createdCount, $typeLabel));
+
+    return $this->redirectToSwotMatrix($strategy);
+}
+
+#[Route('/back/strategies/{id}/tows-objective/new', name: 'app_back_strategies_tows_objective_new', methods: ['POST'])]
+public function createTowsObjective(
+    Request $request,
+    Strategie $strategy,
+    EntityManagerInterface $entityManager,
+    GeminiTowsObjectiveGeneratorService $objectiveGenerator,
+    AutoTranslator $autoTranslator
+): Response {
+    $strategyId = $strategy->getIdStrategie();
+    if ($strategyId === null) {
+        $this->addFlash('error', 'Strategie invalide.');
+
+        return $this->redirectToRoute('app_back_strategies');
+    }
+
+    if (!$this->isCsrfTokenValid('create_tows_objective_' . $strategyId, (string) $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token invalide. Creation de l objectif TOWS impossible.');
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $towsType = $this->normalizeTowsType((string) $request->request->get('towsType'));
+    if (!array_key_exists($towsType, self::TOWS_TYPE_OPTIONS)) {
+        $this->addFlash('error', 'Type TOWS invalide.');
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $sourceItemId = (int) $request->request->get('sourceSwotItemId', 0);
+    $targetItemId = (int) $request->request->get('targetSwotItemId', 0);
+
+    if ($sourceItemId <= 0 || $targetItemId <= 0) {
+        $this->addFlash('error', 'Selection SWOT incomplete. Choisissez une source et une cible.');
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    /** @var SwotItem|null $sourceItem */
+    $sourceItem = $entityManager->getRepository(SwotItem::class)->find($sourceItemId);
+    /** @var SwotItem|null $targetItem */
+    $targetItem = $entityManager->getRepository(SwotItem::class)->find($targetItemId);
+
+    $pairValidationError = $this->validateTowsPairForStrategy($strategy, $towsType, $sourceItem, $targetItem);
+    if ($pairValidationError !== null) {
+        $this->addFlash('error', $pairValidationError);
+
+        return $this->redirectToSwotMatrix($strategy);
+    }
+
+    $generated = $objectiveGenerator->generate($strategy, $sourceItem, $targetItem, $towsType);
+    $priorityValue = self::OBJECTIVE_PRIORITY_MAP[$generated['priority_key']] ?? Objective::PRIORITY_MEDIUM;
+
+    $objective = new Objective();
+    $objective->setStrategie($strategy);
+    $objective->setNomObj($this->normalizeObjectiveText((string) $generated['name'], 80));
+    $objective->setDescriptionOb($this->normalizeObjectiveText((string) $generated['description'], Objective::MAX_TEXT_LENGTH));
+    $objective->setPriorityOb($priorityValue);
+    $objective->setTowsType($towsType);
+    $objective->setTowsSourceSwotItem($sourceItem);
+    $objective->setTowsTargetSwotItem($targetItem);
+
+    $entityManager->persist($objective);
+    $entityManager->flush();
+
+    try {
+        $this->autoTranslateObjectiveFields($objective, $entityManager, $autoTranslator, 'fr');
+        $entityManager->flush();
+    } catch (\Throwable $exception) {
+        $this->addFlash('info', 'Objectif TOWS cree, mais la traduction automatique a echoue : ' . $exception->getMessage());
+    }
+
+    $this->addFlash(
+        'success',
+        sprintf(
+            'Objectif TOWS %s cree avec priorite %s.',
+            $towsType,
+            $objective->getPriorityLabel()
+        )
+    );
+
+    if (!empty($generated['warning']) && is_string($generated['warning'])) {
+        $this->addFlash('info', $generated['warning']);
+    }
+
+    return $this->redirectToSwotMatrix($strategy);
+}
+
+
+#[Route('/back/strategies/{id}/decision', name: 'app_back_strategies_decision', methods: ['POST'])]
+public function adminDecision(
+    Request $request,
+    Strategie $strategy,
+    EntityManagerInterface $entityManager,
+    NotificationService $notificationService
+): Response
 {
     $user = $this->getCurrentUser();
 
@@ -576,6 +893,7 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
     $previousStatus = $strategy->getStatusStrategie();
     $strategy->setStatusStrategie($status);
     $this->syncLockedAtWithStatus($strategy, $previousStatus);
+    $notificationService->notifyAdminStrategyDecision($strategy, $status, $user);
 
     $entityManager->flush();
 
@@ -829,6 +1147,264 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
     }
 
     /**
+     * @return array{type: string, description: string, weight: int|null, weight_raw: string}
+     */
+    private function extractSwotItemData(Request $request): array
+    {
+        $weightValue = trim((string) $request->request->get('swotWeight', ''));
+
+        return [
+            'type' => $this->normalizeSwotType((string) $request->request->get('swotType')),
+            'description' => trim((string) $request->request->get('swotDescription')),
+            'weight' => $this->parseSwotWeight($weightValue),
+            'weight_raw' => $weightValue,
+        ];
+    }
+
+    /**
+     * @param array{type: string, description: string, weight: int|null, weight_raw: string} $swotData
+     */
+    private function validateSwotItemData(array $swotData): ?string
+    {
+        if (!$this->isSwotTypeValid($swotData['type'])) {
+            return 'Type SWOT invalide.';
+        }
+
+        if ($swotData['description'] === '') {
+            return 'La description SWOT est obligatoire.';
+        }
+
+        if (mb_strlen($swotData['description']) < 3) {
+            return 'La description SWOT doit contenir au moins 3 caracteres.';
+        }
+
+        if (mb_strlen($swotData['description']) > 1000) {
+            return 'La description SWOT ne doit pas depasser 1000 caracteres.';
+        }
+
+        if ($swotData['weight_raw'] !== '' && $swotData['weight'] === null) {
+            return 'Le poids SWOT doit etre un nombre entier valide.';
+        }
+
+        if ($swotData['weight'] !== null && ($swotData['weight'] < self::SWOT_WEIGHT_MIN || $swotData['weight'] > self::SWOT_WEIGHT_MAX)) {
+            return sprintf(
+                'Le poids SWOT doit etre compris entre %d et %d.',
+                self::SWOT_WEIGHT_MIN,
+                self::SWOT_WEIGHT_MAX
+            );
+        }
+
+        return null;
+    }
+
+    private function isSwotTypeValid(string $type): bool
+    {
+        return array_key_exists($type, self::SWOT_TYPE_OPTIONS);
+    }
+
+    private function normalizeSwotType(string $type): string
+    {
+        $normalized = mb_strtolower(trim($type));
+
+        return self::SWOT_TYPE_ALIASES[$normalized] ?? $normalized;
+    }
+
+    private function parseSwotWeight(string $weightValue): ?int
+    {
+        if ($weightValue === '') {
+            return null;
+        }
+
+        if (!is_numeric($weightValue)) {
+            return null;
+        }
+
+        return (int) round((float) $weightValue);
+    }
+
+    /**
+     * @return array{
+     *     strength: array<int, SwotItem>,
+     *     weakness: array<int, SwotItem>,
+     *     opportunity: array<int, SwotItem>,
+     *     threat: array<int, SwotItem>
+     * }
+     */
+    private function buildStrategySwotBuckets(Strategie $strategy): array
+    {
+        $buckets = [
+            'strength' => [],
+            'weakness' => [],
+            'opportunity' => [],
+            'threat' => [],
+        ];
+
+        foreach ($strategy->getSwotItems() as $swotItem) {
+            $normalizedType = $this->normalizeSwotType($swotItem->getType());
+
+            if (!array_key_exists($normalizedType, $buckets)) {
+                continue;
+            }
+
+            $buckets[$normalizedType][] = $swotItem;
+        }
+
+        foreach ($buckets as $type => $items) {
+            usort(
+                $items,
+                static function (SwotItem $left, SwotItem $right): int {
+                    $leftWeight = $left->getWeight() ?? -1;
+                    $rightWeight = $right->getWeight() ?? -1;
+
+                    if ($leftWeight !== $rightWeight) {
+                        return $rightWeight <=> $leftWeight;
+                    }
+
+                    return ($left->getId() ?? 0) <=> ($right->getId() ?? 0);
+                }
+            );
+
+            $buckets[$type] = $items;
+        }
+
+        return $buckets;
+    }
+
+    private function normalizeTowsType(string $towsType): string
+    {
+        return strtoupper(trim($towsType));
+    }
+
+    private function normalizeObjectiveText(string $text, int $maxLength): string
+    {
+        $normalized = trim(preg_replace('/\s+/', ' ', $text) ?? $text);
+
+        if ($normalized === '') {
+            return '';
+        }
+
+        if (mb_strlen($normalized) <= $maxLength) {
+            return $normalized;
+        }
+
+        return rtrim(mb_substr($normalized, 0, max(0, $maxLength - 3))) . '...';
+    }
+
+    private function validateTowsPairForStrategy(
+        Strategie $strategy,
+        string $towsType,
+        ?SwotItem $sourceItem,
+        ?SwotItem $targetItem
+    ): ?string {
+        if (!$sourceItem instanceof SwotItem || !$targetItem instanceof SwotItem) {
+            return 'Items SWOT source/cible introuvables.';
+        }
+
+        $strategyId = $strategy->getIdStrategie();
+        if ($strategyId === null) {
+            return 'Strategie invalide.';
+        }
+
+        if ($sourceItem->getStrategie()?->getIdStrategie() !== $strategyId || $targetItem->getStrategie()?->getIdStrategie() !== $strategyId) {
+            return 'Les items SWOT selectionnes doivent appartenir a cette strategie.';
+        }
+
+        $rule = self::TOWS_TYPE_SOURCE_TARGET[$towsType] ?? null;
+        if (!is_array($rule)) {
+            return 'Type TOWS non pris en charge.';
+        }
+
+        $sourceType = $this->normalizeSwotType($sourceItem->getType());
+        $targetType = $this->normalizeSwotType($targetItem->getType());
+
+        if ($sourceType !== $rule['source'] || $targetType !== $rule['target']) {
+            return sprintf(
+                'Combinaison invalide pour %s. Attendu: %s + %s.',
+                $towsType,
+                self::SWOT_TYPE_OPTIONS[$rule['source']] ?? strtoupper($rule['source']),
+                self::SWOT_TYPE_OPTIONS[$rule['target']] ?? strtoupper($rule['target'])
+            );
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array{
+     *     strength: array<int, SwotItem>,
+     *     weakness: array<int, SwotItem>,
+     *     opportunity: array<int, SwotItem>,
+     *     threat: array<int, SwotItem>
+     * } $swotBuckets
+     *
+     * @return array<string, array{
+     *     type: string,
+     *     source_label: string,
+     *     target_label: string,
+     *     source_items: array<int, array{id: int, description: string, weight: int|null}>,
+     *     target_items: array<int, array{id: int, description: string, weight: int|null}>
+     * }>
+     */
+    private function buildTowsPairingViewModel(array $swotBuckets): array
+    {
+        $viewModel = [];
+
+        foreach (self::TOWS_TYPE_SOURCE_TARGET as $type => $rule) {
+            $sourceType = (string) $rule['source'];
+            $targetType = (string) $rule['target'];
+            $sourceItems = $swotBuckets[$sourceType] ?? [];
+            $targetItems = $swotBuckets[$targetType] ?? [];
+
+            $viewModel[$type] = [
+                'type' => $type,
+                'source_label' => self::SWOT_TYPE_OPTIONS[$sourceType] ?? ucfirst($sourceType),
+                'target_label' => self::SWOT_TYPE_OPTIONS[$targetType] ?? ucfirst($targetType),
+                'source_items' => array_map(static fn (SwotItem $item): array => [
+                    'id' => (int) $item->getId(),
+                    'description' => $item->getDescription(),
+                    'weight' => $item->getWeight(),
+                ], $sourceItems),
+                'target_items' => array_map(static fn (SwotItem $item): array => [
+                    'id' => (int) $item->getId(),
+                    'description' => $item->getDescription(),
+                    'weight' => $item->getWeight(),
+                ], $targetItems),
+            ];
+        }
+
+        return $viewModel;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function normalizeBulkSwotDescriptions(string $bulkText): array
+    {
+        $lines = preg_split('/\r\n|\r|\n/', $bulkText) ?: [];
+        $descriptions = [];
+
+        foreach ($lines as $line) {
+            $normalized = trim((string) $line);
+
+            if ($normalized === '' || mb_strlen($normalized) < 3) {
+                continue;
+            }
+
+            if (mb_strlen($normalized) > 1000) {
+                $normalized = mb_substr($normalized, 0, 1000);
+            }
+
+            if (in_array($normalized, $descriptions, true)) {
+                continue;
+            }
+
+            $descriptions[] = $normalized;
+        }
+
+        return $descriptions;
+    }
+
+    /**
      * @param iterable<\Symfony\Component\Validator\ConstraintViolationInterface> $violations
      */
     private function addObjectiveValidationErrors(iterable $violations): void
@@ -1050,6 +1626,16 @@ public function adminDecision(Request $request, Strategie $strategy, EntityManag
         }
 
         return $this->redirectToRoute('app_back_strategies');
+    }
+
+    private function redirectToSwotMatrix(Strategie $strategy): Response
+    {
+        $strategyId = $strategy->getIdStrategie();
+        if ($strategyId === null) {
+            return $this->redirectToRoute('app_back_strategies');
+        }
+
+        return $this->redirectToRoute('app_back_strategies_swot_matrix', ['id' => $strategyId]);
     }
 
     /**

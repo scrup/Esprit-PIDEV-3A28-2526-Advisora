@@ -12,7 +12,12 @@ function initPassiveNavigationState() {
         return;
     }
 
-    logoutBtn.addEventListener('click', () => {
+    const logoutForm = logoutBtn.closest('form');
+    if (!logoutForm) {
+        return;
+    }
+
+    logoutForm.addEventListener('submit', () => {
         logoutBtn.disabled = true;
         logoutBtn.classList.add('is-loading');
     }, { once: true });

@@ -79,6 +79,7 @@ class Strategie
     #[ORM\OneToMany(targetEntity: SwotItem::class, mappedBy: 'strategie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $swotItems;
 
+
     public function __construct()
     {
         $this->CreatedAtS = new \DateTime();

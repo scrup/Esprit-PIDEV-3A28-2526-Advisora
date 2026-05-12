@@ -175,6 +175,10 @@
                                                 <span class="material-symbols-outlined">assignment_add</span>
                                                 Attribuer Objectif
                                             </button>
+                                            <a href="{{ path('app_back_strategies_swot_matrix', {id: strategy.idStrategie}) }}" class="btn-swot-matrix strategy-action-pill">
+                                                <span class="material-symbols-outlined">grid_view</span>
+                                                Matrice TOWS
+                                            </a>
                                             <a href="{{ path('app_back_strategies_edit', {id: strategy.idStrategie}) }}" class="strategy-text-action">
                                                 <span class="material-symbols-outlined">edit</span>
                                                 Modifier
@@ -297,7 +301,7 @@
                                                 <p class="objective-description">
                                                     {% if swotStrengths|length > 0 %}
                                                         {% for item in swotStrengths %}
-                                                            &bull; {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                                            {% if not loop.first %}<br>{% endif %}&bull; {{ item.description }}
                                                         {% endfor %}
                                                     {% else %}
                                                         Aucune force renseignee.
@@ -317,7 +321,7 @@
                                                 <p class="objective-description">
                                                     {% if swotWeaknesses|length > 0 %}
                                                         {% for item in swotWeaknesses %}
-                                                            &bull; {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                                            {% if not loop.first %}<br>{% endif %}&bull; {{ item.description }}
                                                         {% endfor %}
                                                     {% else %}
                                                         Aucune faiblesse renseignee.
@@ -337,7 +341,7 @@
                                                 <p class="objective-description">
                                                     {% if swotOpportunities|length > 0 %}
                                                         {% for item in swotOpportunities %}
-                                                            &bull; {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                                            {% if not loop.first %}<br>{% endif %}&bull; {{ item.description }}
                                                         {% endfor %}
                                                     {% else %}
                                                         Aucune opportunite renseignee.
@@ -357,7 +361,7 @@
                                                 <p class="objective-description">
                                                     {% if swotThreats|length > 0 %}
                                                         {% for item in swotThreats %}
-                                                            &bull; {{ item.description }}{% if not loop.last %}<br>{% endif %}
+                                                            {% if not loop.first %}<br>{% endif %}&bull; {{ item.description }}
                                                         {% endfor %}
                                                     {% else %}
                                                         Aucune menace renseignee.

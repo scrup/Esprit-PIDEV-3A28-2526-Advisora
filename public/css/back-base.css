@@ -203,7 +203,11 @@ a {
 .back-topbar-actions {
     margin-left: auto;
     justify-content: flex-end;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+}
+
+.back-topbar-actions > * {
+    flex-shrink: 0;
 }
 
 .back-topbar-actions .notification-center-back {
@@ -396,6 +400,8 @@ a {
 
 .logout-form-inline {
     margin: 0;
+    display: inline-flex;
+    align-items: center;
 }
 
 .back-user-chip {
@@ -469,6 +475,7 @@ main {
     .back-topbar-actions {
         width: 100%;
         justify-content: flex-start;
+        flex-wrap: wrap;
     }
 
     .back-topbar-actions .notification-toggle-copy {

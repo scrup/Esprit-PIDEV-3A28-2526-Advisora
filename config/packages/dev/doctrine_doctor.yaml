@@ -1,5 +1,5 @@
 doctrine_doctor:
-    enabled: true
+    enabled: false
     profiler:
         show_in_toolbar: true
     analyzers:

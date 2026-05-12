@@ -25,6 +25,7 @@ class Notification
     public const EVENT_PROJECT_UPDATED = 'project_updated';
     public const EVENT_PROJECT_DELETED = 'project_deleted';
     public const EVENT_DECISION_ADDED = 'decision_added';
+    public const EVENT_STRATEGY_DECIDED = 'strategy_decided';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
