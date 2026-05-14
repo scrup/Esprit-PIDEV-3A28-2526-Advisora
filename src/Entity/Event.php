@@ -11,12 +11,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
-#[ORM\Table(name: 'event')]
+#[ORM\Table(name: 'events')]
 class Event
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'id_ev_id', type: 'integer')]
+    #[ORM\Column(name: 'idEv', type: 'integer')]
     private ?int $idEv = null;
 
     #[Gedmo\Translatable]
@@ -56,7 +56,7 @@ class Event
     private ?string $longitude = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'events')]
-    #[ORM\JoinColumn(name: 'gerant_id', referencedColumnName: 'idUser', nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'idGerant', referencedColumnName: 'idUser', nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
 
     /**

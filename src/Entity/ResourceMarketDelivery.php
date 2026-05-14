@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Entity\Embeddable\Phone;
-use App\Entity\Trait\BlameableTrait;
 use App\Repository\ResourceMarketDeliveryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -13,7 +12,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
 #[ORM\HasLifecycleCallbacks]
 class ResourceMarketDelivery
 {
-    use BlameableTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

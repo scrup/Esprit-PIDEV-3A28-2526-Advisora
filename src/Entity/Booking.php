@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
-#[ORM\Table(name: 'booking')]
+#[ORM\Table(name: 'bookings')]
 #[ORM\HasLifecycleCallbacks]
 class Booking
 {
@@ -31,11 +31,11 @@ class Booking
     private string $totalPrixBk = '0.00';
 
     #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id_ev_id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idEv', referencedColumnName: 'idEv', nullable: false, onDelete: 'CASCADE')]
     private ?Event $event = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'bookings')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     private ?string $workflowStatus = null;

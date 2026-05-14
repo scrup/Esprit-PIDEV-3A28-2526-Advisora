@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Entity\Trait\BlameableTrait;
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -19,7 +18,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
 #[ORM\HasLifecycleCallbacks]
 class Notification
 {
-    use BlameableTrait;
 
     public const EVENT_PROJECT_CREATED = 'project_created';
     public const EVENT_PROJECT_UPDATED = 'project_updated';
@@ -48,9 +46,6 @@ class Notification
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
-
-    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isRead = false;
@@ -182,13 +177,6 @@ class Notification
         return $this->setTargetProjectId($target_project_id);
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-   
-
     public function setTranslatableLocale(string $locale): self
     {
         $this->locale = $locale;
@@ -204,14 +192,5 @@ class Notification
             $this->createdAt = $now;
         }
 
-        if ($this->updatedAt === null) {
-            $this->updatedAt = $now;
-        }
-    }
-
-    #[ORM\PreUpdate]
-    public function refreshUpdatedAt(): void
-    {
-        $this->updatedAt = new \DateTimeImmutable();
     }
 }

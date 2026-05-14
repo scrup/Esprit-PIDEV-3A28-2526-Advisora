@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Entity\Trait\BlameableTrait;
 use App\Repository\ProjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,11 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
-#[ORM\Table(name: 'project')]
+#[ORM\Table(name: 'projects')]
 #[ORM\HasLifecycleCallbacks]
 class Project
 {
-    use BlameableTrait;
 
     public const STATUS_PENDING = 'PENDING';
     public const STATUS_ACCEPTED = 'ACCEPTED';
@@ -62,7 +60,7 @@ class Project
     private float $avancementProj;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projects')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idClient', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     /**
@@ -105,10 +103,10 @@ class Project
     #[ORM\JoinTable(
         name: 'project_resources',
         joinColumns: [
-            new ORM\JoinColumn(name: 'project_id', referencedColumnName: 'idProj', onDelete: 'CASCADE')
+            new ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj', onDelete: 'CASCADE')
         ],
         inverseJoinColumns: [
-            new ORM\JoinColumn(name: 'resource_id', referencedColumnName: 'idRs', onDelete: 'CASCADE')
+            new ORM\JoinColumn(name: 'idRs', referencedColumnName: 'idRs', onDelete: 'CASCADE')
         ]
     )]
     private Collection $resources;

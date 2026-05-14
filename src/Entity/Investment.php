@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InvestmentRepository::class)]
-#[ORM\Table(name: 'investment')]
+#[ORM\Table(name: 'investments')]
 class Investment
 {
     private const DURATION_MARKER_PREFIX = '[DURATION]';
@@ -37,11 +37,11 @@ class Investment
     private string $CurrencyInv;
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'investments')]
-    #[ORM\JoinColumn(name: 'project_id', referencedColumnName: 'idProj', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj', nullable: false, onDelete: 'CASCADE')]
     private ?Project $project = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'investments')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
   /**

@@ -24,6 +24,7 @@ final class Version20260502201000 extends AbstractMigration
         $this->renameTableIfNeeded('projects', 'project');
         $this->renameTableIfNeeded('resources', 'resource');
         $this->renameTableIfNeeded('strategies', 'strategy');
+        $this->renameTableIfNeeded('transaction', 'transactions');
     }
 
     public function down(Schema $schema): void
@@ -36,6 +37,7 @@ final class Version20260502201000 extends AbstractMigration
         $this->renameTableIfNeeded('event', 'events');
         $this->renameTableIfNeeded('decision', 'decisions');
         $this->renameTableIfNeeded('booking', 'bookings');
+        $this->renameTableIfNeeded('transactions', 'transaction');
     }
 
     private function renameTableIfNeeded(string $from, string $to): void

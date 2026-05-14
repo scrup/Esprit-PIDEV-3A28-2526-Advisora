@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: ResourceRepository::class)]
-#[ORM\Table(name: 'resource')]
+#[ORM\Table(name: 'resources')]
 class Resource
 {
     public const STATUS_AVAILABLE = 'AVAILABLE';
@@ -44,7 +44,7 @@ class Resource
     private float $prixRs = 0.0;
 
     #[ORM\ManyToOne(targetEntity: Cataloguefournisseur::class, inversedBy: 'resources')]
-    #[ORM\JoinColumn(name: 'cataloguefournisseur_id', referencedColumnName: 'idFr', nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'idFr', referencedColumnName: 'idFr', nullable: true, onDelete: 'SET NULL')]
     private ?Cataloguefournisseur $cataloguefournisseur = null;
 
     #[ORM\Column(type: 'string', nullable: true)]

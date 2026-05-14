@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Entity\Trait\BlameableTrait;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,8 +14,6 @@ use App\Repository\TaskRepository;
 #[ORM\HasLifecycleCallbacks]
 class Task
 {
-    use BlameableTrait;
-
     public const STATUS_TODO = 'TODO';
     public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
     public const STATUS_DONE = 'DONE';
@@ -135,19 +132,9 @@ class Task
     #[ORM\Column(type: 'datetime', nullable: false)]
     private \DateTimeInterface $created_at;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
-
     public function getCreated_at(): \DateTimeInterface
     {
         return $this->created_at;
-    }
-
-    
-
-    public function getUpdated_at(): ?\DateTimeInterface
-    {
-        return $this->updated_at;
     }
 
     
@@ -173,15 +160,7 @@ class Task
         $this->created_at = new \DateTime();
     }
 
-    if (!isset($this->updated_at)) {
-        $this->updated_at = new \DateTime();
-    }
 }
-    #[ORM\PreUpdate]
-    public function refreshUpdatedAt(): void
-    {
-        $this->updated_at = new \DateTime();
-    }
 
     public function getStatusLabel(): string
     {

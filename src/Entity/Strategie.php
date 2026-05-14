@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: StrategieRepository::class)]
-#[ORM\Table(name: 'strategy')]
+#[ORM\Table(name: 'strategies')]
 #[ORM\HasLifecycleCallbacks]
 class Strategie
 {
@@ -34,11 +34,11 @@ class Strategie
     private ?\DateTimeInterface $lockedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'strategies')]
-    #[ORM\JoinColumn(name: 'project_id', referencedColumnName: 'idProj', nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj', nullable: true, onDelete: 'SET NULL')]
     private ?Project $project = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'strategies')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser', nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
 
     #[ORM\Column(type: 'string', nullable: false)]

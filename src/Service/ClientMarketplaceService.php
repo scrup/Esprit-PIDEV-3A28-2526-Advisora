@@ -60,7 +60,7 @@ final class ClientMarketplaceService
         $normalizedOpenSort = $this->normalizeOpenSort($openSort);
 
         $projects = $connection->fetchAllAssociative(
-            'SELECT idProj, titleProj FROM project WHERE user_id = ? ORDER BY idProj DESC',
+            'SELECT idProj, titleProj FROM projects WHERE idClient = ? ORDER BY idProj DESC',
             [$clientId]
         );
 
@@ -139,10 +139,10 @@ final class ClientMarketplaceService
                 COALESCE(rv_stats.review_count, 0) AS review_count,
                 COALESCE(rv_stats.rating_avg, 0) AS rating_avg
             FROM resource_market_listing l
-            LEFT JOIN resource r ON r.idRs = l.idRs
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
+            LEFT JOIN resources r ON r.idRs = l.idRs
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
             LEFT JOIN `user` u ON u.idUser = l.sellerUserId
-            LEFT JOIN project p ON p.idProj = l.idProj
+            LEFT JOIN projects p ON p.idProj = l.idProj
             LEFT JOIN (
                 SELECT idListing, COUNT(*) AS review_count, ROUND(AVG(stars), 2) AS rating_avg
                 FROM resource_market_review
@@ -427,7 +427,7 @@ final class ClientMarketplaceService
             ]);
             $orderId = (int) $connection->lastInsertId();
 
-            $resourceName = (string) $connection->fetchOne('SELECT nomRs FROM resource WHERE idRs = ?', [$resourceId]);
+            $resourceName = (string) $connection->fetchOne('SELECT nomRs FROM resources WHERE idRs = ?', [$resourceId]);
             $recipientName = $this->resolveRecipientName($client, $deliveryPayload);
             $city = $this->resolveDeliveryCity($deliveryPayload);
             $addressLine = $this->resolveDeliveryAddress($deliveryPayload);
@@ -978,11 +978,11 @@ final class ClientMarketplaceService
                 COALESCE(NULLIF(TRIM(cf.fournisseur), \'\'), NULLIF(TRIM(cf.nomFr), \'\'), \'Non renseigne\') AS supplier_name,
                 COALESCE(NULLIF(r.imageUrlRs, \'\'), NULLIF(r.thumbnailUrlRs, \'\')) AS image_url,
                 ' . $quantityExpression . ' AS reserved_qty
-            FROM project p
-            INNER JOIN project_resources pr ON pr.project_id = p.idProj
-            INNER JOIN resource r ON r.idRs = pr.resource_id
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
-            WHERE p.user_id = ?
+            FROM projects p
+            INNER JOIN project_resources pr ON pr.idProj = p.idProj
+            INNER JOIN resources r ON r.idRs = pr.idRs
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            WHERE p.idClient = ?
             GROUP BY p.idProj, p.titleProj, r.idRs, r.nomRs, cf.fournisseur, cf.nomFr, r.imageUrlRs, r.thumbnailUrlRs
             ORDER BY p.idProj DESC, r.idRs DESC
             ',
@@ -1047,8 +1047,8 @@ final class ClientMarketplaceService
                 COALESCE(rv_stats.review_count, 0) AS review_count,
                 COALESCE(rv_stats.rating_avg, 0) AS rating_avg
             FROM resource_market_listing l
-            LEFT JOIN resource r ON r.idRs = l.idRs
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
+            LEFT JOIN resources r ON r.idRs = l.idRs
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
             LEFT JOIN `user` u ON u.idUser = l.sellerUserId
             LEFT JOIN (
                 SELECT idListing, COUNT(*) AS review_count, ROUND(AVG(stars), 2) AS rating_avg
@@ -1126,8 +1126,8 @@ final class ClientMarketplaceService
                 COALESCE(NULLIF(TRIM(cf.fournisseur), \'\'), NULLIF(TRIM(cf.nomFr), \'\'), \'Non renseigne\') AS supplier_name,
                 COALESCE(NULLIF(l.imageUrl, \'\'), NULLIF(r.imageUrlRs, \'\'), NULLIF(r.thumbnailUrlRs, \'\')) AS image_url
             FROM resource_market_listing l
-            LEFT JOIN resource r ON r.idRs = l.idRs
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
+            LEFT JOIN resources r ON r.idRs = l.idRs
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
             WHERE l.sellerUserId = ?
             ORDER BY l.updatedAt DESC, l.idListing DESC
             ',
@@ -1179,9 +1179,9 @@ final class ClientMarketplaceService
                 CASE WHEN o.buyerUserId = ? THEN \'BUYER\' ELSE \'SELLER\' END AS order_role
             FROM resource_market_order o
             LEFT JOIN resource_market_listing l ON l.idListing = o.idListing
-            LEFT JOIN resource r ON r.idRs = o.idRs
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
-            LEFT JOIN project p ON p.idProj = o.buyerProjectId
+            LEFT JOIN resources r ON r.idRs = o.idRs
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN projects p ON p.idProj = o.buyerProjectId
             LEFT JOIN `user` b ON b.idUser = o.buyerUserId
             LEFT JOIN `user` s ON s.idUser = o.sellerUserId
             LEFT JOIN resource_market_delivery d ON d.idOrder = o.idOrder
@@ -1221,7 +1221,7 @@ final class ClientMarketplaceService
     private function assertProjectBelongsToClient(Connection $connection, int $projectId, int $clientId): void
     {
         $resolvedProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idProj = ? AND user_id = ?',
+            'SELECT idProj FROM projects WHERE idProj = ? AND idClient = ?',
             [$projectId, $clientId]
         );
 
@@ -1237,7 +1237,7 @@ final class ClientMarketplaceService
         string $errorMessage
     ): void {
         $resolvedProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idProj = ? AND user_id = ? FOR UPDATE',
+            'SELECT idProj FROM projects WHERE idProj = ? AND idClient = ? FOR UPDATE',
             [$projectId, $clientId]
         );
 
@@ -1295,7 +1295,7 @@ final class ClientMarketplaceService
         }
 
         $latestProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE user_id = ? ORDER BY idProj DESC LIMIT 1',
+            'SELECT idProj FROM projects WHERE idClient = ? ORDER BY idProj DESC LIMIT 1',
             [$clientId]
         );
 
@@ -1304,7 +1304,7 @@ final class ClientMarketplaceService
         }
 
         $now = $this->now();
-        $connection->insert('project', [
+        $connection->insert('projects', [
             'titleProj' => 'Marketplace Ressources',
             'descriptionProj' => 'Projet cree automatiquement pour achat marketplace',
             'budgetProj' => 0.0,
@@ -1313,7 +1313,7 @@ final class ClientMarketplaceService
             'createdAtProj' => $now,
             'updatedAtProj' => $now,
             'avancementProj' => 0.0,
-            'user_id' => $clientId,
+            'idClient' => $clientId,
         ]);
 
         return (int) $connection->lastInsertId();
@@ -1323,8 +1323,8 @@ final class ClientMarketplaceService
     {
         $quantityColumn = $this->detectQuantityColumn($connection);
         $sql = $quantityColumn === null
-            ? 'SELECT COUNT(*) FROM project_resources WHERE project_id = ? AND resource_id = ?'
-            : 'SELECT COALESCE(SUM(' . $quantityColumn . '), 0) FROM project_resources WHERE project_id = ? AND resource_id = ?';
+            ? 'SELECT COUNT(*) FROM project_resources WHERE idProj = ? AND idRs = ?'
+            : 'SELECT COALESCE(SUM(' . $quantityColumn . '), 0) FROM project_resources WHERE idProj = ? AND idRs = ?';
 
         return (int) $connection->fetchOne($sql, [$projectId, $resourceId]);
     }
@@ -1355,7 +1355,7 @@ final class ClientMarketplaceService
     private function replaceReservationQuantity(Connection $connection, int $projectId, int $resourceId, int $newQuantity): void
     {
         $connection->executeStatement(
-            'DELETE FROM project_resources WHERE project_id = ? AND resource_id = ?',
+            'DELETE FROM project_resources WHERE idProj = ? AND idRs = ?',
             [$projectId, $resourceId]
         );
 
@@ -1367,8 +1367,8 @@ final class ClientMarketplaceService
         if ($quantityColumn === null) {
             for ($index = 0; $index < $newQuantity; $index++) {
                 $connection->insert('project_resources', [
-                    'project_id' => $projectId,
-                    'resource_id' => $resourceId,
+                    'idProj' => $projectId,
+                    'idRs' => $resourceId,
                 ]);
             }
 
@@ -1376,8 +1376,8 @@ final class ClientMarketplaceService
         }
 
         $connection->insert('project_resources', [
-            'project_id' => $projectId,
-            'resource_id' => $resourceId,
+            'idProj' => $projectId,
+            'idRs' => $resourceId,
             $quantityColumn => $newQuantity,
         ]);
     }
@@ -1940,7 +1940,7 @@ final class ClientMarketplaceService
             '
             SELECT
                 TRIM(COALESCE(nomRs, \'\')) AS resource_name
-            FROM resource
+            FROM resources
             WHERE idRs = ?
             LIMIT 1
             ',
@@ -2120,3 +2120,6 @@ final class ClientMarketplaceService
         return (new \DateTimeImmutable())->format('Y-m-d H:i:s');
     }
 }
+
+
+

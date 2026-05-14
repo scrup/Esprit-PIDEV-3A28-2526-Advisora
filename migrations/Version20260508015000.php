@@ -35,39 +35,12 @@ final class Version20260508015000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        foreach (self::AUDIT_CREATED_BY_CONSTRAINTS as [$table, $constraint]) {
-            $this->addSql(sprintf('ALTER TABLE `%s` DROP FOREIGN KEY `%s`', $table, $constraint));
-            $this->addSql(sprintf('ALTER TABLE `%s` CHANGE created_by_id created_by_id INT DEFAULT NULL', $table));
-            $this->addSql(sprintf(
-                'ALTER TABLE `%s` ADD CONSTRAINT `%s` FOREIGN KEY (created_by_id) REFERENCES `user` (idUser) ON DELETE SET NULL',
-                $table,
-                $constraint
-            ));
-        }
+        // Disabled: This migration attempted to modify created_by_id column which doesn't exist in the database
+        // The BlameableTrait that created these columns was removed from entities
     }
 
     public function down(Schema $schema): void
     {
-        $fallbackUserId = $this->connection->fetchOne(
-            "SELECT idUser FROM `user` WHERE roleUser = 'admin' ORDER BY idUser ASC LIMIT 1"
-        );
-        if ($fallbackUserId === false || $fallbackUserId === null) {
-            $fallbackUserId = $this->connection->fetchOne('SELECT idUser FROM `user` ORDER BY idUser ASC LIMIT 1');
-        }
-
-        if ($fallbackUserId === false || $fallbackUserId === null) {
-            throw new \RuntimeException('Cannot make created_by_id mandatory again: no user exists to backfill NULL values.');
-        }
-
-        foreach (self::AUDIT_CREATED_BY_CONSTRAINTS as [$table, $constraint]) {
-            $this->addSql(sprintf('ALTER TABLE `%s` DROP FOREIGN KEY `%s`', $table, $constraint));
-            $this->addSql(sprintf('UPDATE `%s` SET created_by_id = ? WHERE created_by_id IS NULL', $table), [(int) $fallbackUserId]);
-            $this->addSql(sprintf('ALTER TABLE `%s` CHANGE created_by_id created_by_id INT NOT NULL', $table));
-            $this->addSql(sprintf(
-                'ALTER TABLE `%s` ADD CONSTRAINT `%s` FOREIGN KEY (created_by_id) REFERENCES `user` (idUser)',
-                $table,
-                $constraint
-            ));
-        }
+        // Disabled: This migration attempted to modify created_by_id column which doesn't exist in the database
     }
 }

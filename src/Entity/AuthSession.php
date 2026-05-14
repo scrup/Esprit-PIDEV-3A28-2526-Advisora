@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Entity\Trait\BlameableTrait;
 use App\Repository\AuthSessionRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -12,7 +11,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
 #[ORM\HasLifecycleCallbacks]
 class AuthSession
 {
-    use BlameableTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -32,9 +30,6 @@ class AuthSession
     #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column(type: 'datetime', nullable: false)]
     private \DateTimeInterface $created_at;
-
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
 
     #[ORM\Column(type: 'datetime', nullable: false)]
     private \DateTimeInterface $expires_at;
@@ -117,13 +112,6 @@ class AuthSession
 
     
 
-    public function getUpdated_at(): ?\DateTimeInterface
-    {
-        return $this->updated_at;
-    }
-
-   
-
     public function getExpires_at(): \DateTimeInterface
     {
         return $this->expires_at;
@@ -186,14 +174,5 @@ class AuthSession
             $this->created_at = $now;
         }
 
-        if ($this->updated_at === null) {
-            $this->updated_at = $now;
-        }
-    }
-
-    #[ORM\PreUpdate]
-    public function refreshUpdatedAt(): void
-    {
-        $this->updated_at = new \DateTime();
     }
 }

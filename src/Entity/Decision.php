@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: DecisionRepository::class)]
-#[ORM\Table(name: 'decision')]
+#[ORM\Table(name: 'decisions')]
 class Decision
 {
     public const STATUS_PENDING = 'pending';
@@ -39,11 +39,11 @@ class Decision
     private \DateTimeInterface $dateDecision;
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'decisions')]
-    #[ORM\JoinColumn(name: 'project_id', referencedColumnName: 'idProj', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idProj', referencedColumnName: 'idProj', nullable: false, onDelete: 'CASCADE')]
     private ?Project $project = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'decisions')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idUser', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     public function getIdD(): ?int

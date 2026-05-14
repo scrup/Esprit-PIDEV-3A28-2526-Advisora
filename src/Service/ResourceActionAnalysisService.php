@@ -129,7 +129,7 @@ class ResourceActionAnalysisService
         $quantityColumn = $this->detectQuantityColumn($connection);
         $reservedExpression = $quantityColumn !== null
             ? 'COALESCE(SUM(pr.' . $quantityColumn . '), 0)'
-            : 'COUNT(pr.resource_id)';
+            : 'COUNT(pr.idRs)';
 
         $rows = $connection->fetchAllAssociative(
             'SELECT
@@ -140,9 +140,9 @@ class ResourceActionAnalysisService
                 COALESCE(r.prixRs, 0) AS price,
                 COALESCE(NULLIF(TRIM(cf.fournisseur), \'\'), NULLIF(TRIM(cf.nomFr), \'\'), \'Non renseigne\') AS supplier_name,
                 ' . $reservedExpression . ' AS stock_reserved
-            FROM resource r
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
-            LEFT JOIN project_resources pr ON pr.resource_id = r.idRs
+            FROM resources r
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            LEFT JOIN project_resources pr ON pr.idRs = r.idRs
             GROUP BY
                 r.idRs,
                 r.nomRs,
@@ -495,3 +495,4 @@ class ResourceActionAnalysisService
         return null;
     }
 }
+

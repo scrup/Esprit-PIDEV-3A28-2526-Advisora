@@ -162,7 +162,7 @@ final class ShopSeedListingsCommand extends Command
                 $attempted++;
                 $quantity = min(2, $publishableQty);
                 $basePrice = (float) $connection->fetchOne(
-                    'SELECT COALESCE(prixRs, 0) FROM resource WHERE idRs = ?',
+                    'SELECT COALESCE(prixRs, 0) FROM resources WHERE idRs = ?',
                     [$resourceId]
                 );
                 $unitPrice = round(max(1.0, ($basePrice > 0 ? $basePrice * 0.55 : 50.0)), 3);
@@ -241,7 +241,7 @@ final class ShopSeedListingsCommand extends Command
         $connection = $this->entityManager->getConnection();
 
         $existing = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE user_id = ? AND titleProj = ? ORDER BY idProj DESC LIMIT 1',
+            'SELECT idProj FROM projects WHERE idClient = ? AND titleProj = ? ORDER BY idProj DESC LIMIT 1',
             [$clientId, self::SEED_PROJECT_TITLE]
         );
         if ($existing > 0) {
@@ -249,7 +249,7 @@ final class ShopSeedListingsCommand extends Command
         }
 
         $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
-        $connection->insert('project', [
+        $connection->insert('projects', [
             'titleProj' => self::SEED_PROJECT_TITLE,
             'descriptionProj' => self::SEED_PROJECT_DESCRIPTION,
             'budgetProj' => 0.0,
@@ -258,7 +258,7 @@ final class ShopSeedListingsCommand extends Command
             'createdAtProj' => $now,
             'updatedAtProj' => $now,
             'avancementProj' => 0.0,
-            'user_id' => $clientId,
+            'idClient' => $clientId,
         ]);
 
         return (int) $connection->lastInsertId();

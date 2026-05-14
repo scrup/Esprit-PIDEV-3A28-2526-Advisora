@@ -19,10 +19,6 @@ class PasswordReset
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'created_by_id', referencedColumnName: 'idUser', nullable: false, onDelete: 'CASCADE')]
-    private User $createdBy;
-
     #[ORM\Column(type: 'string', nullable: false)]
     private string $code_hash = '';
 
@@ -76,18 +72,6 @@ class PasswordReset
     public function setUser(?User $user): self
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): User
-    {
-        return $this->createdBy;
-    }
-
-    public function setCreatedBy(User $createdBy): self
-    {
-        $this->createdBy = $createdBy;
 
         return $this;
     }
@@ -147,8 +131,5 @@ class PasswordReset
             $this->expires_at = (new \DateTime())->modify('+15 minutes');
         }
 
-        if (!isset($this->createdBy) && $this->user instanceof User) {
-            $this->createdBy = $this->user;
-        }
     }
 }

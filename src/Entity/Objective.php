@@ -11,7 +11,7 @@ use App\Repository\ObjectiveRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ObjectiveRepository::class)]
-#[ORM\Table(name: 'objective')]
+#[ORM\Table(name: 'objectives')]
 class Objective
 {
     public const TOWS_TYPE_SO = 'SO';
@@ -27,7 +27,7 @@ class Objective
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idOb', type: 'integer')]
     private ?int $idOb = null;
 
     public function getIdOb(): ?int
@@ -41,7 +41,7 @@ class Objective
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(name: 'descriptionOb', type: 'string', nullable: false)]
     #[Gedmo\Translatable]
     private string $descriptionOb;
 
@@ -61,7 +61,7 @@ class Objective
         return $this;
     }
 
-    #[ORM\Column(type: 'integer', nullable: true)]
+    #[ORM\Column(name: 'priorityOb', type: 'integer', nullable: true)]
     private ?int $priorityOb = null;
 
     #[Assert\NotNull(message: 'La priorite de l objectif est obligatoire.')]
@@ -103,7 +103,7 @@ class Objective
     }
 
     #[ORM\ManyToOne(targetEntity: Strategie::class, inversedBy: 'objectives')]
-    #[ORM\JoinColumn(name: 'strategie_id', referencedColumnName: 'idStrategie', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'ids', referencedColumnName: 'idStrategie', nullable: false, onDelete: 'CASCADE')]
     private ?Strategie $strategie = null;
 
     #[Assert\NotNull(message: 'La strategie associee est obligatoire.')]
@@ -118,20 +118,9 @@ class Objective
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(name: 'nomObj', type: 'string', nullable: true)]
     #[Gedmo\Translatable]
     private ?string $nomObj = null;
-
-    #[ORM\Column(name: 'tows_type', type: 'string', length: 2, nullable: true)]
-    private ?string $towsType = null;
-
-    #[ORM\ManyToOne(targetEntity: SwotItem::class)]
-    #[ORM\JoinColumn(name: 'tows_source_swot_item_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
-    private ?SwotItem $towsSourceSwotItem = null;
-
-    #[ORM\ManyToOne(targetEntity: SwotItem::class)]
-    #[ORM\JoinColumn(name: 'tows_target_swot_item_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
-    private ?SwotItem $towsTargetSwotItem = null;
 
     #[Gedmo\Locale]
     private ?string $locale = null;
@@ -154,49 +143,7 @@ class Objective
         return $this;
     }
 
-    public function getTowsType(): ?string
-    {
-        return $this->towsType;
-    }
 
-    public function setTowsType(?string $towsType): self
-    {
-        $normalized = $towsType !== null ? strtoupper(trim($towsType)) : null;
-        $this->towsType = in_array($normalized, [self::TOWS_TYPE_SO, self::TOWS_TYPE_WO, self::TOWS_TYPE_ST, self::TOWS_TYPE_WT], true)
-            ? $normalized
-            : null;
-
-        return $this;
-    }
-
-    public function getTowsSourceSwotItem(): ?SwotItem
-    {
-        return $this->towsSourceSwotItem;
-    }
-
-    public function setTowsSourceSwotItem(?SwotItem $towsSourceSwotItem): self
-    {
-        $this->towsSourceSwotItem = $towsSourceSwotItem;
-
-        return $this;
-    }
-
-    public function getTowsTargetSwotItem(): ?SwotItem
-    {
-        return $this->towsTargetSwotItem;
-    }
-
-    public function setTowsTargetSwotItem(?SwotItem $towsTargetSwotItem): self
-    {
-        $this->towsTargetSwotItem = $towsTargetSwotItem;
-
-        return $this;
-    }
-
-    public function isTowsObjective(): bool
-    {
-        return $this->towsType !== null;
-    }
 
     public function setTranslatableLocale(string $locale): self
     {

@@ -114,7 +114,7 @@ SVG;
     private function resolveResourceName(Connection $connection, int $resourceId, string $slug): string
     {
         $resourceName = (string) $connection->fetchOne(
-            'SELECT nomRs FROM resource WHERE idRs = ? LIMIT 1',
+            'SELECT nomRs FROM resources WHERE idRs = ? LIMIT 1',
             [$resourceId]
         );
 

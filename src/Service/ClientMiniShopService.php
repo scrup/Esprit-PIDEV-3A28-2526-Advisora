@@ -34,7 +34,7 @@ final class ClientMiniShopService
         );
 
         $projects = $connection->fetchAllAssociative(
-            'SELECT idProj, titleProj FROM project WHERE user_id = ? ORDER BY idProj DESC',
+            'SELECT idProj, titleProj FROM projects WHERE idClient = ? ORDER BY idProj DESC',
             [(int) $client->getIdUser()]
         );
 
@@ -114,7 +114,7 @@ final class ClientMiniShopService
 
         try {
             $resourceRow = $connection->fetchAssociative(
-                'SELECT idRs, QuantiteRs FROM resource WHERE idRs = ?',
+                'SELECT idRs, QuantiteRs FROM resources WHERE idRs = ?',
                 [$resourceId]
             );
 
@@ -134,19 +134,19 @@ final class ClientMiniShopService
 
             if ($quantityColumn !== null) {
                 $existing = (int) $connection->fetchOne(
-                    'SELECT COUNT(*) FROM project_resources WHERE project_id = ? AND resource_id = ?',
+                    'SELECT COUNT(*) FROM project_resources WHERE idProj = ? AND idRs = ?',
                     [$resolvedProjectId, $resourceId]
                 );
 
                 if ($existing > 0) {
                     $connection->executeStatement(
-                        'UPDATE project_resources SET ' . $quantityColumn . ' = ' . $quantityColumn . ' + ? WHERE project_id = ? AND resource_id = ?',
+                        'UPDATE project_resources SET ' . $quantityColumn . ' = ' . $quantityColumn . ' + ? WHERE idProj = ? AND idRs = ?',
                         [$quantity, $resolvedProjectId, $resourceId]
                     );
                 } else {
                     $connection->insert('project_resources', [
-                        'project_id' => $resolvedProjectId,
-                        'resource_id' => $resourceId,
+                        'idProj' => $resolvedProjectId,
+                        'idRs' => $resourceId,
                         $quantityColumn => $quantity,
                     ]);
                 }
@@ -204,7 +204,7 @@ final class ClientMiniShopService
                 );
             }
 
-            $resourceStock = (int) $connection->fetchOne('SELECT QuantiteRs FROM resource WHERE idRs = ?', [$resourceId]);
+            $resourceStock = (int) $connection->fetchOne('SELECT QuantiteRs FROM resources WHERE idRs = ?', [$resourceId]);
             $reservedTotal = $this->getReservedStock($connection, $resourceId);
             $availableExcludingCurrent = max(0, $resourceStock - ($reservedTotal - $currentQuantity));
 
@@ -215,7 +215,7 @@ final class ClientMiniShopService
             if ($resolvedTargetProjectId === $projectId) {
                 if ($quantityColumn !== null) {
                     $connection->executeStatement(
-                        'UPDATE project_resources SET ' . $quantityColumn . ' = ? WHERE project_id = ? AND resource_id = ?',
+                        'UPDATE project_resources SET ' . $quantityColumn . ' = ? WHERE idProj = ? AND idRs = ?',
                         [$newQuantity, $projectId, $resourceId]
                     );
                 } else {
@@ -274,7 +274,7 @@ final class ClientMiniShopService
             }
 
             $connection->executeStatement(
-                'DELETE pr FROM project_resources pr INNER JOIN project p ON p.idProj = pr.project_id WHERE pr.project_id = ? AND pr.resource_id = ? AND p.user_id = ?',
+                'DELETE pr FROM project_resources pr INNER JOIN projects p ON p.idProj = pr.idProj WHERE pr.idProj = ? AND pr.idRs = ? AND p.idClient = ?',
                 [$projectId, $resourceId, $clientId]
             );
 
@@ -302,23 +302,23 @@ final class ClientMiniShopService
                 r.prixRs,
                 r.QuantiteRs,
                 r.availabilityStatusRs,
-                r.cataloguefournisseur_id,
+                r.idFr,
                 COALESCE(NULLIF(cf.fournisseur, \'\'), cf.nomFr) AS fournisseur_name,
                 COALESCE(stock.reserved_stock, 0) AS reserved_stock,
                 GREATEST(r.QuantiteRs - COALESCE(stock.reserved_stock, 0), 0) AS available_stock
-            FROM resource r
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
+            FROM resources r
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
             LEFT JOIN (
-                SELECT pr.resource_id AS resource_id, ' . $quantityAggregation . ' AS reserved_stock
+                SELECT pr.idRs AS resource_id, ' . $quantityAggregation . ' AS reserved_stock
                 FROM project_resources pr
-                GROUP BY pr.resource_id
+                GROUP BY pr.idRs
             ) stock ON stock.resource_id = r.idRs';
 
         $parameters = [];
         $conditions = [];
 
         if ($supplierId !== null && $supplierId > 0) {
-            $conditions[] = 'r.cataloguefournisseur_id = :supplierId';
+            $conditions[] = 'r.idFr = :supplierId';
             $parameters['supplierId'] = $supplierId;
         }
 
@@ -365,16 +365,16 @@ final class ClientMiniShopService
                 r.prixRs,
                 r.QuantiteRs,
                 r.availabilityStatusRs,
-                r.cataloguefournisseur_id,
+                r.idFr,
                 COALESCE(NULLIF(cf.fournisseur, \'\'), cf.nomFr) AS fournisseur_name,
                 COALESCE(stock.reserved_stock, 0) AS reserved_stock,
                 GREATEST(r.QuantiteRs - COALESCE(stock.reserved_stock, 0), 0) AS available_stock
-            FROM resource r
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
+            FROM resources r
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
             LEFT JOIN (
-                SELECT pr.resource_id AS resource_id, ' . $quantityAggregation . ' AS reserved_stock
+                SELECT pr.idRs AS resource_id, ' . $quantityAggregation . ' AS reserved_stock
                 FROM project_resources pr
-                GROUP BY pr.resource_id
+                GROUP BY pr.idRs
             ) stock ON stock.resource_id = r.idRs
             WHERE r.idRs IN (' . $placeholders . ')
             ORDER BY r.idRs DESC
@@ -393,19 +393,19 @@ final class ClientMiniShopService
         return $connection->fetchAllAssociative(
             '
             SELECT
-                pr.project_id AS project_id,
-                pr.resource_id AS resource_id,
+                pr.idProj AS project_id,
+                pr.idRs AS resource_id,
                 p.titleProj AS project_title,
                 r.nomRs AS resource_name,
                 COALESCE(NULLIF(cf.fournisseur, \'\'), cf.nomFr) AS fournisseur_name,
                 ' . $quantityAggregation . ' AS quantity
             FROM project_resources pr
-            INNER JOIN project p ON p.idProj = pr.project_id
-            INNER JOIN resource r ON r.idRs = pr.resource_id
-            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
-            WHERE p.user_id = ?
-            GROUP BY pr.project_id, pr.resource_id, p.titleProj, r.nomRs, cf.fournisseur, cf.nomFr
-            ORDER BY pr.project_id DESC, pr.resource_id DESC
+            INNER JOIN projects p ON p.idProj = pr.idProj
+            INNER JOIN resources r ON r.idRs = pr.idRs
+            LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+            WHERE p.idClient = ?
+            GROUP BY pr.idProj, pr.idRs, p.titleProj, r.nomRs, cf.fournisseur, cf.nomFr
+            ORDER BY pr.idProj DESC, pr.idRs DESC
             ',
             [(int) $client->getIdUser()]
         );
@@ -470,22 +470,22 @@ final class ClientMiniShopService
     ): void {
         if ($quantityColumn !== null) {
             $targetExists = (int) $connection->fetchOne(
-                'SELECT COUNT(*) FROM project_resources WHERE project_id = ? AND resource_id = ?',
+                'SELECT COUNT(*) FROM project_resources WHERE idProj = ? AND idRs = ?',
                 [$targetProjectId, $resourceId]
             );
 
             if ($targetExists > 0) {
                 $connection->executeStatement(
-                    'UPDATE project_resources SET ' . $quantityColumn . ' = ' . $quantityColumn . ' + ? WHERE project_id = ? AND resource_id = ?',
+                    'UPDATE project_resources SET ' . $quantityColumn . ' = ' . $quantityColumn . ' + ? WHERE idProj = ? AND idRs = ?',
                     [$newQuantity, $targetProjectId, $resourceId]
                 );
                 $connection->executeStatement(
-                    'DELETE FROM project_resources WHERE project_id = ? AND resource_id = ?',
+                    'DELETE FROM project_resources WHERE idProj = ? AND idRs = ?',
                     [$sourceProjectId, $resourceId]
                 );
             } else {
                 $connection->executeStatement(
-                    'UPDATE project_resources SET project_id = ?, ' . $quantityColumn . ' = ? WHERE project_id = ? AND resource_id = ?',
+                    'UPDATE project_resources SET idProj = ?, ' . $quantityColumn . ' = ? WHERE idProj = ? AND idRs = ?',
                     [$targetProjectId, $newQuantity, $sourceProjectId, $resourceId]
                 );
             }
@@ -494,7 +494,7 @@ final class ClientMiniShopService
         }
 
         $connection->executeStatement(
-            'DELETE FROM project_resources WHERE project_id = ? AND resource_id = ?',
+            'DELETE FROM project_resources WHERE idProj = ? AND idRs = ?',
             [$sourceProjectId, $resourceId]
         );
 
@@ -515,7 +515,7 @@ final class ClientMiniShopService
         }
 
         $latestProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE user_id = ? ORDER BY idProj DESC LIMIT 1',
+            'SELECT idProj FROM projects WHERE idClient = ? ORDER BY idProj DESC LIMIT 1',
             [(int) $client->getIdUser()]
         );
 
@@ -523,7 +523,7 @@ final class ClientMiniShopService
             return $latestProjectId;
         }
 
-        $connection->insert('project', [
+        $connection->insert('projects', [
             'titleProj' => 'Reservation Ressources',
             'descriptionProj' => 'Cree automatiquement pour reservation',
             'budgetProj' => 0.0,
@@ -532,7 +532,7 @@ final class ClientMiniShopService
             'createdAtProj' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'updatedAtProj' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'avancementProj' => 0.0,
-            'user_id' => (int) $client->getIdUser(),
+            'idClient' => (int) $client->getIdUser(),
         ]);
 
         return (int) $connection->lastInsertId();
@@ -541,7 +541,7 @@ final class ClientMiniShopService
     private function resolveOwnedProject(Connection $connection, User $client, int $projectId): int
     {
         $resolvedProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idProj = ? AND user_id = ?',
+            'SELECT idProj FROM projects WHERE idProj = ? AND idClient = ?',
             [$projectId, (int) $client->getIdUser()]
         );
 
@@ -576,7 +576,7 @@ final class ClientMiniShopService
 
         foreach ($orderedProjectIds as $projectId) {
             $lockedProjectId = (int) $connection->fetchOne(
-                'SELECT idProj FROM project WHERE idProj = ? AND user_id = ? FOR UPDATE',
+                'SELECT idProj FROM projects WHERE idProj = ? AND idClient = ? FOR UPDATE',
                 [$projectId, $clientId]
             );
 
@@ -603,7 +603,7 @@ final class ClientMiniShopService
     private function getReservedStock(Connection $connection, int $resourceId): int
     {
         return (int) $connection->fetchOne(
-            'SELECT ' . $this->quantityAggregateSql($connection, 'pr') . ' FROM project_resources pr WHERE pr.resource_id = ?',
+            'SELECT ' . $this->quantityAggregateSql($connection, 'pr') . ' FROM project_resources pr WHERE pr.idRs = ?',
             [$resourceId]
         );
     }
@@ -614,8 +614,8 @@ final class ClientMiniShopService
             '
             SELECT ' . $this->quantityAggregateSql($connection, 'pr') . '
             FROM project_resources pr
-            INNER JOIN project p ON p.idProj = pr.project_id
-            WHERE pr.project_id = ? AND pr.resource_id = ? AND p.user_id = ?
+            INNER JOIN projects p ON p.idProj = pr.idProj
+            WHERE pr.idProj = ? AND pr.idRs = ? AND p.idClient = ?
             ',
             [$projectId, $resourceId, (int) $client->getIdUser()]
         );
@@ -625,8 +625,8 @@ final class ClientMiniShopService
     {
         for ($index = 0; $index < $quantity; ++$index) {
             $connection->insert('project_resources', [
-                'project_id' => $projectId,
-                'resource_id' => $resourceId,
+                'idProj' => $projectId,
+                'idRs' => $resourceId,
             ]);
         }
     }
@@ -640,7 +640,7 @@ final class ClientMiniShopService
         }
 
         $connection->executeStatement(
-            sprintf('DELETE FROM project_resources WHERE project_id = ? AND resource_id = ? LIMIT %d', $safeQuantity),
+            sprintf('DELETE FROM project_resources WHERE idProj = ? AND idRs = ? LIMIT %d', $safeQuantity),
             [$projectId, $resourceId]
         );
     }
@@ -679,3 +679,4 @@ final class ClientMiniShopService
         return null;
     }
 }
+

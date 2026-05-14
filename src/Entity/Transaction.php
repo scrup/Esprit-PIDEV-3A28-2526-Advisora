@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use App\Repository\TransactionRepository;
 
 #[ORM\Entity(repositoryClass: TransactionRepository::class)]
-#[ORM\Table(name: 'transactions')]
+#[ORM\Table(name: 'transaction')]
 class Transaction
 {
     public const STATUS_PENDING = 'PENDING';
@@ -129,7 +129,7 @@ class Transaction
     }
 
     #[ORM\ManyToOne(targetEntity: Investment::class, inversedBy: 'transactions')]
-    #[ORM\JoinColumn(name: 'investment_id', referencedColumnName: 'idInv', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'idInv', referencedColumnName: 'idInv', nullable: false, onDelete: 'CASCADE')]
     private ?Investment $investment = null;
 
     public function getInvestment(): ?Investment

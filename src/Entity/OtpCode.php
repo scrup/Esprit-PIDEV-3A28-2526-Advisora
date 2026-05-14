@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Entity\Trait\BlameableTrait;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,7 +14,6 @@ use App\Repository\OtpCodeRepository;
 #[ORM\HasLifecycleCallbacks]
 class OtpCode
 {
-    use BlameableTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -120,17 +118,6 @@ class OtpCode
 
     
 
-    #[Gedmo\Timestampable(on: 'update')]
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $updated_at = null;
-
-    public function getUpdated_at(): ?\DateTimeInterface
-    {
-        return $this->updated_at;
-    }
-
-    
-
     #[ORM\PrePersist]
     public function initializeAuditDates(): void
     {
@@ -139,16 +126,6 @@ class OtpCode
         if (!isset($this->created_at)) {
             $this->created_at = $now;
         }
-
-        if ($this->updated_at === null) {
-            $this->updated_at = $now;
-        }
-    }
-
-    #[ORM\PreUpdate]
-    public function refreshUpdatedAt(): void
-    {
-        $this->updated_at = new \DateTime();
     }
 
 }

@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Entity\Trait\BlameableTrait;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -14,7 +13,6 @@ use App\Repository\ResourceMarketReviewRepository;
 #[ORM\Table(name: 'resource_market_review')]
 class ResourceMarketReview
 {
-    use BlameableTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

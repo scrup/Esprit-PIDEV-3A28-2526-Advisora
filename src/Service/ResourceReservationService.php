@@ -23,13 +23,13 @@ class ResourceReservationService
 
         if ($quantityColumn !== null) {
             return (int) $connection->fetchOne(
-                'SELECT COALESCE(SUM(' . $quantityColumn . '), 0) FROM project_resources WHERE resource_id = ?',
+                'SELECT COALESCE(SUM(' . $quantityColumn . '), 0) FROM project_resources WHERE idRs = ?',
                 [$resourceId]
             );
         }
 
         return (int) $connection->fetchOne(
-            'SELECT COUNT(*) FROM project_resources WHERE resource_id = ?',
+            'SELECT COUNT(*) FROM project_resources WHERE idRs = ?',
             [$resourceId]
         );
     }
@@ -116,8 +116,8 @@ class ResourceReservationService
 
         return $connection->fetchAllAssociative(
             'SELECT 
-                pr.project_id AS project_id,
-                pr.resource_id AS resource_id,
+                pr.idProj AS project_id,
+                pr.idRs AS resource_id,
                 p.titleProj AS project_title,
                 p.stateProj AS project_status,
                 r.nomRs AS resource_name,
@@ -128,11 +128,11 @@ class ResourceReservationService
                 cf.fournisseur AS supplier_company,
                 ' . $quantitySelect . '
              FROM project_resources pr
-             INNER JOIN project p ON p.idProj = pr.project_id
-             INNER JOIN resource r ON r.idRs = pr.resource_id
-             LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
-             WHERE p.user_id = ?
-             ORDER BY p.idProj DESC, pr.resource_id DESC',
+             INNER JOIN projects p ON p.idProj = pr.idProj
+             INNER JOIN resources r ON r.idRs = pr.idRs
+             LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+             WHERE p.idClient = ?
+             ORDER BY p.idProj DESC, pr.idRs DESC',
             [(int) $user->getIdUser()]
         );
     }
@@ -150,11 +150,11 @@ class ResourceReservationService
 
         return $connection->fetchAllAssociative(
             'SELECT 
-                pr.project_id AS project_id,
-                pr.resource_id AS resource_id,
+                pr.idProj AS project_id,
+                pr.idRs AS resource_id,
                 p.titleProj AS project_title,
                 p.stateProj AS project_status,
-                p.user_id AS client_id,
+                p.idClient AS client_id,
                 u.nomUser AS client_lastname,
                 u.PrenomUser AS client_firstname,
                 u.EmailUser AS client_email,
@@ -166,11 +166,11 @@ class ResourceReservationService
                 cf.fournisseur AS supplier_company,
                 ' . $quantitySelect . '
              FROM project_resources pr
-             INNER JOIN project p ON p.idProj = pr.project_id
-             INNER JOIN `user` u ON u.idUser = p.user_id
-             INNER JOIN resource r ON r.idRs = pr.resource_id
-             LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
-             ORDER BY p.idProj DESC, pr.resource_id DESC'
+             INNER JOIN projects p ON p.idProj = pr.idProj
+             INNER JOIN `user` u ON u.idUser = p.idClient
+             INNER JOIN resources r ON r.idRs = pr.idRs
+             LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+             ORDER BY p.idProj DESC, pr.idRs DESC'
         );
     }
 
@@ -217,7 +217,7 @@ class ResourceReservationService
 
         try {
             $deleted = $connection->executeStatement(
-                'DELETE FROM project_resources WHERE project_id = ? AND resource_id = ?',
+                'DELETE FROM project_resources WHERE idProj = ? AND idRs = ?',
                 [$projectId, $resourceId]
             );
 
@@ -265,7 +265,7 @@ class ResourceReservationService
 
         $quantityColumn = $this->detectQuantityColumn($connection);
         $targetExists = (int) $connection->fetchOne(
-            'SELECT COUNT(*) FROM project_resources WHERE project_id = ? AND resource_id = ?',
+            'SELECT COUNT(*) FROM project_resources WHERE idProj = ? AND idRs = ?',
             [$targetProjectId, $resourceId]
         ) > 0;
 
@@ -280,7 +280,7 @@ class ResourceReservationService
             if ($targetProjectId === $projectId) {
                 if ($quantityColumn !== null) {
                     $connection->executeStatement(
-                        'UPDATE project_resources SET ' . $quantityColumn . ' = ? WHERE project_id = ? AND resource_id = ?',
+                        'UPDATE project_resources SET ' . $quantityColumn . ' = ? WHERE idProj = ? AND idRs = ?',
                         [$quantity, $projectId, $resourceId]
                     );
                 }
@@ -295,16 +295,16 @@ class ResourceReservationService
             if ($quantityColumn !== null) {
                 if ($targetExists) {
                     $connection->executeStatement(
-                        'UPDATE project_resources SET ' . $quantityColumn . ' = ' . $quantityColumn . ' + ? WHERE project_id = ? AND resource_id = ?',
+                        'UPDATE project_resources SET ' . $quantityColumn . ' = ' . $quantityColumn . ' + ? WHERE idProj = ? AND idRs = ?',
                         [$quantity, $targetProjectId, $resourceId]
                     );
                     $connection->executeStatement(
-                        'DELETE FROM project_resources WHERE project_id = ? AND resource_id = ?',
+                        'DELETE FROM project_resources WHERE idProj = ? AND idRs = ?',
                         [$projectId, $resourceId]
                     );
                 } else {
                     $connection->executeStatement(
-                        'UPDATE project_resources SET project_id = ?, ' . $quantityColumn . ' = ? WHERE project_id = ? AND resource_id = ?',
+                        'UPDATE project_resources SET idProj = ?, ' . $quantityColumn . ' = ? WHERE idProj = ? AND idRs = ?',
                         [$targetProjectId, $quantity, $projectId, $resourceId]
                     );
                 }
@@ -314,7 +314,7 @@ class ResourceReservationService
                 }
 
                 $connection->executeStatement(
-                    'UPDATE project_resources SET project_id = ? WHERE project_id = ? AND resource_id = ?',
+                    'UPDATE project_resources SET idProj = ? WHERE idProj = ? AND idRs = ?',
                     [$targetProjectId, $projectId, $resourceId]
                 );
             }
@@ -343,7 +343,7 @@ class ResourceReservationService
 
         if ($projectIdOrNull !== null && $projectIdOrNull > 0) {
             $projectId = (int) $connection->fetchOne(
-                'SELECT idProj FROM project WHERE idProj = ? AND user_id = ?',
+                'SELECT idProj FROM projects WHERE idProj = ? AND idClient = ?',
                 [$projectIdOrNull, $clientId]
             );
 
@@ -355,7 +355,7 @@ class ResourceReservationService
         }
 
         $latestProjectId = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE user_id = ? ORDER BY idProj DESC LIMIT 1',
+            'SELECT idProj FROM projects WHERE idClient = ? ORDER BY idProj DESC LIMIT 1',
             [$clientId]
         );
 
@@ -363,7 +363,7 @@ class ResourceReservationService
             return $latestProjectId;
         }
 
-        $connection->insert('project', [
+        $connection->insert('projects', [
             'titleProj' => 'Reservation Ressources',
             'descriptionProj' => 'Cree automatiquement pour reservation',
             'budgetProj' => 0,
@@ -372,7 +372,7 @@ class ResourceReservationService
             'createdAtProj' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'updatedAtProj' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             'avancementProj' => 0,
-            'user_id' => $clientId,
+            'idClient' => $clientId,
         ]);
 
         return (int) $connection->lastInsertId();
@@ -382,7 +382,7 @@ class ResourceReservationService
     {
         if ($allowAll) {
             $resolved = (int) $connection->fetchOne(
-                'SELECT idProj FROM project WHERE idProj = ?',
+                'SELECT idProj FROM projects WHERE idProj = ?',
                 [$projectId]
             );
 
@@ -394,7 +394,7 @@ class ResourceReservationService
         }
 
         $resolved = (int) $connection->fetchOne(
-            'SELECT idProj FROM project WHERE idProj = ? AND user_id = ?',
+            'SELECT idProj FROM projects WHERE idProj = ? AND idClient = ?',
             [$projectId, (int) $clientId]
         );
 
@@ -409,7 +409,7 @@ class ResourceReservationService
     {
         $quantityColumn = $this->detectQuantityColumn($connection);
         $existing = (int) $connection->fetchOne(
-            'SELECT COUNT(*) FROM project_resources WHERE project_id = ? AND resource_id = ?',
+            'SELECT COUNT(*) FROM project_resources WHERE idProj = ? AND idRs = ?',
             [$projectId, $resourceId]
         );
 
@@ -421,7 +421,7 @@ class ResourceReservationService
         if ($quantityColumn !== null) {
             if ($existing > 0) {
                 $connection->executeStatement(
-                    'UPDATE project_resources SET ' . $quantityColumn . ' = ' . $quantityColumn . ' + ? WHERE project_id = ? AND resource_id = ?',
+                    'UPDATE project_resources SET ' . $quantityColumn . ' = ' . $quantityColumn . ' + ? WHERE idProj = ? AND idRs = ?',
                     [$quantity, $projectId, $resourceId]
                 );
 
@@ -429,8 +429,8 @@ class ResourceReservationService
             }
 
             $connection->insert('project_resources', [
-                'project_id' => $projectId,
-                'resource_id' => $resourceId,
+                'idProj' => $projectId,
+                'idRs' => $resourceId,
                 $quantityColumn => $quantity,
             ]);
 
@@ -442,8 +442,8 @@ class ResourceReservationService
         }
 
         $connection->insert('project_resources', [
-            'project_id' => $projectId,
-            'resource_id' => $resourceId,
+            'idProj' => $projectId,
+            'idRs' => $resourceId,
         ]);
     }
 
@@ -490,11 +490,11 @@ class ResourceReservationService
             : '1 AS reserved_qty';
 
         $sql = 'SELECT 
-                    pr.project_id AS project_id,
-                    pr.resource_id AS resource_id,
+                    pr.idProj AS project_id,
+                    pr.idRs AS resource_id,
                     p.titleProj AS project_title,
                     p.stateProj AS project_status,
-                    p.user_id AS client_id,
+                    p.idClient AS client_id,
                     u.nomUser AS client_lastname,
                     u.PrenomUser AS client_firstname,
                     u.EmailUser AS client_email,
@@ -506,16 +506,16 @@ class ResourceReservationService
                     cf.fournisseur AS supplier_company,
                     ' . $quantitySelect . '
                 FROM project_resources pr
-                INNER JOIN project p ON p.idProj = pr.project_id
-                INNER JOIN `user` u ON u.idUser = p.user_id
-                INNER JOIN resource r ON r.idRs = pr.resource_id
-                LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.cataloguefournisseur_id
-                WHERE pr.project_id = ? AND pr.resource_id = ?';
+                INNER JOIN projects p ON p.idProj = pr.idProj
+                INNER JOIN `user` u ON u.idUser = p.idClient
+                INNER JOIN resources r ON r.idRs = pr.idRs
+                LEFT JOIN cataloguefournisseur cf ON cf.idFr = r.idFr
+                WHERE pr.idProj = ? AND pr.idRs = ?';
 
         $params = [$projectId, $resourceId];
 
         if (!$allowAll) {
-            $sql .= ' AND p.user_id = ?';
+            $sql .= ' AND p.idClient = ?';
             $params[] = (int) $clientId;
         }
 
@@ -545,7 +545,7 @@ class ResourceReservationService
     private function getResourceStockSnapshot(Connection $connection, int $resourceId): array
     {
         $row = $connection->fetchAssociative(
-            'SELECT QuantiteRs AS resource_stock, availabilityStatusRs AS resource_status FROM resource WHERE idRs = ?',
+            'SELECT QuantiteRs AS resource_stock, availabilityStatusRs AS resource_status FROM resources WHERE idRs = ?',
             [$resourceId]
         );
 
@@ -571,7 +571,7 @@ class ResourceReservationService
         $snapshot = $this->getResourceStockSnapshot($connection, $resourceId);
 
         $connection->executeStatement(
-            'UPDATE resource SET availabilityStatusRs = ? WHERE idRs = ?',
+            'UPDATE resources SET availabilityStatusRs = ? WHERE idRs = ?',
             [$snapshot['status'], $resourceId]
         );
     }
@@ -589,3 +589,5 @@ class ResourceReservationService
         return Resource::STATUS_AVAILABLE;
     }
 }
+
+

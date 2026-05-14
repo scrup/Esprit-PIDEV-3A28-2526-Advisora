@@ -11,8 +11,6 @@ use SensitiveParameter;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Uid\UuidV7;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'user')]
@@ -26,9 +24,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'idUser', type: 'integer')]
     private ?int $idUser = null;
-
-    #[ORM\Column(type: 'uuid', unique: true)]
-    private Uuid $uuid;
 
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $cin = null;
@@ -70,14 +65,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'datetime', nullable: false)]
     private \DateTimeInterface $updatedAt;
-
-    #[Gedmo\Blameable(on: 'create')]
-    #[ORM\Column(type: 'string', length: 255, nullable: false)]
-    private string $createdBy = 'system';
-
-    #[Gedmo\Blameable(on: 'update')]
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $updatedBy = null;
 
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $image_path = null;
@@ -170,7 +157,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->strategies = new ArrayCollection();
         $this->userlogs = new ArrayCollection();
         $this->receivedNotifications = new ArrayCollection();
-        $this->uuid = new UuidV7();
     }
 
     public function getIdUser(): ?int
@@ -320,17 +306,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->passwordUser;
     }
 
-    public function getUuid(): Uuid
-    {
-        return $this->uuid;
-    }
 
-    public function setUuid(Uuid $uuid): self
-    {
-        $this->uuid = $uuid;
-
-        return $this;
-    }
 
 
     public function getExpertiseAreaUser(): ?string
@@ -358,30 +334,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     
-
-    public function getCreatedBy(): string
-    {
-        return $this->createdBy;
-    }
-
-    public function setCreatedBy(string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }   
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }
 
     public function getImage_path(): ?string
     {
