@@ -1,0 +1,71 @@
+<div class="a11y-widget-root" data-a11y-widget>
+    <button
+        type="button"
+        class="a11y-fab"
+        data-a11y-toggle
+        aria-expanded="false"
+        aria-controls="a11y-panel"
+        aria-label="Open accessibility tools"
+    >
+        <i class="fas fa-universal-access" aria-hidden="true"></i>
+        <span>A11y</span>
+    </button>
+
+    <section id="a11y-panel" class="a11y-panel" data-a11y-panel hidden aria-label="Accessibility tools">
+        <div class="a11y-panel-head">
+            <h2>Accessibility Tools</h2>
+            <button type="button" class="a11y-close" data-a11y-close aria-label="Close accessibility tools">&times;</button>
+        </div>
+
+        <div class="a11y-section">
+            <p class="a11y-section-title">Text Size</p>
+            <div class="a11y-stepper">
+                <button type="button" data-a11y-action="font-down" aria-label="Decrease font size">A-</button>
+                <span data-a11y-font-value>100%</span>
+                <button type="button" data-a11y-action="font-up" aria-label="Increase font size">A+</button>
+                <button type="button" data-a11y-action="font-reset" class="a11y-ghost">Reset</button>
+            </div>
+        </div>
+
+        <div class="a11y-section">
+            <p class="a11y-section-title">Reading Support</p>
+            <label class="a11y-toggle-row">
+                <input type="checkbox" data-a11y-setting="spaciousText">
+                <span>More spacing between letters and lines</span>
+            </label>
+            <label class="a11y-toggle-row">
+                <input type="checkbox" data-a11y-setting="dyslexiaFont">
+                <span>Dyslexia-friendly font style</span>
+            </label>
+            <label class="a11y-toggle-row">
+                <input type="checkbox" data-a11y-setting="focusMode">
+                <span>Focus reading mask (ADHD support)</span>
+            </label>
+            <label class="a11y-toggle-row">
+                <input type="checkbox" data-a11y-setting="readingRuler">
+                <span>Reading ruler</span>
+            </label>
+            <label class="a11y-toggle-row">
+                <input type="checkbox" data-a11y-setting="pauseAnimations">
+                <span>Pause motion and animations</span>
+            </label>
+        </div>
+
+        <div class="a11y-section">
+            <p class="a11y-section-title">Color and Contrast</p>
+            <div class="a11y-color-grid" role="radiogroup" aria-label="Color profile">
+                <button type="button" data-a11y-color="default" aria-pressed="true">Default</button>
+                <button type="button" data-a11y-color="high-contrast" aria-pressed="false">High Contrast</button>
+                <button type="button" data-a11y-color="deuter-friendly" aria-pressed="false">Red-Green Assist</button>
+                <button type="button" data-a11y-color="tritan-friendly" aria-pressed="false">Blue-Yellow Assist</button>
+            </div>
+            <label class="a11y-toggle-row">
+                <input type="checkbox" data-a11y-setting="linkEmphasis">
+                <span>Underline links and add clearer outlines</span>
+            </label>
+        </div>
+    </section>
+
+    <div class="a11y-reading-ruler" data-a11y-ruler hidden></div>
+    <div class="a11y-focus-overlay" data-a11y-focus hidden></div>
+</div>

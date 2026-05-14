@@ -35,6 +35,31 @@ body {
     color: var(--back-text);
 }
 
+.skip-link {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 0.65rem 0.9rem;
+    border-radius: 10px;
+    background: #f3eee6;
+    color: #111827;
+    text-decoration: none;
+    font-weight: 700;
+    transform: translateY(-140%);
+    transition: transform 0.2s ease;
+    z-index: 4000;
+}
+
+.skip-link:focus-visible {
+    transform: translateY(0);
+}
+
+body.back-mode :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid #93c5fd !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 2px rgba(12, 15, 16, 0.95) !important;
+}
+
 a {
     color: inherit;
 }

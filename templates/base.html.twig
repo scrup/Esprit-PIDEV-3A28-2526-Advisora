@@ -13,12 +13,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ public_base ~ '/css/front.css?v=20260512-14' }}">
     <link rel="stylesheet" href="{{ public_base ~ '/css/notifications.css?v=20260512-05' }}">
+    <link rel="stylesheet" href="{{ public_base ~ '/css/accessibility-widget.css?v=20260514-01' }}">
 
     
     <!-- Page specific CSS -->
     {% block stylesheets %}{% endblock %}
 </head>
 <body class="front-mode {{ is_shop_route ? 'shop-route' : '' }}">
+    {% set skip_solutions_href = current_route == 'app_home' ? '#solutions' : path('app_home') ~ '#solutions' %}
+    <a class="skip-link" href="{{ skip_solutions_href }}">Skip to solutions</a>
 
     <!-- Header included here -->
     {% include 'front/header.html.twig' %}
@@ -34,16 +37,18 @@
     {% endfor %}
 
     <!-- Main content block - changes per page -->
-    <main>
+    <main id="app-main-content" tabindex="-1">
         {% block body %}{% endblock %}
     </main>
 
     <!-- Footer included here -->
     {% include 'front/footer.html.twig' %}
+    {% include 'shared/accessibility_widget.html.twig' %}
 
     <!-- JavaScript disabled on shop routes (app_shop*) -->
     <script src="{{ public_base ~ '/js/notifications.js?v=20260512-02' }}"></script>
-    <script src="{{ public_base ~ '/js/header-menu.js?v=20260426-01' }}"></script>
+    <script src="{{ public_base ~ '/js/header-menu.js?v=20260514-02' }}"></script>
+    <script src="{{ public_base ~ '/js/accessibility-widget.js?v=20260514-01' }}"></script>
     {% if not is_shop_route %}
         <script src="{{ public_base ~ '/js/main.js' }}"></script>
         <script src="{{ public_base ~ '/js/interface-toggle.js' }}"></script>

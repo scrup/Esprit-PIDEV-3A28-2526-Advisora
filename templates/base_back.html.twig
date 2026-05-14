@@ -8,9 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/back-base.css') ~ '?v=20260512-03' }}">
     <link rel="stylesheet" href="{{ asset('css/notifications.css') ~ '?v=20260512-05' }}">
+    <link rel="stylesheet" href="{{ asset('css/accessibility-widget.css') ~ '?v=20260514-01' }}">
     {% block stylesheets %}{% endblock %}
 </head>
 <body class="back-mode">
+<a class="skip-link" href="#app-main-content">Skip to main content</a>
 {% set current_route = app.request.get('_route') %}
 <div class="back-app-shell" data-back-app>
     <aside class="back-sidebar" data-back-sidebar>
@@ -123,7 +125,7 @@
             </div>
         </header>
 
-        <main>
+        <main id="app-main-content" tabindex="-1">
     {% for message in app.flashes('success') %}
         <div class="flash-message flash-success back-flash">{{ message }}</div>
     {% endfor %}
@@ -134,6 +136,7 @@
         </main>
     </div>
 </div>
+{% include 'shared/accessibility_widget.html.twig' %}
 
 {% block javascripts %}
     <script src="{{ asset('js/form-validation.js') }}"></script>
@@ -141,5 +144,6 @@
     <script src="{{ asset('js/interface-toggle.js') }}"></script>
     <script src="{{ asset('js/notifications.js') ~ '?v=20260512-02' }}"></script>
 {% endblock %}
+<script src="{{ asset('js/accessibility-widget.js') ~ '?v=20260514-01' }}"></script>
 </body>
 </html>
