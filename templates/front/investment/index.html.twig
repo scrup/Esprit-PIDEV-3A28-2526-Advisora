@@ -9,10 +9,67 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const toggleButton = document.getElementById('toggle-history');
             const historyPanel = document.getElementById('investment-history-panel');
+            const chartCanvas = document.getElementById('investment-year-chart');
+            const chartEmptyState = document.getElementById('investment-year-chart-empty');
+
+            if (chartCanvas && typeof Chart !== 'undefined') {
+                const labels = {{ investment_chart_labels|json_encode|raw }};
+                const values = {{ investment_chart_values|json_encode|raw }};
+                const currency = {{ investment_chart_currency|json_encode|raw }};
+                const hasData = values.some(function (value) { return Number(value) > 0; });
+
+                if (hasData) {
+                    new Chart(chartCanvas, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Investissements',
+                                data: values,
+                                borderColor: '#c37d5d',
+                                backgroundColor: 'rgba(195, 125, 93, 0.16)',
+                                fill: true,
+                                tension: 0.34,
+                                pointRadius: 4,
+                                pointHoverRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function (value) {
+                                            return value + ' ' + currency;
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            return context.parsed.y + ' ' + currency;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else if (chartEmptyState) {
+                    chartEmptyState.hidden = false;
+                }
+            }
 
             if (!toggleButton || !historyPanel) {
                 return;
@@ -58,6 +115,19 @@
 
     {% include 'front/investment/_module_nav.html.twig' %}
 
+    <section class="pm-grid">
+        <article class="pm-card" style="grid-column: 1 / -1;">
+            <div class="pm-section-head">
+                <h2>Investissements {{ investment_chart_year }}</h2>
+                <span class="pm-meta">Evolution mensuelle</span>
+            </div>
+            <div style="position: relative; min-height: 320px;">
+                <canvas id="investment-year-chart" aria-label="Graphique des investissements sur l annee {{ investment_chart_year }}" role="img"></canvas>
+            </div>
+            <p id="investment-year-chart-empty" class="pm-empty-text" hidden>Aucune transaction d investissement enregistree pour {{ investment_chart_year }}.</p>
+        </article>
+    </section>
+
     <section class="pm-hero">
         <form method="get" action="{{ path('investment_index') }}" class="pm-form-card">
             <div class="pm-filter-grid">
@@ -90,7 +160,7 @@
                 <span class="pm-history-count">{{ completedInvestments|length }}</span>
            
                 <a class="pm-btn pm-btn-primary" href="{{ path('investment_history') }}" style="margin-left:auto; background-color:#2b2b2b;">Consulter l Historique</a>
-            
+            </div>
             {% if completedInvestments is not empty %}
                 <div class="pm-decision-list">
                     {% for investment in completedInvestments %}

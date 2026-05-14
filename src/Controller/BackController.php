@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\DecisionRepository;
+use App\Repository\EventRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\StrategieRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +16,8 @@ final class BackController extends AbstractController
     public function index(
         ProjectRepository $projectRepository,
         DecisionRepository $decisionRepository,
-        StrategieRepository $strategieRepository
+        StrategieRepository $strategieRepository,
+        EventRepository $eventRepository
     ): Response
     {
         $statusCounters = $projectRepository->getStatusCounters();
@@ -30,6 +32,7 @@ final class BackController extends AbstractController
             'total_decisions' => $decisionRepository->count([]),
             'latest_projects' => $projectRepository->findLatestProjects(6),
             'latest_decisions' => $decisionRepository->findLatestGlobal(6),
+            'upcoming_events' => $eventRepository->findUpcomingWithinDays(30, 6),
             'strategy_acceptance_timeline' => $strategyAcceptanceTimeline,
         ]);
     }

@@ -34,10 +34,17 @@ final class InvestmentController extends AbstractController
             'status' => trim((string) $request->query->get('status', '')),
         ];
 
+        $investments = $investmentRepository->findClientInvestments($user, $filters);
+        $chartData = $this->buildYearlyInvestmentChartData($investments);
+
         return $this->render('front/investment/index.html.twig', [
-            'investments' => $investmentRepository->findClientInvestments($user, $filters),
+            'investments' => $investments,
             'filters' => $filters,
             'status_choices' => $this->getStatusChoices(true),
+            'investment_chart_labels' => $chartData['labels'],
+            'investment_chart_values' => $chartData['values'],
+            'investment_chart_year' => $chartData['year'],
+            'investment_chart_currency' => $chartData['currency'],
         ]);
     }
 
@@ -449,5 +456,54 @@ final class InvestmentController extends AbstractController
         }
 
         return $choices;
+    }
+
+    /**
+     * @param Investment[] $investments
+     *
+     * @return array{labels: string[], values: float[], year: int, currency: string}
+     */
+    private function buildYearlyInvestmentChartData(array $investments): array
+    {
+        $currentYear = (int) (new \DateTimeImmutable())->format('Y');
+        $labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $values = array_fill(0, 12, 0.0);
+        $currency = 'TND';
+
+        foreach ($investments as $investment) {
+            if (!$investment instanceof Investment) {
+                continue;
+            }
+
+            $investmentCurrency = trim((string) $investment->getCurrencyInv());
+            if ($investmentCurrency !== '') {
+                $currency = $investmentCurrency;
+            }
+
+            foreach ($investment->getTransactions() as $transaction) {
+                if (!$transaction instanceof Transaction || $transaction->isFailed()) {
+                    continue;
+                }
+
+                $transactionYear = (int) $transaction->getDateTransac()->format('Y');
+                if ($transactionYear !== $currentYear) {
+                    continue;
+                }
+
+                $monthIndex = (int) $transaction->getDateTransac()->format('n') - 1;
+                if ($monthIndex < 0 || $monthIndex > 11) {
+                    continue;
+                }
+
+                $values[$monthIndex] += (float) $transaction->getMontantTransac();
+            }
+        }
+
+        return [
+            'labels' => $labels,
+            'values' => array_map(static fn (float $value): float => round($value, 2), $values),
+            'year' => $currentYear,
+            'currency' => $currency,
+        ];
     }
 }

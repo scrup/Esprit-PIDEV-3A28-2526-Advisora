@@ -123,7 +123,7 @@
                 {% include 'components/user_dropdown.html.twig' %}
             {% else %}
                 <a href="{{ path('app_login') }}" class="btn btn-outline">Connexion</a>
-                <button class="btn btn-primary" id="getStartedBtn">Commencer</button>
+                <a href="{{ path('app_register') }}" class="btn btn-primary">Commencer</a>
             {% endif %}
         </div>
 

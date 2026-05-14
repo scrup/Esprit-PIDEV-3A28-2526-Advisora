@@ -253,6 +253,10 @@ function initButtons() {
     const btnsPrimary = document.querySelectorAll('.btn-primary');
     btnsPrimary.forEach(btn => {
         btn.addEventListener('click', (e) => {
+            if (btn.tagName === 'A' && btn.getAttribute('href')) {
+                return;
+            }
+
             e.preventDefault();
             if(btn.id === 'newsSignupBtn') {
                 const emailInput = document.getElementById('newsEmail');
@@ -282,4 +286,3 @@ function initButtons() {
         });
     });
 }
-

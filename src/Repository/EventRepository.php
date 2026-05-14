@@ -60,6 +60,26 @@ class EventRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @return Event[]
+     */
+    public function findUpcomingWithinDays(int $days = 30, int $limit = 6): array
+    {
+        $now = new \DateTimeImmutable('now');
+        $end = $now->modify(sprintf('+%d days', max(0, $days)));
+
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.startDateEv >= :now')
+            ->andWhere('e.startDateEv <= :end')
+            ->setParameter('now', $now)
+            ->setParameter('end', $end)
+            ->orderBy('e.startDateEv', 'ASC')
+            ->addOrderBy('e.idEv', 'ASC')
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()
+            ->getResult();
+    }
+
     private function createBaseListQueryBuilder(): QueryBuilder
     {
         return $this->createQueryBuilder('e')

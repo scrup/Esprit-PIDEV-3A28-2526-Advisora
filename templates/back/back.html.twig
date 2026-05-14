@@ -197,28 +197,26 @@
                     <a href="{{ path('back_event_index') }}" class="view-link">Voir tout</a>
                 </div>
                 <div class="events-list">
-                    <div class="event-item">
-                        <div class="event-date">
-                            <span>15</span>
-                            <span>AVR</span>
+                    {% for event in upcoming_events %}
+                        <div class="event-item">
+                            <div class="event-date">
+                                <span>{{ event.startDate|date('d') }}</span>
+                                <span>{{ event.startDate|date('M')|upper }}</span>
+                            </div>
+                            <div class="event-info">
+                                <strong>{{ event.title }}</strong>
+                                <p>{{ event.startDate|date('H:i') }} - {{ event.location ?: 'Lieu a confirmer' }}</p>
+                            </div>
+                            <a class="event-btn" href="{{ path('event_back_manage', {id: event.id}) }}">Gerer</a>
                         </div>
-                        <div class="event-info">
-                            <strong>Webinaire: Strategies d'investissement 2025</strong>
-                            <p>15h00 - En ligne</p>
+                    {% else %}
+                        <div class="event-item">
+                            <div class="event-info">
+                                <strong>Aucun evenement a venir</strong>
+                                <p>Il n'y a pas d'evenement planifie dans les 30 prochains jours.</p>
+                            </div>
                         </div>
-                        <button class="event-btn">S'inscrire</button>
-                    </div>
-                    <div class="event-item">
-                        <div class="event-date">
-                            <span>22</span>
-                            <span>AVR</span>
-                        </div>
-                        <div class="event-info">
-                            <strong>Atelier: Optimisation fiscale</strong>
-                            <p>09h00 - Tunis</p>
-                        </div>
-                        <button class="event-btn">S'inscrire</button>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

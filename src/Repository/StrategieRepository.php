@@ -82,7 +82,7 @@ class StrategieRepository extends ServiceEntityRepository
         $rows = array_reverse($this->getEntityManager()->getConnection()->executeQuery(
             '
                 SELECT DATE(lockedAt) AS approval_date, COUNT(*) AS total
-                FROM strategy
+                FROM strategies
                 WHERE statusStrategie = :approved_status
                   AND lockedAt IS NOT NULL
                 GROUP BY approval_date

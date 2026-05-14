@@ -9,14 +9,17 @@
 .a11y-fab {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    justify-content: center;
     border: 1px solid rgba(28, 36, 48, 0.18);
     background: #ffffff;
     color: #1f2b38;
-    padding: 0.7rem 0.9rem;
+    width: 56px;
+    height: 56px;
+    padding: 0;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 1.65rem;
+    line-height: 1;
     cursor: pointer;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
 }
@@ -239,7 +242,7 @@ body[data-a11y-color="tritan-friendly"] > :not(.a11y-widget-root) {
     .a11y-panel {
         right: 0;
         top: auto;
-        bottom: 54px;
+        bottom: 64px;
         transform: none;
     }
 }
