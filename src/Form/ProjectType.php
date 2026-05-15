@@ -32,6 +32,7 @@ class ProjectType extends AbstractType
             ->add('title', TextType::class, [
                 'label' => 'Titre du projet',
                 'required' => true,
+                'empty_data' => '',
                 'attr' => [
                     'placeholder' => 'Ex: Plateforme e-commerce',
                     'maxlength' => 160,

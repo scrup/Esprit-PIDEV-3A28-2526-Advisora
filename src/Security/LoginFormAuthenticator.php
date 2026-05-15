@@ -278,7 +278,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     private function isStoredPasswordValid(User $user, string $plainPassword): bool
     {
-        $storedPassword = (string) $user->getPassword();
+        $storedPassword = $this->normalizeStoredPassword((string) $user->getPassword());
 
         if ($storedPassword === '' || $plainPassword === '') {
             return false;
@@ -302,15 +302,36 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     private function upgradeStoredPasswordIfNeeded(User $user): void
     {
-        $storedPassword = (string) $user->getPassword();
+        $rawStoredPassword = (string) $user->getPassword();
+        $storedPassword = $this->normalizeStoredPassword($rawStoredPassword);
 
         if ($storedPassword === '') {
             return;
         }
 
-        if (!$this->looksHashed($storedPassword) || $this->passwordHasher->needsRehash($user)) {
+        // If the password comes from Java/Spring format "{bcrypt}...", persist it normalized.
+        if ($rawStoredPassword !== $storedPassword && $this->looksHashed($storedPassword)) {
+            $user->setPasswordUser($storedPassword);
+            $user->setPassword_changed_at(new \DateTime());
+
+            return;
+        }
+
+        // Legacy plain-text fallback: hash once and store securely.
+        if (!$this->looksHashed($storedPassword)) {
             $user->setPasswordUser($this->passwordHasher->hashPassword($user, $storedPassword));
             $user->setPassword_changed_at(new \DateTime());
         }
+    }
+
+    private function normalizeStoredPassword(string $storedPassword): string
+    {
+        $normalized = trim($storedPassword);
+
+        if (str_starts_with($normalized, '{bcrypt}')) {
+            return substr($normalized, 8);
+        }
+
+        return $normalized;
     }
 }

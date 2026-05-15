@@ -143,9 +143,9 @@ class Project
 {
     return isset($this->titleProj) ? $this->titleProj : '';
 }
-    public function setTitleProj(string $titleProj): self
+    public function setTitleProj(?string $titleProj): self
     {
-        $this->titleProj = $titleProj;
+        $this->titleProj = trim((string) $titleProj);
 
         return $this;
     }
@@ -417,11 +417,9 @@ class Project
 {
     return isset($this->titleProj) ? $this->titleProj : '';
 }
-    public function setTitle(string $title): self
+    public function setTitle(?string $title): self
     {
-        $this->titleProj = $title;
-
-        return $this;
+        return $this->setTitleProj($title);
     }
 
     public function getDescription(): ?string
